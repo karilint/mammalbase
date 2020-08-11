@@ -1,0 +1,183 @@
+{% extends "mb/base_generic.html" %}
+{% block title %}
+<title>MammalBase - Accepted taxon: {{ master_entity.name }}</title>
+{% endblock %}
+{% block content %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Accepted taxon: {{ master_entity.name }}</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2 style="display:none">Accepted taxon: {{ master_entity.name }}</h2>
+  </header>
+  <br>
+  <div class="mb-detail w3-bar w3-right-align">
+    <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
+    {% if user.is_authenticated %}
+    <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'master_entity-edit' pk=master_entity.pk %}"><span class="fa fa-pencil-square-o"></span></a>
+    <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'master_entity-delete' pk=master_entity.pk %}"><span class="fa fa-trash-o"></span></a>
+    {% else %}
+    <button title="Please login to Edit" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
+    <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+    {% endif %}
+  </div>
+  <table class="w3-table-all">
+    <caption class="mb-detail w3-left-align">Accepted taxon: {{ master_entity.name }}</caption>
+    <tr>
+      <th class="w3-quarter">Taxon:</th>
+      <td class="w3-threequarter">{{ master_entity.name }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Rank:</th>
+      <td class="w3-threequarter">{{ master_entity.entity }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Reference:</th>
+      <td class="w3-threequarter">{{ master_entity.reference|safe }}</td>
+    </tr>
+  </table>
+  {% if user.is_authenticated %}
+  <br>
+  {% else %}
+  <br>
+  {% endif %}
+  <table class="w3-table-all w3-small">
+    <caption class="w3-left-align">Table 1. List of Diet Items for {{ master_entity.name }}.</caption>
+    <thead>
+      <tr>
+        <th>TSN Complete name</th>
+        <th>Diet item</th>
+        <th>Part</th>
+        <th>Percentage <sup>a.</sup></th>
+        <th>Reference(s)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if diets %}
+      {% for diet in diets %}
+      <tr>
+        <td class="mb-public-internal"><a title="Press for Details" href="{% url 'tsn-detail' tsn=diet.tsn %}">{{ diet.completename }} <span class="fa fa-link w3-small"></span></a></td>
+        <td>{{ diet.diet_items }}</td>
+        <td>{{ diet.part }}</td>
+        <td style="text-align:right">{{ diet.sum_food_item_percentage|floatformat:"2" }}</td>
+        <td title="{{ diet.references|safe }}">{{ diet.references|truncatechars:20|safe }}</td>
+      </tr>
+      {% endfor %}
+      {% else %}
+      <tr><td colspan="5">There are no Diet Items available.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+  <p class="w3-small"><sup>a.</sup> Standardized values.</p>
+  {% if user.is_authenticated %}
+  <br>
+  {% else %}
+  <br>
+  {% endif %}
+  <table class="w3-table-all">
+    <caption class="w3-left-align">Table 2. List of Data Sources for {{ master_entity.name }}.</caption>
+    <thead>
+      <tr>
+        <th>Taxon</th>
+        <th>Reference</th>
+        <th>Match</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for relation in master_entity.entityrelation_set.all %}
+      {% if relation.relation.name  == "TaxonMatch" %}
+      <tr>
+        {% if user.is_authenticated %}
+          <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_entity-detail' pk=relation.source_entity.id %}">{{ relation.source_entity.name }} <span class="fa fa-link w3-small"></span></a></td>
+        {% else %}
+          <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ relation.source_entity.name }} <span class="fa fa-link w3-small"></span></a></td>
+        {% endif %}
+        {% if user.is_authenticated %}
+          <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_reference-detail' pk=relation.source_entity.reference.id %}">{{ relation.source_entity.reference|safe }} <span class="fa fa-link w3-small"></span></a></td>
+        {% else %}
+          <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ relation.source_entity.reference|safe }} <span class="fa fa-link w3-small"></span></a></td>
+        {% endif %}
+
+        <td>{{ relation.relation_status.name }}</td>
+        <td>{{ relation.data_status.name }}</td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if user.is_authenticated %}
+  <br>
+  {% else %}
+  <br>
+  {% endif %}
+  <table class="w3-table-all">
+    <caption class="w3-left-align">Table 3. List of Standard Measurements for {{ master_entity.name }}.</caption>
+    <thead>
+      <tr>
+        <th>Measurement</th>
+        <th>Unit</th>
+        <th>n Total</th>
+        <th>n Unknown</th>
+        <th>n Female</th>
+        <th>n Male</th>
+        <th>Min</th>
+        <th>Mean</th>
+        <th>Max</th>
+        <th>Std</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for measurement in measurements %}
+      <tr>
+        <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_attribute-detail' pk=measurement.master_attribute_id %}">{{ measurement.master_attribute }} <span class="fa fa-link w3-small"></span></a></td>
+        <td style="text-align:center">{{ measurement.master_unit }}</td>
+        {% if measurement.n_total == 0 %}
+        <td style="text-align:center">-</td>
+        {% else %}
+        <td style="text-align:center">{{ measurement.n_total }}</td>
+        {% endif %}
+        {% if measurement.n_unknown == 0 %}
+        <td style="text-align:center">-</td>
+        {% else %}
+        <td style="text-align:center">{{ measurement.n_unknown }}</td>
+        {% endif %}
+        {% if measurement.n_female == 0 %}
+        <td style="text-align:center">-</td>
+        {% else %}
+        <td style="text-align:center">{{ measurement.n_female }}</td>
+        {% endif %}
+        {% if measurement.n_male == 0 %}
+        <td style="text-align:center">-</td>
+        {% else %}
+        <td style="text-align:center">{{ measurement.n_male }}</td>
+        {% endif %}
+        {% if measurement.measurement.coeff_minimum == "" %}
+        <td style="text-align:center">-</td>
+        {% else %}
+        <td style="text-align:right">{{ measurement.coeff_minimum.normalize }}</td>
+        {% endif %}
+        <td style="text-align:right">{{ measurement.coeff_mean.normalize }}</td>
+        <td style="text-align:right">{{ measurement.coeff_maximum.normalize }}</td>
+        <td style="text-align:center">{{ measurement.std|default_if_none:"-" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="w3-small">Citation for this page: [The MammalBase community {% now "Y" %}.
+    {% if master_entity.entity.name == "Species"%}
+      <i>{{ master_entity.name }}</i>
+    {% else %}
+      {{ master_entity.name }}:
+    {% endif %}
+    , Accessed {% now "jS F Y" %} at https://mammalbase.org/me/{{ master_entity.id }}]</p>
+</section>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% endblock %}
+{% block script %}
+{% endblock %}

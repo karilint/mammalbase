@@ -1,0 +1,18 @@
+<!-- Load templatetag -->
+{% load url_replace %}
+
+<div class="w3-row w3-left w3-padding-24">
+  <div class="mb-detail w3-bar w3-right-align">
+    {% if page_obj.has_previous %}
+        <a class="w3-button w3-hover-black" href="?{% url_replace 1 %}">&laquo; first</a>
+        <a class="w3-button w3-hover-black" href="?{% url_replace page_obj.previous_page_number %}">previous</a>
+    {% endif %}
+
+      <a class="w3-button w3-black" href="#">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.</a>
+
+    {% if page_obj.has_next %}
+        <a class="w3-button w3-hover-black" href="?{% url_replace page_obj.next_page_number %}">next</a>
+        <a class="w3-button w3-hover-black" href="?{% url_replace page_obj.paginator.num_pages %}">last &raquo;</a>
+    {% endif %}
+  </div>
+</div>

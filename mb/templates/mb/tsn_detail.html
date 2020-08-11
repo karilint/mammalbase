@@ -1,0 +1,136 @@
+{% extends "mb/index_diet.html" %}
+{% block title %}
+<title>MammalBase - Taxonomic Serial No.: {{ tsn.tsn }} ({{ tsn.completename }})</title>
+{% endblock %}
+{% block content %}
+<!--Article header -->
+<header style="display:none"><h1>MammalBase - Taxonomic Serial No.: {{ tsn.tsn }} ({{ tsn.completename }})</h1></header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal"><h2 style="display:none">Taxonomic Serial No.: {{ tsn.tsn }} ({{ tsn.completename }})</h2></header>
+  <br>
+  <div class="mb-detail w3-bar w3-right-align">
+    <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
+    {% if user.is_authenticated %}
+    <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'tsn-edit' tsn=tsn.tsn %}"><span class="fa fa-pencil-square-o"></span></a>
+    <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+    {% else %}
+    <button title="Please login to Edit" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
+    <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+    {% endif %}
+  </div>
+  <table class="w3-table-all">
+    <caption class="mb-detail w3-left-align">Taxonomic Serial No.: {{ tsn.tsn }} ({{ tsn.completename }})</caption>
+    <tr>
+      <th>TSN:</th>
+      <td><a class="btn btn-default" href="https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value={{ tsn.tsn }}#null" target="_blank">{{ tsn.tsn }} <span class="fa fa-external-link"></span></a>
+      </tr>
+      <tr>
+        <th>Name:</th>
+        <td>{{ tsn.completename }}</td>
+      </tr>
+      <tr>
+        <th>Accepted hierarchy:</th>
+        <td>{{ tsn.hierarchy }}</td>
+      </tr>
+      <tr>
+        <tr>
+          <th>Accepted Name(s):</th>
+          <td>
+            {% for s in tsn.tsn_synonym.all %}
+            {% if s.tsn_accepted == tsn.tsn %}
+            {{ s.tsn_accepted }}
+            {% else %}
+            <a class="btn btn-default" href="https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value={{ s.tsn_accepted.tsn }}#null" target="_blank">{{ s.tsn_accepted.completename }} <span class="fa fa-external-link"></span>
+              {% endif %}
+              {% endfor %}
+            </td>
+          </tr>
+          <tr>
+            <th>Common name(s):</th>
+            {% if tsn.common_names %}
+            <td>{{ tsn.common_names }}</td>
+            {% else %}
+            <td>n/a</td>
+            {% endif %}
+          </tr>
+        </table>
+        {% if user.is_authenticated %}
+        <br>
+        {% else %}
+        <br>
+        {% endif %}
+        <table class="w3-table-all">
+          <caption class="w3-left-align">Table 1. List of Food Items linked with Taxonomic Serial No. {{ tsn.tsn }} ({{ tsn.completename }}).</caption>
+          <thead>
+            <tr>
+              <th>Food Item</th>
+              <th>Part</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if tsn.fooditem_set.count > 0 %}
+            {% for fi in tsn.fooditem_set.all %}
+            <tr>
+              <td class="mb-public-internal"><a title="Press for Details" href="{% url 'food_item-detail' pk=fi.id %}">{{ fi }} <span class="fa fa-link w3-small"></span></a></td>
+              <td>{{ fi.part.caption }}</td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr><td colspan="2">There are no linked Food Items available.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+        {% if user.is_authenticated %}
+        <br>
+        {% else %}
+        <br>
+        {% endif %}
+        <table class="w3-table-all">
+          <caption class="w3-left-align">Table 2. Proximate composition (% in DM)<sup>a.</sup> of forages linked with Taxonomic Serial No. {{ tsn.tsn }} ({{ tsn.completename }}).</caption>
+          <thead>
+            <tr>
+              <th>Forage</th>
+              <th>Part</th>
+              <th>n</th>
+              <th>CP</th>
+              <th>CF</th>
+              <th>ASH</th>
+              <th>EE</th>
+              <th>NFE</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for fi in tsn.fooditem_set.all %}
+            {% if fi.proximateanalysisitem_set %}
+            {% for pai in fi.proximateanalysisitem_set.all %}
+            <tr>
+              <td class="mb-public-internal"><a title="Press for Details" href="{% url 'proximate_analysis_item-detail' pk=pai.id %}">{{ pai.forage }} <span class="fa fa-link w3-small"></span></a></td>
+              <td>{{ pai.forage.part.caption }}</td>
+              {% if pai.sample_size %}
+                <td>{{ pai.sample_size }}</td>
+              {% else %}
+                <td style="text-align:center">-</td>
+              {% endif %}
+              <td style="text-align:right">{{ pai.cp_std|floatformat:2 }}</td>
+              <td style="text-align:right">{{ pai.cf_std|floatformat:2 }}</td>
+              <td style="text-align:right">{{ pai.ash_std|floatformat:2 }}</td>
+              <td style="text-align:right">{{ pai.ee_std|floatformat:2 }}</td>
+              <td style="text-align:right">{{ pai.nfe_std|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr><td colspan="2">There are no Proximate Analysis available.</td></tr>
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+        <p><sup>a.</sup> Standardized values.</p>
+      </section>
+      {% endblock %}
+      {% block info %}
+      {% endblock %}
+      {% block pagination %}
+      {% endblock %}
+      {% block script %}
+      {% endblock %}

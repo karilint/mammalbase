@@ -1,0 +1,55 @@
+{% extends "mb/index_proximate_analysis.html" %}
+{% block title %}
+<title>MammalBase - Proximate Analysis</title>
+{% endblock %}
+{% block content %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Proximate Analysis</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2>Proximate Analysis</h2>
+  </header>
+
+  {% include 'includes/find.html' %}
+  {% if page_obj %}
+    {% if user.is_authenticated %}
+      <br>
+      <br>
+    {% endif %}
+    <table class="w3-table-all">
+      <thead>
+        <tr>
+          <th>Study Area</th>
+          <th>Method</th>
+          <th>Reference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for x in page_obj %}
+        <tr>
+          <td>{{ x.location }}</td>
+          {% if x.method %}
+            <td>{{ x.method }}</td>
+          {% else %}
+            <td>n/a</td>
+          {% endif %}
+          <td class="mb-public-internal"><a title="Press for Details" href="{% url 'proximate_analysis-detail' pk=x.pk %}">{{ x.reference|safe }} <span class="fa fa-link w3-small"></span></a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>There are no Proximate Analysis available.</p>
+  {% endif %}
+  </section>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+  {% include 'mb/pagination.html' %}
+{% endblock %}
+{% block script %}
+{% endblock %}

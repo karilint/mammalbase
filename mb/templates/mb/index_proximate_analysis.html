@@ -1,0 +1,43 @@
+{% extends "mb/base_generic.html" %}
+{% block title %}
+<title>MammalBase - Proximate Analysis</title>
+{% endblock %}
+{% block content %}
+{% load static %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Proximate Analysis</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal"><h2>MammalBase - Proximate Analysis</h2></header>
+  <p>Proximate Analysis section ...</p>
+  <!-- Photo Grid -->
+  <div class="w3-row" id="myGrid" style="margin-bottom:10px">
+    <div class="w3-third">
+      <img src="{% static "images/DSC03491.jpg" %}" alt="Geologists at work" width="100%">
+    </div>
+
+    <div class="w3-third">
+      <img src="{% static "images/DSC03592.jpg" %}" alt="Geologists at work" width="100%">
+    </div>
+
+    <div class="w3-third">
+      <img src="{% static "images/DSC03491.jpg" %}" alt="Geologists at work" width="100%">
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block nav %}
+<h4 class="w3-bar-item"><strong>Proximate analyses</strong></h4>
+<a class="w3-bar-item w3-button w3-hover-black" href="{% url 'proximate_analysis-list'%}">Analyses done</a>
+<a class="w3-bar-item w3-button w3-hover-black" href="{% url 'proximate_analysis_item-list'%}">Forages tested</a>
+<a class="w3-bar-item w3-button w3-hover-black" href="{% url 'view-proximate_analysis-table-list'%}">Summary table</a>
+<a class="w3-bar-item w3-button w3-hover-black" href="{% url 'master_reference-list'%}">References</a>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% endblock %}
+{% block script %}
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "mb/index_diet.html" %}
+{% block title %}
+<title>MammalBase - Food Item: {{ food_item.name }}</title>
+{% endblock %}
+{% block content %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Food Item: {{ food_item.name }}</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2 style="display:none">Food Item: {{ food_item.name }}</h2>
+  </header>
+  <br>
+  <div class="mb-detail w3-bar w3-right-align">
+    <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
+    {% if user.is_authenticated %}
+    <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'food_item-edit' pk=food_item.pk %}"><span class="fa fa-pencil-square-o"></span></a>
+    <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'food_item-delete' pk=food_item.pk %}"><span class="fa  fa-trash-o"></span></a>
+    {% else %}
+    <button title="Please login to Edit" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
+    <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+    {% endif %}
+  </div>
+  <table class="w3-table-all">
+    <caption class="mb-detail w3-left-align">Food Item: {{ food_item.name }}</caption>
+    <tr>
+      <th class="w3-quarter">Food Item:</th>
+      <td class="mb-public-internal w3-threequarter">{{ food_item.name }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Part:</th>
+      <td class="mb-public-internal w3-threequarter">{{ food_item.part.caption }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">TSN Complete name:</th>
+      <td class="mb-public-internal w3-threequarter"><a title="Press for Details" href="{% url 'tsn-detail' tsn=food_item.tsn.tsn %}">{{ food_item.tsn.completename }} <span class="fa fa-link w3-small"></span></a></td>
+    </tr>
+  </table>
+  {% if user.is_authenticated %}
+    <br>
+  {% else %}
+    <br>
+  {% endif %}
+  <table class="w3-table-all">
+    <caption class="w3-left-align">Table 1. Proximate composition (% in DM)<sup>a.</sup> listed for {{ food_item.name }}.</caption>
+    <thead>
+      <tr>
+        <th style="text-align:right">n</th>
+        <th style="text-align:right">CP</th>
+        <th style="text-align:right">CF</th>
+        <th style="text-align:right">ASH</th>
+        <th style="text-align:right">EE</th>
+        <th style="text-align:right">NFE</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if food_item.proximateanalysisitem_set.count > 0 %}
+        {% for pai in food_item.proximateanalysisitem_set.all %}
+          <tr>
+            {% if pai.sample_size %}
+              <td class="mb-public-internal" style="text-align:right"><a title="Press for Details" href="{% url 'proximate_analysis_item-detail' pk=pai.id %}">{{ pai.sample_size }} <span class="fa fa-link w3-small"></span></a></td>
+            {% else %}
+              <td class="mb-public-internal" style="text-align:right"><a title="Press for Details" href="{% url 'proximate_analysis_item-detail' pk=pai.id %}">n/a <span class="fa fa-link w3-small"></span></a></td>
+            {% endif %}
+            <td style="text-align:right">{{ pai.cp_std|floatformat:2 }}</td>
+            <td style="text-align:right">{{ pai.cf_std|floatformat:2 }}</td>
+            <td style="text-align:right">{{ pai.ash_std|floatformat:2 }}</td>
+            <td style="text-align:right">{{ pai.ee_std|floatformat:2 }}</td>
+            <td style="text-align:right">{{ pai.nfe_std|floatformat:2 }}</td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr><td colspan="7">There are no Proximate Analysis available.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+  <p><sup>a.</sup> Standardized values.</p>
+</section>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% endblock %}
+{% block script %}
+{% endblock %}
