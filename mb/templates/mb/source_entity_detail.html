@@ -23,7 +23,7 @@
     <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
     {% endif %}
   </div>
-  <table class="w3-table-all">
+  <table class="mb-detail w3-table-all">
     <caption class="w3-left-align">Literature Taxon: {{ source_entity.name }}</caption>
     <tr>
       <th class="w3-quarter">Taxon:</th>
@@ -48,7 +48,7 @@
   {% else %}
   <br>
   {% endif %}
-  <table class="w3-table-all">
+  <table class="mb-list w3-table-all w3-small">
     {% if source_entity.name|length > 50 %}
     <caption class="w3-left-align w3-small">
       {% else %}
@@ -66,24 +66,24 @@
     </thead>
     <tbody>
       {% if source_entity.entityrelation_set.count > 0 %}
-      {% for relation in source_entity.entityrelation_set.all %}
-      {% if relation.relation.name  == "TaxonMatch" and relation.is_active %}
-      <tr>
-        {% if user.is_authenticated %}
-        <td class="mb-public-internal"><a title="Press for Details" href="{% url 'entity_relation-detail' pk=relation.id %}">{{ relation.master_entity.name }} <span class="fa fa-link w3-small"></span></a></td>
-        {% else %}
-        <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ relation.master_entity.name }} <span class="fa fa-link w3-small"></span></a></td>
-        {% endif %}
-        <td>{{ relation.master_entity.reference }}</td>
-        <td>{{ relation.relation_status.name }}</td>
-        <td>{{ relation.data_status.name }}</td>
-      </tr>
-      {% endif %}
-      {% endfor %}
+        {% for relation in source_entity.entityrelation_set.all %}
+          {% if relation.relation.name  == "Taxon Match" and relation.is_active %}
+            <tr>
+              {% if user.is_authenticated %}
+              <td class="mb-public-internal"><a title="Press for Details" href="{% url 'entity_relation-detail' pk=relation.id %}">{{ relation.master_entity.name }} <span class="fa fa-link w3-small"></span></a></td>
+              {% else %}
+              <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ relation.master_entity.name }} <span class="fa fa-link w3-small"></span></a></td>
+              {% endif %}
+              <td>{{ relation.master_entity.reference }}</td>
+              <td>{{ relation.relation_status.name }}</td>
+              <td>{{ relation.data_status.name }}</td>
+            </tr>
+          {% endif %}
+        {% endfor %}
       {% else %}
-      <tr>
-        <td colspan="4">There are no Publications available.</td>
-      </tr>
+        <tr>
+          <td colspan="4">There are no Publications available.</td>
+        </tr>
       {% endif %}
     </tbody>
   </table>
@@ -93,7 +93,7 @@
   {% else %}
   <br>
   {% endif %}
-  <table class="w3-table-all">
+  <table class="mb-list w3-table-all w3-small">
     {% if source_entity.name|length > 50 %}
     <caption class="w3-left-align w3-small">
       {% else %}
@@ -132,7 +132,7 @@
   {% else %}
   <br>
   {% endif %}
-  <table class="w3-table-all">
+  <table class="mb-list w3-table-all w3-small">
     {% if source_entity.name|length > 50 %}
     <caption class="w3-left-align w3-small">
       {% else %}
@@ -143,6 +143,7 @@
     <thead>
       <tr>
         <th>Measurement</th>
+        <th>Location</th>
         <th>n</th>
         <th>n females</th>
         <th>n males</th>
@@ -155,31 +156,55 @@
     </thead>
     <tbody>
       {% if sa_has_measurements|length > 0 %}
-      {% for measurement in sa_has_measurements %}
-      {% if user.is_authenticated %}
-      <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_measurement_value-detail' pk=measurement.id %}">{{ measurement.source_attribute.name }} <span class="fa fa-link w3-small"></span></a></td>
-      {% else %}
-      <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ measurement.source_attribute.name }} <span class="fa fa-link w3-small"></span></a></td>
-      {% endif %}
-      <td>{{ measurement.n_total }}</td>
-      <td>{{ measurement.n_female }}</td>
-      <td>{{ measurement.n_male }}</td>
-      <td>{{ measurement.minimum|floatformat:2 }}</td>
-      <td>{{ measurement.mean|floatformat:2 }}</td>
-      <td>{{ measurement.maximum|floatformat:2 }}</td>
-      <td>
-        {% if measurement.std %}
-        {{ measurement.std|floatformat:2 }}
+        {% for measurement in sa_has_measurements %}
+        {% if user.is_authenticated %}
+          <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_measurement_value-detail' pk=measurement.id %}">{{ measurement.source_attribute.name }} <span class="fa fa-link w3-small"></span></a></td>
         {% else %}
-        -
+          <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ measurement.source_attribute.name }} <span class="fa fa-link w3-small"></span></a></td>
         {% endif %}
-      </td>
-      <td>{{ measurement.unit|default_if_none:"-" }}</td>
-      </tr>
+        <td>{{ measurement.source_location|default_if_none:"-" }}</td>
+        {% if measurement.n_total == 0 %}
+          <td>-</td>
+          <td>-</td>
+          <td>-</td>
+        {% else %}
+          <td>{{ measurement.n_total }}</td>
+          <td>{{ measurement.n_female }}</td>
+          <td>{{ measurement.n_male }}</td>
+        {% endif %}
+        {% if measurement.n_total == 1 %}
+          <td>{{ measurement.mean|floatformat:2 }}</td>
+        {% else %}
+          {% if measurement.minimum == 0 and measurement.maximum == 0 %}
+            <td>-</td>
+          {% else %}
+            <td>{{ measurement.minimum|floatformat:2 }}</td>
+          {% endif %}
+        {% endif %}
+        <td>{{ measurement.mean|floatformat:2 }}</td>
+        {% if measurement.n_total == 1 %}
+          <td>{{ measurement.mean|floatformat:2 }}</td>
+        {% else %}
+          {% if measurement.minimum == 0 and measurement.maximum == 0 %}
+            <td>-</td>
+          {% else %}
+            <td>{{ measurement.maximum|floatformat:2 }}</td>
+          {% endif %}
+        {% endif %}
+        <td>
+          {% if measurement.std %}
+            {{ measurement.std|floatformat:2 }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+        <td>{{ measurement.source_unit.name|default_if_none:"-" }}</td>
+        </tr>
       {% endfor %}
       {% for attribute in sa_no_measurements %}
       <tr>
         <td>{{ attribute.name }}</td>
+        <td></td>
         <td></td>
         <td></td>
         <td></td>
@@ -197,7 +222,7 @@
       {% endfor %}
       {% else %}
       <tr>
-        <td colspan="9">There are no Measurements available.</td>
+        <td colspan="10">There are no Measurements available.</td>
       </tr>
       {% endif %}
     </tbody>

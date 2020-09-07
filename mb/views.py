@@ -204,6 +204,28 @@ def diet_set_item_detail(request, pk):
         taxonomic_unit.save()
     return render(request, 'mb/diet_set_item_detail.html', {'dsi': diet_set_item, 'common_names': common_names, 'hierarchy': hierarchy, 'hierarchy_string': hierarchy_string,}, )
 
+def diet_set_reference_list(request):
+    f = MasterReferenceFilter(request.GET, queryset=MasterReference.objects
+        .is_active()
+        .filter(sourcereference__dietset__gte=0)
+        .distinct())
+
+    paginator = Paginator(f.qs, 10)
+
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    return render(
+        request,
+        'mb/diet_set_reference_list.html',
+        {'page_obj': page_obj, 'filter': f,}
+    )
+
 # https://ultimatedjango.com/learn-django/lessons/delete-contact-full-lesson/
 class entity_relation_delete(DeleteView):
     model = EntityRelation
@@ -370,8 +392,8 @@ def dictfetchall(cursor):
 
 def master_entity_detail(request, pk):
     master_entity = get_object_or_404(MasterEntity, pk=pk)
-
     with connection.cursor() as cursor:
+
 #        cursor.execute("SELECT foo FROM bar WHERE baz = %s", [master_entity.id])
         cursor.execute("""
             select me.id master_entity_id
@@ -454,8 +476,11 @@ def master_entity_detail(request, pk):
             	, smv.n_unknown
                 , smv.n_female
             	, smv.n_male
+            	, smv.minimum as minimum
             	, smv.minimum*uc.coefficient as coeff_minimum
+            	, smv.mean as mean
             	, smv.mean*uc.coefficient as coeff_mean
+            	, smv.maximum as maximum
             	, smv.maximum*uc.coefficient as coeff_maximum
             	, smv.std
             	, mu.print_name master_unit
@@ -527,6 +552,28 @@ def master_entity_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
+def master_entity_reference_list(request):
+    f = MasterReferenceFilter(request.GET, queryset=MasterReference.objects
+        .is_active()
+        .filter(sourcereference__sourceattribute__type__gte=0)
+        .distinct())
+
+    paginator = Paginator(f.qs, 10)
+
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    return render(
+        request,
+        'mb/master_entity_reference_list.html',
+        {'page_obj': page_obj, 'filter': f,}
+    )
+
 class master_reference_delete(DeleteView):
     model = MasterReference
     success_url = reverse_lazy('master_reference-list')
@@ -544,7 +591,7 @@ def master_reference_detail(request, pk):
             	on sr.master_reference_id=mr.id
             join mb_sourceentity se
             	on se.reference_id=sr.id
-            	and se.entity_id in(19,20,21,22,23,25,26,27,28,29,30,31,32,33)
+            	and se.entity_id in(1,3,4,5,7,10,11,12,13,14,15)
             join mb_entityclass source
             	on se.entity_id=source.id
             join mb_entityrelation er
@@ -555,7 +602,7 @@ def master_reference_detail(request, pk):
             	on me.entity_id=`master`.id
             join mb_relationclass relation
             	on relation.id=er.relation_id
-            	and relation.name='TaxonMatch'
+            	and relation.name='Taxon Match'
             join mb_masterchoicesetoption data_status
             	on data_status.id=er.data_status_id
             join mb_masterchoicesetoption relation_status
@@ -689,6 +736,34 @@ def proximate_analysis_item_list(request):
     return render(
         request,
         'mb/proximate_analysis_item_list.html',
+        {'page_obj': page_obj, 'filter': f,}
+    )
+
+def proximate_analysis_reference_detail(request, pk):
+    master_reference = get_object_or_404(MasterReference, pk=pk)
+
+    return render(request, 'mb/proximate_analysis_reference_detail.html'
+        , {'master_reference': master_reference, })
+
+def proximate_analysis_reference_list(request):
+    f = MasterReferenceFilter(request.GET, queryset=MasterReference.objects
+        .is_active()
+        .filter(sourcereference__proximateanalysis__gte=0)
+        .distinct())
+
+    paginator = Paginator(f.qs, 10)
+
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    return render(
+        request,
+        'mb/proximate_analysis_reference_list.html',
         {'page_obj': page_obj, 'filter': f,}
     )
 

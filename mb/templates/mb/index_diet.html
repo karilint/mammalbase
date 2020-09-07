@@ -11,28 +11,29 @@
 <!--End of article header -->
 <section class="w3-threequarter w3-container">
   <header class="w3-container w3-text-teal"><h2>MammalBase - Diets</h2></header>
-  <p>Diets section ...</p>
   <!-- Photo Grid -->
   <div class="w3-row" id="myGrid" style="margin-bottom:10px">
     <div class="w3-third">
-      <img src="{% static "images/DSC03491.jpg" %}" alt="Geologists at work" width="100%">
+      <img src="{% static "images/DSC03491.JPG" %}" alt="Zepra - Equus quagga" width="100%">
     </div>
 
     <div class="w3-third">
-      <img src="{% static "images/DSC03592.jpg" %}" alt="Geologists at work" width="100%">
+      <img src="{% static "images/DSC03592.JPG" %}" alt="Jackal - Canis adustus" width="100%">
     </div>
 
     <div class="w3-third">
-      <img src="{% static "images/DSC03491.jpg" %}" alt="Geologists at work" width="100%">
+      <img src="{% static "images/DSC03525.JPG" %}" alt="Waterbuck - Kobus ellipsiprymnus" width="100%">
     </div>
   </div>
+  <p>We have collected dietary information for 4820 mammalian taxa. This data includes 5606 Diet Sets which are separate lists of mammalian diets based on data reference, location, gender, study time and time of year.</p>
+  <p>Currently, we have 19321 Diet Set Items that represent 3757 different Food Items.</p>
 </section>
 {% endblock %}
 {% block nav %}
 <h4 class="w3-bar-item"><strong>Diet</strong></h4>
 <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'diet_set-list'%}">Diet sets</a>
 <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'food_item-list'%}">Food Items</a>
-<a class="w3-bar-item w3-button w3-hover-black" href="{% url 'master_reference-list'%}">References</a>
+<a class="w3-bar-item w3-button w3-hover-black" href="{% url 'diet_set_reference-list'%}">References</a>
 {% endblock %}
 {% block info %}
 {% endblock %}

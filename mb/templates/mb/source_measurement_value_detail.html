@@ -23,13 +23,17 @@
     <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
     {% endif %}
   </div>
-  <table class="w3-table-all">
+  <table class="mb-detail w3-table-all">
     <caption class="mb-detail w3-left-align">
       {{ source_measurement_value.source_attribute.name}} of {{ source_measurement_value.source_entity }}
     </caption>
     <tr>
       <th class="w3-quarter">Measurement</th>
       <td class="w3-threequarter">{{ source_measurement_value.source_attribute.name}}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Location</th>
+      <td class="w3-threequarter">{{ source_measurement_value.source_location.name}}</td>
     </tr>
     <tr>
       <th class="w3-quarter">n total:</th>
@@ -65,7 +69,7 @@
     </tr>
     <tr>
       <th class="w3-quarter">Unit:</th>
-      <td class="w3-threequarter">{{ source_measurement_value.unit}}</td>
+      <td class="w3-threequarter">{{ source_measurement_value.source_unit.name}}</td>
     </tr>
     <tr>
       <th class="w3-quarter">Reference:</th>

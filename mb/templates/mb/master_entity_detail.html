@@ -23,7 +23,7 @@
     <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
     {% endif %}
   </div>
-  <table class="w3-table-all">
+  <table class="mb-detail w3-table-all">
     <caption class="mb-detail w3-left-align">Accepted taxon: {{ master_entity.name }}</caption>
     <tr>
       <th class="w3-quarter">Taxon:</th>
@@ -43,12 +43,14 @@
   {% else %}
   <br>
   {% endif %}
-  <table class="w3-table-all w3-small">
+  <table class="mb-list w3-table-all w3-small">
     <caption class="w3-left-align">Table 1. List of Diet Items for {{ master_entity.name }}.</caption>
     <thead>
       <tr>
         <th>TSN Complete name</th>
-        <th>Diet item</th>
+        {% if user.is_authenticated %}
+          <th>Diet item</th>
+        {% endif %}
         <th>Part</th>
         <th>Percentage <sup>a.</sup></th>
         <th>Reference(s)</th>
@@ -59,14 +61,20 @@
       {% for diet in diets %}
       <tr>
         <td class="mb-public-internal"><a title="Press for Details" href="{% url 'tsn-detail' tsn=diet.tsn %}">{{ diet.completename }} <span class="fa fa-link w3-small"></span></a></td>
+        {% if user.is_authenticated %}
         <td>{{ diet.diet_items }}</td>
+        {% endif %}
         <td>{{ diet.part }}</td>
         <td style="text-align:right">{{ diet.sum_food_item_percentage|floatformat:"2" }}</td>
-        <td title="{{ diet.references|safe }}">{{ diet.references|truncatechars:20|safe }}</td>
+        <td title="{{ diet.references|safe }}">{{ diet.references|truncatechars:10|safe }}</td>
       </tr>
       {% endfor %}
       {% else %}
-      <tr><td colspan="5">There are no Diet Items available.</td></tr>
+        {% if user.is_authenticated %}
+          <tr><td colspan="5">There are no Diet Items available.</td></tr>
+        {% else %}
+          <tr><td colspan="4">There are no Diet Items available.</td></tr>
+        {% endif %}
       {% endif %}
     </tbody>
   </table>
@@ -76,7 +84,7 @@
   {% else %}
   <br>
   {% endif %}
-  <table class="w3-table-all">
+  <table class="mb-list w3-table-all w3-small">
     <caption class="w3-left-align">Table 2. List of Data Sources for {{ master_entity.name }}.</caption>
     <thead>
       <tr>
@@ -88,7 +96,7 @@
     </thead>
     <tbody>
       {% for relation in master_entity.entityrelation_set.all %}
-      {% if relation.relation.name  == "TaxonMatch" %}
+      {% if relation.relation.name  == "Taxon Match" %}
       <tr>
         {% if user.is_authenticated %}
           <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_entity-detail' pk=relation.source_entity.id %}">{{ relation.source_entity.name }} <span class="fa fa-link w3-small"></span></a></td>
@@ -113,7 +121,7 @@
   {% else %}
   <br>
   {% endif %}
-  <table class="w3-table-all">
+  <table class="mb-list w3-table-all w3-small">
     <caption class="w3-left-align">Table 3. List of Standard Measurements for {{ master_entity.name }}.</caption>
     <thead>
       <tr>
@@ -127,6 +135,7 @@
         <th>Mean</th>
         <th>Max</th>
         <th>Std</th>
+        <th>Reference(s)</th>
       </tr>
     </thead>
     <tbody>
@@ -135,33 +144,42 @@
         <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_attribute-detail' pk=measurement.master_attribute_id %}">{{ measurement.master_attribute }} <span class="fa fa-link w3-small"></span></a></td>
         <td style="text-align:center">{{ measurement.master_unit }}</td>
         {% if measurement.n_total == 0 %}
-        <td style="text-align:center">-</td>
+          <td style="text-align:center">-</td>
         {% else %}
-        <td style="text-align:center">{{ measurement.n_total }}</td>
+          <td style="text-align:center">{{ measurement.n_total }}</td>
         {% endif %}
         {% if measurement.n_unknown == 0 %}
-        <td style="text-align:center">-</td>
+          <td style="text-align:center">-</td>
         {% else %}
-        <td style="text-align:center">{{ measurement.n_unknown }}</td>
+          <td style="text-align:center">{{ measurement.n_unknown }}</td>
         {% endif %}
         {% if measurement.n_female == 0 %}
-        <td style="text-align:center">-</td>
+          <td style="text-align:center">-</td>
         {% else %}
-        <td style="text-align:center">{{ measurement.n_female }}</td>
+          <td style="text-align:center">{{ measurement.n_female }}</td>
         {% endif %}
         {% if measurement.n_male == 0 %}
-        <td style="text-align:center">-</td>
+          <td style="text-align:center">-</td>
         {% else %}
-        <td style="text-align:center">{{ measurement.n_male }}</td>
+          <td style="text-align:center">{{ measurement.n_male }}</td>
         {% endif %}
-        {% if measurement.measurement.coeff_minimum == "" %}
-        <td style="text-align:center">-</td>
+        {% if measurement.minimum == measurement.maximum %}
+          <td style="text-align:center">-</td>
         {% else %}
-        <td style="text-align:right">{{ measurement.coeff_minimum.normalize }}</td>
+          <td style="text-align:right">{{ measurement.coeff_minimum.normalize }}</td>
         {% endif %}
         <td style="text-align:right">{{ measurement.coeff_mean.normalize }}</td>
-        <td style="text-align:right">{{ measurement.coeff_maximum.normalize }}</td>
-        <td style="text-align:center">{{ measurement.std|default_if_none:"-" }}</td>
+        {% if measurement.minimum == measurement.maximum %}
+          <td style="text-align:center">-</td>
+        {% else %}
+          <td style="text-align:right">{{ measurement.coeff_maximum.normalize }}</td>
+        {% endif %}
+        {% if measurement.std == 0 %}
+          <td style="text-align:center">-</td>
+        {% else %}
+          <td style="text-align:center">{{ measurement.std|floatformat:0 }}</td>
+        {% endif %}
+        <td style="text-align:left" title="{{ measurement.reference|safe }}">{{ measurement.reference|truncatechars:10|safe }}</td>
       </tr>
       {% endfor %}
     </tbody>

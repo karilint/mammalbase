@@ -23,7 +23,7 @@
       <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
     {% endif %}
   </div>
-  <table class="w3-table-all">
+  <table class="mb-detail w3-table-all">
     <caption class="w3-left-align">Diet set for {{ ds.taxon.name }}</caption>
     <tr>
       <th class="w3-quarter">Location:</th>
@@ -90,12 +90,11 @@
       <td class="w3-threequarter"><cite>{{ ds.reference|safe }} </cite></td>
     </tr>
   </table>
+  <br>
   {% if user.is_authenticated %}
-  <br>
-  <br>
   {% endif %}
 
-  <table class="w3-table-all">
+  <table class="mb-list w3-table-all w3-small">
     <caption class="w3-left-align">Table 1. Food items listed for {{ ds.taxon.name }}.</caption>
 
     <thead>

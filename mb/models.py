@@ -303,14 +303,14 @@ class MasterReference(BaseModel):
 
     type = models.CharField(max_length=25, help_text="Enter the Type of the Standard Reference", blank=True, null=True,)
 #    doi = models.URLField(max_length=200, help_text="Enter a valid DOI URL for the Standard Reference", blank=True, null=True,)
-    doi = models.CharField(max_length=50, validators=[validate_doi], help_text="Enter the DOI number that begins with 10 followed by a period", blank=True, null=True,)
+    doi = models.CharField(max_length=100, validators=[validate_doi], help_text="Enter the DOI number that begins with 10 followed by a period", blank=True, null=True,)
     first_author = models.CharField(max_length=50, help_text="Enter the name of the first author of the Standard Reference", blank=True, null=True,)
     year = models.IntegerField(validators=[MinValueValidator(1800), MaxValueValidator(2100)], blank=True, null=True,)
-    title = models.CharField(max_length=300, help_text="Enter the Title of the Standard Reference", blank=True, null=True,)
+    title = models.CharField(max_length=400, help_text="Enter the Title of the Standard Reference", blank=True, null=True,)
     container_title = models.CharField(max_length=100, help_text="Enter the Container Title of the Standard Reference", blank=True, null=True,)
     volume = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(4000)], blank=True, null=True,)
     issue = models.CharField(max_length=5, help_text="Enter the Issue of the Standard Reference", blank=True, null=True,)
-    page = models.CharField(max_length=10, help_text="Enter the Page(s) of the Standard Reference", blank=True, null=True,)
+    page = models.CharField(max_length=50, help_text="Enter the Page(s) of the Standard Reference", blank=True, null=True,)
     citation = models.CharField(max_length=400, help_text="Enter the Citation of the Standard Reference")
 #    link = models.URLField(max_length=200, help_text="Enter a valid URL for the Source Reference", blank=True, null=True,)
 
@@ -370,10 +370,11 @@ class SourceAttribute(BaseModel):
         )
     name = models.CharField(max_length=250, help_text="Enter the Name of the Attribute")
     TYPE = (
+        (0, 'Not Specified'),
         (1, 'Numerical variable'),
         (2, 'Categorical variable'),
     )
-    type = models.PositiveSmallIntegerField(choices=TYPE, default=1, help_text='Select the type of the Attribute')
+    type = models.PositiveSmallIntegerField(choices=TYPE, default=3, help_text='Select the type of the Attribute')
     remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Attribute")
 
     class Meta:
@@ -512,6 +513,13 @@ class SourceMeasurementValue(BaseModel):
     source_attribute = models.ForeignKey(
         'SourceAttribute',
         on_delete = models.CASCADE,
+        )
+    source_location = models.ForeignKey(
+        'SourceLocation',
+        on_delete = models.CASCADE,
+        null=True,
+        blank=True,
+        default = None
         )
     n_total = models.PositiveSmallIntegerField(default=0, blank=True, null=True, help_text='n for total number of specimens measured.')
     n_unknown = models.PositiveSmallIntegerField(default=0, blank=True, null=True, help_text='n for total number of unknown gender specimens measured.')
@@ -661,7 +669,7 @@ class SourceReference(BaseModel):
         (3, 'Verified - Rejected'),
     )
     status = models.PositiveSmallIntegerField(choices=STATUS, default=1, help_text='Status of the Std. Reference')
-    doi = models.CharField(max_length=50, validators=[validate_doi], help_text="Enter the DOI number that begins with 10 followed by a period", blank=True, null=True,)
+    doi = models.CharField(max_length=100, validators=[validate_doi], help_text="Enter the DOI number that begins with 10 followed by a period", blank=True, null=True,)
 
     class Meta:
         ordering = ['citation']

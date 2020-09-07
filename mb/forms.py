@@ -179,7 +179,8 @@ class SourceEntityForm(forms.ModelForm):
 class SourceMeasurementValueForm(forms.ModelForm):
     class Meta:
         model = SourceMeasurementValue
-        fields = ('n_total'
+        fields = ('source_location'
+            , 'n_total'
             , 'n_unknown'
             , 'n_female'
             , 'n_male'
@@ -187,7 +188,6 @@ class SourceMeasurementValueForm(forms.ModelForm):
             , 'mean'
             , 'maximum'
             , 'std'
-            , 'unit'
             , 'source_unit', )
 
 class SourceReferenceAttributeForm(forms.ModelForm):
