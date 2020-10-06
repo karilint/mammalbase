@@ -61,7 +61,7 @@ class MasterEntityForm(forms.ModelForm):
 class MasterReferenceForm(forms.ModelForm):
     class Meta:
         model = MasterReference
-        fields = ('type', 'first_author', 'year', 'title', 'container_title', 'volume', 'issue', 'page', 'citation', 'doi',)
+        fields = ('type', 'first_author', 'year', 'title', 'container_title', 'volume', 'issue', 'page', 'citation', 'doi', 'uri',)
 
 class SourceAttributeChoicesetOptionForm(forms.ModelForm):
     class Meta:

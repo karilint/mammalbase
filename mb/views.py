@@ -1,5 +1,6 @@
 import datetime
 from django.db import connection
+from django.db.models import Count
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
@@ -27,7 +28,7 @@ from .models import (AttributeRelation, ChoiceSetOptionRelation, DietSet
     , ProximateAnalysis, ProximateAnalysisItem
     , RelationClass
     , SourceAttribute, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceEntity
-    , SourceMeasurementValue, SourceReference, ViewProximateAnalysisTable)
+    , SourceMeasurementValue, SourceReference, ViewMasterTraitValue, ViewProximateAnalysisTable)
 from itis.models import TaxonomicUnits
 import requests
 
@@ -35,7 +36,15 @@ def index(request):
     return render(request, 'mb/index.html',)
 
 def index_diet(request):
-    return render(request, 'mb/index_diet.html',)
+    num_diet_taxa=DietSet.objects.is_active().values('taxon_id').distinct().count()
+    num_diet_set=DietSet.objects.is_active().count()
+    num_diet_set_item=DietSetItem.objects.is_active().count()
+    num_food_item=DietSetItem.objects.is_active().values('food_item_id').distinct().count()
+
+    return render(request, 'mb/index_diet.html', context={'num_diet_taxa':num_diet_taxa, 'num_diet_set':num_diet_set, 'num_diet_set_item':num_diet_set_item, 'num_food_item':num_food_item},)
+
+def index_mammals(request):
+    return render(request, 'mb/index_mammals.html',)
 
 def index_news(request):
     return render(request, 'mb/index_news.html',)
@@ -259,7 +268,17 @@ class food_item_delete(DeleteView):
 
 def food_item_detail(request, pk):
     food_item = get_object_or_404(FoodItem, pk=pk)
-    return render(request, 'mb/food_item_detail.html', {'food_item': food_item})
+    tsn_hierarchy = food_item.tsn.hierarchy_string.split("-")
+    i=len(tsn_hierarchy)-1
+    found=False
+    while(i>=0 and found is False):
+        pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i]).filter(part__exact=food_item.part.caption)
+        if len(pa)==1:
+            break
+        i=i-1
+
+    proximate_analysis=pa.all()[0]
+    return render(request, 'mb/food_item_detail.html', {'proximate_analysis': proximate_analysis, 'food_item': food_item, })
 
 def food_item_edit(request, pk):
     food_item = get_object_or_404(FoodItem, pk=pk)
@@ -1180,7 +1199,16 @@ class tsn_delete(DeleteView):
 
 def tsn_detail(request, tsn):
     tsn = get_object_or_404(TaxonomicUnits, tsn=tsn)
-    return render(request, 'mb/tsn_detail.html', {'tsn': tsn})
+    tsn_hierarchy = tsn.hierarchy_string.split("-")
+    i=len(tsn_hierarchy)-1
+    found=False
+    while(i>=0 and found is False):
+        pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i])
+        if len(pa)>=1:
+            break
+        i=i-1
+
+    return render(request, 'mb/tsn_detail.html', {'pa': pa, 'tsn': tsn},)
 
 def tsn_edit(request, tsn):
     tsn = get_object_or_404(TaxonomicUnits, tsn=tsn)

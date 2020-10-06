@@ -248,7 +248,7 @@ class MasterChoiceSetOption(BaseModel):
         )
     display_order = models.PositiveSmallIntegerField(default=10, help_text='Display order on choises')
     name = models.CharField(max_length=250, help_text="Enter the Name of the Master Attribute")
-    description = models.TextField(blank=True, null=True, max_length=500, help_text="Enter description for the Master Choice Set Option")
+    description = models.TextField(blank=True, null=True, max_length=1500, help_text="Enter description for the Master Choice Set Option")
 
     class Meta:
         ordering = ['master_attribute__name','display_order']
@@ -304,6 +304,7 @@ class MasterReference(BaseModel):
     type = models.CharField(max_length=25, help_text="Enter the Type of the Standard Reference", blank=True, null=True,)
 #    doi = models.URLField(max_length=200, help_text="Enter a valid DOI URL for the Standard Reference", blank=True, null=True,)
     doi = models.CharField(max_length=100, validators=[validate_doi], help_text="Enter the DOI number that begins with 10 followed by a period", blank=True, null=True,)
+    uri = models.URLField(max_length=200, help_text="Enter the Uniform Resource Identifier link", blank=True, null=True,)
     first_author = models.CharField(max_length=50, help_text="Enter the name of the first author of the Standard Reference", blank=True, null=True,)
     year = models.IntegerField(validators=[MinValueValidator(1800), MaxValueValidator(2100)], blank=True, null=True,)
     title = models.CharField(max_length=400, help_text="Enter the Title of the Standard Reference", blank=True, null=True,)
@@ -1018,6 +1019,43 @@ class ProximateAnalysisItem(BaseModel):
         String for representing the Model object (in Admin site etc.)
         """
         return '%s - %s ' % (self.proximate_analysis, self.forage)
+
+# https://resources.rescale.com/using-database-views-in-django-orm/
+class ViewMasterTraitValue(models.Model):
+    """
+    Model representing a MasterTraitValue results as a MySQL view in MammalBase
+    """
+    id = models.BigIntegerField(primary_key=True)
+    master_id = models.ForeignKey('MasterEntity', to_field="id", db_column="master_id", on_delete=models.DO_NOTHING)
+    master_entity_name = models.CharField(max_length=200)
+    master_attribute_id = models.ForeignKey('MasterAttribute', to_field="id", db_column="master_attribute_id", on_delete=models.DO_NOTHING)
+    master_attribute_name = models.CharField(max_length=200)
+    traits_references = models.CharField(max_length=400, blank=True, null=True)
+    assigned_values = models.CharField(max_length=400, blank=True, null=True)
+    n_distinct_value = models.PositiveSmallIntegerField()
+    n_value = models.PositiveSmallIntegerField()
+    n_supporting_value = models.PositiveSmallIntegerField()
+    trait_values = models.CharField(max_length=400, blank=True, null=True)
+    trait_selected = models.CharField(max_length=400, blank=True, null=True)
+    trait_references = models.CharField(max_length=400, blank=True, null=True)
+    value_percentage = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7)
+
+    class Meta:
+        managed = False
+        db_table = 'mb_view_master_trait_values'
+        ordering = ['id','master_attribute_name']
+
+    def get_absolute_url(self):
+        """
+        Returns the url to access a particular Master Attribute instance.
+        """
+        return reverse('master-attribute-detail', args=[str(self.master_attribute_id)])
+
+    def __str__(self):
+        """
+        String for representing the Model object (in Admin site etc.)
+        """
+        return '%s - %s ' % (self.master_attribute_name, self.trait_selected)
 
 # https://resources.rescale.com/using-database-views-in-django-orm/
 class ViewProximateAnalysisTable(models.Model):

@@ -7,7 +7,7 @@ from .models import (DietSet, EntityClass, FoodItem
     , MasterAttribute, MasterEntity, MasterReference
     , ProximateAnalysis, ProximateAnalysisItem
     , SourceAttribute, SourceEntity, SourceReference
-    , ViewProximateAnalysisTable)
+    , ViewMasterTraitValue, ViewProximateAnalysisTable)
 from itis.models import TaxonomicUnits
 from django.contrib.auth.models import User
 from django_filters import rest_framework as filters
@@ -33,7 +33,7 @@ class FoodItemFilter(django_filters.FilterSet):
         fields = ['name', 'part__caption', 'tsn__hierarchy_string', 'tsn__hierarchy']
 
 class MasterAttributeFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(lookup_expr='icontains', label='Attribute contains')
+    name = django_filters.CharFilter(lookup_expr='icontains', label='Trait contains')
     reference__citation = django_filters.CharFilter(lookup_expr='icontains', label='Reference contains')
 
     class Meta:
@@ -108,6 +108,13 @@ class TaxonomicUnitsFilter(django_filters.FilterSet):
     class Meta:
         model = TaxonomicUnits
         fields = ['tsn', 'completename', 'hierarchy', ]
+
+class ViewMasterTraitValueFilter(django_filters.FilterSet):
+    master_entity_name = django_filters.CharFilter(lookup_expr='icontains', label='Taxon contains')
+
+    model = ViewMasterTraitValue
+    class Meta:
+        fields = ['id', 'master_id', 'master_entity_name', 'master_attribute_id', 'master_attribute_name', 'assigned_values', 'n_distinct_value', 'n_value', 'trait_values', 'trait_selected', 'value_percentage',]
 
 class ViewProximateAnalysisTableFilter(django_filters.FilterSet):
     hierarchy = django_filters.CharFilter(lookup_expr='icontains', label='Hierarchy contains')

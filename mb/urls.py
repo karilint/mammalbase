@@ -15,6 +15,7 @@ urlpatterns = [
     path('__debug__/', include(debug_toolbar.urls)),
     path('', views.index, name='index'),
     path('mb', views.index, name='index'),
+    path('im', views.index_mammals, name='index_mammals'),
     path('ipa', views.index_proximate_analysis, name='index_proximate_analysis'),
     path('ids', views.index_diet, name='index_diet'),
     path('news', views.index_news, name='index_news'),

@@ -39,7 +39,7 @@
     </tr>
     <tr>
       <th class="w3-quarter">Description:</th>
-      <td class="w3-threequarter">{{ master_choiceset_option.description }}</td>
+      <td class="w3-threequarter">{{ master_choiceset_option.description|safe }}</td>
     </tr>
   </table>
   {% if user.is_authenticated %}

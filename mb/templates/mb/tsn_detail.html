@@ -48,11 +48,7 @@
           </tr>
           <tr>
             <th>Common name(s):</th>
-            {% if tsn.common_names %}
-            <td>{{ tsn.common_names }}</td>
-            {% else %}
-            <td>n/a</td>
-            {% endif %}
+            <td>{{ tsn.common_names|default_if_none:"-" }}</td>
           </tr>
         </table>
         {% if user.is_authenticated %}
@@ -81,51 +77,54 @@
             {% endif %}
           </tbody>
         </table>
+        {% if pa.all.count > 0 %}
         {% if user.is_authenticated %}
         <br>
         {% else %}
         <br>
         {% endif %}
         <table class="mb-list w3-table-all w3-small">
-          <caption class="w3-left-align">Table 2. Proximate composition (% in DM)<sup>a.</sup> of forages linked with Taxonomic Serial No. {{ tsn.tsn }} ({{ tsn.completename }}).</caption>
+          <caption class="mb-data w3-left-align">Table 2. Summary list of mean Proximate Analysis values (DM basis) grouped by analysed forage part and the Itis TSN hierarchy assigned for {{ tsn.completename }}. <sup>a.</sup></caption>
           <thead>
             <tr>
-              <th>Forage</th>
-              <th>Part</th>
-              <th>n</th>
-              <th>CP</th>
-              <th>CF</th>
-              <th>ASH</th>
-              <th>EE</th>
-              <th>NFE</th>
+              <th>Hierarchy:</th>
+              <th>TSN - Complete Name:</th>
+              <th>Part:</th>
+              <th>Crude Protein (CP):</th>
+              <th>Crude Fibre (CF):</th>
+              <th>Ash:</th>
+              <th>Ether Extract (EE):</th>
+              <th>Nitrogen-Free-Extract (NFE):</th>
+              <th>n Taxa:</th>
+              <th>n References:</th>
+              <th>n Analysis:</th>
             </tr>
           </thead>
           <tbody>
-            {% for fi in tsn.fooditem_set.all %}
-            {% if fi.proximateanalysisitem_set %}
-            {% for pai in fi.proximateanalysisitem_set.all %}
+            {% for proximate_analysis in pa.all %}
             <tr>
-              <td class="mb-public-internal"><a title="Press for Details" href="{% url 'proximate_analysis_item-detail' pk=pai.id %}">{{ pai.forage }} <span class="fa fa-link w3-small"></span></a></td>
-              <td>{{ pai.forage.part.caption }}</td>
-              {% if pai.sample_size %}
-                <td>{{ pai.sample_size }}</td>
+              <td>{{ proximate_analysis.hierarchy }}</td>
+              {% if user.is_authenticated %}
+              <td class="mb-private-internal"><a title="Press for Details" href="{% url 'proximate_analysis_item-list' %}?forage__part__caption={{ proximate_analysis.part }}&forage__tsn__hierarchy={{ proximate_analysis.taxon_name }}">{{ proximate_analysis.tsn }} <span class="fa fa-link w3-small"></span></a></td>
               {% else %}
-                <td style="text-align:center">-</td>
+              <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ proximate_analysis.tsn }} <span class="fa fa-link w3-small"></span></a></td>
               {% endif %}
-              <td style="text-align:right">{{ pai.cp_std|floatformat:2 }}</td>
-              <td style="text-align:right">{{ pai.cf_std|floatformat:2 }}</td>
-              <td style="text-align:right">{{ pai.ash_std|floatformat:2 }}</td>
-              <td style="text-align:right">{{ pai.ee_std|floatformat:2 }}</td>
-              <td style="text-align:right">{{ pai.nfe_std|floatformat:2 }}</td>
+              <td>{{ proximate_analysis.part }}</td>
+              <td>{{ proximate_analysis.cp_std|floatformat:2 }}</td>
+              <td>{{ proximate_analysis.cf_std|floatformat:2 }}</td>
+              <td>{{ proximate_analysis.ash_std|floatformat:2 }}</td>
+              <td>{{ proximate_analysis.ee_std|floatformat:2 }}</td>
+              <td>{{ proximate_analysis.nfe_std|floatformat:2 }}</td>
+              <td>{{ proximate_analysis.n_taxa }}</td>
+              <td>{{ proximate_analysis.n_reference }}</td>
+              <td>{{ proximate_analysis.n_analysis }}</td>
             </tr>
-            {% endfor %}
-            {% else %}
-            <tr><td colspan="2">There are no Proximate Analysis available.</td></tr>
-            {% endif %}
             {% endfor %}
           </tbody>
         </table>
-        <p><sup>a.</sup> Standardized values.</p>
+        {% else %}
+        <tr><td colspan="2">There are no linked Food Items available.</td></tr>
+        {% endif %}
       </section>
       {% endblock %}
       {% block info %}

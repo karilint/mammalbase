@@ -101,26 +101,14 @@
                 <tr>
                   <td class="mb-public-internal"><a title="Press for Details" href="{% url 'proximate_analysis_item-detail' pk=pai.id %}">{{ pai.forage }} <span class="fa fa-link w3-small"></span></a></td>
                   <td>{{ pai.forage.part.caption }}</td>
-                  {% if pai.location %}
-                    <td>{{ pai.location }}</td>
-                  {% else %}
-                    <td>n/a</td>
-                  {% endif %}
-                  {% if pai.sample_size %}
-                    <td>{{ pai.sample_size }}</td>
-                  {% else %}
-                    <td>n/a</td>
-                  {% endif %}
+                  <td>{{ pai.location|default_if_none:"-" }}</td>
+                  <td>{{ pai.sample_size|default_if_none:"-" }}</td>
                   <td>{{ pai.cp_std|floatformat:2 }}</td>
                   <td>{{ pai.cf_std|floatformat:2 }}</td>
                   <td>{{ pai.ash_std|floatformat:2 }}</td>
                   <td>{{ pai.ee_std|floatformat:2 }}</td>
                   <td>{{ pai.nfe_std|floatformat:2 }}</td>
-                  {% if pai.cited_reference %}
-                    <td>{{ pai.cited_reference }}</td>
-                  {% else %}
-                    <td>n/a</td>
-                  {% endif %}
+                  <td>{{ pai.cited_reference|default_if_none:"-" }}</td>
                 </tr>
               {% endfor %}
             {% endfor %}

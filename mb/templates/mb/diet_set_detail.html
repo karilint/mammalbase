@@ -27,63 +27,27 @@
     <caption class="w3-left-align">Diet set for {{ ds.taxon.name }}</caption>
     <tr>
       <th class="w3-quarter">Location:</th>
-      <td class="w3-threequarter">
-        {% if ds.location %}
-        {{ ds.location }}
-        {% else %}
-        n/a
-        {% endif %}
-      </td>
+      <td class="w3-threequarter">{{ ds.location|default_if_none:"-" }}</td>
     </tr>
     <tr>
       <th class="w3-quarter">Time period:</th>
-      <td class="w3-threequarter">
-        {% if ds.time_period %}
-        {{ ds.time_period }}
-        {% else %}
-        n/a
-        {% endif %}
-      </td>
+      <td class="w3-threequarter">{{ ds.time_period|default_if_none:"-" }}</td>
     </tr>
     <tr>
       <th class="w3-quarter">Gender:</th>
-      <td class="w3-threequarter">
-        {% if ds.gender.caption %}
-        {{ ds.gender.caption }}
-        {% else %}
-        n/a
-        {% endif %}
-      </td>
+      <td class="w3-threequarter">{{ ds.gender.caption|default_if_none:"-" }}</td>
     </tr>
     <tr>
       <th class="w3-quarter">Sample size:</th>
-      <td class="w3-threequarter">
-        {% if ds.sample_size %}
-        {{ ds.sample_size }}
-        {% else %}
-        n/a
-        {% endif %}
-      </td>
+      <td class="w3-threequarter">{{ ds.sample_size|default_if_none:"-" }}</td>
     </tr>
     <tr>
       <th class="w3-quarter">Method:</th>
-      <td class="w3-threequarter">
-        {% if ds.method %}
-        {{ ds.method }}
-        {% else %}
-        n/a
-        {% endif %}
-      </td>
+      <td class="w3-threequarter">{{ ds.method|default_if_none:"-" }}</td>
     </tr>
     <tr>
       <th class="w3-quarter">Study time:</th>
-      <td class="w3-threequarter">
-        {% if ds.study_time %}
-        {{ ds.study_time }}
-        {% else %}
-        n/a
-        {% endif %}
-      </td>
+      <td class="w3-threequarter">{{ ds.study_time|default_if_none:"-" }}</td>
     </tr>
     <tr>
       <th class="w3-quarter">Reference:</th>
@@ -95,13 +59,16 @@
   {% endif %}
 
   <table class="mb-list w3-table-all w3-small">
-    <caption class="w3-left-align">Table 1. Food items listed for {{ ds.taxon.name }}.</caption>
+    <caption class="w3-left-align">Table 1. Food items listed for {{ ds.taxon.name }}<sup>a.</sup></caption>
 
     <thead>
       <tr>
         <th style="text-align:right">Row</th>
         <th style="text-align:right">Percentage</th>
-        <th>Food Item</th>
+        {% if user.is_authenticated %}
+          <th>Food Item</th>
+        {% else %}
+        {% endif %}
         <th>TSN Complete name</th>
         <th>Part</th>
       </tr>
@@ -111,13 +78,17 @@
       <tr>
         <td style="text-align:right">{{ dsi.list_order }}</td>
         <td style="text-align:right">{{ dsi.percentage }}</td>
-        <td class="mb-public-internal"><a title="Press for Details" href="{% url 'diet_set_item-detail' pk=dsi.pk %}">{{ dsi.food_item.name }} <span class="fa fa-link w3-small"></span></a></td>
+        {% if user.is_authenticated %}
+          <td class="mb-public-internal"><a title="Press for Details" href="{% url 'diet_set_item-detail' pk=dsi.pk %}">{{ dsi.food_item.name }} <span class="fa fa-link w3-small"></span></a></td>
+        {% else %}
+        {% endif %}
         <td class="mb-public-internal w3-threequarter"><a title="Press for Details" href="{% url 'tsn-detail' tsn=dsi.food_item.tsn.tsn %}">{{ dsi.food_item.tsn.completename }} <span class="fa fa-link w3-small"></span></a></td>
         <td>{{ dsi.food_item.part.caption }}</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
+  <p><sup>a.</sup> Standardized values.</p>
 </section>
 {% endblock %}
 {% block info %}

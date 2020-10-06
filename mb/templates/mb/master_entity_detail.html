@@ -52,7 +52,7 @@
           <th>Diet item</th>
         {% endif %}
         <th>Part</th>
-        <th>Percentage <sup>a.</sup></th>
+        <th class="w3-right-align">Percentage <sup>a.</sup></th>
         <th>Reference(s)</th>
       </tr>
     </thead>
@@ -85,34 +85,23 @@
   <br>
   {% endif %}
   <table class="mb-list w3-table-all w3-small">
-    <caption class="w3-left-align">Table 2. List of Data Sources for {{ master_entity.name }}.</caption>
+    <caption class="w3-left-align">Table 2. List of Standard Traits for {{ master_entity.name }}.</caption>
     <thead>
       <tr>
-        <th>Taxon</th>
-        <th>Reference</th>
-        <th>Match</th>
-        <th>Status</th>
+        <th>Trait</th>
+        <th>Selected Value</th>
+        <th>All Value(s)</th>
+        <th>Reference(s)</th>
       </tr>
     </thead>
     <tbody>
-      {% for relation in master_entity.entityrelation_set.all %}
-      {% if relation.relation.name  == "Taxon Match" %}
+      {% for trait in master_entity.viewmastertraitvalue_set.all %}
       <tr>
-        {% if user.is_authenticated %}
-          <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_entity-detail' pk=relation.source_entity.id %}">{{ relation.source_entity.name }} <span class="fa fa-link w3-small"></span></a></td>
-        {% else %}
-          <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ relation.source_entity.name }} <span class="fa fa-link w3-small"></span></a></td>
-        {% endif %}
-        {% if user.is_authenticated %}
-          <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_reference-detail' pk=relation.source_entity.reference.id %}">{{ relation.source_entity.reference|safe }} <span class="fa fa-link w3-small"></span></a></td>
-        {% else %}
-          <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ relation.source_entity.reference|safe }} <span class="fa fa-link w3-small"></span></a></td>
-        {% endif %}
-
-        <td>{{ relation.relation_status.name }}</td>
-        <td>{{ relation.data_status.name }}</td>
+        <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_attribute-detail' pk=trait.master_attribute_id.id %}">{{ trait.master_attribute_name }} <span class="fa fa-link w3-small"></span></a></td>
+        <td style="text-align:left" title="{{ trait.n_supporting_value }} out of {{ trait.n_value }} referenses have classified {{ master_entity.name }} as a {{ trait.trait_selected }}.">{{ trait.trait_selected }}</td>
+        <td style="text-align:left" title="{{ trait.trait_values }}">{{ trait.trait_values }}</td>
+        <td style="text-align:left" title="{{ trait.trait_references|safe }}">{{ trait.trait_references|truncatechars:10|safe }}</td>
       </tr>
-      {% endif %}
       {% endfor %}
     </tbody>
   </table>
@@ -181,6 +170,43 @@
         {% endif %}
         <td style="text-align:left" title="{{ measurement.reference|safe }}">{{ measurement.reference|truncatechars:10|safe }}</td>
       </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if user.is_authenticated %}
+  <br>
+  {% else %}
+  <br>
+  {% endif %}
+  <table class="mb-list w3-table-all w3-small">
+    <caption class="w3-left-align">Table 4. List of Data Sources for {{ master_entity.name }}.</caption>
+    <thead>
+      <tr>
+        <th>Taxon</th>
+        <th>Reference</th>
+        <th>Match</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for relation in master_entity.entityrelation_set.all %}
+      {% if relation.relation.name  == "Taxon Match" %}
+      <tr>
+        {% if user.is_authenticated %}
+          <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_entity-detail' pk=relation.source_entity.id %}">{{ relation.source_entity.name }} <span class="fa fa-link w3-small"></span></a></td>
+        {% else %}
+          <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ relation.source_entity.name }} <span class="fa fa-link w3-small"></span></a></td>
+        {% endif %}
+        {% if user.is_authenticated %}
+          <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_reference-detail' pk=relation.source_entity.reference.id %}">{{ relation.source_entity.reference|safe }} <span class="fa fa-link w3-small"></span></a></td>
+        {% else %}
+          <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ relation.source_entity.reference|safe }} <span class="fa fa-link w3-small"></span></a></td>
+        {% endif %}
+
+        <td>{{ relation.relation_status.name }}</td>
+        <td>{{ relation.data_status.name }}</td>
+      </tr>
+      {% endif %}
       {% endfor %}
     </tbody>
   </table>

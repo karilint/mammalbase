@@ -37,6 +37,10 @@
       <th class="w3-quarter">TSN Complete name:</th>
       <td class="mb-public-internal w3-threequarter"><a title="Press for Details" href="{% url 'tsn-detail' tsn=food_item.tsn.tsn %}">{{ food_item.tsn.completename }} <span class="fa fa-link w3-small"></span></a></td>
     </tr>
+    <tr>
+      <th class="w3-quarter">Accepted hierarchy:</th>
+      <td class="mb-public-internal w3-threequarter">{{ food_item.tsn.hierarchy }}</td>
+    </tr>
   </table>
   {% if user.is_authenticated %}
     <br>
@@ -44,39 +48,43 @@
     <br>
   {% endif %}
   <table class="mb-list w3-table-all w3-small">
-    <caption class="w3-left-align">Table 1. Proximate composition (% in DM)<sup>a.</sup> listed for {{ food_item.name }}.</caption>
+    <caption class="mb-data w3-left-align">Table 1. Summary list of mean Proximate Analysis values (DM basis) grouped by analysed forage part and the Itis TSN hierarchy assigned for {{ food_item.name }}. <sup>a.</sup></caption>
     <thead>
       <tr>
-        <th style="text-align:right">n</th>
-        <th style="text-align:right">CP</th>
-        <th style="text-align:right">CF</th>
-        <th style="text-align:right">ASH</th>
-        <th style="text-align:right">EE</th>
-        <th style="text-align:right">NFE</th>
+        <th>Hierarchy:</th>
+        <th>TSN - Complete Name:</th>
+        <th>Part:</th>
+        <th>Crude Protein (CP):</th>
+        <th>Crude Fibre (CF):</th>
+        <th>Ash:</th>
+        <th>Ether Extract (EE):</th>
+        <th>Nitrogen-Free-Extract (NFE):</th>
+        <th>n Taxa:</th>
+        <th>n References:</th>
+        <th>n Analysis:</th>
       </tr>
     </thead>
     <tbody>
-      {% if food_item.proximateanalysisitem_set.count > 0 %}
-        {% for pai in food_item.proximateanalysisitem_set.all %}
-          <tr>
-            {% if pai.sample_size %}
-              <td class="mb-public-internal" style="text-align:right"><a title="Press for Details" href="{% url 'proximate_analysis_item-detail' pk=pai.id %}">{{ pai.sample_size }} <span class="fa fa-link w3-small"></span></a></td>
-            {% else %}
-              <td class="mb-public-internal" style="text-align:right"><a title="Press for Details" href="{% url 'proximate_analysis_item-detail' pk=pai.id %}">n/a <span class="fa fa-link w3-small"></span></a></td>
-            {% endif %}
-            <td style="text-align:right">{{ pai.cp_std|floatformat:2 }}</td>
-            <td style="text-align:right">{{ pai.cf_std|floatformat:2 }}</td>
-            <td style="text-align:right">{{ pai.ash_std|floatformat:2 }}</td>
-            <td style="text-align:right">{{ pai.ee_std|floatformat:2 }}</td>
-            <td style="text-align:right">{{ pai.nfe_std|floatformat:2 }}</td>
-          </tr>
-        {% endfor %}
-      {% else %}
-        <tr><td colspan="7">There are no Proximate Analysis available.</td></tr>
-      {% endif %}
+      <tr>
+        <td>{{ proximate_analysis.hierarchy }}</td>
+        {% if user.is_authenticated %}
+        <td class="mb-private-internal"><a title="Press for Details" href="{% url 'proximate_analysis_item-list' %}?forage__part__caption={{ proximate_analysis.part }}&forage__tsn__hierarchy={{ proximate_analysis.taxon_name }}">{{ proximate_analysis.tsn }} <span class="fa fa-link w3-small"></span></a></td>
+        {% else %}
+        <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ proximate_analysis.tsn }} <span class="fa fa-link w3-small"></span></a></td>
+        {% endif %}
+        <td>{{ proximate_analysis.part }}</td>
+        <td>{{ proximate_analysis.cp_std|floatformat:2 }}</td>
+        <td>{{ proximate_analysis.cf_std|floatformat:2 }}</td>
+        <td>{{ proximate_analysis.ash_std|floatformat:2 }}</td>
+        <td>{{ proximate_analysis.ee_std|floatformat:2 }}</td>
+        <td>{{ proximate_analysis.nfe_std|floatformat:2 }}</td>
+        <td>{{ proximate_analysis.n_taxa }}</td>
+        <td>{{ proximate_analysis.n_reference }}</td>
+        <td>{{ proximate_analysis.n_analysis }}</td>
+      </tr>
     </tbody>
   </table>
-  <p><sup>a.</sup> Standardized values.</p>
+  <p class="w3-small"><sup>a.</sup> Please note that all values are in Standardized format. </p>
 </section>
 {% endblock %}
 {% block info %}

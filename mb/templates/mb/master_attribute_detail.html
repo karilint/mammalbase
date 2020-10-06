@@ -55,7 +55,7 @@
     <thead>
       <tr>
         <th>Trait value</th>
-        <th class="w3-right">Display order</th>
+        <th>Description</th>
       </tr>
     </thead>
     <tbody>
@@ -64,13 +64,13 @@
           {% if c.is_active is True %}
             <tr>
               <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_choiceset_option-detail' pk=c.id %}">{{ c.name }} <span class="fa fa-link w3-small"></span></a></td>
-              <td class="w3-right">{{ c.display_order }}</td>
+              <td class="w3-left">{{ c.description|safe }}</td>
             </tr>
           {% endif %}
         {% endfor %}
       {% else %}
       <tr>
-        <td colspan="2">
+        <td colspan="3">
           There are no Standard Trait values available.
           {% if master_attribute.unit.quantity_type == 'Nominal' %}
           {% else %}

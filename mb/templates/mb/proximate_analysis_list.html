@@ -31,11 +31,7 @@
         {% for x in page_obj %}
         <tr>
           <td>{{ x.location }}</td>
-          {% if x.method %}
-            <td>{{ x.method }}</td>
-          {% else %}
-            <td>n/a</td>
-          {% endif %}
+          <td>{{ x.method|default_if_none:"-" }}</td>
           <td class="mb-public-internal"><a title="Press for Details" href="{% url 'proximate_analysis-detail' pk=x.pk %}">{{ x.reference|safe }} <span class="fa fa-link w3-small"></span></a></td>
         </tr>
         {% endfor %}

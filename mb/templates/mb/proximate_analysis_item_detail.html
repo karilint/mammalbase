@@ -43,11 +43,11 @@
       </tr>
       <tr>
         <th class="w3-quarter">Study area:</th>
-        <td class="w3-threequarter">{{ proximate_analysis_item.location }}</td>
+        <td class="w3-threequarter">{{ proximate_analysis_item.location|default_if_none:"-" }}</td>
       </tr>
       <tr>
         <th class="w3-quarter">Sample size:</th>
-        <td class="w3-threequarter">{{ proximate_analysis_item.sample_size }}</td>
+        <td class="w3-threequarter">{{ proximate_analysis_item.sample_size|default_if_none:"-" }}</td>
       </tr>
       <tr>
         <th class="w3-quarter">Crude Protein (CP):</th>
@@ -79,7 +79,7 @@
       </tr>
       <tr>
         <th class="w3-quarter">Cited reference:</th>
-        <td class="w3-threequarter">{{ proximate_analysis_item.cited_reference }}</td>
+        <td class="w3-threequarter">{{ proximate_analysis_item.cited_reference|default_if_none:"-" }}</td>
       </tr>
     </table>
     <p><sup>a.</sup> Standardized values.</p>

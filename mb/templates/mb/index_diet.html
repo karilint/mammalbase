@@ -25,8 +25,8 @@
       <img src="{% static "images/DSC03525.JPG" %}" alt="Waterbuck - Kobus ellipsiprymnus" width="100%">
     </div>
   </div>
-  <p>We have collected dietary information for 4820 mammalian taxa. This data includes 5606 Diet Sets which are separate lists of mammalian diets based on data reference, location, gender, study time and time of year.</p>
-  <p>Currently, we have 19321 Diet Set Items that represent 3757 different Food Items.</p>
+  <p>We have collected dietary information for {{ num_diet_taxa }} mammalian taxa. This data includes {{ num_diet_set }} Diet Sets which are separate lists of mammalian diets based on the data reference, location, gender, study time and time of year.</p>
+  <p>Currently, we have {{ num_diet_set_item }} Diet Set Items that represent {{ num_food_item }} different Food Items.</p>
 </section>
 {% endblock %}
 {% block nav %}
