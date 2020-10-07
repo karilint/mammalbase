@@ -277,7 +277,10 @@ def food_item_detail(request, pk):
             break
         i=i-1
 
-    proximate_analysis=pa.all()[0]
+    if pa.exists():
+        proximate_analysis=pa.all()[0]
+    else:
+        proximate_analysis=pa.none()
     return render(request, 'mb/food_item_detail.html', {'proximate_analysis': proximate_analysis, 'food_item': food_item, })
 
 def food_item_edit(request, pk):
