@@ -10,3 +10,4 @@ django_filter~=2.3.0
 mysqlclient~=1.4.6
 pytz~=2018.9
 requests~=2.23.0
+django-extensions >=3.0.9
