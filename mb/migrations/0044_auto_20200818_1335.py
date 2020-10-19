@@ -61,7 +61,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='historicalmasterreference',
             name='title',
-            field=models.CharField(blank=True, help_text='Enter the Title of the Standard Reference', max_length=300, null=True),
+            field=models.CharField(blank=True, help_text='Enter the Title of the Standard Reference', max_length=400, null=True),
         ),
         migrations.AlterField(
             model_name='historicalmasterreference',
