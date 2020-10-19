@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.db.models.query import QuerySet
+from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django_userforeignkey.models.fields import UserForeignKey
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -182,8 +183,8 @@ class FoodItem(BaseModel):
         null = True,
         limit_choices_to={'choice_set': 'FoodItemPart'},
         )
-    tsn = models.ForeignKey(TaxonomicUnits, to_field="tsn", db_column="tsn", blank=True, null=True, on_delete = models.SET_NULL)
-
+    tsn = models.ForeignKey(TaxonomicUnits, to_field="tsn", db_column="tsn", blank=True, null=True, on_delete = models.SET_NULL, related_name='tsn_food')
+    pa_tsn = models.ForeignKey(TaxonomicUnits, to_field="tsn", db_column="pa_tsn", blank=True, null=True, on_delete = models.SET_NULL, related_name='tsn_pa')
 
     class Meta:
         ordering = ['name']
@@ -193,6 +194,25 @@ class FoodItem(BaseModel):
         Returns the url to access a particular FoodItem instance.
         """
         return reverse('food-item-detail', args=[str(self.id)])
+
+    def save(self, *args, **kwargs):
+        if self.tsn is None:
+            super().save(*args, **kwargs)  # Call the "real" save() method.
+        else:
+            tsn = get_object_or_404(TaxonomicUnits, tsn=self.tsn.tsn)
+            if tsn is not None:
+                tsn_hierarchy = tsn.hierarchy_string.split("-")
+                i=len(tsn_hierarchy)-1
+                while(i>=0):
+                    part=food_item.part.caption
+                    if part=='CARRION':
+                        part='WHOLE'
+                    pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i]).filter(part__exact=part)
+                    if len(pa)==1:
+                        self.pa_tsn=pa.all()[0].tsn
+                        break
+                    i=i-1
+            super().save(*args, **kwargs)  # Call the "real" save() method.
 
     def __str__(self):
         """
@@ -1064,15 +1084,13 @@ class ViewProximateAnalysisTable(models.Model):
     """
     id = models.BigIntegerField(primary_key=True)
     tsn = models.ForeignKey(TaxonomicUnits, to_field="tsn", db_column="tsn", on_delete=models.DO_NOTHING)
-    taxon_name = models.CharField(max_length=200)
-    hierarchy = models.CharField(max_length=400, blank=True, null=True)
-    tsn_hierarchy = models.CharField(max_length=200, blank=True, null=True)
     part = models.CharField(max_length=200)
     cp_std = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7)
     ee_std = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7)
     cf_std = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7)
     ash_std = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7)
     nfe_std = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7)
+    reference_ids = models.CharField(max_length=200)
     n_taxa = models.PositiveSmallIntegerField()
     n_reference = models.PositiveSmallIntegerField()
     n_analysis = models.PositiveSmallIntegerField()
@@ -1080,7 +1098,7 @@ class ViewProximateAnalysisTable(models.Model):
     class Meta:
         managed = False
         db_table = 'mb_view_pa_table'
-        ordering = ['part','tsn_hierarchy']
+        ordering = ['part','tsn__hierarchy']
 
     def get_absolute_url(self):
         """

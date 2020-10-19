@@ -272,7 +272,10 @@ def food_item_detail(request, pk):
     i=len(tsn_hierarchy)-1
     found=False
     while(i>=0 and found is False):
-        pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i]).filter(part__exact=food_item.part.caption)
+        part=food_item.part.caption
+        if part=='CARRION':
+            part='WHOLE'
+        pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i]).filter(part__exact=part)
         if len(pa)==1:
             break
         i=i-1
@@ -481,7 +484,7 @@ def master_entity_detail(request, pk):
             	and part.choice_set='FoodItemPart'
             left join itis_taxonomicunits tu
             	on tu.tsn=fi.tsn
-            where me.id in (%s)
+            where part.caption <> 'NONE' and me.id in (%s)
             group by me.id, fi.tsn, part.caption
 
             order by 1,2 desc""", [master_entity.id])

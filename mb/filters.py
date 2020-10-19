@@ -117,10 +117,10 @@ class ViewMasterTraitValueFilter(django_filters.FilterSet):
         fields = ['id', 'master_id', 'master_entity_name', 'master_attribute_id', 'master_attribute_name', 'assigned_values', 'n_distinct_value', 'n_value', 'trait_values', 'trait_selected', 'value_percentage',]
 
 class ViewProximateAnalysisTableFilter(django_filters.FilterSet):
-    hierarchy = django_filters.CharFilter(lookup_expr='icontains', label='Hierarchy contains')
-    taxon_name = django_filters.CharFilter(lookup_expr='icontains', label='Taxon contains')
+    tsn__hierarchy = django_filters.CharFilter(lookup_expr='icontains', label='Hierarchy contains')
+    tsn__completename = django_filters.CharFilter(lookup_expr='icontains', label='Taxon contains')
     part = django_filters.CharFilter(lookup_expr='icontains', label='Part contains')
 
     model = ViewProximateAnalysisTable
     class Meta:
-        fields = ['id', 'tsn','taxon_name','hierarchy','tsn_hierarchy','part','cp_std','ee_std','cf_std','ash_std','nfe_std','n_taxa','n_reference','n_analysis',]
+        fields = ['id', 'tsn','tsn__completename','tsn__hierarchy','tsn__hierarchystring','part','cp_std','ee_std','cf_std','ash_std','nfe_std','n_taxa','n_reference','n_analysis',]

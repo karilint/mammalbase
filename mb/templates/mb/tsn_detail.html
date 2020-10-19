@@ -103,9 +103,9 @@
           <tbody>
             {% for proximate_analysis in pa.all %}
             <tr>
-              <td>{{ proximate_analysis.hierarchy }}</td>
+              <td>{{ proximate_analysis.tsn.hierarchy }}</td>
               {% if user.is_authenticated %}
-              <td class="mb-private-internal"><a title="Press for Details" href="{% url 'proximate_analysis_item-list' %}?forage__part__caption={{ proximate_analysis.part }}&forage__tsn__hierarchy={{ proximate_analysis.taxon_name }}">{{ proximate_analysis.tsn }} <span class="fa fa-link w3-small"></span></a></td>
+              <td class="mb-private-internal"><a title="Press for Details" href="{% url 'proximate_analysis_item-list' %}?forage__part__caption={{ proximate_analysis.part }}&forage__tsn__hierarchy={{ proximate_analysis.tsn.completename }}">{{ proximate_analysis.tsn }} <span class="fa fa-link w3-small"></span></a></td>
               {% else %}
               <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ proximate_analysis.tsn }} <span class="fa fa-link w3-small"></span></a></td>
               {% endif %}
