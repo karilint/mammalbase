@@ -204,7 +204,7 @@ class FoodItem(BaseModel):
                 tsn_hierarchy = tsn.hierarchy_string.split("-")
                 i=len(tsn_hierarchy)-1
                 while(i>=0):
-                    part=food_item.part.caption
+                    part=self.part.caption
                     if part=='CARRION':
                         part='WHOLE'
                     pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i]).filter(part__exact=part)
