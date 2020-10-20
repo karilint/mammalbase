@@ -427,28 +427,28 @@ def master_entity_detail(request, pk):
                sum(ifnull(tp.time_in_months/12,1))
                from mb_dietset ds
                join mb_sourceentity se
-            	  on se.id=ds.taxon_id
+            	  on se.id=ds.taxon_id and se.is_active=1
                join mb_entityrelation er
-            	  on er.source_entity_id=se.id
+            	  on er.source_entity_id=se.id and er.is_active=1
             	  and er.relation_id=1
                join mb_masterentity e
-            	  on e.id=er.master_entity_id
+            	  on e.id=er.master_entity_id and e.is_active=1
                join mb_sourcereference sr
-            	  on sr.id=ds.reference_id
+            	  on sr.id=ds.reference_id and sr.is_active=1
                join mb_masterreference mr
-            	  on mr.id=sr.master_reference_id
+            	  on mr.id=sr.master_reference_id and mr.is_active=1
                left join mb_timeperiod tp
-            	  on tp.id=ds.time_period_id
-               where e.id=me.id)
+            	  on tp.id=ds.time_period_id and tp.is_active=1
+               where e.id=me.id and ds.is_active=1)
                *
-               ((select COUNT(distinct z.list_order) FROM mb_dietsetitem z WHERE z.diet_set_id = ds.id)
+               ((select COUNT(distinct z.list_order) FROM mb_dietsetitem z WHERE z.diet_set_id = ds.id and z.is_active=1)
                - dsi.list_order + 1 )
                /
-               ((select COUNT(distinct z.list_order) FROM mb_dietsetitem z WHERE z.diet_set_id = ds.id)
-               * ((select MIN(z.list_order) FROM mb_dietsetitem z WHERE z.diet_set_id = ds.id)
-               + (select MAX(z.list_order) FROM mb_dietsetitem z WHERE z.diet_set_id = ds.id))
+               ((select COUNT(distinct z.list_order) FROM mb_dietsetitem z WHERE z.diet_set_id = ds.id and z.is_active=1)
+               * ((select MIN(z.list_order) FROM mb_dietsetitem z WHERE z.diet_set_id = ds.id and z.is_active=1)
+               + (select MAX(z.list_order) FROM mb_dietsetitem z WHERE z.diet_set_id = ds.id and z.is_active=1))
                / 2) * 100) sum_food_item_percentage
-            , fi.tsn
+            , ifnull(sy.tsn_accepted, fi.tsn) tsn
             , tu.completename
             , group_concat(distinct fi.name SEPARATOR '; ') diet_items
             , part.caption part
@@ -456,38 +456,37 @@ def master_entity_detail(request, pk):
 
             from mb_dietset ds
             join mb_sourceentity se
-            	on se.id=ds.taxon_id
+            	on se.id=ds.taxon_id and se.is_active=1
             join mb_entityrelation er
-            	on er.source_entity_id=se.id
-            	and er.relation_id=1
+            	on er.source_entity_id=se.id and er.relation_id=1 and er.is_active=1
             join mb_masterentity me
-            	on me.id=er.master_entity_id
+            	on me.id=er.master_entity_id and me.is_active=1
             join mb_sourcereference sr
-            	on sr.id=ds.reference_id
+            	on sr.id=ds.reference_id and sr.is_active=1
             join mb_masterreference mr
-            	on mr.id=sr.master_reference_id
+            	on mr.id=sr.master_reference_id and mr.is_active=1
             join mb_dietsetitem dsi
-            	on dsi.diet_set_id=ds.id
+            	on dsi.diet_set_id=ds.id and dsi.is_active=1
             left join mb_fooditem fi
-            	on fi.id=dsi.food_item_id
+            	on fi.id=dsi.food_item_id and fi.is_active=1
             left join mb_sourcelocation sl
-            	on sl.id=ds.location_id
+            	on sl.id=ds.location_id and sl.is_active=1
             left join mb_choicevalue gender
-            	on gender.id=ds.gender_id
-            	and gender.choice_set='Gender'
+            	on gender.id=ds.gender_id and gender.is_active=1
             left join mb_sourcemethod sm
-            	on sm.id=ds.method_id
+            	on sm.id=ds.method_id and sm.is_active=1
             left join mb_timeperiod tp
-            	on tp.id=ds.time_period_id
+            	on tp.id=ds.time_period_id and tp.is_active=1
             left join mb_choicevalue part
-            	on part.id=fi.part_id
-            	and part.choice_set='FoodItemPart'
+            	on part.id=fi.part_id and part.is_active=1
             left join itis_taxonomicunits tu
             	on tu.tsn=fi.tsn
-            where part.caption <> 'NONE' and me.id in (%s)
-            group by me.id, fi.tsn, part.caption
-
-            order by 1,2 desc""", [master_entity.id])
+            left join itis_synonymlinks sy
+            	on sy.tsn=fi.tsn
+            where ds.is_active=1 and part.caption <> 'NONE' and me.id in (%s)
+            group by me.id, ifnull(sy.tsn_accepted, fi.tsn), part.caption
+            order by 1,2 desc
+            """, [master_entity.id])
 
         diets = dictfetchall(cursor)
 
