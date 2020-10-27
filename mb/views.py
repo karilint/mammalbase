@@ -31,6 +31,15 @@ from .models import (AttributeRelation, ChoiceSetOptionRelation, DietSet
     , SourceMeasurementValue, SourceReference, ViewMasterTraitValue, ViewProximateAnalysisTable)
 from itis.models import TaxonomicUnits
 import requests
+# Begin imports for matplotlib
+import io
+import matplotlib.pyplot as plt
+import urllib, base64
+import mpltern
+from mpltern.ternary.datasets import get_scatter_points
+import numpy as np
+# end
+
 
 def index(request):
     return render(request, 'mb/index.html',)
@@ -268,10 +277,14 @@ class food_item_delete(DeleteView):
 
 def food_item_detail(request, pk):
     food_item = get_object_or_404(FoodItem, pk=pk)
-    tsn_hierarchy = food_item.tsn.hierarchy_string.split("-")
+    if food_item.tsn.hierarchy_string:
+        tsn_hierarchy = food_item.tsn.hierarchy_string.split("-")
+    else:
+        tsn_hierarchy = ''
     i=len(tsn_hierarchy)-1
-    found=False
-    while(i>=0 and found is False):
+    pa = ViewProximateAnalysisTable.objects.none()
+
+    while(i>=0):
         part=food_item.part.caption
         if part=='CARRION':
             part='WHOLE'
@@ -542,7 +555,96 @@ def master_entity_detail(request, pk):
 
         measurements = dictfetchall(cursor)
 
-    return render(request, 'mb/master_entity_detail.html', {'master_entity': master_entity, 'measurements': measurements, 'diets': diets,})
+# Begin Ternary plot data
+    with connection.cursor() as cursor:
+#        cursor.execute("SELECT foo FROM bar WHERE baz = %s", [master_entity.id])
+        cursor.execute("""
+        select me.id
+        , me.name
+        , dsd.n_ds
+        , dsd.time_in_months
+        , dsd.n_months
+        , dsid.food_item_percentage
+        , sum(dsd.time_in_months/dsd.n_months*dsid.food_item_percentage*dsid.cp_std) cp
+        , sum(dsd.time_in_months/dsd.n_months*dsid.food_item_percentage*dsid.ee_std) ee
+        , sum(dsd.time_in_months/dsd.n_months*dsid.food_item_percentage*dsid.cf_std) cf
+        , sum(dsd.time_in_months/dsd.n_months*dsid.food_item_percentage*dsid.ash_std) ash
+        , sum(dsd.time_in_months/dsd.n_months*dsid.food_item_percentage*dsid.nfe_std) nfe
+        from mb_masterentity me
+        join mb_entityrelation er
+        on er.master_entity_id=me.id and er.relation_id=1 and er.is_active=1
+        join mb_dietset ds
+        on ds.taxon_id=er.source_entity_id and ds.is_active=1
+        join mb_table_dietset_data dsd
+        on dsd.ds_id=ds.id
+        join mb_table_dietsetitem_data dsid
+        on dsid.diet_set_id=ds.id
+        where me.is_active=1 and me.id = %s
+        group by me.id""", [master_entity.id])
+
+        ternary = dictfetchall(cursor)
+
+# https://medium.com/@mdhv.kothari99/matplotlib-into-django-template-5def2e159997
+# https://mpltern.readthedocs.io/en/latest/index.html
+    ax = plt.subplot(projection='ternary')
+    if ternary:
+        cf_ash = ternary[0]['cf']+ternary[0]['ash']
+        nfe = ternary[0]['nfe']
+        cp_ee = ternary[0]['cp']+ternary[0]['ee']
+    else:
+        cf_ash = 1.0
+        nfe = 0.0
+        cp_ee = 0.0
+
+    ax.scatter(cf_ash, nfe, cp_ee)
+
+# Animalivory
+    t = [0.0, 0.0, 0.1, 0.2, 0.2]
+    l = [0.0, 0.3, 0.3, 0.2, 0.0]
+    r = [1.0, 0.7, 0.6, 0.6, 0.8]
+    ax.fill(t, l, r, alpha=0.2)
+    ax.text(0.2, 0.1, 0.7, 'Animalivores', ha='center', va='center')
+
+# Frugivory
+    t = [0.3, 0.5, 0.5, 0.4]
+    l = [0.5, 0.5, 0.4, 0.4]
+    r = [0.2, 0.0, 0.1, 0.2]
+    ax.fill(t, l, r, alpha=0.2)
+    ax.text(0.3, 0.6, 0.1, 'Frugivores', ha='center', va='center')
+
+# Herbivory
+    t = [0.0, 0.0, 0.3, 0.3, 0.2]
+    l = [0.7, 1.0, 0.7, 0.5, 0.5]
+    r = [0.3, 0.0, 0.0, 0.2, 0.3]
+    ax.fill(t, l, r, alpha=0.2)
+    ax.text(0.5, 0.4, 0.1, 'Herbivores', ha='center', va='center')
+
+# Omnivory
+    t = [0.0, 0.0, 0.3, 0.3, 0.2]
+    l = [0.4, 0.65, 0.35, 0.2, 0.2]
+    r = [0.6, 0.35, 0.35, 0.5, 0.6]
+    ax.fill(t, l, r, alpha=0.2)
+    ax.text(0.3, 0.25, 0.45, 'Omnivores', ha='center', va='center')
+
+    ax.grid()
+    ax.legend()
+    ax.set_tlabel('CF + ASH')
+    ax.set_llabel('NFE')
+    ax.set_rlabel('CP + EE')
+
+#    plt.plot([1, 2, 3, 4], [1, 4, 2, 3])  # Matplotlib plot.
+    fig = plt.gcf() # gcf - get current figure
+
+    # convert graph into dtring buffer and then we convert 64 bit code into image
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    string = base64.b64encode(buf.read())
+    uri = urllib.parse.quote(string)
+    fig.clf()   # clear the fig
+# End Ternary plot data
+
+    return render(request, 'mb/master_entity_detail.html', {'master_entity': master_entity, 'measurements': measurements, 'diets': diets, 'ternary':ternary, 'data':uri,})
 
 
 def master_entity_edit(request, pk):
