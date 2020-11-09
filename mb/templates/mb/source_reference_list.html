@@ -12,8 +12,10 @@
   {% include 'includes/find.html' %}
   {% if page_obj %}
   {% if user.is_authenticated %}
-  <br>
-  <br>
+    <br>
+    <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_reference-new' %}"><span class="fa fa-plus"></span></a>
+  {% else %}
+    <br>
   {% endif %}
   <table class="mb-list w3-table-all w3-small">
     <thead>

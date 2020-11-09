@@ -602,28 +602,28 @@ def master_entity_detail(request, pk):
     t = [0.0, 0.0, 0.1, 0.2, 0.2]
     l = [0.0, 0.3, 0.3, 0.2, 0.0]
     r = [1.0, 0.7, 0.6, 0.6, 0.8]
-    ax.fill(t, l, r, alpha=0.2)
+    ax.fill(t, l, r, alpha=0.2, color='blue')
     ax.text(0.2, 0.1, 0.7, 'Animalivores', ha='center', va='center')
 
-# Frugivory
+# Herbivory
     t = [0.3, 0.5, 0.5, 0.4]
     l = [0.5, 0.5, 0.4, 0.4]
     r = [0.2, 0.0, 0.1, 0.2]
-    ax.fill(t, l, r, alpha=0.2)
-    ax.text(0.3, 0.6, 0.1, 'Frugivores', ha='center', va='center')
+    ax.fill(t, l, r, alpha=0.2, color='green')
+    ax.text(0.5, 0.4, 0.1, 'Herbivores', ha='center', va='center')
 
-# Herbivory
+# Frugivory
     t = [0.0, 0.0, 0.3, 0.3, 0.2]
     l = [0.7, 1.0, 0.7, 0.5, 0.5]
     r = [0.3, 0.0, 0.0, 0.2, 0.3]
-    ax.fill(t, l, r, alpha=0.2)
-    ax.text(0.5, 0.4, 0.1, 'Herbivores', ha='center', va='center')
+    ax.fill(t, l, r, alpha=0.2, color='pink')
+    ax.text(0.3, 0.6, 0.1, 'Frugivores', ha='center', va='center')
 
 # Omnivory
     t = [0.0, 0.0, 0.3, 0.3, 0.2]
     l = [0.4, 0.65, 0.35, 0.2, 0.2]
     r = [0.6, 0.35, 0.35, 0.5, 0.6]
-    ax.fill(t, l, r, alpha=0.2)
+    ax.fill(t, l, r, alpha=0.2, color='red')
     ax.text(0.3, 0.25, 0.45, 'Omnivores', ha='center', va='center')
 
     ax.grid()
@@ -1185,6 +1185,18 @@ def source_measurement_value_new(request, sa, se):
 class source_reference_delete(DeleteView):
     model = SourceReference
     success_url = reverse_lazy('source_reference-list')
+
+@login_required
+def source_reference_new(request):
+    if request.method == "POST":
+        form = SourceReferenceForm(request.POST)
+        if form.is_valid():
+            source_reference = form.save(commit=False)
+            source_reference.save()
+            return redirect('source_reference-detail', pk=source_reference.pk)
+    else:
+        form = SourceReferenceForm()
+    return render(request, 'mb/source_reference_edit.html', {'form': form})
 
 @login_required
 def source_reference_attribute_new(request, source_reference):

@@ -53,10 +53,10 @@
     </tr>
   </table>
   {% if user.is_authenticated %}
-  <br>
-  <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_reference-attribute-new' source_reference.id %}"><span class="fa fa-plus"></span></a>
+    <br>
+    <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_reference-attribute-new' source_reference.id %}"><span class="fa fa-plus"></span></a>
   {% else %}
-  <br>
+    <br>
   {% endif %}
   <table class="mb-list w3-table-all w3-small">
     {% if source_entity.name|length > 50 %}

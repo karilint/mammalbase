@@ -91,6 +91,7 @@ urlpatterns = [
     path('se/<int:pk>/edit/', views.source_entity_edit, name='source_entity-edit'),
     path('serelation/new/<int:source_entity>/', views.source_entity_relation_new, name='source_entity-relation-new'),
     path('sr/', views.source_reference_list, name='source_reference-list'),
+    path('sr/new', views.source_reference_new, name='source_reference-new'),
     path('sr/<int:pk>/', views.source_reference_detail, name='source_reference-detail'),
     path('sr/<int:pk>/delete/', views.source_reference_delete.as_view(), name='source_reference-delete'),
     path('sr/<int:pk>/edit/', views.source_reference_edit, name='source_reference-edit'),
