@@ -1,4 +1,5 @@
 import datetime
+from decimal import *
 from django.db import connection
 from django.db.models import Count
 from django.contrib.auth.decorators import login_required
@@ -31,13 +32,16 @@ from .models import (AttributeRelation, ChoiceSetOptionRelation, DietSet
     , SourceMeasurementValue, SourceReference, ViewMasterTraitValue, ViewProximateAnalysisTable)
 from itis.models import TaxonomicUnits
 import requests
-# Begin imports for matplotlib
-import io
-import matplotlib.pyplot as plt
-import urllib, base64
-import mpltern
-from mpltern.ternary.datasets import get_scatter_points
+
+#for ternary plots
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.offline import plot
+
+#import base64
+#from io import BytesIO
 import numpy as np
+import pandas as pd
 # end
 
 
@@ -75,6 +79,7 @@ def attribute_relation_detail(request, pk):
     attribute_relation = get_object_or_404(AttributeRelation, pk=pk)
     return render(request, 'mb/attribute_relation_detail.html', {'attribute_relation': attribute_relation})
 
+@login_required
 def attribute_relation_edit(request, pk):
     attribute_relation = get_object_or_404(AttributeRelation, pk=pk)
     if request.method == "POST":
@@ -115,6 +120,7 @@ def choiceset_option_relation_detail(request, pk):
     choiceset_option_relation = get_object_or_404(ChoiceSetOptionRelation, pk=pk)
     return render(request, 'mb/choiceset_option_relation_detail.html', {'choiceset_option_relation': choiceset_option_relation})
 
+@login_required
 def choiceset_option_relation_edit(request, pk):
     choiceset_option_relation = get_object_or_404(ChoiceSetOptionRelation, pk=pk)
     if request.method == "POST":
@@ -259,6 +265,7 @@ def entity_relation_detail(request, pk):
     entity_relation = get_object_or_404(EntityRelation, pk=pk)
     return render(request, 'mb/entity_relation_detail.html', {'entity_relation': entity_relation})
 
+@login_required
 def entity_relation_edit(request, pk):
     entity_relation = get_object_or_404(EntityRelation, pk=pk)
     if request.method == "POST":
@@ -299,6 +306,7 @@ def food_item_detail(request, pk):
         proximate_analysis=pa.none()
     return render(request, 'mb/food_item_detail.html', {'proximate_analysis': proximate_analysis, 'food_item': food_item, })
 
+@login_required
 def food_item_edit(request, pk):
     food_item = get_object_or_404(FoodItem, pk=pk)
     if request.method == "POST":
@@ -344,6 +352,7 @@ def master_attribute_detail(request, pk):
     master_attribute = get_object_or_404(MasterAttribute, pk=pk)
     return render(request, 'mb/master_attribute_detail.html', {'master_attribute': master_attribute})
 
+@login_required
 def master_attribute_edit(request, pk):
     master_attribute = get_object_or_404(MasterAttribute, pk=pk)
     if request.method == "POST":
@@ -584,9 +593,8 @@ def master_entity_detail(request, pk):
 
         ternary = dictfetchall(cursor)
 
-# https://medium.com/@mdhv.kothari99/matplotlib-into-django-template-5def2e159997
-# https://mpltern.readthedocs.io/en/latest/index.html
-    ax = plt.subplot(projection='ternary')
+#https://www.codingwithricky.com/2019/08/28/easy-django-plotly/
+#https://community.plotly.com/t/how-to-add-a-polygon-and-a-caption-for-it-on-a-ternary-plot/47268
     if ternary:
         cf_ash = ternary[0]['cf']+ternary[0]['ash']
         nfe = ternary[0]['nfe']
@@ -596,57 +604,42 @@ def master_entity_detail(request, pk):
         nfe = 0.0
         cp_ee = 0.0
 
-    ax.scatter(cf_ash, nfe, cp_ee)
+    data = [[cf_ash, nfe, cp_ee]]
+    df = pd.DataFrame(data,columns=['CF+ASH','NFE','CP+EE'])
+    fig = px.scatter_ternary(df, a="CF+ASH", b="NFE", c="CP+EE")
 
 # Animalivory
     t = [0.0, 0.0, 0.1, 0.2, 0.2]
     l = [0.0, 0.3, 0.3, 0.2, 0.0]
     r = [1.0, 0.7, 0.6, 0.6, 0.8]
-    ax.fill(t, l, r, alpha=0.2, color='blue')
-    ax.text(0.2, 0.1, 0.7, 'Animalivores', ha='center', va='center')
-
+    fig.add_scatterternary(a=t, b=l, c=r, name="",
+                            mode='lines', fill="toself", text="Animalivory", showlegend=False)
 # Herbivory
     t = [0.3, 0.5, 0.5, 0.4]
     l = [0.5, 0.5, 0.4, 0.4]
     r = [0.2, 0.0, 0.1, 0.2]
-    ax.fill(t, l, r, alpha=0.2, color='green')
-    ax.text(0.5, 0.4, 0.1, 'Herbivores', ha='center', va='center')
+    fig.add_scatterternary(a=t, b=l, c=r, name="",
+                            mode='lines', fill="toself", text="Herbivory", showlegend=False)
 
 # Frugivory
     t = [0.0, 0.0, 0.3, 0.3, 0.2]
     l = [0.7, 1.0, 0.7, 0.5, 0.5]
     r = [0.3, 0.0, 0.0, 0.2, 0.3]
-    ax.fill(t, l, r, alpha=0.2, color='pink')
-    ax.text(0.3, 0.6, 0.1, 'Frugivores', ha='center', va='center')
+    fig.add_scatterternary(a=t, b=l, c=r, name="",
+                            mode='lines', fill="toself", text="Frugivory", showlegend=False)
 
 # Omnivory
     t = [0.0, 0.0, 0.3, 0.3, 0.2]
     l = [0.4, 0.65, 0.35, 0.2, 0.2]
     r = [0.6, 0.35, 0.35, 0.5, 0.6]
-    ax.fill(t, l, r, alpha=0.2, color='red')
-    ax.text(0.3, 0.25, 0.45, 'Omnivores', ha='center', va='center')
+    fig.add_scatterternary(a=t, b=l, c=r, name="",
+                            mode='lines', fill="toself", text="Omnivory", showlegend=False)
 
-    ax.grid()
-    ax.legend()
-    ax.set_tlabel('CF + ASH')
-    ax.set_llabel('NFE')
-    ax.set_rlabel('CP + EE')
+    plot_div = plot(fig, output_type='div', include_plotlyjs=False, show_link=False, link_text="")
 
-#    plt.plot([1, 2, 3, 4], [1, 4, 2, 3])  # Matplotlib plot.
-    fig = plt.gcf() # gcf - get current figure
+    return render(request, 'mb/master_entity_detail.html', {'master_entity': master_entity, 'measurements': measurements, 'diets': diets, 'ternary':ternary, 'plot_div': plot_div,})
 
-    # convert graph into dtring buffer and then we convert 64 bit code into image
-    buf = io.BytesIO()
-    fig.savefig(buf, format='png')
-    buf.seek(0)
-    string = base64.b64encode(buf.read())
-    uri = urllib.parse.quote(string)
-    fig.clf()   # clear the fig
-# End Ternary plot data
-
-    return render(request, 'mb/master_entity_detail.html', {'master_entity': master_entity, 'measurements': measurements, 'diets': diets, 'ternary':ternary, 'data':uri,})
-
-
+@login_required
 def master_entity_edit(request, pk):
     master_entity = get_object_or_404(MasterEntity, pk=pk)
     if request.method == "POST":
@@ -756,6 +749,7 @@ def master_reference_detail(request, pk):
     return render(request, 'mb/master_reference_detail.html'
         , {'master_reference': master_reference, 'taxa': taxa, 'attributes': attributes, })
 
+@login_required
 def master_reference_edit(request, pk):
     master_reference = get_object_or_404(MasterReference, pk=pk)
     if request.method == "POST":
@@ -768,24 +762,24 @@ def master_reference_edit(request, pk):
         form = MasterReferenceForm(instance=master_reference)
     return render(request, 'mb/master_reference_edit.html', {'form': form})
 
-def master_reference_list(request):
-    f = MasterReferenceFilter(request.GET, queryset=MasterReference.objects.is_active())
+#def master_reference_list(request):
+#    f = MasterReferenceFilter(request.GET, queryset=MasterReference.objects.is_active())
 
-    paginator = Paginator(f.qs, 10)
+#    paginator = Paginator(f.qs, 10)
 
-    page_number = request.GET.get('page')
-    try:
-        page_obj = paginator.page(page_number)
-    except PageNotAnInteger:
-        page_obj = paginator.page(1)
-    except EmptyPage:
-        page_obj = paginator.page(paginator.num_pages)
+#    page_number = request.GET.get('page')
+#    try:
+#        page_obj = paginator.page(page_number)
+#    except PageNotAnInteger:
+#        page_obj = paginator.page(1)
+#    except EmptyPage:
+#        page_obj = paginator.page(paginator.num_pages)
 
-    return render(
-        request,
-        'mb/master_reference_list.html',
-        {'page_obj': page_obj, 'filter': f,}
-    )
+#    return render(
+#        request,
+#        'mb/master_reference_list.html',
+#        {'page_obj': page_obj, 'filter': f,}
+#    )
 
 class proximate_analysis_delete(DeleteView):
     model = ProximateAnalysis
@@ -795,6 +789,7 @@ def proximate_analysis_detail(request, pk):
     proximate_analysis = get_object_or_404(ProximateAnalysis, pk=pk)
     return render(request, 'mb/proximate_analysis_detail.html', {'proximate_analysis': proximate_analysis})
 
+@login_required
 def proximate_analysis_edit(request, pk):
     proximate_analysis = get_object_or_404(ProximateAnalysis, pk=pk)
     if request.method == "POST":
@@ -834,6 +829,7 @@ def proximate_analysis_item_detail(request, pk):
     proximate_analysis_item = get_object_or_404(ProximateAnalysisItem, pk=pk)
     return render(request, 'mb/proximate_analysis_item_detail.html', {'proximate_analysis_item': proximate_analysis_item})
 
+@login_required
 def proximate_analysis_item_edit(request, pk):
     proximate_analysis_item = get_object_or_404(ProximateAnalysisItem, pk=pk)
     if request.method == "POST":
@@ -907,6 +903,7 @@ def source_attribute_detail(request, pk):
     source_attribute = get_object_or_404(SourceAttribute, pk=pk)
     return render(request, 'mb/source_attribute_detail.html', {'source_attribute': source_attribute})
 
+@login_required
 def source_attribute_edit(request, pk):
     source_attribute = get_object_or_404(SourceAttribute, pk=pk)
     if request.method == "POST":
@@ -993,6 +990,7 @@ def source_choiceset_option_value_detail(request, pk):
     source_choiceset_option_value = get_object_or_404(SourceChoiceSetOptionValue, pk=pk)
     return render(request, 'mb/source_choiceset_option_value_detail.html', {'source_choiceset_option_value': source_choiceset_option_value})
 
+@login_required
 def source_choiceset_option_value_edit(request, pk):
     source_choiceset_option_value = get_object_or_404(SourceChoiceSetOptionValue, pk=pk)
     sac = source_choiceset_option_value.source_choiceset_option.source_attribute.id
@@ -1111,6 +1109,7 @@ def source_entity_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
+@login_required
 def source_entity_edit(request, pk):
     source_entity = get_object_or_404(SourceEntity, pk=pk)
     if request.method == "POST":
@@ -1153,6 +1152,7 @@ def source_measurement_value_detail(request, pk):
     source_measurement_value = get_object_or_404(SourceMeasurementValue, pk=pk)
     return render(request, 'mb/source_measurement_value_detail.html', {'source_measurement_value': source_measurement_value})
 
+@login_required
 def source_measurement_value_edit(request, pk):
     source_measurement_value = get_object_or_404(SourceMeasurementValue, pk=pk)
     sa = source_measurement_value.source_attribute.id
@@ -1281,6 +1281,7 @@ def source_reference_detail(request, pk):
         , 'sr_entities': sr_entities
         ,})
 
+@login_required
 def source_reference_edit(request, pk):
     source_reference = get_object_or_404(SourceReference, pk=pk)
     if request.method == "POST":
@@ -1329,6 +1330,7 @@ def tsn_detail(request, tsn):
 
     return render(request, 'mb/tsn_detail.html', {'pa': pa, 'tsn': tsn},)
 
+@login_required
 def tsn_edit(request, tsn):
     tsn = get_object_or_404(TaxonomicUnits, tsn=tsn)
     if request.method == "POST":

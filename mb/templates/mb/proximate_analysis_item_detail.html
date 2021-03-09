@@ -72,7 +72,7 @@
       <tr>
         <th class="w3-quarter">Main reference:</th>
         {% if user.is_authenticated %}
-          <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="{% url 'source_reference-detail' pk=proximate_analysis_item.proximate_analysis.reference_id %}">{{ proximate_analysis_item.proximate_analysis.reference }} <span class="fa fa-link w3-small"></span></a></td>
+          <td class="mb-public-internal w3-threequarter"><a title="Press for Details" href="{% url 'source_reference-detail' pk=proximate_analysis_item.proximate_analysis.reference_id %}">{{ proximate_analysis_item.proximate_analysis.reference }} <span class="fa fa-link w3-small"></span></a></td>
         {% else %}
           <td class="mb-private-internal w3-threequarter"><a title="Please login for Details" style="color:IndianRed;" href="">{{ proximate_analysis_item.proximate_analysis.reference }} <span class="fa fa-link w3-small"></span></a></td>
         {% endif %}

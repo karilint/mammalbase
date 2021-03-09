@@ -31,11 +31,11 @@
     </tr>
     <tr>
       <th>Method:</th>
-      <td>{{ proximate_analysis.method }}</td>
+      <td>{{ proximate_analysis.method|default_if_none:"-" }}</td>
     </tr>
     <tr>
       <th>Location:</th>
-      <td>{{ proximate_analysis.location }}</td>
+      <td>{{ proximate_analysis.location|default_if_none:"-" }}</td>
     </tr>
     <tr>
       <th>Study time:</th>
