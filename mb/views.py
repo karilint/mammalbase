@@ -44,6 +44,8 @@ import numpy as np
 import pandas as pd
 # end
 
+def about(request):
+    return render(request, 'mb/about.html',)
 
 def index(request):
     return render(request, 'mb/index.html',)
@@ -515,7 +517,7 @@ def master_entity_detail(request, pk):
     with connection.cursor() as cursor:
 #        cursor.execute("SELECT foo FROM bar WHERE baz = %s", [master_entity.id])
         cursor.execute("""
-            select se.name saurce_taxon
+            select se.name source_taxon
                 , ma.id master_attribute_id
                 , ma.name master_attribute
             	, smv.n_total
@@ -653,7 +655,7 @@ def master_entity_edit(request, pk):
     return render(request, 'mb/master_entity_edit.html', {'form': form})
 
 def master_entity_list(request):
-    f = MasterEntityFilter(request.GET, queryset=MasterEntity.objects.is_active().filter(reference_id=4).order_by('name'))
+    f = MasterEntityFilter(request.GET, queryset=MasterEntity.objects.is_active().filter(reference_id=4).filter(entity__name = 'Species').order_by('name'))
 
     paginator = Paginator(f.qs, 10)
 

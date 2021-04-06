@@ -19,6 +19,7 @@ urlpatterns = [
     path('im', views.index_mammals, name='index_mammals'),
     path('ipa', views.index_proximate_analysis, name='index_proximate_analysis'),
     path('ids', views.index_diet, name='index_diet'),
+    path('about', views.about, name='about'),
     path('ar/<int:pk>/', views.attribute_relation_detail, name='attribute_relation-detail'),
     path('ar/<int:pk>/delete/', views.attribute_relation_delete.as_view(), name='attribute_relation-delete'),
     path('ar/<int:pk>/edit/', views.attribute_relation_edit, name='attribute_relation-edit'),

@@ -42,13 +42,14 @@ class MasterAttributeFilter(django_filters.FilterSet):
 
 class MasterEntityFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains', label='Taxon contains')
-    entity = django_filters.ModelChoiceFilter(queryset=EntityClass.objects.is_active().filter(name = 'Genus')
-        | EntityClass.objects.is_active().filter(name = 'Species')
-        | EntityClass.objects.is_active().filter(name = 'Subspecies').order_by('name'), label='Rank equals')
+#    entity = django_filters.ModelChoiceFilter(queryset=EntityClass.objects.is_active().filter(name = 'Genus')
+#        | EntityClass.objects.is_active().filter(name = 'Species')
+#        | EntityClass.objects.is_active().filter(name = 'Subspecies').order_by('name'), label='Rank equals')
 
     class Meta:
         model = MasterEntity
-        fields = ['name', 'entity',]
+#        fields = ['name', 'entity',]
+        fields = ['name',]
 
 class MasterReferenceFilter(django_filters.FilterSet):
     citation = django_filters.CharFilter(lookup_expr='icontains', label='Reference contains')
