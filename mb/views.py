@@ -44,8 +44,11 @@ import numpy as np
 import pandas as pd
 # end
 
-def about(request):
-    return render(request, 'mb/about.html',)
+def about_history(request):
+    return render(request, 'mb/history.html',)
+
+def index_about(request):
+    return render(request, 'mb/index_about.html',)
 
 def index(request):
     return render(request, 'mb/index.html',)
