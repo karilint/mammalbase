@@ -59,9 +59,9 @@
         <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'source_attribute-list'%}">Source Traits</a>
         <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'source_reference-list'%}">Data Sources</a>
         <h4 class="w3-bar-item"><strong>User: {{ user.get_username }}</strong></h4>
-        <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'logout' %}?next={% url 'index' %}">Logout</a>
+        <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'account_logout' %}?next={% url 'index' %}">Logout</a>
       {% else %}
-        <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'login' %}?next={{request.path}}">Login</a>
+        <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'account_login' %}?next={{request.path}}">Login | Sign Up</a>
       {% endif %}
     </nav>
     <!-- Overlay effect when opening sidebar on small screens -->
