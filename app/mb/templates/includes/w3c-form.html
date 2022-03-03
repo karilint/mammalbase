@@ -1,0 +1,33 @@
+{% if form.non_field_errors %}
+  {% for error in form.non_field_errors %}
+    <p class="w3-center w3-red" >{{ error }}</p>
+  {% endfor %}
+{% endif %}
+
+{% for hidden_field in form.hidden_fields %}
+  {% if hidden_field.errors %}
+    {% for error in hidden_field.errors %}
+      <p class="w3-center w3-red">(Hidden field: <b>{{ hidden_field.name }}</b>) {{ error }}</p>
+    {% endfor %}
+  {% endif %}
+  {{ hidden_field }}
+{% endfor %}
+
+<table class="mb-form w3-table-all">
+{% for field in form.visible_fields %}
+  <tr>
+    <th class="w3-quarter">{{ field.label }}:
+      {% if field.errors %}
+        {% for error in field.errors %}
+          <p class="w3-red" >{{ field.label }}: {{ error }}</p>
+        {% endfor %}
+      {% endif %}
+    </th>
+    <td class="w3-threequarter">{{ field }}
+      {% if field.help_text %}
+        <br />{{ field.help_text }}
+      {% endif %}
+    </td>
+  </tr>
+{% endfor %}
+</table>

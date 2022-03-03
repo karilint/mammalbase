@@ -1,0 +1,100 @@
+{% extends "mb/index_proximate_analysis.html" %}
+{% block title %}
+<title>MammalBase - Proximate Analysis in: {{ proximate_analysis }}</title>
+{% endblock %}
+{% block content %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Proximate Analysis in: {{ proximate_analysis }}</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2 style="display:none">Proximate Analysis in: {{ proximate_analysis }}</h2>
+  </header>
+  <br>
+  <div class="mb-detail w3-bar w3-right-align">
+    <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
+    {% if user.is_authenticated %}
+    <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'proximate_analysis-edit' pk=proximate_analysis.pk %}"><span class="fa fa-pencil-square-o"></span></a>
+    <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'proximate_analysis-delete' pk=proximate_analysis.pk %}"><span class="fa  fa-trash-o"></span></a>
+    {% else %}
+    <button title="Please login to Edit" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
+    <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+    {% endif %}
+  </div>
+  <table class="mb-detail w3-table-all">
+    <caption class="mb-detail w3-left-align">Proximate Analysis in: {{ proximate_analysis }}</caption>
+    <tr>
+      <th>Reference:</th>
+      <td>{{ proximate_analysis.reference }}</td>
+    </tr>
+    <tr>
+      <th>Method:</th>
+      <td>{{ proximate_analysis.method|default_if_none:"-" }}</td>
+    </tr>
+    <tr>
+      <th>Location:</th>
+      <td>{{ proximate_analysis.location|default_if_none:"-" }}</td>
+    </tr>
+    <tr>
+      <th>Study time:</th>
+      <td>{{ proximate_analysis.study_time|default_if_none:"-" }}</td>
+    </tr>
+    <tr>
+      <th>Cited reference:</th>
+      <td>{{ proximate_analysis.cited_reference|default_if_none:"-" }}</td>
+    </tr>
+  </table>
+  {% if user.is_authenticated %}
+  <br>
+  {% else %}
+  <br>
+  {% endif %}
+
+  <table class="w3-table-all w3-tiny">
+    <caption class="w3-left-align">Table 1. List of tested forages.<sup>a.</sup></caption>
+    <thead>
+      <tr>
+        <th>Forage</th>
+        <th>Part</th>
+        <th>Study area</th>
+        <th>Sample size</th>
+        <th>CP</th>
+        <th>CF</th>
+        <th>ASH</th>
+        <th>EE</th>
+        <th>NFE</th>
+        <th>Cited Reference</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if proximate_analysis.proximateanalysisitem_set.count > 0 %}
+      {% for pai in proximate_analysis.proximateanalysisitem_set.all %}
+      <tr>
+        <td class="mb-public-internal"><a title="Press for Details" href="{% url 'proximate_analysis_item-detail' pk=pai.id %}">{{ pai.forage }} <span class="fa fa-link w3-small"></span></a></td>
+        <td>{{ pai.forage.part.caption }}</td>
+        <td>{{ pai.location|default_if_none:"-" }}</td>
+        <td>{{ pai.sample_size|default_if_none:"-" }}</td>
+        <td>{{ pai.cp_std|floatformat:2 }}</td>
+        <td>{{ pai.cf_std|floatformat:2 }}</td>
+        <td>{{ pai.ash_std|floatformat:2 }}</td>
+        <td>{{ pai.ee_std|floatformat:2 }}</td>
+        <td>{{ pai.nfe_std|floatformat:2 }}</td>
+        <td>{{ pai.cited_reference|default_if_none:"-" }}</td>
+      </tr>
+      {% endfor %}
+      {% else %}
+      <tr><td colspan="13">There are no tested forages available.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+  <p class="w3-tiny"><sup>a.</sup> Standardized values.</p>
+</section>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% endblock %}
+{% block script %}
+{% endblock %}

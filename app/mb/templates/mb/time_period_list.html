@@ -1,0 +1,51 @@
+{% extends "mb/index_diet.html" %}
+{% block title %}
+<title>MammalBase - Time Periods</title>
+{% endblock %}
+{% block content %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Time Periods</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2>Time Periods</h2>
+  </header>
+
+  {% include 'includes/find.html' %}
+  {% if page_obj %}
+    {% if user.is_authenticated %}
+      <br>
+      <br>
+    {% endif %}
+    <table class="mb-list w3-table-all w3-small">
+      <thead>
+        <tr>
+          <th>Time Period</th>
+          <th>Time in months</th>
+          <th>Reference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for x in page_obj %}
+        <tr>
+          <td class="mb-public-internal"><a title="Press for Details" href="{% url 'time_period-detail' pk=x.pk %}">{{ x.name }} <span class="fa fa-link w3-small"></span></a></td>
+          <td>{{ x.time_in_months }}</td>
+          <td>{{ x.reference }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>There are no Time Periods available.</p>
+  {% endif %}
+  </section>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+  {% include 'mb/pagination.html' %}
+{% endblock %}
+{% block script %}
+{% endblock %}

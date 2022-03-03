@@ -1,0 +1,95 @@
+{% extends "mb/index_diet.html" %}
+{% block title %}
+<title>MammalBase - Food Item: {{ food_item.name }}</title>
+{% endblock %}
+{% block content %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Food Item: {{ food_item.name }}</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2 style="display:none">Food Item: {{ food_item.name }}</h2>
+  </header>
+  <br>
+  <div class="mb-detail w3-bar w3-right-align">
+    <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
+    {% if user.is_authenticated %}
+    <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'food_item-edit' pk=food_item.pk %}"><span class="fa fa-pencil-square-o"></span></a>
+    <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'food_item-delete' pk=food_item.pk %}"><span class="fa  fa-trash-o"></span></a>
+    {% else %}
+    <button title="Please login to Edit" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
+    <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+    {% endif %}
+  </div>
+  <table class="mb-detail w3-table-all">
+    <caption class="mb-detail w3-left-align">Food Item: {{ food_item.name }}</caption>
+    <tr>
+      <th class="w3-quarter">Food Item:</th>
+      <td class="mb-public-internal w3-threequarter">{{ food_item.name }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Part:</th>
+      <td class="mb-public-internal w3-threequarter">{{ food_item.part.caption }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">TSN Complete name:</th>
+      <td class="mb-public-internal w3-threequarter"><a title="Press for Details" href="{% url 'tsn-detail' tsn=food_item.tsn.tsn|default:0 %}">{{ food_item.tsn.completename }} <span class="fa fa-link w3-small"></span></a></td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Accepted hierarchy:</th>
+      <td class="mb-public-internal w3-threequarter">{{ food_item.tsn.hierarchy }}</td>
+    </tr>
+  </table>
+  {% if user.is_authenticated %}
+    <br>
+  {% else %}
+    <br>
+  {% endif %}
+  <table class="mb-list w3-table-all w3-small">
+    <caption class="mb-data w3-left-align">Table 1. Summary list of mean Proximate Analysis values (DM basis) grouped by analysed forage part and the Itis TSN hierarchy assigned for {{ food_item.name }}. <sup>a.</sup></caption>
+    <thead>
+      <tr>
+        <th>Hierarchy:</th>
+        <th>TSN - Complete Name:</th>
+        <th>Part:</th>
+        <th>Crude Protein (CP):</th>
+        <th>Crude Fibre (CF):</th>
+        <th>Ash:</th>
+        <th>Ether Extract (EE):</th>
+        <th>Nitrogen-Free-Extract (NFE):</th>
+        <th>n Taxa:</th>
+        <th>n References:</th>
+        <th>n Analysis:</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ proximate_analysis.tsn.hierarchy }}</td>
+        {% if user.is_authenticated %}
+          <td class="mb-private-internal"><a title="Press for Details" href="{% url 'proximate_analysis_item-list' %}?forage__part__caption={{ proximate_analysis.part }}&forage__tsn__hierarchy={{ proximate_analysis.tsn.completename|default:0 }}">{{ proximate_analysis.tsn }} <span class="fa fa-link w3-small"></span></a></td>
+        {% else %}
+          <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ proximate_analysis.tsn }} <span class="fa fa-link w3-small"></span></a></td>
+        {% endif %}
+        <td>{{ proximate_analysis.part }}</td>
+        <td>{{ proximate_analysis.cp_std|floatformat:2 }}</td>
+        <td>{{ proximate_analysis.cf_std|floatformat:2 }}</td>
+        <td>{{ proximate_analysis.ash_std|floatformat:2 }}</td>
+        <td>{{ proximate_analysis.ee_std|floatformat:2 }}</td>
+        <td>{{ proximate_analysis.nfe_std|floatformat:2 }}</td>
+        <td>{{ proximate_analysis.n_taxa }}</td>
+        <td>{{ proximate_analysis.n_reference }}</td>
+        <td>{{ proximate_analysis.n_analysis }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="w3-small"><sup>a.</sup> Please note that all values are in Standardized format. </p>
+</section>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% endblock %}
+{% block script %}
+{% endblock %}

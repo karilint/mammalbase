@@ -1,0 +1,196 @@
+{% extends "mb/base_generic.html" %}
+{% block title %}
+<title>MammalBase - Reference: {{ master_reference.citation|safe }}</title>
+{% endblock %}
+{% block content %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Reference: {{ master_reference.citation|safe }}</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2 style="display:none">Reference: {{ master_reference.citation|safe }}</h2>
+  </header>
+  <br>
+  <div class="mb-detail w3-bar w3-right-align">
+    <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
+    {% if user.is_authenticated %}
+    <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'master_reference-edit' pk=master_reference.pk %}"><span class="fa fa-pencil-square-o"></span></a>
+    <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'master_reference-delete' pk=master_reference.pk %}"><span class="fa fa-trash-o"></span></a>
+    {% else %}
+    <button title="Please login to Edit" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
+    <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+    {% endif %}
+  </div>
+  <table class="mb-detail w3-table-all">
+    <caption class="w3-left-align">Reference: {{ master_reference.citation|safe|default_if_none:"-" }}</caption>
+    <tr>
+      <th class="w3-quarter">Type:</th>
+      <td class="w3-threequarter">{{ master_reference.type|default_if_none:"-" }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">First author:</th>
+      <td class="w3-threequarter">{{ master_reference.first_author|default_if_none:"-" }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Year:</th>
+      <td class="w3-threequarter">{{ master_reference.year|default_if_none:"-" }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Title:</th>
+      <td class="w3-threequarter">{{ master_reference.title|default_if_none:"-"|safe }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Container title:</th>
+      <td class="w3-threequarter">{{ master_reference.container_title|default_if_none:"-" }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Volume:</th>
+      <td class="w3-threequarter">{{ master_reference.volume|default_if_none:"-" }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Issue:</th>
+      <td class="w3-threequarter">{{ master_reference.issue|default_if_none:"-" }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Page(s):</th>
+      <td class="w3-threequarter">{{ master_reference.page|default_if_none:"-" }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Citation:</th>
+      <td class="w3-threequarter">{{ master_reference.citation|safe|default_if_none:"-" }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">DOI:</th>
+      {% if master_reference.doi %}
+        <td class="mb-public-external w3-threequarter"><a title="Press for Details" href="http://dx.doi.org/{{ master_reference.doi }}" target="_blank">{{ master_reference.doi|default_if_none:"-" }} <span class="fa fa-external-link w3-small"></span></a></td>
+      {% else %}
+        <td class="mb-public-external w3-threequarter"><span style="color:IndianRed;" class="fa fa-external-link w3-small"></span></td>
+      {% endif %}
+    </tr>
+    <tr>
+      <th class="w3-quarter">URI:</th>
+      {% if master_reference.uri %}
+        <td class="mb-public-external w3-threequarter"><a title="Press for Details" href="{{ master_reference.uri }}" target="_blank">{{ master_reference.uri }} <span class="fa fa-external-link w3-small"></span></a></td>
+      {% else %}
+        <td class="mb-public-external w3-threequarter"><span style="color:IndianRed;" class="fa fa-external-link w3-small"></span></td>
+      {% endif %}
+    </tr>
+  </table>
+  {% if user.is_authenticated %}
+  <br>
+  {% else %}
+  <br>
+  {% endif %}
+  <table class="mb-list w3-table-all w3-small">
+    {% if master_reference.citation|length > 50 %}
+    <caption class="w3-left-align w3-small">
+      {% else %}
+      <caption class="w3-left-align">
+        {% endif %}
+        Table 1. List of attributes and the related Standard Traits in {{ master_reference.citation|safe }}.</caption>
+        <thead>
+          <tr>
+            <th>Source Trait</th>
+            <th>Standard Trait</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if attributes|length > 0 %}
+          {% for x in attributes %}
+          <tr>
+            {% if user.is_authenticated %}
+            <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_attribute-detail' pk=x.source_attribute_id %}">{{ x.source_attribute }} <span class="fa fa-link w3-small"></span></a></td>
+            {% else %}
+            <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ x.source_attribute }} <span class="fa fa-link w3-small"></span></a></td>
+            {% endif %}
+            {% if x.master_attribute_id %}
+            <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="{% url 'master_attribute-detail' pk=x.master_attribute_id|default:0 %}">{{ x.master_attribute }} <span class="fa fa-link w3-small"></span></a></td>
+            {% else %}
+            <td class="mb-private-internal w3-threequarter">n/a</td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+          {% else %}
+          <tr><td colspan="2">There are no Standard Traits available.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+      {% if user.is_authenticated %}
+      <br>
+      {% else %}
+      <br>
+      {% endif %}
+      <table class="mb-list w3-table-all w3-small">
+        {% if master_reference.citation|length > 50 %}
+        <caption class="w3-left-align w3-small">
+          {% else %}
+          <caption class="w3-left-align">
+            {% endif %}
+            Table 2. List of Data Sources linked with {{ master_reference.citation|safe }}.</caption>
+            <thead>
+              <tr>
+                <th>Data Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if master_reference.sourcereference_set.count > 0 %}
+              {% for sr in master_reference.sourcereference_set.all %}
+              <tr>
+                {% if user.is_authenticated %}
+                <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="{% url 'source_reference-detail' pk=sr.id %}">{{ sr.citation|safe }} <span class="fa fa-link w3-small"></span></a></td>
+                {% else %}
+                <td class="mb-private-internal w3-threequarter"><a title="Please login for Details" style="color:IndianRed;" href="">{{ sr.citation|safe }} <span class="fa fa-link w3-small"></span></a></td>
+                {% endif %}
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr><td colspan="6">There are no Data Sources available.</td></tr>
+              {% endif %}
+            </tbody>
+          </table>
+          {% if user.is_authenticated %}
+          <br>
+          {% else %}
+          <br>
+          {% endif %}
+          <table class="mb-list w3-table-all w3-small">
+            {% if master_reference.citation|length > 50 %}
+            <caption class="w3-left-align w3-small">
+              {% else %}
+              <caption class="w3-left-align">
+                {% endif %}
+                Table 3. List of Accepted Taxa in {{ master_reference.citation|safe }}.</caption>
+                <thead>
+                  <tr>
+                    <th>Accepted Taxon <sup>a.</sup></th>
+                    <th>Rank <sup>b.</sup></th>
+                    <th>Relation Status</th>
+                    <th>Data Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if taxa|length > 0 %}
+                  {% for taxon in taxa %}
+                  <tr>
+                    <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_entity-detail' pk=taxon.master_entity_id %}">{{ taxon.taxon }} <span class="fa fa-link w3-small"></span></a></td>
+                    <td>{{ taxon.rank }}</td>
+                    <td>{{ taxon.relation_status }}</td>
+                    <td>{{ taxon.data_status }}</td>
+                  </tr>
+                  {% endfor %}
+                  {% else %}
+                  <tr><td colspan="4">There are no Accepted Taxa available.</td></tr>
+                  {% endif %}
+                </tbody>
+              </table>
+              <p><sup>a., b.</sup> Accepted Taxa, original entries in parentheses.</p>
+            </section>
+            {% endblock %}
+            {% block info %}
+            {% endblock %}
+            {% block pagination %}
+            {% endblock %}
+            {% block script %}
+            {% endblock %}

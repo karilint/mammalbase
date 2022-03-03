@@ -1,0 +1,44 @@
+{% extends "mb/base_generic.html" %}
+{% block title %}
+<title>MammalBase - {{ source_choiceset_option_value.source_choiceset_option.source_attribute.name}} of {{ source_choiceset_option_value.source_entity }}</title>
+{% endblock %}
+{% block content %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - {{ source_choiceset_option_value.source_choiceset_option.source_attribute.name}} of {{ source_choiceset_option_value.source_entity }}</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2 style="display:none">{{ source_choiceset_option_value.source_choiceset_option.source_attribute.name}} of {{ source_choiceset_option_value.source_entity }}</h2>
+  </header>
+  <br>
+  <div class="mb-detail w3-bar w3-right-align">
+    <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
+    {% if user.is_authenticated %}
+      <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_choiceset_option_value-edit' pk=source_choiceset_option_value.pk %}"><span class="fa fa-pencil-square-o"></span></a>
+      <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_choiceset_option_value-delete' pk=source_choiceset_option_value.pk %}"><span class="fa  fa-trash-o"></span></a>
+    {% else %}
+      <button title="Please login to Edit" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
+      <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+    {% endif %}
+  </div>
+  <table class="mb-detail w3-table-all">
+   <caption class="mb-detail w3-left-align">{{ source_choiceset_option_value.source_choiceset_option.source_attribute.name}} of {{ source_choiceset_option_value.source_entity }}</caption>
+   <tr>
+    <th class="w3-quarter">{{ source_choiceset_option_value.source_choiceset_option.source_attribute.name}}:</th>
+    <td class="w3-threequarter">{{ source_choiceset_option_value.source_choiceset_option.name}}</td>
+   </tr>
+   <tr>
+    <th class="w3-quarter">Reference:</th>
+    <td class="w3-threequarter">{{ source_choiceset_option_value.source_choiceset_option.source_attribute.reference}}</td>
+   </tr>
+  </table>
+</section>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% endblock %}
+{% block script %}
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends "mb/index_diet.html" %}
+{% block title %}
+<title>MammalBase - Taxonomic Serial No.: {{ tsn.tsn }} ({{ tsn.completename }})</title>
+{% endblock %}
+{% block content %}
+<!--Article header -->
+<header style="display:none"><h1>MammalBase - Taxonomic Serial No.: {{ tsn.tsn }} ({{ tsn.completename }})</h1></header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal"><h2 style="display:none">Taxonomic Serial No.: {{ tsn.tsn }} ({{ tsn.completename }})</h2></header>
+  <br>
+  <div class="mb-detail w3-bar w3-right-align">
+    <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
+    {% if user.is_authenticated %}
+      <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'tsn-edit' tsn=tsn.tsn %}"><span class="fa fa-pencil-square-o"></span></a>
+      <button title="Delete is disabled" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+    {% else %}
+      <button title="Please login to Edit" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
+      <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+    {% endif %}
+  </div>
+  <table class="mb-detail w3-table-all">
+    <caption class="mb-detail w3-left-align">Taxonomic Serial No.: {{ tsn.tsn }} ({{ tsn.completename }})</caption>
+    <tr>
+      <th>TSN:</th>
+      <td><a class="btn btn-default" href="https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value={{ tsn.tsn }}#null" target="_blank">{{ tsn.tsn }} <span class="fa fa-external-link"></span></a>
+      </tr>
+      <tr>
+        <th>Name:</th>
+        <td>{{ tsn.completename }}</td>
+      </tr>
+      <tr>
+        <th>Accepted hierarchy:</th>
+        <td>{{ tsn.hierarchy }}</td>
+      </tr>
+      <tr>
+        <tr>
+          <th>Accepted Name(s):</th>
+          <td>
+            {% for s in tsn.tsn_synonym.all %}
+            {% if s.tsn_accepted == tsn.tsn %}
+            {{ s.tsn_accepted }}
+            {% else %}
+            <a class="btn btn-default" href="https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value={{ s.tsn_accepted.tsn }}#null" target="_blank">{{ s.tsn_accepted.completename }} <span class="fa fa-external-link"></span>
+              {% endif %}
+              {% endfor %}
+            </td>
+          </tr>
+          <tr>
+            <th>Common name(s):</th>
+            <td>{{ tsn.common_names|default_if_none:"-" }}</td>
+          </tr>
+        </table>
+        {% if user.is_authenticated %}
+        <br>
+        {% else %}
+        <br>
+        {% endif %}
+        <table class="mb-list w3-table-all w3-small">
+          <caption class="w3-left-align">Table 1. List of Food Items linked with Taxonomic Serial No. {{ tsn.tsn }} ({{ tsn.completename }}).</caption>
+          <thead>
+            <tr>
+              <th>Food Item</th>
+              <th>Part</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if tsn.fooditem_set.count > 0 %}
+            {% for fi in tsn.fooditem_set.all %}
+            <tr>
+              <td class="mb-public-internal"><a title="Press for Details" href="{% url 'food_item-detail' pk=fi.id %}">{{ fi }} <span class="fa fa-link w3-small"></span></a></td>
+              <td>{{ fi.part.caption }}</td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr><td colspan="2">There are no linked Food Items available.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+        {% if pa.all.count > 0 %}
+        {% if user.is_authenticated %}
+        <br>
+        {% else %}
+        <br>
+        {% endif %}
+        <table class="mb-list w3-table-all w3-small">
+          <caption class="mb-data w3-left-align">Table 2. Summary list of mean Proximate Analysis values (DM basis) grouped by analysed forage part and the Itis TSN hierarchy assigned for {{ tsn.completename }}. <sup>a.</sup></caption>
+          <thead>
+            <tr>
+              <th>Hierarchy:</th>
+              <th>TSN - Complete Name:</th>
+              <th>Part:</th>
+              <th>Crude Protein (CP):</th>
+              <th>Crude Fibre (CF):</th>
+              <th>Ash:</th>
+              <th>Ether Extract (EE):</th>
+              <th>Nitrogen-Free-Extract (NFE):</th>
+              <th>n Taxa:</th>
+              <th>n References:</th>
+              <th>n Analysis:</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for proximate_analysis in pa.all %}
+            <tr>
+              <td>{{ proximate_analysis.tsn.hierarchy }}</td>
+              {% if user.is_authenticated %}
+              <td class="mb-private-internal"><a title="Press for Details" href="{% url 'proximate_analysis_item-list' %}?forage__part__caption={{ proximate_analysis.part }}&forage__tsn__hierarchy={{ proximate_analysis.tsn.completename }}">{{ proximate_analysis.tsn }} <span class="fa fa-link w3-small"></span></a></td>
+              {% else %}
+              <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ proximate_analysis.tsn }} <span class="fa fa-link w3-small"></span></a></td>
+              {% endif %}
+              <td>{{ proximate_analysis.part }}</td>
+              <td>{{ proximate_analysis.cp_std|floatformat:2 }}</td>
+              <td>{{ proximate_analysis.cf_std|floatformat:2 }}</td>
+              <td>{{ proximate_analysis.ash_std|floatformat:2 }}</td>
+              <td>{{ proximate_analysis.ee_std|floatformat:2 }}</td>
+              <td>{{ proximate_analysis.nfe_std|floatformat:2 }}</td>
+              <td>{{ proximate_analysis.n_taxa }}</td>
+              <td>{{ proximate_analysis.n_reference }}</td>
+              <td>{{ proximate_analysis.n_analysis }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <tr><td colspan="2">There are no linked Food Items available.</td></tr>
+        {% endif %}
+      </section>
+      {% endblock %}
+      {% block info %}
+      {% endblock %}
+      {% block pagination %}
+      {% endblock %}
+      {% block script %}
+      {% endblock %}

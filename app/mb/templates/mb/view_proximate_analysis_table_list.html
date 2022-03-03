@@ -1,0 +1,70 @@
+{% extends "mb/index_proximate_analysis.html" %}
+{% block title %}
+<title>MammalBase - Summary list of mean Proximate Analysis</title>
+{% endblock %}
+{% block content %}
+<!--Article header -->
+<header style="display:none"><h1>MammalBase - Summary list of mean Proximate Analysis</h1></header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal"><h2>Summary list of mean Proximate Analysis</h2></header>
+
+  {% include 'includes/find.html' %}
+  {% if page_obj %}
+  {% if user.is_authenticated %}
+  <br>
+  <br>
+  {% endif %}
+  <table class="mb-list w3-table-all w3-small">
+    <caption class="mb-data w3-left-align">Summary list of mean Proximate Analysis values (DM basis) grouped by analysed forage part and the Itis TSN hierarchy. <sup>a., b.</sup></caption>
+    <thead>
+      <tr>
+        <th>Hierarchy:</th>
+        <th>TSN - Complete Name:</th>
+        <th>Part:</th>
+        <th>Crude Protein (CP):</th>
+        <th>Crude Fibre (CF):</th>
+        <th>Ash:</th>
+        <th>Ether Extract (EE):</th>
+        <th>Nitrogen-Free-Extract (NFE):</th>
+        <th>n Taxa:</th>
+        <th>n References:</th>
+        <th>n Analysis:</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for x in page_obj %}
+      <tr>
+        <td>{{ x.tsn.hierarchy }}</td>
+        {% if user.is_authenticated %}
+        <td class="mb-private-internal"><a title="Press for Details" href="{% url 'proximate_analysis_item-list' %}?forage__part__caption={{ x.part }}&forage__tsn__hierarchy={{ x.tsn.hierarchy }}">{{ x.tsn }} <span class="fa fa-link w3-small"></span></a></td>
+        {% else %}
+        <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ x.tsn }} <span class="fa fa-link w3-small"></span></a></td>
+        {% endif %}
+        <td>{{ x.part }}</td>
+        <td>{{ x.cp_std|floatformat:2 }}</td>
+        <td>{{ x.cf_std|floatformat:2 }}</td>
+        <td>{{ x.ash_std|floatformat:2 }}</td>
+        <td>{{ x.ee_std|floatformat:2 }}</td>
+        <td>{{ x.nfe_std|floatformat:2 }}</td>
+        <td>{{ x.n_taxa }}</td>
+        <td>{{ x.n_reference }}</td>
+        <td>{{ x.n_analysis }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="w3-small"><sup>a.</sup> Please note that all values are in Standardized format. </p>
+  <p class="w3-small"><sup>b.</sup> This list repeats many of the values as the analysis results are grouped on various Itis TSN hierarchy levels.</p>
+  {% else %}
+  <p>There are no Summary list of mean Proximate Analysis available.</p>
+  {% endif %}
+</section>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% include 'mb/pagination.html' %}
+{% endblock %}
+{% block script %}
+{% endblock %}

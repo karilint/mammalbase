@@ -43,6 +43,15 @@ SECRET_KEY = get_var('SECRET_KEY', 'development_key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = get_var('DEBUG', 0)
 
+# For debug_toolbar
+if DEBUG:
+    #import os  # only if you haven't already imported this
+    import socket  # only if you haven't already imported this
+    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+    INTERNAL_IPS = [ip[:-1] + '1' for ip in ips] + ['127.0.0.1', '10.0.2.2']
+
+#INTERNAL_IPS = ('127.0.0.1', '0.0.0.0', 'localhost',)
+
 ALLOWED_HOSTS = []
 ALLOWED_HOSTS_ENV = get_var('ALLOWED_HOSTS')
 if ALLOWED_HOSTS_ENV:
@@ -63,10 +72,22 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.sites',
     'django.contrib.staticfiles',
-    #    'allauth',
-    #    'allauth.account',
-    #    'allauth.socialaccount',
-    #    'allauth.socialaccount.providers.orcid',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.orcid',
+#    'django_userforeignkey',
+    'django_select2',
+#    'rest_framework',
+    'simple_history',
+    'imports',
+    'itis',
+    'mb',
+    'utils',	# mb utils
+    'debug_toolbar',
+#    'django_extensions', #for Jupyter and Scripts
+#    'crispy_forms',
+#    'users.apps.UsersConfig',
 ]
 
 SITE_ID = 1
@@ -79,6 +100,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_userforeignkey.middleware.UserForeignKeyMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -103,26 +127,25 @@ TEMPLATES = [
 # ORCID Allauth Settings
 # https://django-allauth.readthedocs.io/en/latest/installation.html
 
-# AUTHENTICATION_BACKENDS = [
-#     'django.contrib.auth.backends.ModelBackend',
-#     'allauth.account.auth_backends.AuthenticationBackend',
-# ]
+AUTHENTICATION_BACKENDS = [
+     'django.contrib.auth.backends.ModelBackend',
+     'allauth.account.auth_backends.AuthenticationBackend',
+]
 
-# SOCIALACCOUNT_PROVIDERS = {
-#     'orcid': {
-#         'BASE_DOMAIN': 'orcid.org',
-#         'MEMBER_API': False,
-#         'APP': {
-#             'client_id': get_var("ORCID_CLIENT_ID", ''),
-#             'secret': get_var("ORCID_SECRET", ''),
-#             'key': '',
-#         }
-#     }
-# }
+SOCIALACCOUNT_PROVIDERS = {
+     'orcid': {
+         'BASE_DOMAIN': 'orcid.org',
+         'MEMBER_API': False,
+         'APP': {
+             'client_id': get_var("ORCID_CLIENT_ID", ''),
+             'secret': get_var("ORCID_SECRET", ''),
+             'key': '',
+        }
+    }
+}
 
 
 WSGI_APPLICATION = 'config.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
@@ -169,6 +192,8 @@ TIME_ZONE = 'Europe/Helsinki'
 
 USE_I18N = True
 
+USE_L10N = True
+
 USE_TZ = True
 
 
@@ -187,3 +212,19 @@ MEDIA_ROOT = get_var('MEDIA_ROOT', os.path.join(BASE_DIR, 'media'))
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# https://medium.com/@zero_fighter/django-debug-toolbar-setup-2bf81736efe3
+DEBUG_TOOLBAR_PANELS = [
+    'debug_toolbar.panels.versions.VersionsPanel',
+    'debug_toolbar.panels.timer.TimerPanel',
+    'debug_toolbar.panels.settings.SettingsPanel',
+    'debug_toolbar.panels.headers.HeadersPanel',
+    'debug_toolbar.panels.request.RequestPanel',
+    'debug_toolbar.panels.sql.SQLPanel',
+    'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+    'debug_toolbar.panels.templates.TemplatesPanel',
+    'debug_toolbar.panels.cache.CachePanel',
+    'debug_toolbar.panels.signals.SignalsPanel',
+    'debug_toolbar.panels.logging.LoggingPanel',
+    'debug_toolbar.panels.redirects.RedirectsPanel',
+]

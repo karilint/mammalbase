@@ -1,0 +1,58 @@
+{% extends "mb/index_diet.html" %}
+{% block title %}
+<title>MammalBase - Food Items</title>
+{% endblock %}
+{% block content %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Food Items</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2>Food Items</h2>
+  </header>
+
+  {% include 'includes/find.html' %}
+  {% if page_obj %}
+    {% if user.is_authenticated %}
+      <br>
+      <br>
+    {% endif %}
+    <table class="mb-list w3-table-all w3-small">
+      <thead>
+        <tr>
+          <th>Food Item</th>
+          <th>Part</th>
+          <th>TSN</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for x in page_obj %}
+        <tr>
+      <td class="mb-public-internal"><a title="Press for Details" href="{% url 'food_item-detail' pk=x.pk %}">{{ x.name }} <span class="fa fa-link w3-small"></span></a></td>
+			<td>{{ x.part.caption }}</td>
+			{% if x.tsn %}
+			  <td>{{ x.tsn }}</td>
+			{% else %}
+			  <td style="text-align:center">-</td>
+			{% endif %}
+			<td>
+			</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>There are no Food Items available.</p>
+  {% endif %}
+  </section>
+{% endblock %}
+{% block info %}
+  {% include 'info/food_item_info.html' %}
+{% endblock %}
+{% block pagination %}
+  {% include 'mb/pagination.html' %}
+{% endblock %}
+{% block script %}
+{% endblock %}

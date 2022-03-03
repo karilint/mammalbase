@@ -1,0 +1,68 @@
+{% extends "mb/base_generic.html" %}
+{% block title %}
+<title>MammalBase - About</title>
+{% endblock %}
+{% block style %}
+  img {
+    float: right;
+  }
+{% endblock %}
+{% block content %}
+{% load static %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - About</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal"><h2>MammalBase - History</h2></header>
+  <p>
+    <figure>
+      <img title="Researching bones at The Ol Pejeta Conservancy, a 360 km² not-for-profit wildlife conservancy in Central Kenya's Laikipia County. Photo by: Briana Pobiner" src="{% static "images/IMG_2822.JPG" %}" alt="Researching bones at The Ol Pejeta Conservancy, a 360 km² not-for-profit wildlife conservancy in Central Kenya's Laikipia County." width="20%">
+    </figure>
+
+    <hr><p><b><i>About</i></b></p>
+    My name is Kari Lintulaakso and I work at the Finnish Museum of Natural History LUOMUS (Natural Sciences Unit). I am the creator of the MammalBase and also an Associate coordinator of the <a href="https://www.nowdatabase.org" target="_blank">NOW fossil mammal database <span class="fa fa-external-link"></span></a>. My current job consists of many database related projects. Besides the coordination of the NOW database, I work in close collaboration with my Kenyan colleagues on mammal fossil databases from <a href="https://www.turkanabasin.org/" target="_blank">Turkana Basin Institute (TBI) <span class="fa fa-external-link"></span></a> and the <a href="https://www.facebook.com/EarthSciencesNMK/" target="_blank">Palaeontology Section of National Museums of Kenya (NMK) <span class="fa fa-external-link"></span></a>. You may be interested in our joint citizen scientist project, <a href="https://www.zooniverse.org/projects/karilint/cradle-of-humanity" target="_blank">Cradle of Humanity, that we have at Zooniverse <span class="fa fa-external-link"></span></a>. Before my current position (2017), I have been working with database marketing, data integration and ETL (extract-transform-load) of data for 25 years in private software companies.
+
+    <hr><p><b><i>Research</i></b></p>
+    I have an M.Sc. in Biosciences and a PhD in Geosciences from the University of Helsinki, Finland. My research focuses on the mammalian community structures and their relation to the environment and climate. I mainly use taxon-free approaches when I study mammalian communities. Based on the principle of uniformitarianism (the present is the key to the past) results from the studies of modern faunas may be used for studying the past environment and climate. The structure of mammalian communities alters over geological time by responding to changes in biogeography, climate and habitats. The proportions of various species within the community and the distribution of species traits like body size, locomotion and diet provide a means to analyse these changes. Besides my studies, Heikinheimo et al., 2007 were the first researchers using data from MammalBase, followed by Liow et al., 2008, in which I was also one of the authors during my PhD studies. Currently, dozen or so articles have been using this data and I hope researchers will be interested in using it. If so, please contact me.
+
+    <hr><p><b><i>Building the database</i></b></p>
+    MammalBase started as my research database in 1997. I focused on recent mammals, their traits, diets and geographical distribution. I began this project by collecting these data from Walker's Mammals of the World; Fifth Edition - Volume I & Volume II. It took too many years to collect this data for thousands of taxa. After Walker's, hundreds of other data sources have been added to the database.
+
+    <hr><p><b><i>Going online</i></b></p>
+    In the early years, MammalBase was a database lying on a laptop. In 2006, the first online version was published for restricted usage. Later, it was redone using Joomla!/Fabrik tools but was soon discarded due to my lack of PHP skills. In 2017, I began learning Django and the current version is done using Django/Python. <a href="https://github.com/karilint/mammalbase" target="_blank">The code can be found at GitHub <span class="fa fa-external-link"></span></a>. If you are interested in participating in the coding of this website, please contact me.
+
+    <hr><p><b><i>Curated data</i></b></p>
+    The main focus of MammalBase is the Trait Data, Measurements and Diets of the species in class Mammalia. For dietary information, we also provide Proximate Analysis data for several diet items. The data is harmonized against various standards: taxa are matched against the taxonomy of Wilson & Reeder (2005) and the traits and their values are fitted with vocabularies or referenced descriptions of traits and values, for example, the dietary categories of Eisenberg 1981. Having the data that comes from various sources harmonized, makes data analysis easier.
+
+    The aim is to provide general information on mammals for broad-scale analyses in Macroecology, Palaeontology and the mammalian Community structures.
+
+    <hr><p><b><i>Collaboration and making MammalBase a tool for the scientific community</i></b></p>
+    If you are interested in collaborating and sharing your mammal measurement/trait/diet data or if you are interested in being a Data Steward of a specific taxonomic group or a mammalian trait please contact the first author of <a class="btn btn-default" href="https://doi.org/10.1111/jbi.13480" target="_blank">Lintulaakso <i>et al.</i>, 2019. <span class="fa fa-external-link"></span></a> stating your name, current affiliation, area of expertise and your ORCID. Or, if you feel that you have some extra time to spare with coding the user interface, please contact us.
+
+    <hr><p><b><i>References</i></b></p>
+    Heikinheimo, H., Fortelius, M., Eronen, J. and Mannila, H., 2007. Biogeography of European land mammals shows environmentally distinct and spatially coherent clusters.
+      <i>Journal of Biogeography, 34(6)</i>, pp.1053-1064.
+      <a class="btn btn-default" href="https://doi.org/10.1111/j.1365-2699.2006.01664.x" target="_blank">[DOI] <span class="fa fa-external-link"></span></a></p>
+    <p>Lintulaakso, K., Polly, P.D. and Eronen, J.T., 2019. Land mammals form eight functionally and climatically distinct faunas in North America but only one in Europe.
+      <i>Journal of Biogeography, 46(1)</i>, pp.185-195.
+      <a class="btn btn-default" href="https://doi.org/10.1111/jbi.13480" target="_blank">[DOI] <span class="fa fa-external-link"></span></a></p>
+    <p>Liow, L.H., Fortelius, M., Bingham, E., Lintulaakso, K., Mannila, H., Flynn, L. and Stenseth, N.C., 2008. Higher origination and extinction rates in larger mammals.
+      <i>Proceedings of the National Academy of Sciences, 105(16)</i>, pp.6097-6102.
+      <a class="btn btn-default" href="https://doi.org/10.1073/pnas.0709763105" target="_blank">[DOI] <span class="fa fa-external-link"></span></a></p>
+    <p>Novak, R.M., 1991. Walkers Mammals of the World 5th Ed Volume 1-2
+      <i>Johns Hopkins.</i>.</p>
+    <p>Wilson, D.E. and Reeder, D.M. eds., 2005. Mammal species of the world: a taxonomic and geographic reference (Vol. 1).
+      <i>JHU Press</i>.</p>
+  </p>
+</section>
+{% endblock %}
+{% block nav %}
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% endblock %}
+{% block script %}
+{% endblock %}

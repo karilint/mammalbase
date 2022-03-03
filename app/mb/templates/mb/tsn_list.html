@@ -1,0 +1,49 @@
+{% extends "mb/index_diet.html" %}
+{% block title %}
+<title>MammalBase - Taxonomic Serial Numbers</title>
+{% endblock %}
+{% block content %}
+<!--Article header -->
+<header style="display:none"><h1>MammalBase - Taxonomic Serial Numbers</h1></header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal"><h2>Taxonomic Serial Numbers</h2></header>
+
+  {% include 'includes/find.html' %}
+  {% if page_obj %}
+  {% if user.is_authenticated %}
+    <br>
+    <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'tsn-new' %}"><span class="fa fa-plus"></span></a>
+  {% else %}
+    <br>
+  {% endif %}
+  <table class="mb-list w3-table-all w3-small">
+    <thead>
+      <tr>
+        <th>TSN</th>
+        <th>Complete Name</th>
+        <th>Hierarchy</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for x in page_obj %}
+      <tr>
+        <td class="mb-public-internal"><a title="Press for Details" href="{% url 'tsn-detail' tsn=x.tsn %}">{{ x.tsn }} <span class="fa fa-link w3-small"></span></a></td>
+        <td>{{ x.completename }}</td>
+        <td>{{ x.hierarchy }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>There are no Taxonomic Serial Numbers available.</p>
+  {% endif %}
+</section>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% include 'mb/pagination.html' %}
+{% endblock %}
+{% block script %}
+{% endblock %}

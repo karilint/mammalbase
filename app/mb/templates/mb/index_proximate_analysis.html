@@ -1,0 +1,47 @@
+{% extends "mb/base_generic.html" %}
+{% block title %}
+<title>MammalBase - Proximate Analysis</title>
+{% endblock %}
+{% block content %}
+{% load static %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Proximate Analysis</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal"><h2>MammalBase - Proximate Analysis</h2></header>
+  <!-- Photo Grid -->
+  <div class="w3-row" id="myGrid" style="margin-bottom:10px">
+    <div class="w3-third">
+      <img src="{% static "images/Equus burchelli.JPG" %}" alt="Zepra - Equus quagga" width="100%">
+    </div>
+
+    <div class="w3-third">
+      <img src="{% static "images/Canis mesomelas.JPG" %}" alt="Jackal - Canis mesomelas" width="100%">
+    </div>
+
+    <div class="w3-third">
+      <img src="{% static "images/Kobus ellipsiprymnus.JPG" %}" alt="Waterbuck - Kobus ellipsiprymnus" width="100%">
+    </div>
+  </div>
+  <p>Proximate analysis is used to estimate the relative amounts of water (moisture), ash, crude fat (ether extract, lipid), crude protein and crude fibre in a food item (Henneberg, W., 1860.). The analysis scheme was designed to replicate animal digestion process and quantify shares of organic and inorganic materials. Nitrogen-free extract (NFE) is calculated by difference rather than measured by analysis and more or less represents sugars and starches. Proximate Analysis provides a top-level, very broad, classification of food items which has been replaced by more modern analyses for nutritional studies. However, the proximate analysis still forms the basis for feed analysis and a large number of studies provide <a href="http://www.fao.org/3/y4705e/y4705e12.htm" target="_blank">a good source for data.<span class="fa fa-external-link w3-small"></span></a></p>
+
+<p>We have collected chemical compound data for proximate analysis of dietary items from primary sources. Our focus is on wild animal diet components and less conventional human foods, avoiding (but not excluding entirely) cultivated crops or bred animals. Currently, we have Proximate Analysis data for 1019 diet items. Many of the reported values miss the moisture, and for this reason, we have discarded water and renormalized chemical composition on the dry matter basis. The calorific energy values of food items were calculated using the Atwater general factor system (Atwater and Woods, 1896). It gives a single factor for each of the energy-yielding substrates (17 kJ/g (4.0 kcal/g) for protein, 37 kJ/g (9.0 kcal/g) for fat and 17 kJ/g (4.0 kcal/g)) for carbohydrates.</p>
+<p class="w3-small">Atwater WO, Woods CD, 1896. The chemical composition of american food materials. Farmers' Bulletin No. 28. <i>US Department of Agriculture. Washington.</i></p>
+<p class="w3-small">Henneberg, W., 1860. Beiträge zur begründung einer rationellen fütterung der wiederkäuer: Praktisch-landwirthschaftliche und chemischphysiologische untersuchungen. Für landwirthe und physiologen (Vol. 1). <i>CA Schwetschke und sohn.</i></p>
+</section>
+{% endblock %}
+{% block nav %}
+<h4 class="w3-bar-item"><strong>Proximate analyses</strong></h4>
+<a class="w3-bar-item w3-button w3-hover-black" href="{% url 'proximate_analysis-list'%}">Analyses done</a>
+<a class="w3-bar-item w3-button w3-hover-black" href="{% url 'proximate_analysis_item-list'%}">Forages tested</a>
+<a class="w3-bar-item w3-button w3-hover-black" href="{% url 'view-proximate_analysis-table-list'%}">Summary table</a>
+<a class="w3-bar-item w3-button w3-hover-black" href="{% url 'proximate_analysis_reference-list'%}">References</a>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% endblock %}
+{% block script %}
+{% endblock %}

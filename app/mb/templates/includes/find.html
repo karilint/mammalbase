@@ -1,0 +1,9 @@
+<button onclick="myFunction('Find')" class="w3-button w3-block w3-black w3-left-align"><span class="fa fa-filter"></span> Press here to filter</button>
+<form id="Find" class="w3-container w3-hide" method="get">
+  <table class="mb-detail w3-table-all">
+    {{ filter.form.as_table }}
+  </table>
+  <div class="mb-detail w3-bar w3-right-align">
+    <button type="submit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal">Search &raquo;</button>
+  </div>
+</form>

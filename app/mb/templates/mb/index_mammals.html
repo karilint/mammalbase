@@ -1,0 +1,38 @@
+{% extends "mb/base_generic.html" %}
+{% block title %}
+<title>MammalBase - Database of mammals</title>
+{% endblock %}
+{% block content %}
+{% load static %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Database of mammals</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal"><h2>MammalBase - Mammals</h2></header>
+  <!-- Photo Grid -->
+  <div class="w3-row" id="myGrid" style="margin-bottom:10px">
+    <div class="w3-third">
+      <img src="{% static "images/Equus burchelli.JPG" %}" alt="Zepra - Equus quagga" width="100%">
+    </div>
+
+    <div class="w3-third">
+      <img src="{% static "images/Canis mesomelas.JPG" %}" alt="Jackal - Canis mesomelas" width="100%">
+    </div>
+
+    <div class="w3-third">
+      <img src="{% static "images/Kobus ellipsiprymnus.JPG" %}" alt="Waterbuck - Kobus ellipsiprymnus" width="100%">
+    </div>
+  </div>
+  <p>Our scope is in the resent species of the class Mammalia.</p>
+  <p>We follow the taxonomy of Wilson, D.E. and Reeder, D.M. eds., 2005. <i>Mammal species of the world: a taxonomic and geographic reference</i> (Vol. 1). JHU Press.</p>
+  <p>Therefore, we match all taxa in our Data Sources against Wilson & Reeder, 2005.</p>
+</section>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% endblock %}
+{% block script %}
+{% endblock %}

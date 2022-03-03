@@ -1,0 +1,38 @@
+{% extends "mb/base_generic.html" %}
+{% block title %}
+<title>MammalBase - Database of mammals</title>
+{% endblock %}
+{% block content %}
+{% load static %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Database of mammals</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal"><h2>MammalBase - Database of recent mammals</h2></header>
+  <!-- Photo Grid -->
+  <div class="w3-row" id="myGrid" style="margin-bottom:10px">
+    <div class="w3-third">
+      <img src="{% static "images/Equus burchelli.JPG" %}" alt="Zebra - Equus quagga" width="100%">
+    </div>
+
+    <div class="w3-third">
+      <img src="{% static "images/Canis mesomelas.JPG" %}" alt="Jackal - Canis mesomelas" width="100%">
+    </div>
+
+    <div class="w3-third">
+      <img src="{% static "images/Kobus ellipsiprymnus.JPG" %}" alt="Waterbuck - Kobus ellipsiprymnus" width="100%">
+    </div>
+  </div>
+  <p>Welcome to MammalBase.</p>
+  <p>MammalBase is a database of recent mammals. The main focus of this database is the Trait Data, Measurements and Diets of the species in class Mammalia. For dietary information, we also provide Proximate Analysis data for several diet items.</p>
+  <p>We aim to provide general information on these species for broad-scale analyses in Macroecology, Palaeontology and the mammalian Community structures.</p>
+</section>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% endblock %}
+{% block script %}
+{% endblock %}

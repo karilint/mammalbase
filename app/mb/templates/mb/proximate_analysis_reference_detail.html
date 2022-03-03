@@ -1,0 +1,130 @@
+{% extends "mb/index_proximate_analysis.html" %}
+{% block title %}
+  <title>MammalBase - Reference: {{ master_reference.citation|safe }}</title>
+{% endblock %}
+{% block content %}
+  <!--Article header -->
+  <header style="display:none">
+    <h1>MammalBase - Reference: {{ master_reference.citation|safe }}</h1>
+  </header>
+  <!--End of article header -->
+  <section class="w3-threequarter w3-container">
+    <header class="w3-container w3-text-teal">
+      <h2 style="display:none">Reference: {{ master_reference.citation|safe }}</h2>
+    </header>
+    <br>
+    <div class="mb-detail w3-bar w3-right-align">
+      <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
+      {% if user.is_authenticated %}
+        <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'master_reference-edit' pk=master_reference.pk %}"><span class="fa fa-pencil-square-o"></span></a>
+        <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'master_reference-delete' pk=master_reference.pk %}"><span class="fa fa-trash-o"></span></a>
+      {% else %}
+        <button title="Please login to Edit" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
+        <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+      {% endif %}
+    </div>
+    <table class="mb-detail w3-table-all">
+      <caption class="w3-left-align">Reference: {{ master_reference.citation|safe|default_if_none:"-" }}</caption>
+      <tr>
+        <th class="w3-quarter">Type:</th>
+        <td class="w3-threequarter">{{ master_reference.type|default_if_none:"-" }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">First author:</th>
+        <td class="w3-threequarter">{{ master_reference.first_author|default_if_none:"-" }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Year:</th>
+        <td class="w3-threequarter">{{ master_reference.year|default_if_none:"-" }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Title:</th>
+        <td class="w3-threequarter">{{ master_reference.title|default_if_none:"-" }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Container title:</th>
+        <td class="w3-threequarter">{{ master_reference.container_title|default_if_none:"-" }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Volume:</th>
+        <td class="w3-threequarter">{{ master_reference.volume|default_if_none:"-" }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Issue:</th>
+        <td class="w3-threequarter">{{ master_reference.issue|default_if_none:"-" }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Page(s):</th>
+        <td class="w3-threequarter">{{ master_reference.page|default_if_none:"-" }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Citation:</th>
+        <td class="w3-threequarter">{{ master_reference.citation|safe|default_if_none:"-" }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">DOI:</th>
+        <td class="mb-public-external w3-threequarter"><a title="Press for Details" href="http://dx.doi.org/{{ master_reference.doi }}" target="_blank">{{ master_reference.doi|default_if_none:"-" }} <span class="fa fa-external-link w3-small"></span></a></td>
+      </tr>
+    </table>
+    {% if user.is_authenticated %}
+      <br>
+    {% else %}
+      <br>
+    {% endif %}
+    <table class="mb-list w3-table-all w3-small">
+      {% if master_reference.citation|length > 50 %}
+        <caption class="w3-left-align w3-small">
+      {% else %}
+        <caption class="w3-left-align">
+      {% endif %}
+      {% if master_reference.sourcereference_set.all|length > 0%}
+        Table 1. List of tested forages in {{ master_reference.citation|safe }}.<sup>a.</sup>
+        <thead>
+          <tr>
+            <th>Forage</th>
+            <th>Part</th>
+            <th>Study area</th>
+            <th>Sample size</th>
+            <th>CP</th>
+            <th>CF</th>
+            <th>ASH</th>
+            <th>EE</th>
+            <th>NFE</th>
+            <th>Cited Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for sr in master_reference.sourcereference_set.all %}
+          <tr>
+            {% for pa in sr.proximateanalysis_set.all %}
+              {% for pai in pa.proximateanalysisitem_set.all %}
+                <tr>
+                  <td class="mb-public-internal"><a title="Press for Details" href="{% url 'proximate_analysis_item-detail' pk=pai.id %}">{{ pai.forage }} <span class="fa fa-link w3-small"></span></a></td>
+                  <td>{{ pai.forage.part.caption }}</td>
+                  <td>{{ pai.location|default_if_none:"-" }}</td>
+                  <td>{{ pai.sample_size|default_if_none:"-" }}</td>
+                  <td>{{ pai.cp_std|floatformat:2 }}</td>
+                  <td>{{ pai.cf_std|floatformat:2 }}</td>
+                  <td>{{ pai.ash_std|floatformat:2 }}</td>
+                  <td>{{ pai.ee_std|floatformat:2 }}</td>
+                  <td>{{ pai.nfe_std|floatformat:2 }}</td>
+                  <td>{{ pai.cited_reference|default_if_none:"-" }}</td>
+                </tr>
+              {% endfor %}
+            {% endfor %}
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="4">There are no Forages available. {{ master_reference.sourcereference.proximateanalysis_set|length }}</td></tr>
+        {% endif %}
+        </tbody>
+      </table>
+      <p class="w3-tiny"><sup>a.</sup> Standardized values.</p>
+    </section>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% endblock %}
+{% block script %}
+{% endblock %}

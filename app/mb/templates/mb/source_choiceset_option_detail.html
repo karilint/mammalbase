@@ -1,0 +1,94 @@
+{% extends "mb/base_generic.html" %}
+{% block title %}
+<title>MammalBase - Source Trait value: {{ source_choiceset_option.name }}</title>
+{% endblock %}
+{% block content %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Source Trait value: {{ source_choiceset_option.name }}</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2 style="display:none">Source Trait value: {{ source_choiceset_option.name }}</h2>
+  </header>
+  <br>
+  <div class="mb-detail w3-bar w3-right-align">
+    <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
+    {% if user.is_authenticated %}
+    <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_choiceset_option-edit' pk=source_choiceset_option.pk %}"><span class="fa fa-pencil-square-o"></span></a>
+    <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_choiceset_option-delete' pk=source_choiceset_option.pk %}"><span class="fa  fa-trash-o"></span></a>
+    {% else %}
+    <button title="Please login to Edit" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
+    <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+    {% endif %}
+  </div>
+  <table class="mb-detail w3-table-all">
+    <caption class="mb-detail w3-left-align">Source Trait value: {{ source_choiceset_option.name }}</caption>
+    <tr>
+      <th>Reference:</th>
+      <td>{{ source_choiceset_option.source_attribute.reference }}</td>
+    </tr>
+    <tr>
+      <th>Source Trait:</th>
+      {% if user.is_authenticated %}
+        <td class="mb-private-internal"><a title="Press for Details" href="{% url 'source_attribute-detail' pk=source_choiceset_option.source_attribute.id %}">{{ source_choiceset_option.source_attribute }} <span class="fa fa-link w3-small"></span></a></td>
+      {% else %}
+        <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ source_choiceset_option.source_attribute }} <span class="fa fa-link w3-small"></span></a></td>
+      {% endif %}
+    </tr>
+    <tr>
+      <th>Trait value:</th>
+      <td>{{ source_choiceset_option.name }}</td>
+    </tr>
+    <tr>
+      <th>Display order:</th>
+      <td>{{ source_choiceset_option.display_order }}</td>
+    </tr>
+    <tr>
+      <th>Description:</th>
+      <td>{{ source_choiceset_option.description }}</td>
+    </tr>
+  </table>
+  {% if user.is_authenticated %}
+  <br>
+  <a title="Press to Add new" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'choiceset_option_relation-new' source_choiceset_option.id %}"><span class="fa fa-plus"></span></a>
+  {% else %}
+  <button title="Please login to Add new" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-plus"></span></button>
+  <br>
+  {% endif %}
+  <table class="mb-list w3-table-all w3-small">
+    <caption class="w3-left-align">Table 1. List of Standard Trait values related with <b><i>{{ source_choiceset_option.name }}</i></b>.</caption>
+    <thead>
+      <tr>
+        <th>Standard Trait</th>
+        <th>Trait value</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if source_choiceset_option.choicesetoptionrelation_set.count > 0 %}
+      {% for c in source_choiceset_option.choicesetoptionrelation_set.all %}
+      <tr>
+        <td>
+          {{ c.master_choiceset_option }}
+        </td>
+        {% if user.is_authenticated %}
+          <td class="mb-private-internal"><a title="Press for Details" href="{% url 'choiceset_option_relation-detail' pk=c.id %}">{{ c }} <span class="fa fa-link w3-small"></span></a></td>
+        {% else %}
+          <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ c }} <span class="fa fa-link w3-small"></span></a></td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+      {% else %}
+      <tr><td colspan="3">There are no Standard Trait values available.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% endblock %}
+{% block script %}
+{% endblock %}

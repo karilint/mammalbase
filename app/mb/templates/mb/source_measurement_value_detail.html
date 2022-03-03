@@ -1,0 +1,86 @@
+{% extends "mb/base_generic.html" %}
+{% block title %}
+<title>MammalBase - {{ source_measurement_value.source_attribute.name}} of {{ source_measurement_value.source_entity }}</title>
+{% endblock %}
+{% block content %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - {{ source_measurement_value.source_attribute.name}} of {{ source_measurement_value.source_entity }}</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2 style="display:none">{{ source_measurement_value.source_attribute.name}} of {{ source_measurement_value.source_entity }}</h2>
+  </header>
+  <br>
+  <div class="mb-detail w3-bar w3-right-align">
+    <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
+    {% if user.is_authenticated %}
+    <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_measurement_value-edit' pk=source_measurement_value.pk %}"><span class="fa fa-pencil-square-o"></span></a>
+    <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_measurement_value-delete' pk=source_measurement_value.pk %}"><span class="fa  fa-trash-o"></span></a>
+    {% else %}
+    <button title="Please login to Edit" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
+    <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+    {% endif %}
+  </div>
+  <table class="mb-detail w3-table-all">
+    <caption class="mb-detail w3-left-align">
+      {{ source_measurement_value.source_attribute.name}} of {{ source_measurement_value.source_entity }}
+    </caption>
+    <tr>
+      <th class="w3-quarter">Measurement</th>
+      <td class="w3-threequarter">{{ source_measurement_value.source_attribute.name}}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Location</th>
+      <td class="w3-threequarter">{{ source_measurement_value.source_location.name}}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">n total:</th>
+      <td class="w3-threequarter">{{ source_measurement_value.n_total}}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">n unknown:</th>
+      <td class="w3-threequarter">{{ source_measurement_value.n_unknown}}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">n males:</th>
+      <td class="w3-threequarter">{{ source_measurement_value.n_male}}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">n females:</th>
+      <td class="w3-threequarter">{{ source_measurement_value.n_female}}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Minimum:</th>
+      <td class="w3-threequarter">{{ source_measurement_value.minimum|floatformat:2 }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Mean:</th>
+      <td class="w3-threequarter">{{ source_measurement_value.mean|floatformat:2 }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Maximum:</th>
+      <td class="w3-threequarter">{{ source_measurement_value.maximum|floatformat:2 }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">STD:</th>
+      <td class="w3-threequarter">{{ source_measurement_value.std|floatformat:2 }}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Unit:</th>
+      <td class="w3-threequarter">{{ source_measurement_value.source_unit.name}}</td>
+    </tr>
+    <tr>
+      <th class="w3-quarter">Reference:</th>
+      <td class="w3-threequarter">{{ source_measurement_value.source_attribute.reference}}</td>
+    </tr>
+  </table>
+</section>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% endblock %}
+{% block script %}
+{% endblock %}
