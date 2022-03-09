@@ -300,6 +300,17 @@ def diet_set_item_detail(request, pk):
         taxonomic_unit.save()
     return render(request, 'mb/diet_set_item_detail.html', {'dsi': diet_set_item, 'common_names': common_names, 'hierarchy': hierarchy, 'hierarchy_string': hierarchy_string,}, )
 
+class diet_set_item_delete(DeleteView):
+    model = DietSetItem
+    def get_success_url(self):
+        diet_set_item = super(diet_set_item_delete, self).get_object()
+        ds_id = diet_set_item.diet_set.id
+        return reverse_lazy(
+            'diet_set-detail',
+            args=(ds_id,)
+        )
+
+
 @login_required
 def diet_set_item_new(request, diet_set):
     diet_set = get_object_or_404(DietSet, pk=diet_set, is_active=1)
