@@ -442,7 +442,7 @@ def master_attribute_edit(request, pk):
     return render(request, 'mb/master_attribute_edit.html', {'form': form})
 
 def master_attribute_list(request):
-    f = MasterAttributeFilter(request.GET, queryset=MasterAttribute.objects.is_active().filter(entity__name = 'verbatimScientificName').order_by('name'))
+    f = MasterAttributeFilter(request.GET, queryset=MasterAttribute.objects.is_active().filter(entity__name = 'Taxon').order_by('name'))
 
     paginator = Paginator(f.qs, 10)
 
