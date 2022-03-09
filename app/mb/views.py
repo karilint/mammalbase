@@ -209,6 +209,7 @@ class diet_set_delete(DeleteView):
     model = DietSet
     success_url = reverse_lazy('diet_set-list')
 
+    #https://stackoverflow.com/questions/53145279/edit-record-before-delete-django-deleteview
     def delete(self, *args, **kwargs):
         self.object = self.get_object()
         self.object.dietsetitem_set.all().delete()
