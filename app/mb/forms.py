@@ -2,7 +2,7 @@ from django import forms
 from django_select2.forms import (
     ModelSelect2Widget,
 )
-from .models import (AttributeRelation, ChoiceSetOptionRelation, DietSet, EntityRelation
+from .models import (AttributeRelation, ChoiceSetOptionRelation, DietSet, DietSetItem, EntityRelation
     , FoodItem, MasterAttribute, MasterChoiceSetOption, MasterEntity, MasterReference
     , ProximateAnalysis, ProximateAnalysisItem, SourceAttribute
     , SourceChoiceSetOption, SourceChoiceSetOptionValue
@@ -26,6 +26,15 @@ class DietSetForm(forms.ModelForm):
     class Meta:
         model = DietSet
         fields = ('taxon', 'location', 'time_period', 'gender', 'sample_size', 'method', 'study_time', 'cited_reference', 'reference')
+
+class FoodItemWidget(ModelSelect2Widget):
+    search_fields = ['name__icontains',]
+
+class DietSetItemForm(forms.ModelForm):
+    class Meta:
+        model = DietSetItem
+        fields = ('percentage','food_item')
+        widgets = {'food_item': FoodItemWidget, }
 
 class EntityRelationForm(forms.ModelForm):
     class Meta:

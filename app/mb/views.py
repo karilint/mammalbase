@@ -15,7 +15,7 @@ from .filters import (DietSetFilter, FoodItemFilter
     , SourceAttributeFilter, SourceEntityFilter, SourceReferenceFilter
     , TaxonomicUnitsFilter, TimePeriodFilter, ViewProximateAnalysisTableFilter)
 from .forms import (AttributeRelationForm, ChoiceSetOptionRelationForm
-    , DietSetForm, EntityRelationForm, FoodItemForm, MasterEntityForm
+    , DietSetForm, DietSetItemForm, EntityRelationForm, FoodItemForm, MasterEntityForm
     , MasterAttributeForm, MasterAttributeChoicesetOptionForm
     , MasterChoiceSetOptionForm, MasterReferenceForm, OrderingForm
     , ProximateAnalysisForm, ProximateAnalysisItemForm
@@ -299,6 +299,21 @@ def diet_set_item_detail(request, pk):
         taxonomic_unit.tsn_update_date = datetime.datetime.now()
         taxonomic_unit.save()
     return render(request, 'mb/diet_set_item_detail.html', {'dsi': diet_set_item, 'common_names': common_names, 'hierarchy': hierarchy, 'hierarchy_string': hierarchy_string,}, )
+
+@login_required
+def diet_set_item_new(request, diet_set):
+    diet_set = get_object_or_404(DietSet, pk=diet_set, is_active=1)
+    if request.method == "POST":
+        form = DietSetItemForm(request.POST)
+        if form.is_valid():
+            diet_set_item = form.save(commit=False)
+            diet_set_item.diet_set = diet_set
+            diet_set_item.list_order = DietSetItem.objects.is_active().filter(diet_set_id=diet_set.id).count()+1
+            diet_set_item.save()
+            return redirect('diet_set-detail', pk=diet_set_item.diet_set.id)
+    else:
+        form = DietSetItemForm()
+    return render(request, 'mb/diet_set_item_edit.html', {'form': form})
 
 def diet_set_reference_list(request):
     f = MasterReferenceFilter(request.GET, queryset=MasterReference.objects
