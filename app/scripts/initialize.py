@@ -16,8 +16,8 @@ if not User.objects.filter(username=username).exists():
     print(f'Email: {email}')
     user = User.objects.create_user(username, email, password,
                                     is_superuser=1, is_staff=1)
-#    EmailAddress.objects.create(
-#        user=user, email=user.email, verified=1, primary=1)
+    EmailAddress.objects.create(
+        user=user, email=user.email, verified=1, primary=1)
 else:
     print('DJANGO SUPERUSER ALREADY EXISTS')
     print(f'Username: {username}')
