@@ -108,12 +108,12 @@ class attribute_relation_delete(DeleteView):
         )
 
 def attribute_relation_detail(request, pk):
-    attribute_relation = get_object_or_404(AttributeRelation, pk=pk)
+    attribute_relation = get_object_or_404(AttributeRelation, pk=pk, is_active=1)
     return render(request, 'mb/attribute_relation_detail.html', {'attribute_relation': attribute_relation})
 
 @login_required
 def attribute_relation_edit(request, pk):
-    attribute_relation = get_object_or_404(AttributeRelation, pk=pk)
+    attribute_relation = get_object_or_404(AttributeRelation, pk=pk, is_active=1)
     if request.method == "POST":
         form = AttributeRelationForm(request.POST, instance=attribute_relation)
         if form.is_valid():
@@ -149,12 +149,12 @@ class choiceset_option_relation_delete(DeleteView):
         )
 
 def choiceset_option_relation_detail(request, pk):
-    choiceset_option_relation = get_object_or_404(ChoiceSetOptionRelation, pk=pk)
+    choiceset_option_relation = get_object_or_404(ChoiceSetOptionRelation, pk=pk, is_active=1)
     return render(request, 'mb/choiceset_option_relation_detail.html', {'choiceset_option_relation': choiceset_option_relation})
 
 @login_required
 def choiceset_option_relation_edit(request, pk):
-    choiceset_option_relation = get_object_or_404(ChoiceSetOptionRelation, pk=pk)
+    choiceset_option_relation = get_object_or_404(ChoiceSetOptionRelation, pk=pk, is_active=1)
     if request.method == "POST":
         form = ChoiceSetOptionRelationForm(request.POST, instance=choiceset_option_relation)
         if form.is_valid():
@@ -202,12 +202,21 @@ def data_check_detail(request):
     return render(request, 'mb/data_check_detail.html', {'dsi': dsi, 'ds_data': ds_data, })
 
 def diet_set_detail(request, pk):
-	ds = get_object_or_404(DietSet, pk=pk)
+	ds = get_object_or_404(DietSet, pk=pk, is_active=1)
 	return render(request, 'mb/diet_set_detail.html', {'ds': ds})
+
+class diet_set_delete(DeleteView):
+    model = DietSet
+    success_url = reverse_lazy('diet_set-list')
+
+    def delete(self, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.dietsetitem_set.all().delete()
+        return super(diet_set_delete, self).delete(*args, **kwargs)
 
 @login_required
 def diet_set_edit(request, pk):
-    diet_set = get_object_or_404(DietSet, pk=pk)
+    diet_set = get_object_or_404(DietSet, pk=pk, is_active=1)
     if request.method == "POST":
         form = DietSetForm(request.POST, instance=diet_set)
         if form.is_valid():
@@ -238,7 +247,7 @@ def diet_set_list(request):
     )
 
 def diet_set_item_detail(request, pk):
-    diet_set_item = get_object_or_404(DietSetItem, pk=pk)
+    diet_set_item = get_object_or_404(DietSetItem, pk=pk, is_active=1)
 
     if diet_set_item.food_item.tsn is None:
         tsn_id = -1
@@ -360,12 +369,12 @@ class entity_relation_delete(DeleteView):
         )
 
 def entity_relation_detail(request, pk):
-    entity_relation = get_object_or_404(EntityRelation, pk=pk)
+    entity_relation = get_object_or_404(EntityRelation, pk=pk, is_active=1)
     return render(request, 'mb/entity_relation_detail.html', {'entity_relation': entity_relation})
 
 @login_required
 def entity_relation_edit(request, pk):
-    entity_relation = get_object_or_404(EntityRelation, pk=pk)
+    entity_relation = get_object_or_404(EntityRelation, pk=pk, is_active=1)
     if request.method == "POST":
         form = EntityRelationForm(request.POST, instance=entity_relation)
         if form.is_valid():
@@ -381,7 +390,7 @@ class food_item_delete(DeleteView):
     success_url = reverse_lazy('food_item-list')
 
 def food_item_detail(request, pk):
-    food_item = get_object_or_404(FoodItem, pk=pk)
+    food_item = get_object_or_404(FoodItem, pk=pk, is_active=1)
     if food_item.tsn is not None:
         if food_item.tsn.hierarchy_string:
             tsn_hierarchy = food_item.tsn.hierarchy_string.split("-")
@@ -410,7 +419,7 @@ def food_item_detail(request, pk):
 
 @login_required
 def food_item_edit(request, pk):
-    food_item = get_object_or_404(FoodItem, pk=pk)
+    food_item = get_object_or_404(FoodItem, pk=pk, is_active=1)
     if request.method == "POST":
         form = FoodItemForm(request.POST, instance=food_item)
         if form.is_valid():
@@ -451,12 +460,12 @@ class master_attribute_delete(DeleteView):
         )
 
 def master_attribute_detail(request, pk):
-    master_attribute = get_object_or_404(MasterAttribute, pk=pk)
+    master_attribute = get_object_or_404(MasterAttribute, pk=pk, is_active=1)
     return render(request, 'mb/master_attribute_detail.html', {'master_attribute': master_attribute})
 
 @login_required
 def master_attribute_edit(request, pk):
-    master_attribute = get_object_or_404(MasterAttribute, pk=pk)
+    master_attribute = get_object_or_404(MasterAttribute, pk=pk, is_active=1)
     if request.method == "POST":
         form = MasterAttributeForm(request.POST, instance=master_attribute)
         if form.is_valid():
@@ -511,12 +520,12 @@ class master_choiceset_option_delete(DeleteView):
         )
 
 def master_choiceset_option_detail(request, pk):
-    master_choiceset_option = get_object_or_404(MasterChoiceSetOption, pk=pk)
+    master_choiceset_option = get_object_or_404(MasterChoiceSetOption, pk=pk, is_active=1)
     return render(request, 'mb/master_choiceset_option_detail.html', {'master_choiceset_option': master_choiceset_option})
 
 @login_required
 def master_choiceset_option_edit(request, pk):
-    master_choiceset_option = get_object_or_404(MasterChoiceSetOption, pk=pk)
+    master_choiceset_option = get_object_or_404(MasterChoiceSetOption, pk=pk, is_active=1)
     if request.method == "POST":
         form = MasterChoiceSetOptionForm(request.POST, instance=master_choiceset_option)
         if form.is_valid():
@@ -540,7 +549,7 @@ def dictfetchall(cursor):
     ]
 
 def master_entity_detail(request, pk):
-    master_entity = get_object_or_404(MasterEntity, pk=pk)
+    master_entity = get_object_or_404(MasterEntity, pk=pk, is_active=1)
     with connection.cursor() as cursor:
 
 #        cursor.execute("SELECT foo FROM bar WHERE baz = %s", [master_entity.id])
@@ -743,7 +752,7 @@ def master_entity_detail(request, pk):
 
 @login_required
 def master_entity_edit(request, pk):
-    master_entity = get_object_or_404(MasterEntity, pk=pk)
+    master_entity = get_object_or_404(MasterEntity, pk=pk, is_active=1)
     if request.method == "POST":
         form = MasterEntityForm(request.POST, instance=master_entity)
         if form.is_valid():
@@ -800,7 +809,7 @@ class master_reference_delete(DeleteView):
     success_url = reverse_lazy('master_reference-list')
 
 def master_reference_detail(request, pk):
-    master_reference = get_object_or_404(MasterReference, pk=pk)
+    master_reference = get_object_or_404(MasterReference, pk=pk, is_active=1)
     with connection.cursor() as cursor:
         cursor.execute("""
             select case when se.name=me.name then me.name else concat(me.name,' (',se.name,')') end taxon
@@ -853,7 +862,7 @@ def master_reference_detail(request, pk):
 
 @login_required
 def master_reference_edit(request, pk):
-    master_reference = get_object_or_404(MasterReference, pk=pk)
+    master_reference = get_object_or_404(MasterReference, pk=pk, is_active=1)
     if request.method == "POST":
         form = MasterReferenceForm(request.POST, instance=master_reference)
         if form.is_valid():
@@ -888,12 +897,12 @@ class proximate_analysis_delete(DeleteView):
     success_url = reverse_lazy('proximate_analysis-list')
 
 def proximate_analysis_detail(request, pk):
-    proximate_analysis = get_object_or_404(ProximateAnalysis, pk=pk)
+    proximate_analysis = get_object_or_404(ProximateAnalysis, pk=pk, is_active=1)
     return render(request, 'mb/proximate_analysis_detail.html', {'proximate_analysis': proximate_analysis})
 
 @login_required
 def proximate_analysis_edit(request, pk):
-    proximate_analysis = get_object_or_404(ProximateAnalysis, pk=pk)
+    proximate_analysis = get_object_or_404(ProximateAnalysis, pk=pk, is_active=1)
     if request.method == "POST":
         form = ProximateAnalysisForm(request.POST, instance=proximate_analysis)
         if form.is_valid():
@@ -928,12 +937,12 @@ class proximate_analysis_item_delete(DeleteView):
     success_url = reverse_lazy('proximate_analysis_item-list')
 
 def proximate_analysis_item_detail(request, pk):
-    proximate_analysis_item = get_object_or_404(ProximateAnalysisItem, pk=pk)
+    proximate_analysis_item = get_object_or_404(ProximateAnalysisItem, pk=pk, is_active=1)
     return render(request, 'mb/proximate_analysis_item_detail.html', {'proximate_analysis_item': proximate_analysis_item})
 
 @login_required
 def proximate_analysis_item_edit(request, pk):
-    proximate_analysis_item = get_object_or_404(ProximateAnalysisItem, pk=pk)
+    proximate_analysis_item = get_object_or_404(ProximateAnalysisItem, pk=pk, is_active=1)
     if request.method == "POST":
         form = ProximateAnalysisItemForm(request.POST, instance=proximate_analysis_item)
         if form.is_valid():
@@ -964,7 +973,7 @@ def proximate_analysis_item_list(request):
     )
 
 def proximate_analysis_reference_detail(request, pk):
-    master_reference = get_object_or_404(MasterReference, pk=pk)
+    master_reference = get_object_or_404(MasterReference, pk=pk, is_active=1)
 
     return render(request, 'mb/proximate_analysis_reference_detail.html'
         , {'master_reference': master_reference, })
@@ -1002,12 +1011,12 @@ class source_attribute_delete(DeleteView):
         )
 
 def source_attribute_detail(request, pk):
-    source_attribute = get_object_or_404(SourceAttribute, pk=pk)
+    source_attribute = get_object_or_404(SourceAttribute, pk=pk, is_active=1)
     return render(request, 'mb/source_attribute_detail.html', {'source_attribute': source_attribute})
 
 @login_required
 def source_attribute_edit(request, pk):
-    source_attribute = get_object_or_404(SourceAttribute, pk=pk)
+    source_attribute = get_object_or_404(SourceAttribute, pk=pk, is_active=1)
     if request.method == "POST":
         form = SourceAttributeForm(request.POST, instance=source_attribute)
         if form.is_valid():
@@ -1062,12 +1071,12 @@ class source_choiceset_option_delete(DeleteView):
         )
 
 def source_choiceset_option_detail(request, pk):
-    source_choiceset_option = get_object_or_404(SourceChoiceSetOption, pk=pk)
+    source_choiceset_option = get_object_or_404(SourceChoiceSetOption, pk=pk, is_active=1)
     return render(request, 'mb/source_choiceset_option_detail.html', {'source_choiceset_option': source_choiceset_option})
 
 @login_required
 def source_choiceset_option_edit(request, pk):
-    source_choiceset_option = get_object_or_404(SourceChoiceSetOption, pk=pk)
+    source_choiceset_option = get_object_or_404(SourceChoiceSetOption, pk=pk, is_active=1)
     if request.method == "POST":
         form = SourceChoiceSetOptionForm(request.POST, instance=source_choiceset_option)
         if form.is_valid():
@@ -1089,12 +1098,12 @@ class source_choiceset_option_value_delete(DeleteView):
         )
 
 def source_choiceset_option_value_detail(request, pk):
-    source_choiceset_option_value = get_object_or_404(SourceChoiceSetOptionValue, pk=pk)
+    source_choiceset_option_value = get_object_or_404(SourceChoiceSetOptionValue, pk=pk, is_active=1)
     return render(request, 'mb/source_choiceset_option_value_detail.html', {'source_choiceset_option_value': source_choiceset_option_value})
 
 @login_required
 def source_choiceset_option_value_edit(request, pk):
-    source_choiceset_option_value = get_object_or_404(SourceChoiceSetOptionValue, pk=pk)
+    source_choiceset_option_value = get_object_or_404(SourceChoiceSetOptionValue, pk=pk, is_active=1)
     sac = source_choiceset_option_value.source_choiceset_option.source_attribute.id
     if request.method == "POST":
         form = SourceChoiceSetOptionValueForm(request.POST, instance=source_choiceset_option_value, sac=sac)
@@ -1156,7 +1165,7 @@ class source_entity_delete(DeleteView):
     success_url = reverse_lazy('source_entity-list')
 
 def source_entity_detail(request, pk):
-    source_entity = get_object_or_404(SourceEntity, pk=pk)
+    source_entity = get_object_or_404(SourceEntity, pk=pk, is_active=1)
     source_reference = get_object_or_404(SourceReference, pk=source_entity.reference.id)
     sa_ids = SourceAttribute.objects.is_active().filter(reference = source_reference).values('id')
     sa_has_values = (SourceChoiceSetOptionValue
@@ -1213,7 +1222,7 @@ def source_entity_list(request):
 
 @login_required
 def source_entity_edit(request, pk):
-    source_entity = get_object_or_404(SourceEntity, pk=pk)
+    source_entity = get_object_or_404(SourceEntity, pk=pk, is_active=1)
     if request.method == "POST":
         form = SourceEntityForm(request.POST, instance=source_entity)
         if form.is_valid():
@@ -1251,12 +1260,12 @@ class source_measurement_value__delete(DeleteView):
         )
 
 def source_measurement_value_detail(request, pk):
-    source_measurement_value = get_object_or_404(SourceMeasurementValue, pk=pk)
+    source_measurement_value = get_object_or_404(SourceMeasurementValue, pk=pk, is_active=1)
     return render(request, 'mb/source_measurement_value_detail.html', {'source_measurement_value': source_measurement_value})
 
 @login_required
 def source_measurement_value_edit(request, pk):
-    source_measurement_value = get_object_or_404(SourceMeasurementValue, pk=pk)
+    source_measurement_value = get_object_or_404(SourceMeasurementValue, pk=pk, is_active=1)
     sa = source_measurement_value.source_attribute.id
     if request.method == "POST":
         form = SourceMeasurementValueForm(request.POST, instance=source_measurement_value)
@@ -1385,7 +1394,7 @@ def source_reference_detail(request, pk):
 
 @login_required
 def source_reference_edit(request, pk):
-    source_reference = get_object_or_404(SourceReference, pk=pk)
+    source_reference = get_object_or_404(SourceReference, pk=pk, is_active=1)
     if request.method == "POST":
         form = SourceReferenceForm(request.POST, instance=source_reference)
         if form.is_valid():
@@ -1420,12 +1429,12 @@ class time_period_delete(DeleteView):
     success_url = reverse_lazy('time_period-list')
 
 def time_period_detail(request, pk):
-    time_period = get_object_or_404(TimePeriod, pk=pk)
+    time_period = get_object_or_404(TimePeriod, pk=pk, is_active=1)
     return render(request, 'mb/time_period_detail.html', {'time_period': time_period})
 
 @login_required
 def time_period_edit(request, pk):
-    time_period = get_object_or_404(TimePeriod, pk=pk)
+    time_period = get_object_or_404(TimePeriod, pk=pk, is_active=1)
     if request.method == "POST":
         form = TimePeriodForm(request.POST, instance=time_period)
         if form.is_valid():

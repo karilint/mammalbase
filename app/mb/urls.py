@@ -35,6 +35,7 @@ urlpatterns = [
     path('data/', views.data_check_detail, name='data_check-detail'),
     path('ds/', views.diet_set_list, name='diet_set-list'),
     path('ds/<int:pk>/', views.diet_set_detail, name='diet_set-detail'),
+    path('ds/<int:pk>/delete/', views.diet_set_delete.as_view(), name='diet_set-delete'),
     path('ds/<int:pk>/edit/', views.diet_set_edit, name='diet_set-edit'),
     path('dsi/<int:pk>/', views.diet_set_item_detail, name='diet_set_item-detail'),
     path('dsi/<int:pk>/delete/', views.diet_set_item_delete.as_view(), name='diet_set_item-delete'),
