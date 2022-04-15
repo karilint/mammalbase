@@ -1,4 +1,5 @@
 # exec(open('scripts\\script_test.py').read())
+# exec(open('scripts/script_test.py').read())
 
 from mb.models import *
 import pandas as pd
@@ -123,7 +124,8 @@ def get_diet(id):
 		print("Taxon does not exist")
 
 
-with io.open('C:\\Users\\lintulaa\\Google Drive\\Articles\\Article Diet\\Results\\Results07122021\\cluster_members_ward_100.txt','r',encoding='utf8') as f:
+with io.open('cluster_members_ward_100.txt','r',encoding='utf8') as f:
+#with io.open('C:\\Users\\lintulaa\\Google Drive\\Articles\\Article Diet\\Results\\Results07122021\\cluster_members_ward_100.txt','r',encoding='utf8') as f:
 #with io.open('C:\\Users\\lintulaa\\Google Drive\\Articles\\Article Diet\\Results\\New results 20211020\\cluster_members_ward_100.txt','r',encoding='utf8') as f:
 	rows = f.readlines()
 
@@ -210,4 +212,5 @@ for index, row in clusters_df.iterrows():
 	#x.groupby(['cluster_','kingdom_','part_', 'diet_item_', 'hierarchy_'])[('share_sum')].cumsum()
 	x['cumulative_percentage']=x.groupby(['cluster_'])[('share_sum')].cumsum()
 
-	x.to_excel (r'C:\Users\lintulaa\Google Drive\Articles\Article Diet\TEMP\export_dataframe_20211207.xlsx', index = False, header=True)
+#	x.to_excel (r'C:\Users\lintulaa\Google Drive\Articles\Article Diet\TEMP\export_dataframe_20211207.xlsx', index = False, header=True)
+	x.to_excel (r'export_dataframe_21032022.xlsx', index = False, header=True)

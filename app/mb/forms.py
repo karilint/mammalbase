@@ -22,10 +22,21 @@ class ChoiceSetOptionRelationForm(forms.ModelForm):
         model = ChoiceSetOptionRelation
         fields = ('master_choiceset_option', )
 
+class TimePeriodWidget(ModelSelect2Widget):
+    search_fields = ['name__icontains',]
+
 class DietSetForm(forms.ModelForm):
     class Meta:
         model = DietSet
         fields = ('taxon', 'location', 'time_period', 'gender', 'sample_size', 'method', 'study_time', 'cited_reference', 'reference')
+        widgets = {'time_period': TimePeriodWidget, }
+
+    # https://stackoverflow.com/questions/28901089/use-field-value-in-limit-choices-to-in-django
+    def __init__(self, *args, **kwargs):
+        super(DietSetForm, self).__init__(*args, **kwargs)
+        if self.instance.reference:
+            self.fields['time_period'].queryset = TimePeriod.objects.filter(
+                                                reference=self.instance.reference)
 
 class FoodItemWidget(ModelSelect2Widget):
     search_fields = ['name__icontains',]

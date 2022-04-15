@@ -72,7 +72,8 @@ def index_news(request):
     return render(request, 'mb/index_news.html',)
 
 def index_proximate_analysis(request):
-    return render(request, 'mb/index_proximate_analysis.html',)
+    num_PA_item=ProximateAnalysisItem.objects.is_active().values('forage_id').distinct().count()
+    return render(request, 'mb/index_proximate_analysis.html', context={'num_PA_item':num_PA_item},)
 
 # Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
 @require_POST
