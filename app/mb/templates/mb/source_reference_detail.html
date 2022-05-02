@@ -2,7 +2,7 @@
 {% block title %}
 <title>MammalBase - Reference: {{ source_reference }}</title>
 {% endblock %}
-{% block content %}
+{% block content %} {% load custom_tags %}
 <!--Article header -->
 <header style="display:none">
   <h1>MammalBase - Reference: {{ source_reference.citation|safe }}</h1>
@@ -15,7 +15,7 @@
   <br>
   <div class="mb-detail w3-bar w3-right-align">
     <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
-    {% if user.is_authenticated %}
+    {% if request.user|is_data_admin_or_owner:source_reference %}
       <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_reference-edit' pk=source_reference.pk %}"><span class="fa fa-pencil-square-o"></span></a>
       <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_reference-delete' pk=source_reference.pk %}"><span class="fa fa-trash-o"></span></a>
     {% else %}
@@ -42,9 +42,9 @@
     <tr>
       <th class="w3-quarter">DOI:</th>
       {% if source_reference.doi %}
-      <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="http://dx.doi.org/{{ source_reference.doi }}" target="_blank">{{ source_reference.doi }} <span class="fa fa-external-link"></span></a></td>
+        <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="http://dx.doi.org/{{ source_reference.doi }}" target="_blank">{{ source_reference.doi }} <span class="fa fa-external-link"></span></a></td>
       {% else %}
-      <td class="w3-threequarter"></td>
+        <td class="w3-threequarter"></td>
       {% endif %}
     </tr>
     <tr>
@@ -52,12 +52,14 @@
       <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="{% url 'master_reference-detail' pk=source_reference.master_reference_id|default:0 %}">{{ source_reference.master_reference.citation|safe }} <span class="fa fa-link"></span></a></td>
     </tr>
   </table>
-  {% if user.is_authenticated %}
-    <br>
-    <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_reference-attribute-new' source_reference.id %}"><span class="fa fa-plus"></span></a>
+
+  {% if request.user|is_data_admin_or_owner:source_reference %}
+  <br>
+    <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_reference-attribute-new' source_reference.id 2 %}"><span class="fa fa-plus"></span></a>
   {% else %}
     <br>
   {% endif %}
+
   <table class="mb-list w3-table-all w3-small">
     {% if source_entity.name|length > 50 %}
     <caption class="w3-left-align w3-small">
@@ -75,41 +77,41 @@
     </thead>
     <tbody>
       {% if sr_traits|length > 0 %}
-      {% for sa in sr_traits.all %}
-      <tr>
-        {% if user.is_authenticated %}
-        <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_attribute-detail' pk=sa.id %}">{{ sa }} <span class="fa fa-link w3-small"></span></a></td>
-        {% else %}
-        <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ sa }} <span class="fa fa-link w3-small"></span></a></td>
-        {% endif %}
-        <td>
-          <ul>
-            {% for choice in sa.sourcechoicesetoption_set.all %}
-            <li>{{ choice.name }}</li>
-            {% endfor %}
-          </ul>
-        </td>
-        <td>
-          {% for ma in sa.attributerelation_set.all %}
-          {% if ma.is_active %}
-          {{ ma.master_attribute }};
+        {% for sa in sr_traits.all %}
+          <tr>
+          {% if request.user|is_data_admin_or_owner:source_reference %}
+            <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_attribute-detail' pk=sa.id %}">{{ sa }} <span class="fa fa-link w3-small"></span></a></td>
+          {% else %}
+            <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ sa }} <span class="fa fa-link w3-small"></span></a></td>
           {% endif %}
-          {% endfor %}
-        </td>
-      </tr>
-      {% endfor %}
+          <td>
+            <ul>
+              {% for choice in sa.sourcechoicesetoption_set.all %}
+                <li>{{ choice.name }}</li>
+              {% endfor %}
+            </ul>
+          </td>
+          <td>
+            {% for ma in sa.attributerelation_set.all %}
+              {% if ma.is_active %}
+                {{ ma.master_attribute }};
+              {% endif %}
+            {% endfor %}
+          </td>
+        </tr>
+        {% endfor %}
       {% else %}
-      <tr>
+        <tr>
         <td colspan="3">There are no Traits available.</td>
-      </tr>
+        </tr>
       {% endif %}
     </tbody>
   </table>
-  {% if user.is_authenticated %}
-  <br>
-  <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_reference-attribute-new' source_reference.id %}"><span class="fa fa-plus"></span></a>
+  {% if request.user|is_data_admin_or_owner:source_reference %}
+    <br>
+    <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_reference-attribute-new' source_reference.id 1 %}"><span class="fa fa-plus"></span></a>
   {% else %}
-  <br>
+    <br>
   {% endif %}
   <table class="mb-list w3-table-all w3-small">
     {% if source_entity.name|length > 50 %}

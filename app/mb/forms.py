@@ -224,6 +224,7 @@ class SourceReferenceAttributeForm(forms.ModelForm):
         model = SourceAttribute
         fields = ('name', 'remarks',)
 
+
 class SourceReferenceForm(forms.ModelForm):
     class Meta:
         model = SourceReference

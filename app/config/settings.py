@@ -41,7 +41,8 @@ def get_var(name, default_value=None):
 SECRET_KEY = get_var('SECRET_KEY', 'development_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = get_var('DEBUG', 0)
+DEBUG = bool(int(get_var('DEBUG', 0)))
+
 
 # For debug_toolbar
 if DEBUG:
@@ -80,6 +81,7 @@ INSTALLED_APPS = [
     'django_select2',
 #    'rest_framework',
     'simple_history',
+    'main.apps.MainConfig',
     'imports',
     'itis',
     'mb',
@@ -93,6 +95,7 @@ INSTALLED_APPS = [
 SITE_ID = 1
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -102,7 +105,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_userforeignkey.middleware.UserForeignKeyMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -202,7 +204,6 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = get_var('STATIC_ROOT', os.path.join(BASE_DIR, 'static'))
-
 # Media files
 
 MEDIA_URL = 'media/'

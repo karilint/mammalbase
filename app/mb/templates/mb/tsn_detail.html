@@ -2,7 +2,7 @@
 {% block title %}
 <title>MammalBase - Taxonomic Serial No.: {{ tsn.tsn }} ({{ tsn.completename }})</title>
 {% endblock %}
-{% block content %}
+{% block content %} {% load custom_tags %}
 <!--Article header -->
 <header style="display:none"><h1>MammalBase - Taxonomic Serial No.: {{ tsn.tsn }} ({{ tsn.completename }})</h1></header>
 <!--End of article header -->
@@ -11,7 +11,7 @@
   <br>
   <div class="mb-detail w3-bar w3-right-align">
     <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
-    {% if user.is_authenticated %}
+    {% if request.user|is_data_admin_or_contributor %}
       <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'tsn-edit' tsn=tsn.tsn %}"><span class="fa fa-pencil-square-o"></span></a>
       <button title="Delete is disabled" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
     {% else %}

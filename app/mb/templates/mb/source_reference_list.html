@@ -2,7 +2,7 @@
 {% block title %}
 <title>MammalBase - Data Sources</title>
 {% endblock %}
-{% block content %}
+{% block content %} {% load custom_tags %}
 <!--Article header -->
 <header style="display:none"><h1>MammalBase - Data Sources</h1></header>
 <!--End of article header -->
@@ -11,32 +11,32 @@
 
   {% include 'includes/find.html' %}
   {% if page_obj %}
-  {% if user.is_authenticated %}
+    {% if request.user|is_data_admin_or_contributor %}
     <br>
-    <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_reference-new' %}"><span class="fa fa-plus"></span></a>
+      <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_reference-new' %}"><span class="fa fa-plus"></span></a>
+    {% else %}
+      <br>
+    {% endif %}
+    <table class="mb-list w3-table-all w3-small">
+      <thead>
+        <tr>
+          <th>Reference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for x in page_obj %}
+          <tr>
+          {% if user.is_authenticated %}
+            <td class="mb-private-internal"><a title="Press for Details" href="{% url 'source_reference-detail' pk=x.pk %}">{{ x.citation|safe }} <span class="fa fa-link w3-small"></span></a></td>
+          {% else %}
+            <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ x.citation|safe }} <span class="fa fa-link w3-small"></span></a></td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   {% else %}
-    <br>
-  {% endif %}
-  <table class="mb-list w3-table-all w3-small">
-    <thead>
-      <tr>
-        <th>Reference</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for x in page_obj %}
-      <tr>
-        {% if user.is_authenticated %}
-        <td class="mb-private-internal"><a title="Press for Details" href="{% url 'source_reference-detail' pk=x.pk %}">{{ x.citation|safe }} <span class="fa fa-link w3-small"></span></a></td>
-        {% else %}
-        <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ x.citation|safe }} <span class="fa fa-link w3-small"></span></a></td>
-        {% endif %}
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  {% else %}
-  <p>There are no Data Sources available.</p>
+    <p>There are no Data Sources available.</p>
   {% endif %}
 </section>
 {% endblock %}

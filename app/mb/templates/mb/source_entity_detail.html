@@ -2,7 +2,7 @@
 {% block title %}
 <title>MammalBase - Literature Taxon: {{ source_entity.name }}</title>
 {% endblock %}
-{% block content %}
+{% block content %} {% load custom_tags %}
 <!--Article header -->
 <header style="display:none">
   <h1>MammalBase - Literature Taxon: {{ source_entity.name }}</h1>
@@ -15,12 +15,12 @@
   <br>
   <div class="mb-detail w3-bar w3-right-align">
     <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
-    {% if user.is_authenticated %}
-    <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_entity-edit' pk=source_entity.pk %}"><span class="fa fa-pencil-square-o"></span></a>
-    <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_entity-delete' pk=source_entity.pk %}"><span class="fa fa-trash-o"></span></a>
+    {% if request.user|is_data_admin_or_owner:source_entity %}
+      <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_entity-edit' pk=source_entity.pk %}"><span class="fa fa-pencil-square-o"></span></a>
+      <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_entity-delete' pk=source_entity.pk %}"><span class="fa fa-trash-o"></span></a>
     {% else %}
-    <button title="Please login to Edit" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
-    <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+      <button title="Please login to Edit" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
+      <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
     {% endif %}
   </div>
   <table class="mb-detail w3-table-all">

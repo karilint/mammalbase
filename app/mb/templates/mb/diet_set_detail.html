@@ -2,7 +2,7 @@
 {% block title %}
 <title>MammalBase - Diet set for {{ ds.taxon.name }}</title>
 {% endblock %}
-{% block content %}
+{% block content %} {% load custom_tags %}
 {% load static %}
 
 <!-- handle.css Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop -->
@@ -20,7 +20,7 @@
   <br>
   <div class="mb-detail w3-bar w3-right-align">
     <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
-    {% if user.is_authenticated %}
+    {% if request.user|is_data_admin_or_owner:ds %}
       <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'diet_set-edit' pk=ds.pk %}"><span class="fa fa-pencil-square-o"></span></a>
       <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'diet_set-delete' pk=ds.pk %}"><span class="fa  fa-trash-o"></span></a>
     {% else %}
@@ -29,7 +29,7 @@
     {% endif %}
   </div>
 
-  {% if user.is_authenticated %}
+  {% if request.user|is_data_admin_or_owner:ds %}
   <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_entity-relation-new' ds.taxon.id %}"><span class="fa fa-plus"></span></a>
   <br>
   {% else %}
@@ -113,8 +113,8 @@
   </table>
   <br>
 
-  {% if user.is_authenticated %}
-    <br>
+  {% if request.user|is_data_admin_or_owner:ds %}
+  <br>
     <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'diet_set_item-new' ds.id %}"><span class="fa fa-plus"></span></a>
   {% else %}
     <br>
@@ -163,8 +163,8 @@
     </tbody>
   </table>
   <p><sup>a.</sup> Standardized values.</p>
-  {% if user.is_authenticated %}
-    <form id="orderingForm" method="post" action="{% url 'save-group-ordering' %}">
+  {% if request.user|is_data_admin_or_owner:ds %}
+  <form id="orderingForm" method="post" action="{% url 'save-group-ordering' %}">
     {% csrf_token %}
       <input type="hidden" id="orderingInput" name="ordering">
       <button id="saveOrdering" title="After drag and drop of row orders press here to save." class="w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-arrows-v"></button>

@@ -1,0 +1,18 @@
+{% extends "mb/base_generic.html" %}
+
+{% block content %} {% load custom_tags %}
+
+  <h1>403 Forbidden</h1>
+
+
+  <p>As a Registered user, you can view additional data which is not visible for all Users.</p>
+  <p>However, only Data Contributors or Data Admins can add, edit or delete data.</p>
+  
+  {% if request.user|has_group:"data_contributor" %} 
+    <p>You are a member of Data Contributors.</p>
+    <p>However, you can only edit and delete data that you have contributed.</p>
+  {% else %}
+    <p>Currently, you are a member of the Registered Users.</p>
+  {% endif %}
+
+{% endblock content %}

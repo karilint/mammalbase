@@ -1,8 +1,10 @@
 import datetime
 from decimal import *
+from django.core.exceptions import PermissionDenied
 from django.db import connection, transaction
 from django.db.models import Count, Max, F
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMixin
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -47,6 +49,20 @@ from plotly.offline import plot
 import numpy as np
 import pandas as pd
 # end
+
+# Error Pages
+# https://blog.khophi.co/get-django-custom-error-views-right-first-time/
+def server_error(request):
+    return render(request, 'errors/500.html')
+
+def not_found(request):
+    return render(request, 'errors/404.html')
+    
+def permission_denied(request):
+    return render(request, 'errors/403.html')
+
+def bad_request(request):
+    return render(request, 'errors/400.html')
 
 def about_history(request):
     return render(request, 'mb/history.html',)
@@ -98,7 +114,27 @@ def save_new_ordering(request):
     else:
         return redirect('diet_set-list')
 
-class attribute_relation_delete(DeleteView):
+def user_is_data_admin_or_contributor(user, data):
+    if user.groups.filter(name='data_admin').exists():
+        return True
+
+    if user.groups.filter(name='data_contributor').exists():
+        return True
+
+    return False
+
+def user_is_data_admin_or_owner(user, data):
+    if user.groups.filter(name='data_admin').exists():
+        return True
+
+    if user.groups.filter(name='data_contributor').exists() and data.created_by == user:
+        return True
+
+    return False
+
+class attribute_relation_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = AttributeRelation
     def get_success_url(self):
         attribute_relation = super(attribute_relation_delete, self).get_object()
@@ -113,8 +149,13 @@ def attribute_relation_detail(request, pk):
     return render(request, 'mb/attribute_relation_detail.html', {'attribute_relation': attribute_relation})
 
 @login_required
+@permission_required('mb.edit_attribute_relation', raise_exception=True)
 def attribute_relation_edit(request, pk):
     attribute_relation = get_object_or_404(AttributeRelation, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, attribute_relation):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = AttributeRelationForm(request.POST, instance=attribute_relation)
         if form.is_valid():
@@ -126,6 +167,7 @@ def attribute_relation_edit(request, pk):
     return render(request, 'mb/attribute_relation_edit.html', {'form': form})
 
 @login_required
+@permission_required('mb.add_attribute_relation', raise_exception=True)
 def attribute_relation_new(request, sa):
     source_attribute = get_object_or_404(SourceAttribute, pk=sa, is_active=1)
     if request.method == "POST":
@@ -139,7 +181,9 @@ def attribute_relation_new(request, sa):
         form = AttributeRelationForm()
     return render(request, 'mb/attribute_relation_edit.html', {'form': form})
 
-class choiceset_option_relation_delete(DeleteView):
+class choiceset_option_relation_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = ChoiceSetOptionRelation
     def get_success_url(self):
         choiceset_option_relation = super(choiceset_option_relation_delete, self).get_object()
@@ -154,8 +198,13 @@ def choiceset_option_relation_detail(request, pk):
     return render(request, 'mb/choiceset_option_relation_detail.html', {'choiceset_option_relation': choiceset_option_relation})
 
 @login_required
+@permission_required('mb.edit_choiceset_option_relation', raise_exception=True)
 def choiceset_option_relation_edit(request, pk):
     choiceset_option_relation = get_object_or_404(ChoiceSetOptionRelation, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, choiceset_option_relation):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = ChoiceSetOptionRelationForm(request.POST, instance=choiceset_option_relation)
         if form.is_valid():
@@ -167,6 +216,7 @@ def choiceset_option_relation_edit(request, pk):
     return render(request, 'mb/choiceset_option_relation_edit.html', {'form': form})
 
 @login_required
+@permission_required('mb.choiceset_option_relation', raise_exception=True)
 def choiceset_option_relation_new(request, cso):
     choiceset_option = get_object_or_404(SourceChoiceSetOption, pk=cso, is_active=1)
     if request.method == "POST":
@@ -206,7 +256,9 @@ def diet_set_detail(request, pk):
 	ds = get_object_or_404(DietSet, pk=pk, is_active=1)
 	return render(request, 'mb/diet_set_detail.html', {'ds': ds})
 
-class diet_set_delete(DeleteView):
+class diet_set_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = DietSet
     success_url = reverse_lazy('diet_set-list')
 
@@ -217,8 +269,13 @@ class diet_set_delete(DeleteView):
         return super(diet_set_delete, self).delete(*args, **kwargs)
 
 @login_required
+@permission_required('mb.edit_diet_set', raise_exception=True)
 def diet_set_edit(request, pk):
     diet_set = get_object_or_404(DietSet, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, diet_set):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = DietSetForm(request.POST, instance=diet_set)
         if form.is_valid():
@@ -311,7 +368,9 @@ def diet_set_item_detail(request, pk):
         taxonomic_unit.save()
     return render(request, 'mb/diet_set_item_detail.html', {'dsi': diet_set_item, 'common_names': common_names, 'hierarchy': hierarchy, 'hierarchy_string': hierarchy_string,}, )
 
-class diet_set_item_delete(DeleteView):
+class diet_set_item_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = DietSetItem
     def get_success_url(self):
         diet_set_item = super(diet_set_item_delete, self).get_object()
@@ -323,6 +382,7 @@ class diet_set_item_delete(DeleteView):
 
 
 @login_required
+@permission_required('mb.add_diet_set_item', raise_exception=True)
 def diet_set_item_new(request, diet_set):
     diet_set = get_object_or_404(DietSet, pk=diet_set, is_active=1)
     if request.method == "POST":
@@ -360,7 +420,9 @@ def diet_set_reference_list(request):
     )
 
 # https://ultimatedjango.com/learn-django/lessons/delete-contact-full-lesson/
-class entity_relation_delete(DeleteView):
+class entity_relation_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = EntityRelation
     def get_success_url(self):
         entity_relation = super(entity_relation_delete, self).get_object()
@@ -375,8 +437,13 @@ def entity_relation_detail(request, pk):
     return render(request, 'mb/entity_relation_detail.html', {'entity_relation': entity_relation})
 
 @login_required
+@permission_required('mb.edit_entity_relation', raise_exception=True)
 def entity_relation_edit(request, pk):
     entity_relation = get_object_or_404(EntityRelation, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, entity_relation):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = EntityRelationForm(request.POST, instance=entity_relation)
         if form.is_valid():
@@ -387,7 +454,9 @@ def entity_relation_edit(request, pk):
         form = EntityRelationForm(instance=entity_relation)
     return render(request, 'mb/entity_relation_edit.html', {'form': form})
 
-class food_item_delete(DeleteView):
+class food_item_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = FoodItem
     success_url = reverse_lazy('food_item-list')
 
@@ -420,8 +489,13 @@ def food_item_detail(request, pk):
     return render(request, 'mb/food_item_detail.html', {'proximate_analysis': proximate_analysis, 'food_item': food_item, })
 
 @login_required
+@permission_required('mb.edit_food_item', raise_exception=True)
 def food_item_edit(request, pk):
     food_item = get_object_or_404(FoodItem, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, food_item):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = FoodItemForm(request.POST, instance=food_item)
         if form.is_valid():
@@ -451,7 +525,9 @@ def food_item_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class master_attribute_delete(DeleteView):
+class master_attribute_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = MasterAttribute
     def get_success_url(self):
         master_attribute = super(master_attribute_delete, self).get_object()
@@ -466,8 +542,13 @@ def master_attribute_detail(request, pk):
     return render(request, 'mb/master_attribute_detail.html', {'master_attribute': master_attribute})
 
 @login_required
+@permission_required('mb.edit_master_attribute', raise_exception=True)
 def master_attribute_edit(request, pk):
     master_attribute = get_object_or_404(MasterAttribute, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, master_attribute):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = MasterAttributeForm(request.POST, instance=master_attribute)
         if form.is_valid():
@@ -498,6 +579,7 @@ def master_attribute_list(request):
     )
 
 @login_required
+@permission_required('mb.add_choiceset_option', raise_exception=True)
 def master_attribute_master_choiceset_option_new(request, master_attribute):
     master_attribute = get_object_or_404(MasterAttribute, pk=master_attribute, is_active=1)
     if request.method == "POST":
@@ -511,7 +593,9 @@ def master_attribute_master_choiceset_option_new(request, master_attribute):
         form = MasterAttributeChoicesetOptionForm()
     return render(request, 'mb/master_attribute_master_choiceset_option_edit.html', {'form': form})
 
-class master_choiceset_option_delete(DeleteView):
+class master_choiceset_option_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = MasterChoiceSetOption
     def get_success_url(self):
         obj = super(master_choiceset_option_delete, self).get_object()
@@ -526,8 +610,13 @@ def master_choiceset_option_detail(request, pk):
     return render(request, 'mb/master_choiceset_option_detail.html', {'master_choiceset_option': master_choiceset_option})
 
 @login_required
+@permission_required('mb.edit_master_choiceset_option', raise_exception=True)
 def master_choiceset_option_edit(request, pk):
     master_choiceset_option = get_object_or_404(MasterChoiceSetOption, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, master_choiceset_option):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = MasterChoiceSetOptionForm(request.POST, instance=master_choiceset_option)
         if form.is_valid():
@@ -538,7 +627,9 @@ def master_choiceset_option_edit(request, pk):
         form = MasterChoiceSetOptionForm(instance=master_choiceset_option)
     return render(request, 'mb/master_choiceset_option_edit.html', {'form': form})
 
-class master_entity_delete(DeleteView):
+class master_entity_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = MasterEntity
     success_url = reverse_lazy('master_entity-list')
 
@@ -753,8 +844,13 @@ def master_entity_detail(request, pk):
     return render(request, 'mb/master_entity_detail.html', {'master_entity': master_entity, 'measurements': measurements, 'diets': diets, 'ternary':ternary, 'plot_div': plot_div,})
 
 @login_required
+@permission_required('mb.edit_master_entity', raise_exception=True)
 def master_entity_edit(request, pk):
     master_entity = get_object_or_404(MasterEntity, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, master_entity):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = MasterEntityForm(request.POST, instance=master_entity)
         if form.is_valid():
@@ -806,7 +902,9 @@ def master_entity_reference_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class master_reference_delete(DeleteView):
+class master_reference_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = MasterReference
     success_url = reverse_lazy('master_reference-list')
 
@@ -863,8 +961,13 @@ def master_reference_detail(request, pk):
         , {'master_reference': master_reference, 'taxa': taxa, 'attributes': attributes, })
 
 @login_required
+@permission_required('mb.edit_master_reference', raise_exception=True)
 def master_reference_edit(request, pk):
     master_reference = get_object_or_404(MasterReference, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, master_reference):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = MasterReferenceForm(request.POST, instance=master_reference)
         if form.is_valid():
@@ -894,7 +997,9 @@ def master_reference_edit(request, pk):
 #        {'page_obj': page_obj, 'filter': f,}
 #    )
 
-class proximate_analysis_delete(DeleteView):
+class proximate_analysis_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = ProximateAnalysis
     success_url = reverse_lazy('proximate_analysis-list')
 
@@ -903,8 +1008,13 @@ def proximate_analysis_detail(request, pk):
     return render(request, 'mb/proximate_analysis_detail.html', {'proximate_analysis': proximate_analysis})
 
 @login_required
+@permission_required('mb.edit_proximate_analysis', raise_exception=True)
 def proximate_analysis_edit(request, pk):
     proximate_analysis = get_object_or_404(ProximateAnalysis, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, proximate_analysis):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = ProximateAnalysisForm(request.POST, instance=proximate_analysis)
         if form.is_valid():
@@ -934,7 +1044,9 @@ def proximate_analysis_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class proximate_analysis_item_delete(DeleteView):
+class proximate_analysis_item_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = ProximateAnalysisItem
     success_url = reverse_lazy('proximate_analysis_item-list')
 
@@ -943,8 +1055,13 @@ def proximate_analysis_item_detail(request, pk):
     return render(request, 'mb/proximate_analysis_item_detail.html', {'proximate_analysis_item': proximate_analysis_item})
 
 @login_required
+@permission_required('mb.edit_proximate_analysis_item', raise_exception=True)
 def proximate_analysis_item_edit(request, pk):
     proximate_analysis_item = get_object_or_404(ProximateAnalysisItem, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, proximate_analysis_item):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = ProximateAnalysisItemForm(request.POST, instance=proximate_analysis_item)
         if form.is_valid():
@@ -1002,7 +1119,9 @@ def proximate_analysis_reference_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class source_attribute_delete(DeleteView):
+class source_attribute_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceAttribute
     def get_success_url(self):
         source_attribute = super(source_attribute_delete, self).get_object()
@@ -1017,8 +1136,13 @@ def source_attribute_detail(request, pk):
     return render(request, 'mb/source_attribute_detail.html', {'source_attribute': source_attribute})
 
 @login_required
+@permission_required('mb.edit_source_attribute', raise_exception=True)
 def source_attribute_edit(request, pk):
     source_attribute = get_object_or_404(SourceAttribute, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, source_attribute):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = SourceAttributeForm(request.POST, instance=source_attribute)
         if form.is_valid():
@@ -1049,6 +1173,7 @@ def source_attribute_list(request):
     )
 
 @login_required
+@permission_required('mb.add_choiceset_option', raise_exception=True)
 def source_attribute_source_choiceset_option_new(request, source_attribute):
     source_attribute = get_object_or_404(SourceAttribute, pk=source_attribute, is_active=1)
     if request.method == "POST":
@@ -1062,7 +1187,9 @@ def source_attribute_source_choiceset_option_new(request, source_attribute):
         form = SourceAttributeChoicesetOptionForm()
     return render(request, 'mb/source_attribute_source_choiceset_option_edit.html', {'form': form})
 
-class source_choiceset_option_delete(DeleteView):
+class source_choiceset_option_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceChoiceSetOption
     def get_success_url(self):
         obj = super(source_choiceset_option_delete, self).get_object()
@@ -1077,8 +1204,13 @@ def source_choiceset_option_detail(request, pk):
     return render(request, 'mb/source_choiceset_option_detail.html', {'source_choiceset_option': source_choiceset_option})
 
 @login_required
+@permission_required('mb.edit_source_choiceset_option', raise_exception=True)
 def source_choiceset_option_edit(request, pk):
     source_choiceset_option = get_object_or_404(SourceChoiceSetOption, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, source_choiceset_option):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = SourceChoiceSetOptionForm(request.POST, instance=source_choiceset_option)
         if form.is_valid():
@@ -1089,7 +1221,9 @@ def source_choiceset_option_edit(request, pk):
         form = SourceChoiceSetOptionForm(instance=source_choiceset_option)
     return render(request, 'mb/source_choiceset_option_edit.html', {'form': form})
 
-class source_choiceset_option_value_delete(DeleteView):
+class source_choiceset_option_value_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceChoiceSetOptionValue
     def get_success_url(self):
         obj = super(source_choiceset_option_value_delete, self).get_object()
@@ -1104,8 +1238,13 @@ def source_choiceset_option_value_detail(request, pk):
     return render(request, 'mb/source_choiceset_option_value_detail.html', {'source_choiceset_option_value': source_choiceset_option_value})
 
 @login_required
+@permission_required('mb.edit_source_choiceset_option_value', raise_exception=True)
 def source_choiceset_option_value_edit(request, pk):
     source_choiceset_option_value = get_object_or_404(SourceChoiceSetOptionValue, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, source_choiceset_option_value):
+        raise PermissionDenied
+
     sac = source_choiceset_option_value.source_choiceset_option.source_attribute.id
     if request.method == "POST":
         form = SourceChoiceSetOptionValueForm(request.POST, instance=source_choiceset_option_value, sac=sac)
@@ -1119,6 +1258,7 @@ def source_choiceset_option_value_edit(request, pk):
     return render(request, 'mb/source_choiceset_option_value_edit.html', {'form': form})
 
 @login_required
+@permission_required('mb.add_source_choiceset_option_value', raise_exception=True)
 def source_choiceset_option_value_new(request, se, sac):
     source_entity = get_object_or_404(SourceEntity, pk=se)
     if request.method == "POST":
@@ -1133,6 +1273,7 @@ def source_choiceset_option_value_new(request, se, sac):
     return render(request, 'mb/source_choiceset_option_value_edit.html', {'form': form})
 
 @login_required
+@permission_required('mb.add_source_attribute', raise_exception=True)
 def source_entity_attribute_new(request, source_reference, source_entity):
     reference = get_object_or_404(SourceReference, pk=source_reference, is_active=1)
     if request.method == "POST":
@@ -1148,6 +1289,7 @@ def source_entity_attribute_new(request, source_reference, source_entity):
     return render(request, 'mb/source_reference_attribute_edit.html', {'form': form})
 
 @login_required
+@permission_required('mb.add_source_attribute', raise_exception=True)
 def source_entity_measurement_new(request, source_reference, source_entity):
     reference = get_object_or_404(SourceReference, pk=source_reference, is_active=1)
     if request.method == "POST":
@@ -1162,7 +1304,11 @@ def source_entity_measurement_new(request, source_reference, source_entity):
         form = SourceReferenceAttributeForm()
     return render(request, 'mb/source_reference_measurement_edit.html', {'form': form})
 
-class source_entity_delete(DeleteView):
+class source_entity_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceEntity
     success_url = reverse_lazy('source_entity-list')
 
@@ -1223,8 +1369,13 @@ def source_entity_list(request):
     )
 
 @login_required
+@permission_required('mb.edit_source_entity', raise_exception=True)
 def source_entity_edit(request, pk):
     source_entity = get_object_or_404(SourceEntity, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, source_entity):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = SourceEntityForm(request.POST, instance=source_entity)
         if form.is_valid():
@@ -1236,6 +1387,7 @@ def source_entity_edit(request, pk):
     return render(request, 'mb/source_entity_edit.html', {'form': form})
 
 @login_required
+@permission_required('mb.add_relation', raise_exception=True)
 def source_entity_relation_new(request, source_entity):
     source_entity = get_object_or_404(SourceEntity, pk=source_entity, is_active=1)
     er_relation = get_object_or_404(RelationClass, pk=1, is_active=1)
@@ -1251,7 +1403,9 @@ def source_entity_relation_new(request, source_entity):
         form = SourceEntityRelationForm()
     return render(request, 'mb/source_entity_relation_edit.html', {'form': form})
 
-class source_measurement_value__delete(DeleteView):
+class source_measurement_value__delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceMeasurementValue
     def get_success_url(self):
         obj = super(source_measurement_value__delete, self).get_object()
@@ -1266,8 +1420,13 @@ def source_measurement_value_detail(request, pk):
     return render(request, 'mb/source_measurement_value_detail.html', {'source_measurement_value': source_measurement_value})
 
 @login_required
+@permission_required('mb.edit_source_measurement_value', raise_exception=True)
 def source_measurement_value_edit(request, pk):
     source_measurement_value = get_object_or_404(SourceMeasurementValue, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, source_measurement_value):
+        raise PermissionDenied
+
     sa = source_measurement_value.source_attribute.id
     if request.method == "POST":
         form = SourceMeasurementValueForm(request.POST, instance=source_measurement_value)
@@ -1280,6 +1439,7 @@ def source_measurement_value_edit(request, pk):
     return render(request, 'mb/source_measurement_value_edit.html', {'form': form})
 
 @login_required
+@permission_required('mb.add_source_measurement_value', raise_exception=True)
 def source_measurement_value_new(request, sa, se):
     source_attribute = get_object_or_404(SourceAttribute, pk=sa)
     source_entity = get_object_or_404(SourceEntity, pk=se)
@@ -1295,11 +1455,14 @@ def source_measurement_value_new(request, sa, se):
         form = SourceMeasurementValueForm()
     return render(request, 'mb/source_measurement_value_edit.html', {'form': form})
 
-class source_reference_delete(DeleteView):
+class source_reference_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceReference
     success_url = reverse_lazy('source_reference-list')
 
 @login_required
+@permission_required('mb.add_source_reference', raise_exception=True)
 def source_reference_new(request):
     if request.method == "POST":
         form = SourceReferenceForm(request.POST)
@@ -1312,13 +1475,16 @@ def source_reference_new(request):
     return render(request, 'mb/source_reference_edit.html', {'form': form})
 
 @login_required
-def source_reference_attribute_new(request, source_reference):
+@permission_required('mb.add_source_attribute', raise_exception=True)
+def source_reference_attribute_new(request, source_reference, type):
     reference = get_object_or_404(SourceReference, pk=source_reference, is_active=1)
     if request.method == "POST":
         form = SourceReferenceAttributeForm(request.POST)
         if form.is_valid():
             source_attribute = form.save(commit=False)
             source_attribute.reference = reference
+            source_attribute.entity_id = 2
+            source_attribute.type = type
             source_attribute.save()
             return redirect('source_reference-detail', pk=source_attribute.reference.id)
     else:
@@ -1395,8 +1561,13 @@ def source_reference_detail(request, pk):
         ,})
 
 @login_required
+@permission_required('mb.edit_source_reference', raise_exception=True)
 def source_reference_edit(request, pk):
     source_reference = get_object_or_404(SourceReference, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, source_reference):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = SourceReferenceForm(request.POST, instance=source_reference)
         if form.is_valid():
@@ -1426,7 +1597,9 @@ def source_reference_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class time_period_delete(DeleteView):
+class time_period_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = TimePeriod
     success_url = reverse_lazy('time_period-list')
 
@@ -1435,8 +1608,13 @@ def time_period_detail(request, pk):
     return render(request, 'mb/time_period_detail.html', {'time_period': time_period})
 
 @login_required
+@permission_required('mb.edit_time_period', raise_exception=True)
 def time_period_edit(request, pk):
     time_period = get_object_or_404(TimePeriod, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, time_period):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = TimePeriodForm(request.POST, instance=time_period)
         if form.is_valid():
@@ -1466,7 +1644,9 @@ def time_period_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class tsn_delete(DeleteView):
+class tsn_delete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = TaxonomicUnits
     success_url = reverse_lazy('tsn-list')
 
@@ -1546,6 +1726,10 @@ def tsn_detail(request, tsn):
 @login_required
 def tsn_edit(request, tsn):
     tsn = get_object_or_404(TaxonomicUnits, tsn=tsn)
+
+    if not user_is_data_admin_or_contributor(request.user, tsn):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = TaxonomicUnitsForm(request.POST, instance=tsn)
         if form.is_valid():
@@ -1576,6 +1760,7 @@ def tsn_list(request):
     )
 
 @login_required
+@permission_required('mb.add_tsn', raise_exception=True)
 def tsn_new(request):
     if request.method == "POST":
         form = TaxonomicUnitsForm(request.POST)

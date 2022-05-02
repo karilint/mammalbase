@@ -2,7 +2,7 @@
 {% block title %}
 <title>MammalBase - Time Period: {{ time_period.name }}</title>
 {% endblock %}
-{% block content %}
+{% block content %} {% load custom_tags %}
 <!--Article header -->
 <header style="display:none">
   <h1>MammalBase - Time Period: {{ time_period.name }}</h1>
@@ -15,7 +15,7 @@
   <br>
   <div class="mb-detail w3-bar w3-right-align">
     <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
-    {% if user.is_authenticated %}
+    {% if request.user|is_data_admin_or_owner:time_period %}
       <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'time_period-edit' pk=time_period.pk %}"><span class="fa fa-pencil-square-o"></span></a>
       <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'time_period-delete' pk=time_period.pk %}"><span class="fa  fa-trash-o"></span></a>
     {% else %}

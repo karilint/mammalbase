@@ -2,7 +2,7 @@
 {% block title %}
 <title>MammalBase - Reference: {{ master_reference.citation|safe }}</title>
 {% endblock %}
-{% block content %}
+{% block content %} {% load custom_tags %}
 <!--Article header -->
 <header style="display:none">
   <h1>MammalBase - Reference: {{ master_reference.citation|safe }}</h1>
@@ -15,7 +15,7 @@
   <br>
   <div class="mb-detail w3-bar w3-right-align">
     <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
-    {% if user.is_authenticated %}
+    {% if request.user|is_data_admin_or_owner:master_reference %}
     <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'master_reference-edit' pk=master_reference.pk %}"><span class="fa fa-pencil-square-o"></span></a>
     <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'master_reference-delete' pk=master_reference.pk %}"><span class="fa fa-trash-o"></span></a>
     {% else %}
