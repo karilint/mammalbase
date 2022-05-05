@@ -73,10 +73,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.sites',
     'django.contrib.staticfiles',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.orcid',
 #    'django_userforeignkey',
     'django_select2',
 #    'rest_framework',
@@ -84,11 +80,15 @@ INSTALLED_APPS = [
     'main.apps.MainConfig',
     'imports',
     'itis',
-    'mb',
+    'mb.apps.MbConfig',
     'utils',	# mb utils
     'debug_toolbar',
 #    'django_extensions', #for Jupyter and Scripts
 #    'crispy_forms',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.orcid',
 #    'users.apps.UsersConfig',
 ]
 
@@ -117,7 +117,11 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
+
+                # `allauth` needs this from django
                 'django.template.context_processors.request',
+
+                # for using the default auth backend in order to use the admin application.
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -130,7 +134,10 @@ TEMPLATES = [
 # https://django-allauth.readthedocs.io/en/latest/installation.html
 
 AUTHENTICATION_BACKENDS = [
-     'django.contrib.auth.backends.ModelBackend',
+     # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by e-mail
      'allauth.account.auth_backends.AuthenticationBackend',
 ]
 

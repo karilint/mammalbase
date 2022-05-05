@@ -1,7 +1,7 @@
 {% extends 'mb/base_generic.html' %}
 {% block content %} {% load custom_tags %}
 <!-- Write your comments here -->
-  {% if user.is_authenticated %}
+  {% if request.user|is_data_admin_or_owner:master_attribute %}
     <h1>Delete Standard Trait</h1>
 
     <p>Are you sure you want to delete the Standard Trait: <b><i>{{ master_attribute }}</i></b>?</p>

@@ -121,14 +121,14 @@
   {% endif %}
 
   <table class="mb-list w3-table-all w3-small">
-    <caption class="w3-left-align">Table 2. Food items listed for {{ ds.taxon.name }}<sup>a.</sup></caption>
+    <caption class="w3-left-align">Table 2. Food items listed for {{ ds.taxon.name }}</caption>
 
     <thead>
       <tr>
         {% if user.is_authenticated %}
           <th style="width:1%"></th>
         {% endif %}
-        <th style="text-align:right">Row</th>
+        <th style="text-align:right">List order</th>
         <th style="text-align:right">Percentage</th>
         {% if user.is_authenticated %}
           <th>Food Item</th>
@@ -162,7 +162,6 @@
       {% endfor %}
     </tbody>
   </table>
-  <p><sup>a.</sup> Standardized values.</p>
   {% if request.user|is_data_admin_or_owner:ds %}
   <form id="orderingForm" method="post" action="{% url 'save-group-ordering' %}">
     {% csrf_token %}

@@ -26,11 +26,6 @@
     </div>
   </div>
   <p>Welcome to MammalBase.</p>
-  {% if request.user|has_group:"data_contributor" %} 
-    <p>User belongs to my group 
-  {% else %}
-    <p>User doesn't belong to mygroup</p>
-  {% endif %}
   <p>MammalBase is a database of recent mammals. The main focus of this database is the Trait Data, Measurements and Diets of the species in class Mammalia. For dietary information, we also provide Proximate Analysis data for several diet items.</p>
   <p>We aim to provide general information on these species for broad-scale analyses in Macroecology, Palaeontology and the mammalian Community structures.</p>
 </section>

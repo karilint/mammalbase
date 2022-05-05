@@ -1,7 +1,7 @@
 {% extends 'mb/base_generic.html' %}
 {% block content %} {% load custom_tags %}
 <!-- Write your comments here -->
-  {% if user.is_authenticated %}
+  {% if request.user|is_data_admin_or_owner:master_reference %}
     <h1>Delete Master Reference</h1>
 
     <p>Are you sure you want to delete the Master Reference: <b><i>{{ master_reference }}</i></b>?</p>

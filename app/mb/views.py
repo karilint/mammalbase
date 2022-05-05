@@ -36,6 +36,7 @@ from .models import (AttributeRelation, ChoiceSetOptionRelation, DietSet
 from imports.views import import_diet_set
 from itis.models import TaxonomicUnits
 from itis.views import *
+from ratelimit.decorators import ratelimit
 
 import requests
 
@@ -70,6 +71,7 @@ def about_history(request):
 def index_about(request):
     return render(request, 'mb/index_about.html',)
 
+@ratelimit(key='ip', rate='2/m')
 def index(request):
     return render(request, 'mb/index.html',)
 

@@ -42,7 +42,7 @@
       <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="{% url 'master_reference-detail' pk=master_attribute.reference.id %}">{{ master_attribute.reference }}<span class="fa fa-link w3-small"></span></a></td>
     </tr>
   </table>
-  {% if user.is_authenticated %}
+  {% if request.user|is_data_admin_or_contributor %}
   <br>
   <a title="Press to Add new" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'master_attribute_master_choiceset_option-new' master_attribute.id %}"><span class="fa fa-plus"></span></a>
   {% else %}
@@ -81,7 +81,7 @@
       {% endif %}
     </tbody>
   </table>
-  {% if user.is_authenticated %}
+  {% if request.user|is_data_admin_or_contributor %}
   <br>
   <a title="Press to Add new" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'attribute-relation-new' master_attribute.id %}"><span class="fa fa-plus"></span></a>
   {% else %}

@@ -1,7 +1,7 @@
 {% extends 'mb/index_proximate_analysis.html' %}
 {% block content %} {% load custom_tags %}
 <!-- Write your comments here -->
-  {% if user.is_authenticated %}
+  {% if request.user|is_data_admin_or_owner:proximateanalysis %}
     <h1>Delete Proximate Analysis</h1>
 
     <p>Are you sure you want to delete the Proximate Analysis: <b><i>{{ proximateanalysis }}?</i></b>?</p>

@@ -61,7 +61,7 @@
       {% for c in master_choiceset_option.choicesetoptionrelation_set.all %}
       <tr>
         <td>{{ c.source_choiceset_option.source_attribute }}</td>
-        {% if user.is_authenticated %}
+		{% if request.user|is_data_admin_or_owner:c.source_choiceset_option %}
           <td class="mb-private-internal"><a title="Press for Details" href="{% url 'choiceset_option_relation-detail' pk=c.id %}">{{ c.source_choiceset_option.name }} <span class="fa fa-link w3-small"></span></a></td>
         {% else %}
           <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ c.source_choiceset_option.name }} <span class="fa fa-link w3-small"></span></a></td>

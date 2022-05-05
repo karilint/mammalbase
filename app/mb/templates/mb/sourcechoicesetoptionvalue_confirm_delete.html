@@ -1,7 +1,7 @@
 {% extends 'mb/base_generic.html' %}
 {% block content %} {% load custom_tags %}
 <!-- Write your comments here -->
-  {% if user.is_authenticated %}
+  {% if request.user|is_data_admin_or_owner:sourcechoicesetoptionvalue %}
     <h1>Delete Value</h1>
 
     <p>Are you sure you want to delete the Value: <b><i>{{ sourcechoicesetoptionvalue }}</i></b>?</p>

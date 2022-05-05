@@ -16,7 +16,7 @@ urlpatterns = [
 #    path('rnames/qualifier/<int:pk>/', views.qualifier_detail, name='qualifier-detail'),
 #    path('mb/names/', views.MasterReferenceListView.as_view(), name='names'),
     path('__debug__/', include(debug_toolbar.urls)),
-    path('select2/', include('django_select2.urls')),
+#    path('select2/', include('django_select2.urls')),
     path('', views.index, name='index'),
     path('mb', views.index, name='index'),
     path('im', views.index_mammals, name='index_mammals'),
@@ -119,9 +119,3 @@ urlpatterns = [
     path('tsn/new', views.tsn_new, name='tsn-new'),
 ]
 
-#Add Django site authentication urls (for login, logout, password management)
-#urlpatterns += [
-#    path('accounts/', include('django.contrib.auth.urls')),
-#]
-
-#urlpatterns = format_suffix_patterns(urlpatterns)

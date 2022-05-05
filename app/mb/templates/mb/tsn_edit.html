@@ -18,7 +18,7 @@
     <header class="w3-container w3-text-teal">
       <h2>Add/Edit TSN</h2>
     </header>
-    {% if user.is_authenticated %}
+    {% if request.user|is_data_admin_or_contributor %}
       <form method="POST" novalidate>
         {% csrf_token %}
         {% include 'includes/w3c-form.html' with form=form %}

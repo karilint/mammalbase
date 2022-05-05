@@ -1,7 +1,7 @@
 {% extends 'mb/index_diet.html' %}
 {% block content %} {% load custom_tags %}
 <!-- Write your comments here -->
-  {% if user.is_authenticated %}
+  {% if request.user|is_data_admin_or_owner:fooditem %}
     <h1>Delete Food Item</h1>
 
     <p>Are you sure you want to delete the Food Item: <b><i>{{ fooditem.name }} - {{ fooditem.part.caption }}</i></b>?</p>

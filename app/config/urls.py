@@ -20,10 +20,10 @@ from django.urls.conf import include
 from django.urls import path
 
 urlpatterns = [
-    path('', include('mb.urls')),
     path('admin/', admin.site.urls),
     path('select2/', include('django_select2.urls')),
     path('accounts/', include('allauth.urls')),
+    path('', include('mb.urls')),
 ]
 
 if settings.DEBUG:

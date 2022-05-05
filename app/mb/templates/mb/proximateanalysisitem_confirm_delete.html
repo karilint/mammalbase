@@ -1,7 +1,7 @@
 {% extends 'mb/index_proximate_analysis.html' %}
 {% block content %} {% load custom_tags %}
 <!-- Write your comments here -->
-  {% if user.is_authenticated %}
+  {% if request.user|is_data_admin_or_owner:proximateanalysisitem %}
     <h1>Delete Food Item</h1>
 
     <p>Are you sure you want to delete the Proximate Analysis Item: <b><i>{{ proximateanalysisitem.forage }}</i></b>?</p>

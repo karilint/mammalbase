@@ -42,7 +42,7 @@
       {% endif %}
     </tr>
   </table>
-  {% if user.is_authenticated %}
+  {% if request.user|is_data_admin_or_owner:source_entity %}
   <br>
   <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_entity-relation-new' source_entity.id %}"><span class="fa fa-plus"></span></a>
   {% else %}
@@ -87,7 +87,7 @@
       {% endif %}
     </tbody>
   </table>
-  {% if user.is_authenticated %}
+  {% if request.user|is_data_admin_or_owner:source_entity %}
   <br>
   <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_entity-attribute-new' source_entity.reference_id source_entity.id %}"><span class="fa fa-plus"></span></a>
   {% else %}
@@ -126,7 +126,7 @@
       {% endif %}
     </tbody>
   </table>
-  {% if user.is_authenticated %}
+  {% if request.user|is_data_admin_or_owner:source_entity %}
   <br>
   <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_entity-measurement-new' source_entity.reference_id source_entity.id %}"><span class="fa fa-plus"></span></a>
   {% else %}
@@ -213,7 +213,7 @@
         <td></td>
         <td></td>
         <td>
-          {% if user.is_authenticated %}
+          {% if request.user|is_data_admin_or_owner:source_entity %}
           <a class="btn btn-default" href="{% url 'source-measurementvalue-new' sa=attribute.id se=source_entity.id %}"><span title="Press to Edit" class="fa fa-search"></span></a>
           {% else %}
           {% endif %}

@@ -15,7 +15,7 @@
 
   {% include 'includes/find.html' %}
   {% if page_obj %}
-    {% if user.is_authenticated %}
+  {% if request.user|is_data_admin_or_contributor %}
       <br>
       <br>
     {% endif %}

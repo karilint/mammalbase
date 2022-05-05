@@ -50,7 +50,7 @@
       <td>{{ source_choiceset_option.description }}</td>
     </tr>
   </table>
-  {% if user.is_authenticated %}
+  {% if request.user|is_data_admin_or_owner:source_choiceset_option %}
   <br>
   <a title="Press to Add new" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'choiceset_option_relation-new' source_choiceset_option.id %}"><span class="fa fa-plus"></span></a>
   {% else %}
