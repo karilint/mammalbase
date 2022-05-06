@@ -84,9 +84,13 @@
       {% endfor %}
       {% else %}
         {% if user.is_authenticated %}
-          <tr><td colspan="5">There are no Diet Items available.</td></tr>
+          {% if request.user|is_data_admin_or_contributor %}
+            <tr><td colspan="5">There are no Diet Items available.</td></tr>
+          {% else %}
+            <tr><td colspan="4">There are no Diet Items available.</td></tr>
+          {% endif %}
         {% else %}
-          <tr><td colspan="4">There are no Diet Items available.</td></tr>
+          <tr><td colspan="5">There are no Diet Items available.</td></tr>
         {% endif %}
       {% endif %}
     </tbody>
