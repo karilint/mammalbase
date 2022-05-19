@@ -9,7 +9,7 @@ First, you need to have Docker and Docker Compose installed on your system.
 
 ## Environment variables
 
-Create a `.env` file in the root of the repository and write needed environment variables to it. You can take the [Example .env](./.example.env) and fill in couple of the variables according to the [Environment variable docs](./environment_variables.md).
+Create a `.env` file in the root of the repository and write needed environment variables to it. You can take the [Example .env](./example.env) and fill in couple of the variables according to the [Environment variable docs](./environmental_variables.md).
 
 ## Running the environment
 
