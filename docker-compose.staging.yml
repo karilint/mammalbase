@@ -37,6 +37,7 @@ services:
     volumes:
       - ./nginx/certbot/www:/var/www/certbot/:rw
       - ./nginx/certbot/conf:/etc/letsencrypt/:rw
+      - ./nginx/certbot/log:/var/log/:rw
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
 
