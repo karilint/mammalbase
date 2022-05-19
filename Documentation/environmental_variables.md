@@ -25,3 +25,4 @@
 - DEBUG defaults automatically to 1. However, if you want to run the django application without debugging on, you can set this to 0.
 - ALLOWED_HOSTS defaults automatically to '*'. But if you want to define certain hosts, they need to seperated by `,`. For example, `127.0.0.1,localhost`.
 
+ 
