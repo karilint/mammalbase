@@ -26,3 +26,4 @@
 - ALLOWED_HOSTS defaults automatically to '*'. But if you want to define certain hosts, they need to seperated by `,`. For example, `127.0.0.1,localhost`.
 
  
+ 
