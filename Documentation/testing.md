@@ -17,7 +17,7 @@ The tests may not work locally before the database privileges are set for Django
 ```
 docker-compose exec db mysql -uroot -p
 ```
-Enter the DB_ROOT_PASSWORD ([Example .env](https://github.com/karilint/TaxonManager/blob/main/docs/environment_variables.md)), probably:
+Enter the DB_ROOT_PASSWORD ([Example .env](Documentation/example.env)), probably:
 
 ```
 rootpassword
