@@ -1,2 +1,7 @@
-# django-docker-project-template
-Django 4.0+ Docker project template
+# MammalBase
+
+MammalBase is a database of recent mammals. The main focus of this database is the Trait Data, Measurements and Diets of the species in class Mammalia. For dietary information, we also provide Proximate Analysis data for several diet items.
+
+## How to setup development environment
+
+[Instructions](documentation/Instructions.md)

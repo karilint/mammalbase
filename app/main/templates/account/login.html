@@ -7,14 +7,19 @@
 
 {% block content %}
 
-<h1>{% trans "Sign In" %}</h1>
+<header class="w3-container w3-teal">
+  <h1>{% trans "Sign In with your ORCID" %}</h1>
+</header>
 
 {% get_providers as socialaccount_providers %}
 
 {% if socialaccount_providers %}
+
+<!--
 <p>{% blocktrans with site.name as site_name %}MB: Please sign in with one
 of your existing third party accounts. Or, <a href="{{ signup_url }}">sign up</a>
 for a {{ site_name }} account and sign in below:{% endblocktrans %}</p>
+-->
 
 <div class="socialaccount_ballot">
 
@@ -22,8 +27,9 @@ for a {{ site_name }} account and sign in below:{% endblocktrans %}</p>
     {% include "socialaccount/snippets/provider_list.html" with process="login" %}
   </ul>
 
+<!-- Disable normal login
   <div class="login-or">{% trans 'or' %}</div>
-
+-->
 </div>
 
 {% include "socialaccount/snippets/login_extra.html" %}
@@ -33,6 +39,7 @@ for a {{ site_name }} account and sign in below:{% endblocktrans %}</p>
 <a href="{{ signup_url }}">sign up</a> first.{% endblocktrans %}</p>
 {% endif %}
 
+<!-- Disable normal login
 <form class="login" method="POST" action="{% url 'account_login' %}">
   {% csrf_token %}
   {{ form.as_p }}
@@ -42,5 +49,6 @@ for a {{ site_name }} account and sign in below:{% endblocktrans %}</p>
   <a class="button secondaryAction" href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
   <button class="primaryAction" type="submit">{% trans "Sign In" %}</button>
 </form>
+-->
 
 {% endblock %}
