@@ -55,11 +55,13 @@
         <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'master_attribute-list'%}">Traits</a>
         <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'master_entity_reference-list'%}">References</a>
       {% endblock %}
-      {% if request.user|is_data_admin_or_contributor %}
-      <h4 class="w3-bar-item"><strong>Manage</strong></h4>
-        <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'source_reference-list'%}">Data Sources</a>
-        <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'source_attribute-list'%}">Source Traits</a>
-        <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'data_check-detail'%}">Data Inconsistencies</a>
+      {% if user.is_authenticated %}
+        {% if request.user|is_data_admin_or_contributor %}
+        <h4 class="w3-bar-item"><strong>Manage</strong></h4>
+          <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'source_reference-list'%}">Data Sources</a>
+          <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'source_attribute-list'%}">Source Traits</a>
+          <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'data_check-detail'%}">Data Inconsistencies</a>
+        {% endif %}
         <h4 class="w3-bar-item"><strong>User: {{ user.get_username }}</strong></h4>
         <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'account_logout' %}?next={% url 'index' %}">Logout</a>
       {% else %}
