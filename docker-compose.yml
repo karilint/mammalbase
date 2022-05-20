@@ -35,6 +35,7 @@ services:
       - PMA_HOST=${DB_HOST}
       - PMA_USER=${DB_USER}
       - PMA_PASSWORD=${DB_PASS}
+      - UPLOAD_LIMIT=10M
 
 volumes:
   db: null
