@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from mb.models import (ChoiceValue,DietSet, DietSetItem, EntityClass, EntityRelation, FoodItem, MasterReference
@@ -11,8 +11,8 @@ import logging
 import numpy as np
 import pandas as pd
 
-def import_diet(request):
-	return render(request, "import/import_diet.html")
+def import_test(request):
+	return render(request, "import/import_test.html")
 
 @login_required
 def import_diet_set(request):
