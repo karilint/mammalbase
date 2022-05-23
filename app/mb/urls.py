@@ -3,6 +3,7 @@ from django.conf.urls import url
 from django.urls import path, re_path, include
 from . import views
 from mb.views import (
+    import_diet,
 	import_diet_set,
 )
 import debug_toolbar
@@ -49,6 +50,7 @@ urlpatterns = [
     path('fi/<int:pk>/delete/', views.food_item_delete.as_view(), name='food_item-delete'),
     path('fi/<int:pk>/edit/', views.food_item_edit, name='food_item-edit'),
     path('import/ds', import_diet_set, name='diet_set-import'),
+    path('import/diet', import_diet, name='import_diet'),
     path('ma/', views.master_attribute_list, name='master_attribute-list'),
     path('ma/<int:pk>/', views.master_attribute_detail, name='master_attribute-detail'),
     path('ma/<int:pk>/delete/', views.master_attribute_delete.as_view(), name='master_attribute-delete'),
