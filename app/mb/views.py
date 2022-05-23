@@ -382,6 +382,23 @@ class diet_set_item_delete(UserPassesTestMixin, DeleteView):
             args=(ds_id,)
         )
 
+@login_required
+@permission_required('mb.edit_diet_set_item', raise_exception=True)
+def diet_set_item_edit(request, pk):
+    diet_set_item = get_object_or_404(DietSetItem, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, diet_set_item):
+        raise PermissionDenied
+
+    if request.method == "POST":
+        form = DietSetItemForm(request.POST, instance=diet_set_item)
+        if form.is_valid():
+            diet_set_item = form.save(commit=False)
+            diet_set_item.save()
+            return redirect('diet_set_item-detail', pk=diet_set_item.pk)
+    else:
+        form = DietSetItemForm(instance=diet_set_item)
+    return render(request, 'mb/diet_set_item_edit.html', {'form': form})
 
 @login_required
 @permission_required('mb.add_diet_set_item', raise_exception=True)
