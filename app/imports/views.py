@@ -11,6 +11,9 @@ import logging
 import numpy as np
 import pandas as pd
 
+def import_test(request):
+	return render(request, "import/import_test.html")
+
 @login_required
 def import_diet_set(request):
 	data = {}
