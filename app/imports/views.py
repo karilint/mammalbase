@@ -1,3 +1,4 @@
+from json import load
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseRedirect
@@ -11,6 +12,7 @@ import logging
 import numpy as np
 import pandas as pd
 
+@login_required
 def import_test(request):
 	return render(request, "import/import_test.html")
 
