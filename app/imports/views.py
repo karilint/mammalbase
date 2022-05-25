@@ -21,9 +21,20 @@ def import_test(request):
 	try:
 		csv_file = request.FILES["csv_file"]
 		df = pd.read_csv(csv_file)
-		print(df)
-	
-		return HttpResponseRedirect(reverse("import_test"))
+
+		import_headers = list(df.columns.values)
+		accepted_headers = ['references']
+		print_headers = ', '.join(accepted_headers)
+
+		if print_headers not in import_headers:
+			messages.error(request,'The import file contains wrong headers. The required headers are: %s' % (print_headers))
+			return HttpResponseRedirect(reverse("import_test"))
+		else:
+			print("The headers are: ")
+			for header in import_headers:
+				print(header)
+			messages.success(request, "File uploaded.")
+			return HttpResponseRedirect(reverse("import_test"))
 
 	except Exception as e:
 		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
