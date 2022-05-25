@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from mb.forms import SourceAttributeForm
 from mb.models import (ChoiceValue,DietSet, DietSetItem, EntityClass, EntityRelation, FoodItem, MasterReference
 	, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod)
 from utils.views import *	# MB Utils
@@ -12,9 +13,23 @@ import logging
 import numpy as np
 import pandas as pd
 
+
 @login_required
 def import_test(request):
-	return render(request, "import/import_test.html")
+	if "GET" == request.method:
+		return render(request, "import/import_test.html")
+	try:
+		csv_file = request.FILES["csv_file"]
+		df = pd.read_csv(csv_file)
+		print(df)
+	
+		return HttpResponseRedirect(reverse("import_test"))
+
+	except Exception as e:
+		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
+		messages.error(request,"Unable to upload file. "+repr(e))
+
+
 
 @login_required
 def import_diet_set(request):
