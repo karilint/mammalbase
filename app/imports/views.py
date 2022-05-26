@@ -21,7 +21,6 @@ def import_test(request):
 	try:
 		csv_file = request.FILES["csv_file"]
 		df = pd.read_csv(csv_file)
-		references = df['references'].unique()
 
 		import_headers = list(df.columns.values)
 		accepted_headers = ['references']
@@ -31,6 +30,7 @@ def import_test(request):
 			messages.error(request,'The import file contains wrong headers. The required headers are: %s' % (print_headers))
 			return HttpResponseRedirect(reverse("import_test"))
 		else:
+			references = df['references'].unique()
 			for ref in references:
 				print(ref)
 			messages.success(request, "File uploaded.")
