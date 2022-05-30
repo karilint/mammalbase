@@ -30,9 +30,18 @@ def import_test(request):
 			messages.error(request,'The import file contains wrong headers. The required headers are: %s' % (print_headers))
 			return HttpResponseRedirect(reverse("import_test"))
 		else:
-			references = df['references'].unique()
-			for ref in references:
-				print(ref)
+			r_df = df.loc[df['references'].notnull(), ['references']]
+			sr_all = SourceReference.objects.all()
+
+			for index, reference in r_df.iterrows():
+				sr = sr_all.filter(citation__iexact=reference['references'])
+				if len(sr)>0:
+					print("Citations already exists.")
+				
+				else:
+					source_reference = SourceReference(citation=reference['references'], status=1)
+					source_reference.save()
+					print("Saved new citation.")
 			messages.success(request, "File uploaded.")
 			return HttpResponseRedirect(reverse("import_test"))
 
