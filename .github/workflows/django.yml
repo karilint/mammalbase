@@ -28,4 +28,4 @@ jobs:
       working-directory: ./app
     - name: Run Tests
       run: |
-        python manage.py test
+        python ./app/manage.py test
