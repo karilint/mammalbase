@@ -1,14 +1,13 @@
 import pandas as pd
 
-def test_headers(csv_file):
+def check_all(df):
 
-    df = pd.read_csv(csv_file)
-    for line in df:
-        print(line)
-    
+    if check_headers(df) == True:
+        return True
+
+def check_headers(df):
     import_headers = list(df.columns.values)
     accepted_headers = ['references']
     print_headers = ', '.join(accepted_headers)
-
-    if print_headers not in import_headers:
+    if print_headers in import_headers:
         return True
