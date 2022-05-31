@@ -19,7 +19,7 @@ jobs:
       mysql:
         image: mariadb
         env:
-          DB_HOST: db
+          DB_HOST: 127.0.0.1
           DB_PORT: 3306
           DB_NAME: django_tm
           DB_USER: django_tm
@@ -42,5 +42,12 @@ jobs:
       run: sleep 30s
       shell: bash
     - name: Run Tests
+      env:
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        DB_NAME: django_tm
+        DB_USER: django_tm
+        DB_PASSWORD: password
+        ALLOWED_HOSTS: 127.0.0.1
       run: |
         python ./app/manage.py test imports
