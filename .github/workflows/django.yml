@@ -32,6 +32,6 @@ jobs:
         DB_NAME: django_tm
         DB_USER: django_tm
         DB_PASSWORD: password
-        DJANGO_ALOWED_HOSTS: web,127.0.0.1, localhost
+        DJANGO_ALLOWED_HOSTS: web,127.0.0.1, localhost
       run: |
         python ./app/manage.py test imports
