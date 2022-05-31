@@ -28,6 +28,7 @@ jobs:
       working-directory: ./app
     - name: Run Tests
       env:
+        DB_HOST: db
         DB_NAME: django_tm
         DB_USER: django_tm
         DB_PASSWORD: password
