@@ -23,11 +23,8 @@ def import_test(request):
 		csv_file = request.FILES["csv_file"]
 		df = pd.read_csv(csv_file)
 
-		accepted_headers = ['references']
-		print_headers = ', '.join(accepted_headers)
-
 		if check_all(df) != True:
-			messages.error(request,'The import file contains wrong headers. The required headers are: %s' % (print_headers))
+			messages.error(request,'The import file contains wrong headers.')
 			return HttpResponseRedirect(reverse("import_test"))
 		else:
 			r_df = df.loc[df['references'].notnull(), ['references']]
