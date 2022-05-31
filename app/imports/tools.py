@@ -1,7 +1,7 @@
 import pandas as pd
 
 def check_all(df):
-    if check_headers(df) == True and check_taxonRank(df) == True and check_author(df) == True:
+    if check_headers(df) == True and check_taxonRank(df) == True and check_author(df) == True and check_verbatimScientificName(df) == True:
         return True
 
 def check_headers(df):
@@ -10,12 +10,6 @@ def check_headers(df):
 
     for header in accepted_headers:
         if header not in import_headers:
-            return False
-    return True
-
-def check_taxonRank(df):
-    for rank in (df.loc[:, 'taxonRank']):
-        if rank not in ['Genus', 'Species', 'Subspecies']:
             return False
     return True
 
@@ -28,6 +22,23 @@ def check_author(df):
     
     for number in numbers:
         if not number.isdigit():
+            return False
+    return True
+
+def check_verbatimScientificName(df):
+    for name in pd.isnull(df.loc[:, 'verbatimScientificName']):
+        if name == True:
+            return False
+
+    for name in (df.loc[:, 'verbatimScientificName']):
+        names_list = name.split()
+        if len(names_list) > 3:
+            return False
+    return True
+
+def check_taxonRank(df):
+    for rank in (df.loc[:, 'taxonRank']):
+        if rank not in ['Genus', 'Species', 'Subspecies']:
             return False
     return True
 
