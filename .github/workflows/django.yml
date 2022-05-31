@@ -27,5 +27,10 @@ jobs:
         pip install -r requirements.txt
       working-directory: ./app
     - name: Run Tests
+      env:
+        DB_NAME: django_tm
+        DB_USER: django_tm
+        DB_PASSWORD: password
+        DJANGO_ALOWED_HOSTS: web,127.0.0.1, localhost
       run: |
         python ./app/manage.py test
