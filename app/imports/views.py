@@ -8,6 +8,7 @@ from mb.forms import SourceAttributeForm
 from mb.models import (ChoiceValue,DietSet, DietSetItem, EntityClass, EntityRelation, FoodItem, MasterReference
 	, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod)
 from utils.views import *	# MB Utils
+from .tools import *
 
 import logging
 import numpy as np
@@ -22,11 +23,7 @@ def import_test(request):
 		csv_file = request.FILES["csv_file"]
 		df = pd.read_csv(csv_file)
 
-		import_headers = list(df.columns.values)
-		accepted_headers = ['references']
-		print_headers = ', '.join(accepted_headers)
-
-		if print_headers not in import_headers:
+		if test_headers == False:
 			messages.error(request,'The import file contains wrong headers. The required headers are: %s' % (print_headers))
 			return HttpResponseRedirect(reverse("import_test"))
 		else:
