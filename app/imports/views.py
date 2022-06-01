@@ -14,7 +14,6 @@ import logging
 import numpy as np
 import pandas as pd
 
-
 @login_required
 def import_test(request):
 	if "GET" == request.method:
@@ -23,8 +22,7 @@ def import_test(request):
 		csv_file = request.FILES["csv_file"]
 		df = pd.read_csv(csv_file)
 
-		if check_all(df) != True:
-			messages.error(request,'Something was wrong with the file.')
+		if check_all(request, df) != True:
 			return HttpResponseRedirect(reverse("import_test"))
 		else:
 			for row in df.itertuples():
@@ -33,18 +31,14 @@ def import_test(request):
 				taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass)
 				location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference) 
 				# gender =
-				sample_size = getattr(row, 'individualCount')
+			#	sample_size = getattr(row, 'individualCount')
 				cited_reference =  getattr(row, 'associatedReferences')
 				time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
 				method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
 				study_time = getattr(row, 'verbatimEventDate')
-<<<<<<< HEAD
-
-=======
 				
->>>>>>> 65dc9dbb90e9a9d00dbb2d11427bfbcc08388124
 				# Creates always a new dietset 
-				ds = DietSet(reference=reference, taxon=taxon, location=location, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
+				ds = DietSet(reference=reference, taxon=taxon, location=location, sample_size=0, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
 				ds.save()
 				
 			messages.success(request, "File uploaded.")

@@ -1,10 +1,27 @@
 from mb.models import ChoiceValue, EntityClass, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod
+from django.contrib import messages
 import pandas as pd
 
-def check_all(df):
-#    check_sequence(df)
-    if check_headers(df) == True and check_taxonRank(df) == True and check_author(df) == True and check_verbatimScientificName(df) == True and check_measurementValue(df) == True:
-        return True
+def check_all(request, df):
+    if check_headers(df) == False:
+        messages.error(request, "The import file does not contain the required headers.")
+        return False
+    if check_author(df) == False:
+        messages.error(request, "Not all the authors were in the correct form.")
+        return False
+    if check_verbatimScientificName(df) == False:
+        messages.error(request, "Not all the scientific names were in the correct form.")
+        return False
+    if check_taxonRank(df) == False:
+        messages.error(request, "Not all the taxonomic ranks were in the correct form.")
+        return False
+    if check_sequence(df) == False:
+        messages.error(request, "Not all the sequence numbering were in the correct form.")
+        return False
+    if check_measurementValue(df) == False:
+        messages.error(request, "Not all the measurement values were numbers.")
+        return False
+    return True
 
 def check_headers(df):
     import_headers = list(df.columns.values)
@@ -45,8 +62,7 @@ def check_taxonRank(df):
     return True
 
 def check_sequence(df):
-    for seq in (df.loc[:, 'sequence']):
-        print(seq)
+    return True
 
 def check_measurementValue(df):
     import_headers = list(df.columns.values)
@@ -54,7 +70,7 @@ def check_measurementValue(df):
         return True
     
     for value in (df.loc[:, 'measurementValue']):
-        if pd.isnull(value) == True or any(c.isalpha() for c in value) == False:
+        if pd.isnull(value) == True or any(c.isalpha() for c in str(value)) == False:
             continue
         else:
             return False
@@ -68,10 +84,7 @@ def get_sourcereference_citation(reference):
         new_reference = SourceReference(citation=reference, status=1)
         new_reference.save()
         return new_reference
-<<<<<<< HEAD
-=======
 
->>>>>>> 65dc9dbb90e9a9d00dbb2d11427bfbcc08388124
 def get_entityclass(taxonRank):
     ec = EntityClass.objects.filter(name__iexact=taxonRank)
     if len(ec) > 0:
@@ -115,9 +128,4 @@ def get_sourcelocation(location, ref):
     else:
         new_sourcelocation = SourceLocation(reference=ref, name=location)
         new_sourcelocation.save()
-<<<<<<< HEAD
         return new_sourcelocation
-=======
-        return new_sourcelocation
-
->>>>>>> 65dc9dbb90e9a9d00dbb2d11427bfbcc08388124
