@@ -38,7 +38,11 @@ def import_test(request):
 				time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
 				method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
 				study_time = getattr(row, 'verbatimEventDate')
+<<<<<<< HEAD
 
+=======
+				
+>>>>>>> 65dc9dbb90e9a9d00dbb2d11427bfbcc08388124
 				# Creates always a new dietset 
 				ds = DietSet(reference=reference, taxon=taxon, location=location, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
 				ds.save()

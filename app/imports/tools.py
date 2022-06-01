@@ -68,6 +68,10 @@ def get_sourcereference_citation(reference):
         new_reference = SourceReference(citation=reference, status=1)
         new_reference.save()
         return new_reference
+<<<<<<< HEAD
+=======
+
+>>>>>>> 65dc9dbb90e9a9d00dbb2d11427bfbcc08388124
 def get_entityclass(taxonRank):
     ec = EntityClass.objects.filter(name__iexact=taxonRank)
     if len(ec) > 0:
@@ -111,4 +115,9 @@ def get_sourcelocation(location, ref):
     else:
         new_sourcelocation = SourceLocation(reference=ref, name=location)
         new_sourcelocation.save()
+<<<<<<< HEAD
         return new_sourcelocation
+=======
+        return new_sourcelocation
+
+>>>>>>> 65dc9dbb90e9a9d00dbb2d11427bfbcc08388124
