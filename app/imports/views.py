@@ -29,7 +29,19 @@ def import_test(request):
 		else:
 			for row in df.itertuples():
 				reference = get_sourcereference_citation(getattr(row, 'references'))
-				# print(reference)
+				entityclass = get_entityclass(getattr(row, 'taxonRank'))
+				taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass)
+				location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference) 
+				# gender =
+				sample_size = getattr(row, 'individualCount')
+				cited_reference =  getattr(row, 'associatedReferences')
+				time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
+				method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
+				study_time = getattr(row, 'verbatimEventDate')
+				
+				# Creates always a new dietset 
+				ds = DietSet(reference=reference, taxon=taxon, location=location, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
+				ds.save()
 				
 			messages.success(request, "File uploaded.")
 			return HttpResponseRedirect(reverse("import_test"))
