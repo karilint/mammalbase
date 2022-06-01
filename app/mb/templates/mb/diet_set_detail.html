@@ -36,7 +36,7 @@
   <br>
   {% endif %}
 
-  <table class="mb-list w3-table-all w3-small">
+  <table class="mb-list w3-table-all w3-small w3-responsive">
     {% if ds.taxon.name|length > 50 %}
     <caption class="w3-left-align w3-small">
       {% else %}
@@ -76,7 +76,7 @@
     </tbody>
   </table>
 
-  <table class="mb-detail w3-table-all">
+  <table class="mb-detail w3-table-all w3-responsive">
     <caption class="w3-left-align">Diet set for {{ ds.taxon.name }}</caption>
     <tr>
       <th class="w3-quarter">Location:</th>
@@ -120,7 +120,7 @@
     <br>
   {% endif %}
 
-  <table class="mb-list w3-table-all w3-small">
+  <table class="mb-list w3-table-all w3-small w3-responsive">
     <caption class="w3-left-align">Table 2. Food items listed for {{ ds.taxon.name }}</caption>
 
     <thead>

@@ -19,7 +19,7 @@
       <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
     {% endif %}
   </div>
-  <table class="mb-detail w3-table-all">
+  <table class="mb-detail w3-table-all w3-responsive">
     <caption class="mb-detail w3-left-align">Taxonomic Serial No.: {{ tsn.tsn }} ({{ tsn.completename }})</caption>
     <tr>
       <th>TSN:</th>
@@ -56,7 +56,7 @@
         {% else %}
         <br>
         {% endif %}
-        <table class="mb-list w3-table-all w3-small">
+        <table class="mb-list w3-table-all w3-small w3-responsive">
           <caption class="w3-left-align">Table 1. List of Food Items linked with Taxonomic Serial No. {{ tsn.tsn }} ({{ tsn.completename }}).</caption>
           <thead>
             <tr>
@@ -83,7 +83,7 @@
         {% else %}
         <br>
         {% endif %}
-        <table class="mb-list w3-table-all w3-small">
+        <table class="mb-list w3-table-all w3-small w3-responsive">
           <caption class="mb-data w3-left-align">Table 2. Summary list of mean Proximate Analysis values (DM basis) grouped by analysed forage part and the Itis TSN hierarchy assigned for {{ tsn.completename }}. <sup>a.</sup></caption>
           <thead>
             <tr>
