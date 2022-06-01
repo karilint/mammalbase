@@ -43,7 +43,7 @@
   <body>
     <!-- Navbar -->
      <div class="w3-top">
-      <div class="w3-bar w3-theme w3-top w3-left-align w3-large">
+      <div class="w3-bar w3-theme w3-left-align w3-large">
         <a class="w3-bar-item w3-button w3-right w3-hide-large w3-hover-white w3-large w3-theme-l1" href="javascript:void(0)" onclick="w3_open()"><i class="fa fa-bars"></i></a>
         <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'index' %}"><i class="fa fa-home fa-fw" aria-hidden="true"></i>&nbsp;Home</a>
         <a class="w3-bar-item w3-button w3-hover-white" href="{% url 'index_mammals' %}">Mammals</a>
@@ -52,6 +52,19 @@
         <a class="w3-bar-item w3-button w3-hover-white" href="{% url 'index_news' %}">News</a>
         <a class="w3-bar-item w3-button w3-hover-white" href="{% url 'index_about' %}">About</a>
         <a class="w3-bar-item w3-button w3-hover-white" href="{% url 'import_test' %}">Import</a>
+      </div>
+    </div>
+    <!---keeps the nav bar form being on top of conent-->
+    <div class="w3-container" style="opacity:0">
+      <div class="w3-bar w3-theme w3-left-align w3-large">
+        <a class="w3-bar-item w3-button w3-right w3-hide-large w3-hover-white w3-large w3-theme-l1" ><i class="fa fa-bars"></i></a>
+        <a class="w3-bar-item w3-button w3-hover-black" ><i class="fa fa-home fa-fw" aria-hidden="true"></i>&nbsp;Home</a>
+        <a class="w3-bar-item w3-button w3-hover-white" >Mammals</a>
+        <a class="w3-bar-item w3-button w3-hover-white" >Diets</a>
+        <a class="w3-bar-item w3-button w3-hover-white" >Proximate Analysis</a>
+        <a class="w3-bar-item w3-button w3-hover-white" >News</a>
+        <a class="w3-bar-item w3-button w3-hover-white" >About</a>
+        <a class="w3-bar-item w3-button w3-hover-white" >Import</a>
       </div>
     </div>
     <!-- Sidebar -->
@@ -82,7 +95,7 @@
     <div class="w3-overlay w3-hide-large" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
     <!-- Main content: shift it to the right by 250 pixels when the sidebar is visible -->
     <main class="w3-main" style="margin-left:250px">
-      <article class="w3-row w3-padding-32">
+      <article class="w3-row w3-padding-16">
         {% block content %} {% load custom_tags %}
         {% endblock %}
         <aside class="w3-quarter w3-container">
