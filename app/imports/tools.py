@@ -62,6 +62,25 @@ def check_taxonRank(df):
     return True
 
 def check_sequence(df):
+
+    df_new = df[['verbatimScientificName', 'verbatimLocality', 'samplingEffort', 'habitat', 'sequence', 'duupaduu']]
+    for item in df_new.values:
+        print(item)
+
+    counter = 0
+    total = 1
+    for number in (df.loc[:, 'sequence']):
+        if number == counter:
+            counter += 1
+            total += number
+        else:
+            counter -= 1
+            sum = (counter*(counter+1))/2
+            if counter != -1 and sum != total:
+                return False
+            total = 1
+            counter = 2
+
     return True
 
 def check_measurementValue(df):
