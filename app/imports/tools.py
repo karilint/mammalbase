@@ -77,7 +77,7 @@ def check_sequence(df, request):
     counter = 0
     total = 1
     fooditems = []
-    lines = 0
+    lines = 1
 
     for item in df_new.values:
         lines += 1
@@ -108,11 +108,6 @@ def check_sequence(df, request):
                 if counter != -1 and sum != total:
                     messages.error(request, "Check the sequence numbering at the line " + str(lines))
                     return False
-#            total = 1
-#            counter = 2
-#            scientific_name = item[0]
-#            references = item[3]
-#           fooditems = [item[1]]
     return True
 
 def check_measurementValue(df, request):
