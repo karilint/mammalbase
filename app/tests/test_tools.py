@@ -64,7 +64,10 @@ class ToolsTest(TestCase):
     
     def test_false_check_measurementValue(self):
         self.assertEqual(tools.check_measurementValue(self.false_file), False)
-        
+
+    def test_check_all(self):
+        self.assertEqual(tools.check_all('', self.file), True)    
+    
     def test_new_get_sourcereference_citation(self):
         self.assertEqual(tools.get_sourcereference_citation(self.file.loc[:, 'references'][0]).citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
 
@@ -95,4 +98,14 @@ class ToolsTest(TestCase):
        reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][4])
        self.assertEqual(tools.get_sourcelocation(self.file.loc[:, 'verbatimLocality'][4], reference).name, 'Mandu Mandu Gorge, Cape Range National Park, Western Australia')        
 
+    def test_nan_to_zero_empty(self):
+        self.assertEqual(tools.possible_nan_to_zero(self.file.loc[:, 'individualCount'][4]), 108)
 
+    def test_nan_to_zero(self):
+        self.assertEqual(tools.possible_nan_to_zero(self.file.loc[:, 'individualCount'][0]), 0)
+    
+    def test_nan_to_none_empty(self):
+        self.assertEqual(tools.possible_nan_to_none(self.file.loc[:, 'verbatimEventDate'][0]), None)
+
+    def test_nan_to_nan(self):
+        self.assertEqual(tools.possible_nan_to_none(self.file.loc[:, 'verbatimEventDate'][2]), 'October 2009-June 2010 and August 2010-February 2011')
