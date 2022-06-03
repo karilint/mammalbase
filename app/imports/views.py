@@ -29,16 +29,17 @@ def import_test(request):
 				reference = get_sourcereference_citation(getattr(row, 'references'))
 				entityclass = get_entityclass(getattr(row, 'taxonRank'))
 				taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass)
-				location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference) 
+				location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference)
 				# gender =
-			#	sample_size = getattr(row, 'individualCount')
-				cited_reference =  getattr(row, 'associatedReferences')
+				sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
+				cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
 				time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
 				method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
-				study_time = getattr(row, 'verbatimEventDate')
-				
-				# Creates always a new dietset 
-				ds = DietSet(reference=reference, taxon=taxon, location=location, sample_size=0, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
+				study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
+
+
+				# Creates always a new dietset
+				ds = DietSet(reference=reference, taxon=taxon, location=location, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
 				ds.save()
 				
 			messages.success(request, "File uploaded.")
