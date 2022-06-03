@@ -4,98 +4,129 @@ from django.contrib import messages
 import pandas as pd
 
 def check_all(request, df):
-    if check_headers(df) == False:
-        messages.error(request, "The import file does not contain the required headers.")
+    if check_headers(df, request) == False:
         return False
-    if check_author(df) == False:
-        messages.error(request, "Not all the authors were in the correct form.")
+    if check_author(df, request) == False:
         return False
-    if check_verbatimScientificName(df) == False:
-        messages.error(request, "Not all the scientific names were in the correct form.")
+    if check_verbatimScientificName(df, request) == False:
         return False
-    if check_taxonRank(df) == False:
-        messages.error(request, "Not all the taxonomic ranks were in the correct form.")
+    if check_taxonRank(df, request) == False:
         return False
-    if check_sequence(df) == False:
-        messages.error(request, "Not everything was correct with sequencing.")
+    if check_sequence(df, request) == False:
         return False
-    if check_measurementValue(df) == False:
-        messages.error(request, "Not all the measurement values were numbers.")
+    if check_measurementValue(df, request) == False:
         return False
     return True
 
-def check_headers(df):
+def check_headers(df, request):
     import_headers = list(df.columns.values)
     accepted_headers = ['author', 'verbatimScientificName', 'taxonRank', 'verbatimAssociatedTaxa', 'sequence',  'references']
 
     for header in accepted_headers:
         if header not in import_headers:
+            messages.error(request, "The import file does not contain the required headers. The missing header is: " + str(header) + ".")
             return False
     return True
 
-def check_author(df):
+def check_author(df, request):
     numbers = []
+    counter = 1
     for author in (df.loc[:, 'author']):
+        counter += 1
         if len(str(author)) != 19:
+            messages.error(request, "The author on the line number " + str(counter) + " is not in the correct form.")
             return False
         numbers.append(author.replace("-", ""))
     
+    counter = 1
     for number in numbers:
+        counter += 1
         if not number.isdigit():
+            messages.error(request, "The author on the line number " + str(counter) + " is not in the correct form.")
             return False
     return True
 
-def check_verbatimScientificName(df):
+def check_verbatimScientificName(df, request):
+    counter = 1
     for name in pd.isnull(df.loc[:, 'verbatimScientificName']):
+        counter += 1
         if name == True:
+            messages.error(request, "Scientific name is empty on the line " + str(counter) + ".")
             return False
 
+    counter = 1
     for name in (df.loc[:, 'verbatimScientificName']):
+        counter += 1
         names_list = name.split()
         if len(names_list) > 3:
+            messages.error(request, "Scientific name is not in the correct form on the line " + str(counter) + ".")
             return False
     return True
 
-def check_taxonRank(df):
+def check_taxonRank(df, request):
+    counter = 1
     for rank in (df.loc[:, 'taxonRank']):
+        counter += 1
         if rank not in ['Genus', 'Species', 'Subspecies', 'genus', 'species', 'subspecies']:
+            messages.error(request, "Taxonomic rank is not in the correct form on the line " + str(counter) + ".")
             return False
     return True
 
-def check_sequence(df):
+def check_sequence(df, request):
     df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references']]
     counter = 0
     total = 1
     fooditems = []
+    lines = 0
 
     for item in df_new.values:
+        lines += 1
         if item[2] == counter:
-            if item[0] != scientific_name or item[3] != references or item[1] in fooditems:
+            if item[0] != scientific_name:
+                messages.error(request, "Scientific name on the line " + str(lines) + " should be " + str(scientific_name) + ".")
+                return False
+            if item[3] != references:
+                messages.error(request, "References on the line " + str(lines) + " should be " + str(references) + ".")
+                return False
+            if item[1] in fooditems:
+                messages.error(request, "Food item on the line " + str(lines) + " is already mentioned for this diet set.")
                 return False
             fooditems.append(item[1])
             counter += 1
             total += item[2]
+
         else:
-            counter -= 1
-            sum = (counter*(counter+1))/2
-            if counter != -1 and sum != total:
-                return False
-            total = 1
-            counter = 2
-            scientific_name = item[0]
-            references = item[3]
-            fooditems = [item[1]]
+            if item[2] == 1:
+                total = 1
+                counter = 2
+                scientific_name = item[0]
+                references = item[3]
+                fooditems = [item[1]]
+            else:
+                sum = (counter*(counter+1))/2
+                counter -= 1
+                if counter != -1 and sum != total:
+                    messages.error(request, "Check the sequence numbering at the line " + str(lines))
+                    return False
+#            total = 1
+#            counter = 2
+#            scientific_name = item[0]
+#            references = item[3]
+#           fooditems = [item[1]]
     return True
 
-def check_measurementValue(df):
+def check_measurementValue(df, request):
     import_headers = list(df.columns.values)
     if "measurementValue" not in import_headers:
         return True
     
+    counter = 1
     for value in (df.loc[:, 'measurementValue']):
+        counter += 1
         if pd.isnull(value) == True or any(c.isalpha() for c in str(value)) == False:
             continue
         else:
+            messages.error(request, "The measurement value on the line " + str(counter) + " is not a number")
             return False
     return True
 
