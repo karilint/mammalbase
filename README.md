@@ -5,3 +5,6 @@ MammalBase is a database of recent mammals. The main focus of this database is t
 ## How to setup development environment
 
 [Instructions](documentation/Instructions.md)
+
+## Testing
+[Testing Guide](documentation/testing.md)
