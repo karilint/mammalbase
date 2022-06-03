@@ -23,7 +23,7 @@
     <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
     {% endif %}
   </div>
-  <table class="mb-detail w3-table-all">
+  <table class="mb-detail w3-table-all w3-responsive">
     <caption class="mb-detail w3-left-align">Food Item: {{ food_item.name }}</caption>
     <tr>
       <th class="w3-quarter">Food Item:</th>
@@ -47,7 +47,7 @@
   {% else %}
     <br>
   {% endif %}
-  <table class="mb-list w3-table-all w3-small">
+  <table class="mb-list w3-table-all w3-small w3-responsive">
     <caption class="mb-data w3-left-align">Table 1. Summary list of mean Proximate Analysis values (DM basis) grouped by analysed forage part and the Itis TSN hierarchy assigned for {{ food_item.name }}. <sup>a.</sup></caption>
     <thead>
       <tr>

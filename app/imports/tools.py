@@ -104,6 +104,8 @@ def get_sourceentity(vs_name, reference, entity):
         return new_sourceentity
 
 def get_timeperiod(sampling, ref):
+    if sampling != sampling:
+        return None
     tp = TimePeriod.objects.filter(name__iexact=sampling)
     if len(tp) > 0:
         return tp[0]
@@ -113,6 +115,8 @@ def get_timeperiod(sampling, ref):
         return new_timeperiod
 
 def get_sourcemethod(method, ref):
+    if method != method:
+        return None
     sm = SourceMethod.objects.filter(name__iexact=method)
     if len(sm) > 0:
         return sm[0]
@@ -122,6 +126,8 @@ def get_sourcemethod(method, ref):
         return new_sourcemethod
 
 def get_sourcelocation(location, ref):
+    if location != location:
+        return None
     sl = SourceLocation.objects.filter(name__iexact=location)
     if len(sl) > 0:
         return sl[0]
@@ -129,3 +135,14 @@ def get_sourcelocation(location, ref):
         new_sourcelocation = SourceLocation(reference=ref, name=location)
         new_sourcelocation.save()
         return new_sourcelocation
+
+def possible_nan_to_zero(size):
+    if size != size:
+        return 0
+    return size
+
+def possible_nan_to_none(possible):
+    if possible != possible:
+        return None
+    return possible
+
