@@ -23,7 +23,7 @@
     <button title="Please login to Delete" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
     {% endif %}
   </div>
-  <table class="mb-detail w3-table-all">
+  <table class="mb-detail w3-table-all w3-responsive">
     <caption class="w3-left-align">Reference: {{ master_reference.citation|safe|default_if_none:"-" }}</caption>
     <tr>
       <th class="w3-quarter">Type:</th>
@@ -83,7 +83,7 @@
   {% else %}
   <br>
   {% endif %}
-  <table class="mb-list w3-table-all w3-small">
+  <table class="mb-list w3-table-all w3-small w3-responsive">
     {% if master_reference.citation|length > 50 %}
     <caption class="w3-left-align w3-small">
       {% else %}
@@ -122,7 +122,7 @@
       {% else %}
       <br>
       {% endif %}
-      <table class="mb-list w3-table-all w3-small">
+      <table class="mb-list w3-table-all w3-small w3-responsive">
         {% if master_reference.citation|length > 50 %}
         <caption class="w3-left-align w3-small">
           {% else %}
@@ -155,7 +155,7 @@
           {% else %}
           <br>
           {% endif %}
-          <table class="mb-list w3-table-all w3-small">
+          <table class="mb-list w3-table-all w3-small w3-responsive">
             {% if master_reference.citation|length > 50 %}
             <caption class="w3-left-align w3-small">
               {% else %}
