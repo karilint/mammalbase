@@ -60,6 +60,8 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+false_test.csv
+test.csv
 
 # Translations
 *.mo

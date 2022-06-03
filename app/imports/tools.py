@@ -1,3 +1,4 @@
+from weakref import ref
 from mb.models import ChoiceValue, EntityClass, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod
 from django.contrib import messages
 import pandas as pd
@@ -16,7 +17,7 @@ def check_all(request, df):
         messages.error(request, "Not all the taxonomic ranks were in the correct form.")
         return False
     if check_sequence(df) == False:
-        messages.error(request, "Not all the sequence numbering were in the correct form.")
+        messages.error(request, "Not everything was correct with sequencing.")
         return False
     if check_measurementValue(df) == False:
         messages.error(request, "Not all the measurement values were numbers.")
@@ -62,6 +63,28 @@ def check_taxonRank(df):
     return True
 
 def check_sequence(df):
+    df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references']]
+    counter = 0
+    total = 1
+    fooditems = []
+
+    for item in df_new.values:
+        if item[2] == counter:
+            if item[0] != scientific_name or item[3] != references or item[1] in fooditems:
+                return False
+            fooditems.append(item[1])
+            counter += 1
+            total += item[2]
+        else:
+            counter -= 1
+            sum = (counter*(counter+1))/2
+            if counter != -1 and sum != total:
+                return False
+            total = 1
+            counter = 2
+            scientific_name = item[0]
+            references = item[3]
+            fooditems = [item[1]]
     return True
 
 def check_measurementValue(df):
