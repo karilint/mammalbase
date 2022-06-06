@@ -1,6 +1,7 @@
 from weakref import ref
-from mb.models import ChoiceValue, EntityClass, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod
+from mb.models import ChoiceValue, DietSet, EntityClass, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod
 from django.contrib import messages
+from django.db import transaction
 import pandas as pd
 
 def check_all(request, df):
@@ -195,3 +196,18 @@ def possible_nan_to_none(possible):
         return None
     return possible
 
+@transaction.atomic
+def create_dietset(row):
+    reference = get_sourcereference_citation(getattr(row, 'references'))
+    entityclass = get_entityclass(getattr(row, 'taxonRank'))
+    taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass)
+    location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference)
+	# gender =
+    sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
+    cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
+    time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
+    method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
+    study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
+
+    ds = DietSet(reference=reference, taxon=taxon, location=location, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
+    ds.save()
