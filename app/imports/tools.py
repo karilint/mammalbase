@@ -1,8 +1,9 @@
-from weakref import ref
 from mb.models import ChoiceValue, DietSet, EntityClass, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod
 from django.contrib import messages
 from django.db import transaction
+
 import pandas as pd
+import re
 
 def check_all(request, df):
     if check_headers(df, request) == False:
@@ -16,6 +17,8 @@ def check_all(request, df):
     if check_sequence(df, request) == False:
         return False
     if check_measurementValue(df, request) == False:
+        return False
+    if check_references(df, request) == False:
         return False
     return True
 
@@ -79,36 +82,43 @@ def check_sequence(df, request):
     total = 1
     fooditems = []
     lines = 1
-
     for item in df_new.values:
         lines += 1
-        if item[2] == counter:
-            if item[0] != scientific_name:
-                messages.error(request, "Scientific name on the line " + str(lines) + " should be " + str(scientific_name) + ".")
-                return False
-            if item[3] != references:
-                messages.error(request, "References on the line " + str(lines) + " should be " + str(references) + ".")
-                return False
-            if item[1] in fooditems:
-                messages.error(request, "Food item on the line " + str(lines) + " is already mentioned for this diet set.")
-                return False
-            fooditems.append(item[1])
-            counter += 1
-            total += item[2]
-
-        else:
-            if item[2] == 1:
-                total = 1
-                counter = 2
-                scientific_name = item[0]
-                references = item[3]
-                fooditems = [item[1]]
-            else:
-                sum = (counter*(counter+1))/2
-                counter -= 1
-                if counter != -1 and sum != total:
-                    messages.error(request, "Check the sequence numbering at the line " + str(lines))
+        if str(item[2]).isnumeric():            
+            if int(item[2]) == counter:
+                if item[0] != scientific_name:
+                    messages.error(request, "Scientific name on the line " + str(lines) + " should be " + str(scientific_name) + ".")
                     return False
+                if item[3] != references:
+                    messages.error(request, "References on the line " + str(lines) + " should be '" + str(references) + "'.")
+                    return False
+                if item[1] in fooditems:
+                    messages.error(request, "Food item on the line " + str(lines) + " is already mentioned for this diet set.")
+                    return False
+                fooditems.append(item[1])
+                counter += 1
+                total += int(item[2])
+
+            else:
+                if int(item[2]) == 1:
+                    total = 1
+                    counter = 2
+                    scientific_name = item[0]
+                    references = item[3]
+                    fooditems = [item[1]]
+                    continue
+                else:
+                    sum = (counter*(counter+1))/2
+                    counter -= 1
+                    if counter != -1 and sum != total:
+                        messages.error(request, "Check the sequence numbering on the line " + str(lines) + ".")
+                        return False
+                    else:
+                        continue
+        else:
+            messages.error(request, "Sequence number on the line " + str(lines) + " is not numeric.")
+            return False
+        
     return True
 
 def check_measurementValue(df, request):
@@ -122,7 +132,19 @@ def check_measurementValue(df, request):
         if pd.isnull(value) == True or any(c.isalpha() for c in str(value)) == False:
             continue
         else:
-            messages.error(request, "The measurement value on the line " + str(counter) + " is not a number")
+            messages.error(request, "The measurement value on the line " + str(counter) + " is not a number.")
+            return False
+    return True
+
+def check_references(df, request):
+    counter = 1
+    for ref in (df.loc[:, 'references']):
+        print(ref)
+        match = re.match(r'.*([1-2][0-9]{3})', ref)
+        print(match)
+        counter += 1
+        if match is None:
+            messages.error(request, "Reference does not have a year number on the line " + str(counter) + ".")
             return False
     return True
 
