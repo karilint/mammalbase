@@ -87,7 +87,7 @@ def check_sequence(df, request):
         if str(item[2]).isnumeric():            
             if int(item[2]) == counter:
                 if item[0] != scientific_name:
-                    messages.error(request, "Scientific name on the line " + str(lines) + " should be " + str(scientific_name) + ".")
+                    messages.error(request, "Scientific name on the line " + str(lines) + " should be '" + str(scientific_name) + "'.")
                     return False
                 if item[3] != references:
                     messages.error(request, "References on the line " + str(lines) + " should be '" + str(references) + "'.")
@@ -139,9 +139,7 @@ def check_measurementValue(df, request):
 def check_references(df, request):
     counter = 1
     for ref in (df.loc[:, 'references']):
-        print(ref)
         match = re.match(r'.*([1-2][0-9]{3})', ref)
-        print(match)
         counter += 1
         if match is None:
             messages.error(request, "Reference does not have a year number on the line " + str(counter) + ".")
