@@ -14,7 +14,7 @@
   </header>
   <br>
   <div class="mb-detail w3-bar w3-right-align">
-    <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{{request.META.HTTP_REFERER}}"><span class="fa fa-arrow-left"></span></a>
+    <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" onclick="history.back()"><span class="fa fa-arrow-left"></span></a>
     {% if request.user|is_data_admin_or_owner:food_item %}
     <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'food_item-edit' pk=food_item.pk %}"><span class="fa fa-pencil-square-o"></span></a>
     <a title="Press to Delete" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'food_item-delete' pk=food_item.pk %}"><span class="fa  fa-trash-o"></span></a>
