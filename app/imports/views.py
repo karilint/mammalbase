@@ -22,7 +22,9 @@ def import_test(request):
 		csv_file = request.FILES["csv_file"]
 		df = pd.read_csv(csv_file)
 		trim_df(df)
-		if check_all(request, df) != True:
+		check = Check(request)
+
+		if check.check_all(df) != True:
 			return HttpResponseRedirect(reverse("import_test"))
 		else:
 			for row in df.itertuples():
