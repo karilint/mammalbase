@@ -109,3 +109,14 @@ class ToolsTest(TestCase):
 
     def test_nan_to_nan(self):
         self.assertEqual(tools.possible_nan_to_none(self.file.loc[:, 'verbatimEventDate'][2]), 'October 2009-June 2010 and August 2010-February 2011')
+
+    def test_trims_whitespace(self):
+        df = pd.DataFrame.from_dict({'author': ['    1111-1111-2222-2222', '0000-0001-9627-8821'], 
+        'verbatimScientificName':['kapistelija', 'kapistelija    '], 
+        'taxonRank':['genus', 'genus'],
+        'references':['tosi tieteellinen tutkimus    tm. 2000', 'tosi tieteellinen tutkimus tm.'] })
+        tools.trim_df(df)
+        self.assertEqual(df.at[0, 'author'],'1111-1111-2222-2222' )
+        self.assertEqual(df.at[1, 'verbatimScientificName'],'kapistelija' )
+        self.assertEqual(df.at[0, 'references'],'tosi tieteellinen tutkimus tm. 2000' )
+

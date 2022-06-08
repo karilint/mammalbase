@@ -113,8 +113,7 @@ def check_sequence(df, request):
                     if counter != -1 and sum != total:
                         messages.error(request, "Check the sequence numbering on the line " + str(lines) + ".")
                         return False
-                    else:
-                        continue
+
         else:
             messages.error(request, "Sequence number on the line " + str(lines) + " is not numeric.")
             return False
@@ -231,3 +230,12 @@ def create_dietset(row):
 
     ds = DietSet(reference=reference, taxon=taxon, location=location, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
     ds.save()
+
+def trim(text:str):
+    return " ".join(text.split())
+
+def trim_df(df):
+    headers = df.columns
+    for i, row in df.iterrows():
+        for header in headers:
+            df.at[i, header] = trim(str(df.at[i, header]))
