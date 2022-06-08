@@ -1,5 +1,8 @@
 from django.test import TestCase
+from django.test.client import RequestFactory
+from django.contrib.messages.storage.fallback import FallbackStorage
 from mb.models import EntityClass, SourceEntity, SourceLocation, SourceMethod
+from imports.tools import Check
 import imports.tools as tools
 import tempfile, csv, os
 import pandas as pd
@@ -7,6 +10,12 @@ import pandas as pd
 
 class ToolsTest(TestCase):
     def setUp(self):
+        self.factory = RequestFactory()
+        self.request = self.factory.get('import/test')
+        self.check = Check(self.request)
+        setattr(self.request, 'session', 'session')
+        messages = FallbackStorage(self.request)
+        setattr(self.request, '_messages', messages)
         with open('test.csv', 'w') as file:
             writer = csv.writer(file)
             writer.writerow(['author', 'verbatimScientificName', 'taxonRank', 'verbatimLocality', 'habitat', 'samplingEffort', 'sex', 'individualCount', 'verbatimEventDate', 'measurementMethod', 'verbatimAssociatedTaxa', 'sequence', 'measurementValue', 'associatedReferences',  'references'])
@@ -36,37 +45,37 @@ class ToolsTest(TestCase):
         #print('Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
 
     def test_check_headers(self):
-        self.assertEqual(tools.check_headers(self.file), True)
+        self.assertEqual(self.check.check_headers(self.file), True)
 
     def test_check_headers_false(self):
-        self.assertEqual(tools.check_headers(self.false_file), False)
+        self.assertEqual(self.check.check_headers(self.false_file), False)
     
     def test_check_author(self):
-        self.assertEqual(tools.check_author(self.file), True)
+        self.assertEqual(self.check.check_author(self.file), True)
     
     def test_check_verbatimScientificName(self):
-        self.assertEqual(tools.check_verbatimScientificName(self.file), True)
+        self.assertEqual(self.check.check_verbatimScientificName(self.file), True)
     
     def test_false_check_verbatimScientificName(self):
-        self.assertEqual(tools.check_verbatimScientificName(self.false_file), False)
+        self.assertEqual(self.check.check_verbatimScientificName(self.false_file), False)
     
     def test_check_taxonRank(self):
-        self.assertEqual(tools.check_taxonRank(self.file), True)
+        self.assertEqual(self.check.check_taxonRank(self.file), True)
     
     def test_false_taxonRank(self):
-        self.assertEqual(tools.check_taxonRank(self.false_file), False)
+        self.assertEqual(self.check.check_taxonRank(self.false_file), False)
     
     def test_check_sequence(self):
-        self.assertEqual(tools.check_sequence(self.file), True)
+        self.assertEqual(self.check.check_sequence(self.file), True)
     
     def test_check_measurmentValue(self):
-        self.assertEqual(tools.check_measurementValue(self.file), True)
+        self.assertEqual(self.check.check_measurementValue(self.file), True)
     
     def test_false_check_measurementValue(self):
-        self.assertEqual(tools.check_measurementValue(self.false_file), False)
+        self.assertEqual(self.check.check_measurementValue(self.false_file), False)
 
     def test_check_all(self):
-        self.assertEqual(tools.check_all('', self.file), True)    
+        self.assertEqual(self.check.check_all(self.file), True)    
     
     def test_new_get_sourcereference_citation(self):
         self.assertEqual(tools.get_sourcereference_citation(self.file.loc[:, 'references'][0]).citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')

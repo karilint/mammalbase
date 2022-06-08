@@ -21,8 +21,9 @@ def import_test(request):
 	try:
 		csv_file = request.FILES["csv_file"]
 		df = pd.read_csv(csv_file)
+		check = Check(request)
 
-		if check_all(request, df) != True:
+		if check.check_all(df) != True:
 			return HttpResponseRedirect(reverse("import_test"))
 		else:
 			for row in df.itertuples():
