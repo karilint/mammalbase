@@ -202,11 +202,15 @@ class Check:
     def check_references(self, df):
         counter = 1
         for ref in (df.loc[:, 'references']):
+            if len(ref) < 10 or len(ref) > 500:
+                messages.error(self.request, "Reference is too short or too long on the line " + str(counter) + ".")
+                return False
             match = re.match(r'.*([1-2][0-9]{3})', ref)
             counter += 1
             if match is None:
                 messages.error(self.request, "Reference does not have a year number on the line " + str(counter) + ".")
                 return False
+
         return True
 
 def get_sourcereference_citation(reference):
