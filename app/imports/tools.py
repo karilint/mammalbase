@@ -82,9 +82,12 @@ def check_sequence(df, request):
     total = 1
     fooditems = []
     lines = 1
+    compare = []
+    null = 0
+
     for item in df_new.values:
         lines += 1
-        if str(item[2]).isnumeric():            
+        if str(item[2]).isnumeric():
             if int(item[2]) == counter:
                 if item[0] != scientific_name:
                     messages.error(request, "Scientific name on the line " + str(lines) + " should be '" + str(scientific_name) + "'.")
@@ -101,11 +104,64 @@ def check_sequence(df, request):
 
             else:
                 if int(item[2]) == 1:
+                    reference_list = [item[0], item[3]]
+                    if 'verbatimLocality' in df.columns.values:
+                        for vl in df.loc[(lines-2):(lines-2), 'verbatimLocality'].fillna(0):
+                            reference_list.append(vl)
+                    if 'habitat' in df.columns.values:
+                        for hab in df.loc[(lines-2):(lines-2), 'habitat'].fillna(0):
+                            reference_list.append(hab)
+                    if 'samplingEffort' in df.columns.values:
+                        for se in df.loc[(lines-2):(lines-2), 'samplingEffort'].fillna(0):
+                            reference_list.append(se)
+                    if 'sex' in df.columns.values:
+                        for sex in df.loc[(lines-2):(lines-2), 'sex'].fillna(0):
+                            reference_list.append(sex)
+                    if 'individuaCount' in df.columns.values:
+                        for ic in df.loc[(lines-2):(lines-2), 'individualCount'].fillna(0):
+                            reference_list.append(ic)
+                    if 'verbatimEventDate' in df.columns.values:
+                        for ved in df.loc[(lines-2):(lines-2), 'verbatimEventDate'].fillna(0):
+                            reference_list.append(ved)
+                    if 'measurementMethod' in df.columns.values:
+                        for mm in df.loc[(lines-2):(lines-2), 'measurementMethod'].fillna(0):
+                            reference_list.append(mm)
+                    if 'associatedReferences' in df.columns.values:
+                        for ar in df.loc[(lines-2):(lines-2), 'associatedReferences'].fillna(0):
+                            reference_list.append(ar)
+                    if reference_list == compare:
+                        messages.error(request, "False sequence number 1 on the line " + str(lines) +".")
+                        return False
                     total = 1
                     counter = 2
                     scientific_name = item[0]
                     references = item[3]
                     fooditems = [item[1]]
+                    compare = [item[0], item[3]]
+                    if 'verbatimLocality' in df.columns.values:
+                        for vl in df.loc[(lines-2):(lines-2), 'verbatimLocality'].fillna(0):
+                            compare.append(vl)
+                    if 'habitat' in df.columns.values:
+                        for hab in df.loc[(lines-2):(lines-2), 'habitat'].fillna(0):
+                            compare.append(hab)
+                    if 'samplingEffort' in df.columns.values:
+                        for se in df.loc[(lines-2):(lines-2), 'samplingEffort'].fillna(0):
+                            compare.append(se)
+                    if 'sex' in df.columns.values:
+                        for sex in df.loc[(lines-2):(lines-2), 'sex'].fillna(0):
+                            compare.append(sex)
+                    if 'individuaCount' in df.columns.values:
+                        for ic in df.loc[(lines-2):(lines-2), 'individualCount'].fillna(0):
+                            compare.append(ic)
+                    if 'verbatimEventDate' in df.columns.values:
+                        for ved in df.loc[(lines-2):(lines-2), 'verbatimEventDate'].fillna(0):
+                            compare.append(ved)
+                    if 'measurementMethod' in df.columns.values:
+                        for mm in df.loc[(lines-2):(lines-2), 'measurementMethod'].fillna(0):
+                            compare.append(mm)
+                    if 'associatedReferences' in df.columns.values:
+                        for ar in df.loc[(lines-2):(lines-2), 'associatedReferences'].fillna(0):
+                            compare.append(ar)
                     continue
                 else:
                     sum = (counter*(counter+1))/2
@@ -118,7 +174,7 @@ def check_sequence(df, request):
         else:
             messages.error(request, "Sequence number on the line " + str(lines) + " is not numeric.")
             return False
-        
+
     return True
 
 def check_measurementValue(df, request):
