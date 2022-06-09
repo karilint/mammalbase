@@ -217,13 +217,9 @@ class Check:
         return True
 
 def get_sourcereference_citation(reference):
-    sr = SourceReference.objects.filter(citation__iexact=reference)
-    if len(sr) > 0:
-        return sr[0]
-    else:
-        new_reference = SourceReference(citation=reference, status=1)
-        new_reference.save()
-        return new_reference
+    new_reference = SourceReference(citation=reference, status=1)
+    new_reference.save()
+    return new_reference
 
 def get_entityclass(taxonRank):
     ec = EntityClass.objects.filter(name__iexact=taxonRank)
@@ -235,20 +231,13 @@ def get_entityclass(taxonRank):
         return new_entity
 
 def get_sourceentity(vs_name, reference, entity):
-    se = SourceEntity.objects.filter(name__iexact=vs_name)
-    if len(se) > 0:
-        return se[0]
-    else:
-        new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name)
-        new_sourceentity.save()
-        return new_sourceentity
+    new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name)
+    new_sourceentity.save()
+    return new_sourceentity
 
 def get_timeperiod(sampling, ref):
     if sampling != sampling:
         return None
-    tp = TimePeriod.objects.filter(name__iexact=sampling)
-    if len(tp) > 0:
-        return tp[0]
     else:
         new_timeperiod = TimePeriod(reference=ref, name=sampling)
         new_timeperiod.save()
@@ -257,9 +246,6 @@ def get_timeperiod(sampling, ref):
 def get_sourcemethod(method, ref):
     if method != method:
         return None
-    sm = SourceMethod.objects.filter(name__iexact=method)
-    if len(sm) > 0:
-        return sm[0]
     else:
         new_sourcemethod = SourceMethod(reference=ref, name=method)
         new_sourcemethod.save()
@@ -268,9 +254,6 @@ def get_sourcemethod(method, ref):
 def get_sourcelocation(location, ref):
     if location != location:
         return None
-    sl = SourceLocation.objects.filter(name__iexact=location)
-    if len(sl) > 0:
-        return sl[0]
     else:
         new_sourcelocation = SourceLocation(reference=ref, name=location)
         new_sourcelocation.save()
@@ -296,22 +279,21 @@ def possible_nan_to_none(possible):
 
 @transaction.atomic
 def create_dietset(row):
-    reference = get_sourcereference_citation(getattr(row, 'references'))
-    entityclass = get_entityclass(getattr(row, 'taxonRank'))
-    taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass)
-    location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference)
-    gender = get_choicevalue(getattr(row, 'sex'))
-    sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
-    cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
-    time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
-    method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
-    study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
-    
     if (getattr(row, 'sequence') == 1):
-        ds_all = DietSet.objects.filter(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
-        if len(ds_all) == 0:
-            ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
-            ds.save()
+        reference = get_sourcereference_citation(getattr(row, 'references'))
+        entityclass = get_entityclass(getattr(row, 'taxonRank'))
+        taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass)
+        location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference)
+        gender = get_choicevalue(getattr(row, 'sex'))
+        sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
+        cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
+        time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
+        method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
+        study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
+        #ds_all = DietSet.objects.filter(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
+        #if len(ds_all) == 0:
+        ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
+        ds.save()
 
 def trim(text:str):
     return " ".join(text.split())
