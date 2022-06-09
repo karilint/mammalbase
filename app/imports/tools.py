@@ -90,6 +90,11 @@ class Check:
         compare = []
 
         for item in df_new.values:
+            print(item)
+            print(item[2])
+            print(str(item[2]).isnumeric())
+            print(int(item[2]) == counter)
+            print(int(item[2]) == 1)
             lines += 1
             if str(item[2]).isnumeric():
                 if int(item[2]) == counter:
@@ -193,10 +198,14 @@ class Check:
         for value in (df.loc[:, 'measurementValue']):
             counter += 1
             if pd.isnull(value) == True or any(c.isalpha() for c in str(value)) == False:
-                continue
+                pass
             else:
                 messages.error(self.request, "The measurement value on the line " + str(counter) + " is not a number.")
                 return False
+            if value <= 0:
+                messages.error(self.request, "The measurement value on the line " + str(counter) + " nneds to be bigger than zero.")
+                return False
+
         return True
 
     def check_references(self, df):
