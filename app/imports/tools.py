@@ -1,9 +1,12 @@
-from mb.models import ChoiceValue, DietSet, EntityClass, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod
+from mb.models import ChoiceValue, DietSet, EntityClass, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod, DietSetItem, FoodItem
 from django.contrib import messages
 from django.db import transaction
 
 import pandas as pd
 import re
+import json
+import urllib.request
+import requests
 
 class Check:
     def __init__(self, request):
@@ -272,6 +275,14 @@ def get_sourcelocation(location, ref):
         new_sourcelocation = SourceLocation(reference=ref, name=location)
         new_sourcelocation.save()
         return new_sourcelocation
+ 
+def get_choicevalue(gender):
+    if gender != gender:
+        return None
+    if gender != '22' or gender != '23':
+        return
+    choicevalue = ChoiceValue.objects.filter(pk=gender)
+    return choicevalue[0]
 
 def possible_nan_to_zero(size):
     if size != size:
@@ -289,14 +300,14 @@ def create_dietset(row):
     entityclass = get_entityclass(getattr(row, 'taxonRank'))
     taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass)
     location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference)
-	# gender =
+    gender = get_choicevalue(getattr(row, 'sex'))
     sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
     cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
     time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
     method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
     study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
 
-    ds = DietSet(reference=reference, taxon=taxon, location=location, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
+    ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
     ds.save()
 
 def trim(text:str):
