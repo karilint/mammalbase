@@ -45,7 +45,6 @@ class ToolsTest(TestCase):
   
         self.file = pd.read_csv('test.csv')
         self.false_file = pd.read_csv('false_test.csv')
-        self.reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][1])
         self.entity = tools.get_entityclass(self.file.loc[:, 'taxonRank'][1])    
         #print(tools.get_entityclass(self.file.loc[:, 'taxonRank'][0]).name)
         #print('Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
@@ -82,12 +81,6 @@ class ToolsTest(TestCase):
 
     def test_check_all(self):
         self.assertEqual(self.check.check_all(self.file), True)    
-    
-    def test_new_get_sourcereference_citation(self):
-        self.assertEqual(tools.get_sourcereference_citation(self.file.loc[:, 'references'][0]).citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
-
-    def test_existing_sourcereference(self):
-        self.assertEqual(tools.get_sourcereference_citation(self.reference).citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
     
     def test_new_get_entityclass(self):
         self.assertEqual(tools.get_entityclass(self.file.loc[:, 'taxonRank'][0]).name, 'Species')
