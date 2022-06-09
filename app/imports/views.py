@@ -13,6 +13,52 @@ from .tools import *
 import logging
 import numpy as np
 import pandas as pd
+import requests
+
+# Search citation from CrossrefApi: https://api.crossref.org/swagger-ui/index.htm
+# Please do not make any unnessecary queries: https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/
+def get_referencedata_from_crossref(citation):
+	c = citation.replace(" ", "%20")
+	url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=mammalbase@gmail.com&rows=2'
+	x = requests.get(url)
+	y = x.json()
+	create_masterreference(citation, y)
+
+# Check if SourceReference.citation matching MasterReference exists
+def get_masterreference(citation):
+	sr_all = SourceReference.objects.filter(citation__iexact=citation, status=1, master_reference=None)
+	if len(sr_all) > 0:
+		print("No masterreference for given citation found.")
+		return False
+	return True
+
+# Takes SourceReference citation and dictionary with relevant data
+def create_masterreference(citation, response_data):
+	x = response_data['message']['items'][0]
+	for auth in x['author']:
+		if auth['family'] not in citation:
+			print('Name ', auth['family'], ' is not in citation')
+			return False
+	if x['title'][0].lower() not in citation.lower():
+		print('Title ', x['title'][0], ' is not in citation')
+		return False
+
+	title = x['title'][0]
+	t = x['type']
+	d = x['DOI']
+	first_author = x['author'][0]['family'] + ", " + x['author'][0]['given'][0] + "."
+	year = x['published']['date-parts'][0][0]
+	container_title = x['container-title'][0]
+	if t == 'journal-article':
+		volume = x['volume']
+		issue = x['issue']
+		page = x['page']
+		print('Reference details: ',title, t, d, first_author, year, container_title, volume, issue, page)
+		return True
+
+	print('Reference details: ', title, t, d, first_author, year, container_title)
+	return True
+
 
 @login_required
 def import_test(request):

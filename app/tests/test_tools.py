@@ -184,15 +184,6 @@ class ToolsTest(TestCase):
         'references':['tosi  tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
         self.assertEqual(self.check.check_sequence(df), False)
 
-    def test_check_sequence_dfg(self):
-        df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '1111-1111-2222-2222', '1111-1111-2222-2222', '1111-1111-2222-2222'], 
-        'verbatimScientificName':['kapistelija', 'kapistelija', 'kapistelija', 'pingu'], 
-        'taxonRank':['genus', 'genus', 'genus', 'genus'],
-        'verbatimAssociatedTaxa':['moi', 'gei', 'hiena', 'hyvästi'],
-        'sequence':[1,'2', 3,1],
-        'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000', 'päiväuniaika 2000 tms'] })
-        self.assertEqual(self.check.check_sequence(df), True)
-
 
     def test_new_get_sourcereference_citation(self):
         self.assertEqual(tools.get_sourcereference_citation(self.file.loc[:, 'references'][0]).citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')

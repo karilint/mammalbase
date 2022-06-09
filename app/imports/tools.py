@@ -90,11 +90,7 @@ class Check:
         compare = []
 
         for item in df_new.values:
-            print(item)
-            print(item[2])
-            print(str(item[2]).isnumeric())
-            print(int(item[2]) == counter)
-            print(int(item[2]) == 1)
+           
             lines += 1
             if str(item[2]).isnumeric():
                 if int(item[2]) == counter:
