@@ -306,9 +306,12 @@ def create_dietset(row):
     time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
     method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
     study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
-
-    ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
-    ds.save()
+    
+    if (getattr(row, 'sequence') == 1):
+        ds_all = DietSet.objects.filter(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
+        if len(ds_all) == 0:
+            ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
+            ds.save()
 
 def trim(text:str):
     return " ".join(text.split())
