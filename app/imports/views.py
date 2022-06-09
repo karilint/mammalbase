@@ -29,10 +29,8 @@ def get_masterreference(citation):
 	sr_all = SourceReference.objects.filter(citation__iexact=citation, status=1, master_reference=None)
 	if len(sr_all) > 0:
 		print("No masterreference for given citation found.")
-		x = get_referencedata_from_crossref(citation)
-		new_mr = create_masterreference(citation, x)
-		return new_mr
-	return sr_all[0].master_reference
+		return False
+	return True
 
 # Takes SourceReference citation and dictionary with relevant data
 def create_masterreference(citation, response_data):
@@ -41,11 +39,9 @@ def create_masterreference(citation, response_data):
 		if auth['family'] not in citation:
 			print('Name ', auth['family'], ' is not in citation')
 			return False
-		
-	for t in x['title'][0]:
-		if t.lower() not in citation.lower():
-			print('Title ', t, ' is not in citation')
-			return False
+	if x['title'][0].lower() not in citation.lower():
+		print('Title ', x['title'][0], ' is not in citation')
+		return False
 
 	title = x['title'][0]
 	t = x['type']
@@ -57,10 +53,10 @@ def create_masterreference(citation, response_data):
 		volume = x['volume']
 		issue = x['issue']
 		page = x['page']
-		print('Found reference: ',title, t, d, first_author, year, container_title, volume, issue, page)
+		print('Reference details: ',title, t, d, first_author, year, container_title, volume, issue, page)
 		return True
 
-	print('Found reference: ', title, t, d, first_author, year, container_title)
+	print('Reference details: ', title, t, d, first_author, year, container_title)
 	return True
 
 
