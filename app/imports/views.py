@@ -82,7 +82,7 @@ def import_test(request):
 	except Exception as e:
 		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
 		messages.error(request,"Unable to upload file. "+repr(e))
-	return HttpResponseRedirect(reverse("diet_set-import"))
+	return HttpResponseRedirect(reverse("import_test"))
 
 
 
