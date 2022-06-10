@@ -82,11 +82,12 @@ def import_test(request):
 	except Exception as e:
 		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
 		messages.error(request,"Unable to upload file. "+repr(e))
+	return HttpResponseRedirect(reverse("diet_set-import"))
 
 
 
 @login_required
-def import_diet_set(request):
+def import_diet_set(request): # pragma: no cover
 	data = {}
 	if "GET" == request.method:
 		return render(request, "import/import_diet_set.html", data)
