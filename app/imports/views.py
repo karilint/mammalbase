@@ -66,7 +66,7 @@ def import_test(request):
 		return render(request, "import/import_test.html")
 	try:
 		csv_file = request.FILES["csv_file"]
-		df = pd.read_csv(csv_file)
+		df = pd.read_csv(csv_file, sep='|', decimal=".")
 		trim_df(df)
 		check = Check(request)
 
