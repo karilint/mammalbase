@@ -16,8 +16,8 @@ class Check:
         self.request = request
 
     def check_all(self, df):
-        if self.check_valid_author(df) == False: #Testi menee vikaan
-            return False
+        #if self.check_valid_author(df) == False: #Testi menee vikaan
+        #    return False
         if self.check_headers(df) == False:
             return False
         if self.check_author(df) == False:
@@ -284,70 +284,6 @@ def get_choicevalue(gender):
     choicevalue = ChoiceValue.objects.filter(pk=gender)
     return choicevalue[0]
 
-def get_fooditem(food):
-    food_upper = food.upper()
-    food_item = FoodItem.objects.filter(name__iexact=food_upper)
-    if len(food_item) > 0:
-        return food_item[0]
-    else:
-
-        def get_json(food):
-            url = 'https://resolver.globalnames.org/name_resolvers.json?data_source_ids=3&names=' + food.lower().capitalize().replace(' ', '%20')
-            file = urllib.request.urlopen(url)
-            data = file.read()
-            return json.loads(data)
-
-        def create_fooditem(results):
-            tsn = results['data'][0]['results'][0]['taxon_id']
-            taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
-
-            if  len(taxonomic_unit)==0:
-                completename = results['data'][0]['results'][0]['canonical_form']
-                hierarchy_string = results['data'][0]['results'][0]['classification_path_ids'].replace('|', '-')
-                hierarchy = results['data'][0]['results'][0]['classification_path'].replace('|', '-')
-                common_names = None
-                kingdom = hierarchy.split('-')
-                kingdom_id = Kingdom.objects.filter(name=kingdom[0])[0].pk
-                path_ranks = results['data'][0]['results'][0]['classification_path_ranks'].split('|')
-                rank = TaxonUnitTypes.objects.filter(rank_name=path_ranks[-1], kingdom_id=kingdom_id)[0].pk
-                tsn_update_date = None
-                taxonomic_unit = TaxonomicUnits(tsn=tsn, kingdom_id=kingdom_id, rank_id=rank, completename=completename, hierarchy_string=hierarchy_string, hierarchy=hierarchy, common_names=common_names, tsn_update_date=tsn_update_date)
-                taxonomic_unit.save()
-
-            name = food_upper
-            part = ChoiceValue.objects.filter(pk=21)[0]
-            is_cultivar = 0
-            taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
-            food_item = FoodItem(name=name, part=part, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=is_cultivar)
-            food_item_exists = FoodItem.objects.filter(name__iexact=name)
-            if len(food_item_exists) > 0:
-                return food_item_exists[0]
-            food_item.save()
-            return food_item
-                        
-        foods = get_json(food_upper)        
-        try:
-            foods['data'][0]['results']
-            return create_fooditem(foods)
-
-        except KeyError:
-            new = food_upper.split('(', 1)[0]
-            food_item = FoodItem.objects.filter(name__iexact=new)
-            if len(food_item) > 0:
-                return food_item[0]
-            new_food = get_json(new)        
-            try:
-                new_food['data'][0]['results']
-                return create_fooditem(new_food)
-            except KeyError:
-                food_item = FoodItem.objects.filter(name__iexact=food_upper)
-                if len(food_item) > 0:
-                    return food_item[0]
-                empty_food_item = FoodItem(name=food_upper, part=None, tsn=None, pa_tsn=None, is_cultivar=0)
-                empty_food_item.save()
-                return empty_food_item
-
-
 def possible_nan_to_zero(size):
     if size != size:
         return 0
@@ -372,10 +308,8 @@ def create_dietset(row):
         method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
         study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
 
-    ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
-    ds.save()
-    create_dietsetitem(row, ds)
-
+        ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
+        ds.save()
 def trim(text:str):
     return " ".join(text.split())
 
@@ -385,11 +319,3 @@ def trim_df(df):
         for header in headers:
             df.at[i, header] = trim(str(df.at[i, header]))
 
-@transaction.atomic()
-def create_dietsetitem(row, diet_set):
-    diet_set = diet_set
-    food_item = get_fooditem(getattr(row, 'verbatimAssociatedTaxa'))
-    list_order = getattr(row, 'sequence')
-    percentage = possible_nan_to_zero(getattr(row, 'measurementValue'))
-    diet_set_item = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)
-    diet_set_item.save()
