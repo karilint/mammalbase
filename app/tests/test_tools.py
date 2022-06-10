@@ -188,9 +188,6 @@ class ToolsTest(TestCase):
     def test_new_get_sourcereference_citation(self):
         self.assertEqual(tools.get_sourcereference_citation(self.file.loc[:, 'references'][0]).citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
 
-    def test_existing_sourcereference(self):
-        self.assertEqual(tools.get_sourcereference_citation(self.reference).citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
-    
     def test_new_get_entityclass(self):
         self.assertEqual(tools.get_entityclass(self.file.loc[:, 'taxonRank'][0]).name, 'Species')
 
