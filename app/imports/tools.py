@@ -16,8 +16,8 @@ class Check:
         self.request = request
 
     def check_all(self, df):
-        #if self.check_valid_author(df) == False: #Testi menee vikaan
-        #    return False
+        if self.check_valid_author(df) == False: #Testi menee vikaan
+            return False
         if self.check_headers(df) == False:
             return False
         if self.check_author(df) == False:
@@ -39,7 +39,7 @@ class Check:
             if SocialAccount.objects.all().filter(uid=author).exists() == False:
                 messages.error(self.request, "The author " + str(author) + " is not a valid ORCID ID.")
                 return False
-        return False
+        return 
 
     def check_headers(self, df):
         import_headers = list(df.columns.values)
