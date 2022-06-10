@@ -1,6 +1,8 @@
 from mb.models import ChoiceValue, DietSet, EntityClass, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod
 from django.contrib import messages
 from django.db import transaction
+from allauth.socialaccount.models import SocialAccount
+from allauth.socialaccount.models import SocialApp
 
 import pandas as pd
 import re
@@ -10,7 +12,6 @@ class Check:
         self.request = request
 
     def check_all(self, df):
-
         if self.check_headers(df) == False:
             return False
         if self.check_author(df) == False:
@@ -26,6 +27,13 @@ class Check:
         if self.check_references(df) == False:
             return False
         return True
+
+    def check_valid_author(self, df):
+        for author in (df.loc[:, 'author']):
+            if SocialAccount.objects.all().filter(uid=author).exists() == False:
+                messages.error(self.request, "The author " + str(author) + " is not a valid ORCID ID.")
+                return False
+        return False
 
     def check_headers(self, df):
         import_headers = list(df.columns.values)
