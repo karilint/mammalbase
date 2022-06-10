@@ -3,7 +3,6 @@ from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
 from allauth.socialaccount.models import SocialAccount
-from allauth.socialaccount.models import SocialApp
 
 import pandas as pd
 import re
@@ -17,6 +16,8 @@ class Check:
         self.request = request
 
     def check_all(self, df):
+        if self.check_valid_author(df) == False: #Testi menee vikaan
+            return False
         if self.check_headers(df) == False:
             return False
         if self.check_author(df) == False:
