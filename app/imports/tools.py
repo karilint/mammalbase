@@ -2,6 +2,8 @@ from mb.models import ChoiceValue, DietSet, EntityClass, SourceEntity, SourceLoc
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
+from allauth.socialaccount.models import SocialAccount
+from allauth.socialaccount.models import SocialApp
 
 import pandas as pd
 import re
@@ -15,7 +17,6 @@ class Check:
         self.request = request
 
     def check_all(self, df):
-
         if self.check_headers(df) == False:
             return False
         if self.check_author(df) == False:
@@ -31,6 +32,13 @@ class Check:
         if self.check_references(df) == False:
             return False
         return True
+
+    def check_valid_author(self, df):
+        for author in (df.loc[:, 'author']):
+            if SocialAccount.objects.all().filter(uid=author).exists() == False:
+                messages.error(self.request, "The author " + str(author) + " is not a valid ORCID ID.")
+                return False
+        return False
 
     def check_headers(self, df):
         import_headers = list(df.columns.values)
@@ -50,6 +58,8 @@ class Check:
             if len(str(author)) != 19:
                 messages.error(self.request, "The author on the line number " + str(counter) + " is not in the correct form.")
                 return False
+            if "X" in author:
+                author = author.replace("X", "")
             numbers.append(author.replace("-", ""))
     
         counter = 1
@@ -95,6 +105,7 @@ class Check:
         compare = []
 
         for item in df_new.values:
+           
             lines += 1
             if str(item[2]).isnumeric():
                 if int(item[2]) == counter:
@@ -198,10 +209,14 @@ class Check:
         for value in (df.loc[:, 'measurementValue']):
             counter += 1
             if pd.isnull(value) == True or any(c.isalpha() for c in str(value)) == False:
-                continue
+                pass
             else:
                 messages.error(self.request, "The measurement value on the line " + str(counter) + " is not a number.")
                 return False
+            if value <= 0:
+                messages.error(self.request, "The measurement value on the line " + str(counter) + " nneds to be bigger than zero.")
+                return False
+
         return True
 
     def check_references(self, df):
@@ -219,38 +234,26 @@ class Check:
         return True
 
 def get_sourcereference_citation(reference):
-    sr = SourceReference.objects.filter(citation__iexact=reference)
-    if len(sr) > 0:
-        return sr[0]
-    else:
-        new_reference = SourceReference(citation=reference, status=1)
-        new_reference.save()
-        return new_reference
+    new_reference = SourceReference(citation=reference, status=1)
+    new_reference.save()
+    return new_reference
 
 def get_entityclass(taxonRank):
-    ec = EntityClass.objects.filter(name__iexact=taxonRank)
-    if len(ec) > 0:
-        return(ec[0])
-    else:
-        new_entity = EntityClass(name=taxonRank)
-        new_entity.save()
-        return new_entity
+    ec_all = EntityClass.objects.filter(name__iexact=taxonRank)
+    if len(ec_all) > 0:
+        return ec_all[0]
+    new_entity = EntityClass(name=taxonRank)
+    new_entity.save()
+    return new_entity
 
 def get_sourceentity(vs_name, reference, entity):
-    se = SourceEntity.objects.filter(name__iexact=vs_name)
-    if len(se) > 0:
-        return se[0]
-    else:
-        new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name)
-        new_sourceentity.save()
-        return new_sourceentity
+    new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name)
+    new_sourceentity.save()
+    return new_sourceentity
 
 def get_timeperiod(sampling, ref):
     if sampling != sampling:
         return None
-    tp = TimePeriod.objects.filter(name__iexact=sampling)
-    if len(tp) > 0:
-        return tp[0]
     else:
         new_timeperiod = TimePeriod(reference=ref, name=sampling)
         new_timeperiod.save()
@@ -259,9 +262,6 @@ def get_timeperiod(sampling, ref):
 def get_sourcemethod(method, ref):
     if method != method:
         return None
-    sm = SourceMethod.objects.filter(name__iexact=method)
-    if len(sm) > 0:
-        return sm[0]
     else:
         new_sourcemethod = SourceMethod(reference=ref, name=method)
         new_sourcemethod.save()
@@ -270,14 +270,11 @@ def get_sourcemethod(method, ref):
 def get_sourcelocation(location, ref):
     if location != location:
         return None
-    sl = SourceLocation.objects.filter(name__iexact=location)
-    if len(sl) > 0:
-        return sl[0]
     else:
         new_sourcelocation = SourceLocation(reference=ref, name=location)
         new_sourcelocation.save()
         return new_sourcelocation
- 
+
 def get_choicevalue(gender):
     if gender != gender:
         return None
@@ -362,16 +359,17 @@ def possible_nan_to_none(possible):
 
 @transaction.atomic
 def create_dietset(row):
-    reference = get_sourcereference_citation(getattr(row, 'references'))
-    entityclass = get_entityclass(getattr(row, 'taxonRank'))
-    taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass)
-    location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference)
-    gender = get_choicevalue(getattr(row, 'sex'))
-    sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
-    cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
-    time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
-    method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
-    study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
+    if (getattr(row, 'sequence') == 1):
+        reference = get_sourcereference_citation(getattr(row, 'references'))
+        entityclass = get_entityclass(getattr(row, 'taxonRank'))
+        taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass)
+        location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference)
+        gender = get_choicevalue(getattr(row, 'sex'))
+        sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
+        cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
+        time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
+        method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
+        study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
 
     ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
     ds.save()
