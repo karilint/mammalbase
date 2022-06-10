@@ -39,7 +39,7 @@ class Check:
             if SocialAccount.objects.all().filter(uid=author).exists() == False:
                 messages.error(self.request, "The author " + str(author) + " is not a valid ORCID ID.")
                 return False
-        return 
+        return True
 
     def check_headers(self, df):
         import_headers = list(df.columns.values)
