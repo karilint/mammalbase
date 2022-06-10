@@ -45,6 +45,8 @@ class Check:
             if len(str(author)) != 19:
                 messages.error(self.request, "The author on the line number " + str(counter) + " is not in the correct form.")
                 return False
+            if "X" in author:
+                author = author.replace("X", "")
             numbers.append(author.replace("-", ""))
     
         counter = 1
