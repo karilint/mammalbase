@@ -20,6 +20,32 @@
 			  <h3>Error!</h3>
 			  <p>{{message}}</p>
 			</div> 
-		{% endif %}
+		{% elif message.tags == 'import-message'%}
+		<div class="w3-panel w3-green">
+		  <h3>Data import successful</h3>
+		  <p>{{message}}</p>
+		  <button class="w3-button w3-green w3-round w3-hover-white" 
+		  onclick="showInfo('imported-data')" 
+		  style="margin-bottom: 10px; border: solid white; border-width: thin;"> 
+			Show imported data
+		  </button>
+		</div>
+		{% elif message.tags == 'show-data'%}
+		<div class="w3-panel">
+		  <div id="imported-data" class="w3-hide" style="overflow: auto; width: 75vw;">
+			{{message | safe}}
+		  </div>
+		</div>
+	{% endif %}
 	{% endfor %}
+	<script>
+		function showInfo(id) {
+		  var x = document.getElementById(id);
+		  if (x.className.indexOf("w3-show") == -1) {
+			x.className += " w3-show";
+		  } else { 
+			x.className = x.className.replace(" w3-show", "");
+		  }
+	  }
+		</script>
 {% endif %}

@@ -1,6 +1,6 @@
 from json import load
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
+
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -79,8 +79,9 @@ def import_test(request):
 		else:
 			for row in df.itertuples():
 				create_dietset(row)
-				
-			messages.success(request, "File uploaded.")
+			success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
+			messages.add_message(request, 50 ,success_message, extra_tags="import-message")
+			messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")
 			return HttpResponseRedirect(reverse("import_test"))
 
 	except Exception as e:
