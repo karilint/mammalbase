@@ -1,6 +1,6 @@
 from json import load
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
+
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -14,6 +14,8 @@ import logging
 import numpy as np
 import pandas as pd
 import requests
+import requests
+import re
 
 # Search citation from CrossrefApi: https://api.crossref.org/swagger-ui/index.htm
 # Please do not make any unnessecary queries: https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/
@@ -22,6 +24,7 @@ def get_referencedata_from_crossref(citation):
 	url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=mammalbase@gmail.com&rows=2'
 	x = requests.get(url)
 	y = x.json()
+	print(y)
 	create_masterreference(citation, y)
 
 # Check if SourceReference.citation matching MasterReference exists
@@ -32,18 +35,24 @@ def get_masterreference(citation):
 		return False
 	return True
 
+def title_matches_citation(title, citation):
+	# https://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string
+	title_without_html = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', title)
+	if title_without_html.lower() not in citation.lower():
+		print('Title ', title_without_html , ' is not in citation')
+		return False
+	return True
+
 # Takes SourceReference citation and dictionary with relevant data
 def create_masterreference(citation, response_data):
 	x = response_data['message']['items'][0]
-	for auth in x['author']:
-		if auth['family'] not in citation:
-			print('Name ', auth['family'], ' is not in citation')
-			return False
-	if x['title'][0].lower() not in citation.lower():
-		print('Title ', x['title'][0], ' is not in citation')
+	if title_matches_citation(x['title'][0], citation) == False:
 		return False
-
-	title = x['title'][0]
+	authors = list()
+	for auth in x['author']:
+		author = auth['family'] + ", " + auth['given'][0] + "."
+		authors.append(author)
+	title = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', x['title'][0])
 	t = x['type']
 	d = x['DOI']
 	first_author = x['author'][0]['family'] + ", " + x['author'][0]['given'][0] + "."
@@ -54,10 +63,21 @@ def create_masterreference(citation, response_data):
 		issue = x['issue']
 		page = x['page']
 		print('Reference details: ',title, t, d, first_author, year, container_title, volume, issue, page)
+		make_harvard_citation_journalarticle(title, d, authors, year, container_title, volume, issue, page)
 		return True
 
 	print('Reference details: ', title, t, d, first_author, year, container_title)
 	return True
+
+def make_harvard_citation_journalarticle(title, d, authors, year, container_title, volume, issue, page):
+	citation = ""
+	for a in authors:
+		if authors.index(a) == len(authors) - 1:
+			citation += str(a)
+		else:
+			citation += str(a) + ", "
+	citation += " " + str(year) + ". " + str(title) + ". " + str(container_title) + ". " + str(volume) + "(" + str(issue) + "), pp." + str(page) + ". Available at: " + str(d) + "." 
+	return citation
 
 
 @login_required
@@ -75,8 +95,9 @@ def import_test(request):
 		else:
 			for row in df.itertuples():
 				create_dietset(row)
-				
-			messages.success(request, "File uploaded.")
+			success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
+			messages.add_message(request, 50 ,success_message, extra_tags="import-message")
+			messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")
 			return HttpResponseRedirect(reverse("import_test"))
 
 	except Exception as e:
