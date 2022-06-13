@@ -17,7 +17,7 @@ import requests
 
 # Search citation from CrossrefApi: https://api.crossref.org/swagger-ui/index.htm
 # Please do not make any unnessecary queries: https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/
-def get_referencedata_from_crossref(citation):
+def get_referencedata_from_crossref(citation):  # pragma: no cover
 	c = citation.replace(" ", "%20")
 	url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=mammalbase@gmail.com&rows=2'
 	x = requests.get(url)
@@ -28,7 +28,7 @@ def get_referencedata_from_crossref(citation):
 def get_masterreference(citation):
 	sr_all = SourceReference.objects.filter(citation__iexact=citation, status=1, master_reference=None)
 	if len(sr_all) > 0:
-		print("No masterreference for given citation found.")
+		#print("No masterreference for given citation found.")
 		return False
 	return True
 
@@ -37,10 +37,10 @@ def create_masterreference(citation, response_data):
 	x = response_data['message']['items'][0]
 	for auth in x['author']:
 		if auth['family'] not in citation:
-			print('Name ', auth['family'], ' is not in citation')
+			#print('Name ', auth['family'], ' is not in citation')
 			return False
 	if x['title'][0].lower() not in citation.lower():
-		print('Title ', x['title'][0], ' is not in citation')
+		#print('Title ', x['title'][0], ' is not in citation')
 		return False
 
 	title = x['title'][0]
@@ -53,10 +53,10 @@ def create_masterreference(citation, response_data):
 		volume = x['volume']
 		issue = x['issue']
 		page = x['page']
-		print('Reference details: ',title, t, d, first_author, year, container_title, volume, issue, page)
+		#print('Reference details: ',title, t, d, first_author, year, container_title, volume, issue, page)
 		return True
 
-	print('Reference details: ', title, t, d, first_author, year, container_title)
+	#print('Reference details: ', title, t, d, first_author, year, container_title)
 	return True
 
 
@@ -66,7 +66,7 @@ def import_test(request):
 		return render(request, "import/import_test.html")
 	try:
 		csv_file = request.FILES["csv_file"]
-		df = pd.read_csv(csv_file, sep='|', decimal=".")
+		df = pd.read_csv(csv_file, sep='\t')
 		trim_df(df)
 		check = Check(request)
 

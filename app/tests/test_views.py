@@ -1,6 +1,7 @@
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.contrib.messages import get_messages
 import tempfile, csv, os
 import imports.views as views
 
@@ -43,11 +44,56 @@ class ImportViewTests(TestCase):
     
     def test_import_test_view(self):
         response = self.client.get('/import/test')
+        #print('helo', response.content, 'helo', response.client, response.context)
         self.assertEqual(response.status_code, 200)
     
     def test_import_test_reverse(self):
         response = self.client.get(reverse('import_test'))
         self.assertEqual(response.status_code, 200)
+
+    def test_import_post(self):
+        with open('test_post.csv', 'w') as file:
+            writer = csv.writer(file)
+            writer.writerow(['author' '\t' 'verbatimScientificName' '\t' 'taxonRank' '\t' 'verbatimLocality' '\t' 'habitat' '\t' 'samplingEffort' '\t' 'sex''\t' 'individualCount' '\t' 'verbatimEventDate' '\t' 'measurementMethod' '\t' 'verbatimAssociatedTaxa''\t' 'sequence''\t' 'measurementValue''\t' 'associatedReferences''\t'  'references'])
+            #rivi 10 mallissa
+            writer.writerow(['0000-0001-9627-8821' '\t' 'Lagothrix flavicauda''\t' 'Species''\t' '' '\t' '' '\t' '' '\t' '' '\t' '' '\t' '' '\t' '' '\t'  'primarily frugivorous''\t' '1' '\t' '' '\t' 'Leo Luna 1980 | deLuycker 2007 | S. Shanee and N. Shanee 2011b | Shanee 2014a | Fack et al. 2018a''\t''Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
+            #rivi 11 mallissa
+            writer.writerow(['0000-0001-9627-8821' '\t' 'Lagothrix flavicauda' '\t' 'Species''\t' '' '\t' '' '\t' '' '\t' '' '\t' '' '\t' '' '\t' '' '\t'  'leaves' '\t' '2' '\t' '' '\t' 'Leo Luna 1980 | deLuycker 2007 | S. Shanee and N. Shanee 2011b | Shanee 2014a | Fack et al. 2018a' '\t' 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
+            #rivi 17 mallissa
+            writer.writerow(['0000-0001-9627-8821' '\t'	'Lagothrix flavicauda' '\t'	'Species' '\t' '' '\t' '' '\t' '15-month-study' '\t' '' '\t' '' '\t' 'October 2009-June 2010 and August 2010-February 2011' '\t' '' '\t' 'fruit''\t' '1''\t' '46.3''\t' 'S. Shanee (2014)''\t' 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
+            #rivi 23 mallissa
+            writer.writerow(['0000-0001-9627-8821' '\t'	'Lagothrix flavicauda''\t' 'Species''\t' '' '\t' '' '\t' '' '\t' '' '\t' '' '\t' '' '\t' 'observations of fruit consumption''\t' 'fruits of Ficus' '\t'	'1' '\t' '43''\t' 'S. Shanee and N. Shanee 2011b''\t'	'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
+            #rivi 38 mallissa
+            writer.writerow(['0000-0001-9627-8821' '\t'	'Capra hircus''\t'	'Species''\t' 'Mandu Mandu Gorge' '\t' 'Cape Range National Park, Western Australia' '\t' 'Summer (February, March, April and October)''\t' '' '\t' '' '\t' '108' '\t' 'between February and October 2006' '\t' 'The percentage of plant species found in scats.' '\t' 'Unidentiﬁed monocots' '\t' '1' '\t' '36.8' '\t' 'Original study', 'Creese, S., Davies, S.J. and Bowen, B.J., 2019. Comparative dietary analysis of the black-flanked rock-wallaby (Petrogale lateralis lateralis), the euro (Macropus robustus erubescens) and the feral goat (Capra hircus) from Cape Range National Park, Western Australia. Australian Mammalogy, 41(2), pp.220-230.'])
+        with open('test_post.csv', 'r') as fp:
+            response = self.client.post('/import/test', {'name': 'fred', 'csv_file': fp})
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'File uploaded.')
+        self.assertEqual(response.status_code, 302)
+
+    def test_import_post_failing_file(self):
+        with open('test_bad.csv', 'w') as file:
+            writer = csv.writer(file)
+            writer.writerow(['author''\t' 'puuttuva''\t' 'taxonRank''\t' 'verbatimLocality''\t' 'habitat''\t' 'samplingEffort''\t' 'sex''\t' 'individualCount''\t' 'verbatimEventDate''\t' 'measurementMethod''\t' 'verbatimAssociatedTaxa''\t' 'sequence''\t' 'measurementValue''\t' 'associatedReferences''\t'  'references'])
+            #rivi 10 mallissa
+            writer.writerow(['0000-0001-9627-8821''\t' 'Lagothrix flavicauda''\t' 'Species''\t' '' '\t' '' '\t' '' '\t' '' '\t' '' '\t' '' '\t' '' '\t'  'primarily frugivorous''\t' '1' '\t' '' '\t' 'Leo Luna 1980 | deLuycker 2007 | S. Shanee and N. Shanee 2011b | Shanee 2014a | Fack et al. 2018a''\t''Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
+        with open('test_bad.csv', 'r') as fp:
+            response = self.client.post('/import/test', {'name': 'fred', 'csv_file': fp})
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), 'The import file does not contain the required headers. The missing header is: verbatimScientificName.')
+        self.assertEqual(response.status_code, 302)
+            
+    def test_import_post_wrong_file(self):
+        with open('test_wrong.html', 'w') as file:
+           file.write("'<html> \n <body> \n <h1>Heading</h1> \n </body> \n </html>'")
+        with open('tests/test_views.py', 'r') as fp:
+            response = self.client.post('/import/test')
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1) 
+        self.assertEqual('Unable to upload file.' in str(messages[0]), True)
+        self.assertEqual(response.status_code, 302)
 
     def test_create_masterreference(self):
         answer = views.create_masterreference('Tester, T., TesterToo, T., Testing, testing', self.res)

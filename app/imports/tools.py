@@ -10,7 +10,6 @@ class Check:
         self.request = request
 
     def check_all(self, df):
-
         if self.check_headers(df) == False:
             return False
         if self.check_author(df) == False:
@@ -41,6 +40,7 @@ class Check:
         numbers = []
         counter = 1
         for author in (df.loc[:, 'author']):
+            print(author)
             counter += 1
             if len(str(author)) != 19:
                 messages.error(self.request, "The author on the line number " + str(counter) + " is not in the correct form.")
