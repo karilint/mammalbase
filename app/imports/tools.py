@@ -1,4 +1,5 @@
-from mb.models import ChoiceValue, DietSet, EntityClass, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod, DietSetItem, FoodItem
+from doctest import master
+from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod, DietSetItem, FoodItem
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
@@ -111,7 +112,7 @@ class Check:
         return True
 
     def check_sequence(self, df):
-        df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references']]
+        df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references', 'measurementValue']]
         counter = 0
         total = 1
         fooditems = []
@@ -123,6 +124,10 @@ class Check:
             lines += 1
             if str(item[2]).isnumeric():
                 if int(item[2]) == counter:
+                    if item[4] > measurementvalue_reference:
+                        messages.error(self.request, "Measurement value on the line " + str(lines) + " should not be larger than " + str(measurementvalue_reference) + ".")
+                        return False
+                    measurementvalue_reference = item[4]
                     if item[0] != scientific_name:
                         messages.error(self.request, "Scientific name on the line " + str(lines) + " should be '" + str(scientific_name) + "'.")
                         return False
@@ -139,6 +144,7 @@ class Check:
                 else:
                     if int(item[2]) == 1:
                         reference_list = [item[0], item[3]]
+                        measurementvalue_reference = item[4]
                         if 'verbatimLocality' in df.columns.values:
                             for vl in df.loc[(lines-2):(lines-2), 'verbatimLocality'].fillna(0):
                                 reference_list.append(vl)
@@ -248,8 +254,13 @@ class Check:
         return True
 
 def get_sourcereference_citation(reference):
+    sr_old = SourceReference.objects.filter(citation__iexact=reference)
+    if len(sr_old) > 0:
+        return sr_old[0]
     new_reference = SourceReference(citation=reference, status=1)
     new_reference.save()
+    #response_data = get_referencedata_from_crossref(reference)
+    #create_masterreference(reference, response_data, new_reference)
     return new_reference
 
 def get_entityclass(taxonRank):
@@ -261,6 +272,9 @@ def get_entityclass(taxonRank):
     return new_entity
 
 def get_sourceentity(vs_name, reference, entity):
+    se_old = SourceEntity.objects.filter(reference=reference, entity=entity, name=vs_name)
+    if len(se_old) > 0:
+        return se_old[0]
     new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name)
     new_sourceentity.save()
     return new_sourceentity
@@ -269,13 +283,20 @@ def get_timeperiod(sampling, ref):
     if sampling != sampling:
         return None
     else:
-        new_timeperiod = TimePeriod(reference=ref, name=sampling)
-        new_timeperiod.save()
-        return new_timeperiod
+        tp_all = TimePeriod.objects.filter(reference=ref, name=sampling)
+        if len(tp_all) > 0:
+            return tp_all[0]
+        else:
+            new_timeperiod = TimePeriod(reference=ref, name=sampling)
+            new_timeperiod.save()
+            return new_timeperiod
 
 def get_sourcemethod(method, ref):
     if method != method:
         return None
+    sr_old = SourceMethod.objects.filter(reference=ref, name=method)
+    if len(sr_old) > 0:
+        return sr_old[0]
     else:
         new_sourcemethod = SourceMethod(reference=ref, name=method)
         new_sourcemethod.save()
@@ -284,6 +305,9 @@ def get_sourcemethod(method, ref):
 def get_sourcelocation(location, ref):
     if location != location:
         return None
+    sl_old = SourceLocation.objects.filter(name=location, reference=ref)
+    if len(sl_old) > 0:
+        return sl_old[0]
     else:
         new_sourcelocation = SourceLocation(reference=ref, name=location)
         new_sourcelocation.save()
@@ -406,3 +430,103 @@ def trim_df(df):
         for header in headers:
             df.at[i, header] = trim(str(df.at[i, header]))
 
+# Search citation from CrossrefApi: https://api.crossref.org/swagger-ui/index.htm
+# Please do not make any unnessecary queries: https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/
+def get_referencedata_from_crossref(citation):
+	c = citation.replace(" ", "%20")
+	url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=mammalbase@gmail.com&rows=2'
+	try:
+		x = requests.get(url)
+		y = x.json()
+		return y
+	except requests.exceptions.RequestException as e:
+		print('Error: ', e)
+
+# Check if SourceReference.citation matching MasterReference exists
+def get_masterreference(citation):
+	sr_all = SourceReference.objects.filter(citation__iexact=citation, status=1, master_reference=None)
+	if len(sr_all) > 0:
+		return False
+	return True
+
+def title_matches_citation(title, source_citation):
+	# https://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string
+    title_without_html = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', title)
+    if title_without_html.lower() not in source_citation.lower():
+        print('Title ', title_without_html , ' is not in citation')
+        return False
+    return True
+
+def create_masterreference(source_citation, response_data, sr):
+    if get_masterreference == True:
+        return False
+    try:
+        if response_data['message']['total-results'] == 0:
+            return False
+        doi = None
+        uri = None
+        year = None
+        container_title = None
+        volume = None
+        issue = None
+        page = None
+        citation = None
+        type = None
+        x = response_data['message']['items'][0]
+        fields = list()
+        for field_name in x:
+            fields.append(field_name)
+        if 'title' not in fields:
+            return False
+        elif title_matches_citation(x['title'][0], source_citation) == False:
+            return False
+        title = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', x['title'][0])
+        if 'author' not in fields:
+            return False
+        authors = list()
+        for a in x['author']:
+            author = a['family'] + ", " + a['given'][0] + "."
+            authors.append(author)
+        first_author = x['author'][0]['family'] + ", " + x['author'][0]['given'][0] + "."
+        if 'DOI' in fields:
+            doi = x['DOI']
+        if 'uri' in fields:
+            uri = x['uri']
+        if 'published' in fields:
+            year = x['published']['date-parts'][0][0]
+        if 'container-title' in fields:
+            container_title = x['container-title'][0]
+        if 'volume' in fields:
+            volume = x['volume']
+        if 'issue' in fields:
+            issue = x['issue']
+        if 'page' in fields:
+            page = x['page']
+        if 'type' in fields:
+            type = x['type']
+            if type == 'journal-article':
+                citation = make_harvard_citation_journalarticle(title, doi, authors, year, container_title, volume, issue, page)
+            else:
+                citation = str(first_author) + '. ' + str(title) + '. Available at: ' + str(doi)
+        
+        mr = MasterReference(type=type, doi=doi, uri=uri, first_author=first_author, year=year, title=title, container_title=container_title, volume=volume, issue=issue, page=page, citation=citation)
+        mr.save()
+        sr.master_reference = mr
+        sr.save()
+        return True
+        
+    except Exception as e:
+        print('Error: ', e)
+        return False
+  
+
+def make_harvard_citation_journalarticle(title, d, authors, year, container_title, volume, issue, page):
+    citation = ""
+    for a in authors:
+        if authors.index(a) == len(authors) - 1:
+            citation += str(a)
+        else:
+            citation += str(a) + ", "
+    
+    citation += " " + str(year) + ". " + str(title) + ". " + str(container_title) + ". " + str(volume) + "(" + str(issue) + "), pp." + str(page) + ". Available at: " + str(d) + "." 
+    return citation
