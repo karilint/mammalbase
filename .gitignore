@@ -62,6 +62,10 @@ coverage.xml
 cover/
 false_test.csv
 test.csv
+test_post.csv
+test_bad.csv
+*.csv
+app/test_bad.csv
 
 # Translations
 *.mo

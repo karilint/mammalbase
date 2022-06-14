@@ -16,6 +16,7 @@ import logging
 class Check:
     def __init__(self, request):
         self.request = request
+        self.id = None
 
     def check_all(self, df):
         # if self.check_valid_author(df) == False: #Testi menee vikaan
@@ -38,9 +39,11 @@ class Check:
 
     def check_valid_author(self, df):
         for author in (df.loc[:, 'author']):
-            if SocialAccount.objects.all().filter(uid=author).exists() == False:
+            data = SocialAccount.objects.all().filter(uid=author)
+            if data.exists() == False:
                 messages.error(self.request, "The author " + str(author) + " is not a valid ORCID ID.")
                 return False
+            self.id = data[0].user_id
         return True
 
     def check_headers(self, df):
@@ -81,12 +84,22 @@ class Check:
                 messages.error(self.request, "Scientific name is empty on the line " + str(counter) + ".")
                 return False
 
+        df_new = df[['verbatimScientificName', 'taxonRank']]
         counter = 1
-        for name in (df.loc[:, 'verbatimScientificName']):
+        for item in df_new.values:
             counter += 1
-            names_list = name.split()
+            names_list = item[0].split()
             if len(names_list) > 3:
-                messages.error(self.request, "Scientific name is not in the correct form on the line " + str(counter) + ".")
+                messages.error(self.request, "Scientific name is not in the correct format on the line " + str(counter) + ".")
+                return False
+            if len(names_list) == 3 and item[1] not in ['Subspecies', 'subspecies']:
+                messages.error(self.request, "Scientific name is not in the correct format or taxonomic rank should be 'Subspecies' on the line " + str(counter) + ".")
+                return False
+            if len(names_list) == 2 and item[1] not in ['Species', 'species']:
+                messages.error(self.request, "Scientific name is not in the correct format or taxonomic rank should be 'Species' on the line " + str(counter) + ".")
+                return False
+            if len(names_list) == 1 and item[1] not in ['Genus', 'genus']:
+                messages.error(self.request, "Scientific name is not in the correct format or taxonomic rank should be 'Genus' on the line " + str(counter) + ".")
                 return False
         return True
 
@@ -100,7 +113,7 @@ class Check:
         return True
 
     def check_sequence(self, df):
-        df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references']]
+        df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references', 'measurementValue']]
         counter = 0
         total = 1
         fooditems = []
@@ -112,6 +125,10 @@ class Check:
             lines += 1
             if str(item[2]).isnumeric():
                 if int(item[2]) == counter:
+                    if item[4] > measurementvalue_reference:
+                        messages.error(self.request, "Measurement value on the line " + str(lines) + " should not be larger than " + str(measurementvalue_reference) + ".")
+                        return False
+                    measurementvalue_reference = item[4]
                     if item[0] != scientific_name:
                         messages.error(self.request, "Scientific name on the line " + str(lines) + " should be '" + str(scientific_name) + "'.")
                         return False
@@ -128,6 +145,7 @@ class Check:
                 else:
                     if int(item[2]) == 1:
                         reference_list = [item[0], item[3]]
+                        measurementvalue_reference = item[4]
                         if 'verbatimLocality' in df.columns.values:
                             for vl in df.loc[(lines-2):(lines-2), 'verbatimLocality'].fillna(0):
                                 reference_list.append(vl)
@@ -304,6 +322,69 @@ def get_choicevalue(gender):
     choicevalue = ChoiceValue.objects.filter(pk=gender)
     return choicevalue[0]
 
+
+def get_fooditem(food):
+    food_upper = food.upper()
+    food_item = FoodItem.objects.filter(name__iexact=food_upper)
+    if len(food_item) > 0:
+        return food_item[0]
+
+    def get_json(food):
+        url = 'https://resolver.globalnames.org/name_resolvers.json?data_source_ids=3&names=' + food.lower().capitalize().replace(' ', '%20')
+        file = urllib.request.urlopen(url)
+        data = file.read()
+        return json.loads(data)
+
+    def create_fooditem(results):
+        tsn = results['data'][0]['results'][0]['taxon_id']
+        taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
+
+        if len(taxonomic_unit)==0:
+            completename = results['data'][0]['results'][0]['canonical_form']
+            hierarchy_string = results['data'][0]['results'][0]['classification_path_ids'].replace('|', '-')
+            hierarchy = results['data'][0]['results'][0]['classification_path'].replace('|', '-')
+            common_names = None
+            kingdom = hierarchy.split('-')
+            kingdom_id = Kingdom.objects.filter(name=kingdom[0])[0].pk
+            path_ranks = results['data'][0]['results'][0]['classification_path_ranks'].split('|')
+            rank = TaxonUnitTypes.objects.filter(rank_name=path_ranks[-1], kingdom_id=kingdom_id)[0].pk
+            tsn_update_date = None
+            taxonomic_unit = TaxonomicUnits(tsn=tsn, kingdom_id=kingdom_id, rank_id=rank, completename=completename, hierarchy_string=hierarchy_string, hierarchy=hierarchy, common_names=common_names, tsn_update_date=tsn_update_date)
+            taxonomic_unit.save()
+
+        name = food_upper
+        part = ChoiceValue.objects.filter(pk=21)[0]
+        is_cultivar = 0
+        taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
+        # print(taxonomic_unit)
+        food_item = FoodItem(name=name, part=part, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=is_cultivar)
+        food_item_exists = FoodItem.objects.filter(name__iexact=name)
+        if len(food_item_exists) > 0:
+            return food_item_exists[0]
+        food_item.save()
+        return food_item
+    foods = get_json(food_upper) 
+    try:
+        foods['data'][0]['results']
+        return create_fooditem(foods)
+
+    except KeyError:
+        new = food_upper.split('(', 1)[0]
+        food_item = FoodItem.objects.filter(name__iexact=new)
+        if len(food_item) > 0:
+            return food_item[0]
+        new_food = get_json(new) 
+        try:
+            new_food['data'][0]['results']
+            return create_fooditem(new_food)
+        except KeyError:
+            food_item = FoodItem.objects.filter(name__iexact=food_upper)
+            if len(food_item) > 0:
+                return food_item[0]
+            empty_food_item = FoodItem(name=food_upper, part=None, tsn=None, pa_tsn=None, is_cultivar=0)
+            empty_food_item.save()
+            return empty_food_item
+
 def possible_nan_to_zero(size):
     if size != size:
         return 0
@@ -331,7 +412,16 @@ def create_dietset(row):
         ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
         if (getattr(row, 'sequence') == 1):
             ds.save()
-        
+        create_dietsetitem(row, ds)
+
+def create_dietsetitem(row, diet_set):
+    food_item = get_fooditem(getattr(row, 'verbatimAssociatedTaxa'))
+    list_order = getattr(row, 'sequence')
+    percentage = possible_nan_to_zero(getattr(row, 'measurementValue'))
+
+    dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)
+    # print(dietsetitem)
+
 def trim(text:str):
     return " ".join(text.split())
 
