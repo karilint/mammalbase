@@ -615,11 +615,30 @@ class SourceMeasurementValue(BaseModel):
     maximum = models.DecimalField(max_digits=19, decimal_places=10, help_text='Maximum measurement value reported.')
     mean = models.DecimalField(max_digits=19, decimal_places=10, help_text='Mean of measurement values reported.')
     std = models.DecimalField(max_digits=19, decimal_places=10, default=None, blank=True, null=True, help_text='Standard deviation of measurement values reported.')
+    source_statistic = models.ForeignKey(
+        'SourceStatistic',
+        null=True, blank=True,
+        on_delete = models.SET_NULL,
+        )
     source_unit = models.ForeignKey(
         'SourceUnit',
         null=True, blank=True,
         on_delete = models.SET_NULL,
         )
+    gender = models.ForeignKey(
+        'ChoiceValue',
+        on_delete = models.SET_NULL,
+        blank=True,
+        null = True,
+        limit_choices_to={'choice_set': 'Gender'},
+        )
+    remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Source Measurement")
+    # unit is no longer in use - to be deleted
+    cited_reference = models.CharField(
+        blank=True,
+        null=True, 
+        max_length=250, 
+        help_text="Enter the original reference, if not this study.")
     unit = models.CharField(
         null=True,
         blank=True,
