@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.test.client import RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
-from mb.models import EntityClass, SourceEntity, SourceLocation, SourceMethod
+from mb.models import EntityClass, SourceEntity, SourceLocation, SourceMethod, SourceReference
 from allauth.socialaccount.models import SocialAccount
 from imports.tools import Check
 import imports.tools as tools
@@ -16,6 +16,55 @@ class ToolsTest(TestCase):
         self.check = Check(self.request)
         setattr(self.request, 'session', 'session')
         messages = FallbackStorage(self.request)
+        self.sr = SourceReference(citation='Tester, T., TesterToo, T., Testing, testing', status=1)
+        self.res = {'status': 'ok', 
+                'message-type': 'work-list', 
+                'message-version': '1.0.0', 
+                'message': {'facets': {}, 'total-results': 2,
+                            'items': [
+                                        {'publisher': 'Wildlife ent Society', 
+                                        'issue': '2', 
+                                        'DOI': '12.12345/jott.1234.12.1.12345-12345', 
+                                        'type': 'journal-article', 
+                                        'created': {'date-parts': [[2022, 2, 26]], 'date-time': '2022-02-26T13:24:30Z', 'timestamp': 1645881870000}, 
+                                        'page': '20539-20549', 
+                                        'source': 'Crossref', 
+                                        'is-referenced-by-count': 0, 
+                                        'title': ['Testing, testing'],
+                                        'volume': '20', 
+                                        'author': [{'given': 'Teresa', 'family': 'Tester', 'sequence': 'first', 'affiliation': []},
+                                                    {'given': 'Timothy', 'family': 'TesterToo', 'sequence': 'additional', 'affiliation': []}], 
+                                        'member': '4876', 
+                                        'published-online': {'date-parts': [[2022, 2, 26]]}, 
+                                        'deposited': {'date-parts': [[2022, 2, 26]], 'date-time': '2022-02-26T13:25:01Z', 'timestamp': 1645881901000}, 
+                                        'issued': {'date-parts': [[2022, 2, 26]]}, 
+                                        'references-count': 54,
+                                        'container-title': ['Testing container-title'], 
+                                        'journal-issue': {'issue': '2', 'published-online': {'date-parts': [[2022, 2, 26]]}}, 
+                                        'URL': 'http://dx.doi.org/10.11609/jott.6786.14.2.20539-20549', 
+                                        'ISSN': ['0974-7907', '0974-7893'], 
+                                        'issn-type': [{'value': '0974-7907', 'type': 'electronic'}, {'value': '0974-7893', 'type': 'print'}], 
+                                        'published': {'date-parts': [[2022, 2, 26]]}},
+                                        {'publisher': 'Wildlife ent Society', 
+                                        'issue': '20', 
+                                        'DOI': '12.12345/jott.1234.12.1.12345-12345', 
+                                        'type': 'journal-article', 
+                                        'created': {'date-parts': [[2022, 2, 26]], 'date-time': '2022-02-26T13:24:30Z', 'timestamp': 1645881870000}, 
+                                        'page': '20539-20549', 
+                                        'title': ['Testing, not testing'],
+                                        'volume': '20', 
+                                        'author': [{'given': 'Teresa', 'family': 'Tester', 'sequence': 'first', 'affiliation': []},
+                                                    {'given': 'Timothy', 'family': 'TesterToo', 'sequence': 'additional', 'affiliation': []}], 
+                                        'container-title': ['Testing container-title'], 
+                                        'journal-issue': {'issue': '2', 'published-online': {'date-parts': [[2022, 2, 26]]}}, 
+                                        'URL': 'http://dx.doi.org/10.11609/jott.6786.14.2.20539-20549', 
+                                        'ISSN': ['0974-7907', '0974-7893'], 
+                                        'issn-type': [{'value': '0974-7907', 'type': 'electronic'}, {'value': '0974-7893', 'type': 'print'}], 
+                                        'published': {'date-parts': [[2022, 2, 26]]}}
+                                        ]}, 
+                                        'items-per-page': 2, 'query': {'start-index': 0, 'search-terms': None}}
+        self.empty_res = {'status': 'ok', 'message-type': 'work-list', 'message-version': '1.0.0', 'message': {'facets': {}, 'total-results': 0, 'items': [], 'items-per-page': 2, 'query': {'start-index': 0, 'search-terms': None}}}
+       
 
         setattr(self.request, '_messages', messages)
         with open('test.csv', 'w') as file:
@@ -240,4 +289,30 @@ class ToolsTest(TestCase):
         self.assertEqual(df.at[0, 'author'],'1111-1111-2222-2222' )
         self.assertEqual(df.at[1, 'verbatimScientificName'],'kapistelija' )
         self.assertEqual(df.at[0, 'references'],'tosi tieteellinen tutkimus tm. 2000' )
+
+    def test_create_masterreference(self):
+        answer = tools.create_masterreference('Tester, T., TesterToo, T., Testing, testing', self.res, self.sr)
+        self.assertEquals(answer, True)
+
+    def test_create_masterreference_with_wrong_title(self):
+        answer = tools.create_masterreference('Tester, T., TesterToo, T., Testing, not testing at all', self.res, self.sr)
+        self.assertEquals(answer, False)
+
+    def test_create_masterreference_empty(self):
+        answer = tools.create_masterreference('Tester, T., TesterToo, T., Testing, testing', self.empty_res, self.sr)
+        self.assertEquals(answer, False)
+
+    def test_title_matches_citation_correct(self):
+        answer = tools.title_matches_citation('<i>This is a correct title</i>', 'This is a correct title')
+        self.assertEquals(answer, True)
+    
+    def test_title_matches_citation_false(self):
+        answer = tools.title_matches_citation('This is not a correct title', 'This is a correct title')
+        self.assertEquals(answer, False)
+
+    def test_make_harvard_citation_journalarticle(self):
+        test_citation = tools.make_harvard_citation_journalarticle('Testing, testing', 'doi123', ['Tester, T.', 'TesterToo, T.', 'TesterThree, T.'],
+                                                                        '2022', 'Testing container-title', '20', '2', '123-321')
+        self.assertEquals('Tester, T., TesterToo, T., TesterThree, T. 2022. Testing, testing. Testing container-title. 20(2), pp.123-321. Available at: doi123.', test_citation)
+
 
