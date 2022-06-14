@@ -41,7 +41,7 @@ class Check:
             if data.exists() == False:
                 messages.error(self.request, "The author " + str(author) + " is not a valid ORCID ID.")
                 return False
-            self.id = data[0].id
+            self.id = data[0].user_id
         return True
 
     def check_headers(self, df):
