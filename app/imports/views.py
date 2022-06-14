@@ -24,7 +24,7 @@ def get_referencedata_from_crossref(citation):  # pragma: no cover
 	url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=mammalbase@gmail.com&rows=2'
 	x = requests.get(url)
 	y = x.json()
-	print(y)
+	# print(y)
 	create_masterreference(citation, y)
 
 # Check if SourceReference.citation matching MasterReference exists
@@ -39,23 +39,14 @@ def title_matches_citation(title, citation):
 	# https://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string
 	title_without_html = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', title)
 	if title_without_html.lower() not in citation.lower():
-		print('Title ', title_without_html , ' is not in citation')
+		# print('Title ', title_without_html , ' is not in citation')
 		return False
 	return True
 
 # Takes SourceReference citation and dictionary with relevant data
 def create_masterreference(citation, response_data):
 	x = response_data['message']['items'][0]
-<<<<<<< HEAD
-	for auth in x['author']:
-		if auth['family'] not in citation:
-			#print('Name ', auth['family'], ' is not in citation')
-			return False
-	if x['title'][0].lower() not in citation.lower():
-		#print('Title ', x['title'][0], ' is not in citation')
-=======
 	if title_matches_citation(x['title'][0], citation) == False:
->>>>>>> 56e685e9f7e8cd85582232ce89b673ea3c86326d
 		return False
 	authors = list()
 	for auth in x['author']:
@@ -71,12 +62,8 @@ def create_masterreference(citation, response_data):
 		volume = x['volume']
 		issue = x['issue']
 		page = x['page']
-<<<<<<< HEAD
-		#print('Reference details: ',title, t, d, first_author, year, container_title, volume, issue, page)
-=======
-		print('Reference details: ',title, t, d, first_author, year, container_title, volume, issue, page)
+		# print('Reference details: ',title, t, d, first_author, year, container_title, volume, issue, page)
 		make_harvard_citation_journalarticle(title, d, authors, year, container_title, volume, issue, page)
->>>>>>> 56e685e9f7e8cd85582232ce89b673ea3c86326d
 		return True
 
 	#print('Reference details: ', title, t, d, first_author, year, container_title)

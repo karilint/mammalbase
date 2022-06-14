@@ -318,7 +318,7 @@ def get_fooditem(food):
         part = ChoiceValue.objects.filter(pk=21)[0]
         is_cultivar = 0
         taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
-        print(taxonomic_unit)
+        # print(taxonomic_unit)
         food_item = FoodItem(name=name, part=part, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=is_cultivar)
         food_item_exists = FoodItem.objects.filter(name__iexact=name)
         if len(food_item_exists) > 0:
@@ -382,7 +382,7 @@ def create_dietsetitem(row, diet_set):
     percentage = possible_nan_to_zero(getattr(row, 'measurementValue'))
 
     dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)
-    print(dietsetitem)
+    # print(dietsetitem)
 
 def trim(text:str):
     return " ".join(text.split())

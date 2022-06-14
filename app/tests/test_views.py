@@ -86,8 +86,8 @@ class ImportViewTests(TestCase):
         with open('test_post.csv', 'r') as fp:
             response = self.client.post('/import/test', {'name': 'fred', 'csv_file': fp})
         messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'File uploaded.')
+        self.assertEqual(len(messages), 2)
+        self.assertEqual('File imported successfully.' in str(messages[0]), True)
         self.assertEqual(response.status_code, 302)
 
     def test_import_post_failing_file(self):
