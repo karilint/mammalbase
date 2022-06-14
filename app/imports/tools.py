@@ -111,7 +111,7 @@ class Check:
         return True
 
     def check_sequence(self, df):
-        df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references']]
+        df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references', 'measurementValue']]
         counter = 0
         total = 1
         fooditems = []
@@ -123,6 +123,10 @@ class Check:
             lines += 1
             if str(item[2]).isnumeric():
                 if int(item[2]) == counter:
+                    if item[4] > measurementvalue_reference:
+                        messages.error(self.request, "Measurement value on the line " + str(lines) + " should not be larger than " + str(measurementvalue_reference) + ".")
+                        return False
+                    measurementvalue_reference = item[4]
                     if item[0] != scientific_name:
                         messages.error(self.request, "Scientific name on the line " + str(lines) + " should be '" + str(scientific_name) + "'.")
                         return False
@@ -139,6 +143,7 @@ class Check:
                 else:
                     if int(item[2]) == 1:
                         reference_list = [item[0], item[3]]
+                        measurementvalue_reference = item[4]
                         if 'verbatimLocality' in df.columns.values:
                             for vl in df.loc[(lines-2):(lines-2), 'verbatimLocality'].fillna(0):
                                 reference_list.append(vl)
