@@ -455,6 +455,13 @@ class SourceAttribute(BaseModel):
     )
     type = models.PositiveSmallIntegerField(choices=TYPE, default=3, help_text='Select the type of the Attribute')
     remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Attribute")
+    method = models.ForeignKey(
+        'SourceMethod',
+        on_delete=models.CASCADE,
+        blank=True,
+        null = True,
+        related_name='method_%(class)s',
+        )
 
     class Meta:
         ordering = ['entity__name','name']
