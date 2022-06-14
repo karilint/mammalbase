@@ -22,33 +22,49 @@
     
     {% if user.is_authenticated %}
 		{% include 'includes/messaging.html' %}
-	<form action="{% url "import_test" %}" method="POST" enctype="multipart/form-data" class="form-horizontal"> 
-	
-    {% csrf_token %}
-	
-    <div class="form-group">
-		  <label for="name" class="col-md-3 col-sm-3 col-xs-12 control-label">File: </label>
-		<div class="col-md-8">
-        <input type="file" name="csv_file" accept=".csv" required="True" class="form-control"/>
-		</div>                    
-	</div>
-	<div class="form-group">                    
-		<div class="col-md-3 col-sm-3 col-xs-12 col-md-offset-3" style="margin-bottom:10px;">
-			 <button class="btn btn-primary"> <span class="glyphicon glyphicon-upload" style="margin-right:5px;"></span>Upload </button>
-		</div> 
-	</div>
-	</form>
-
   <div >
-    <button onclick="showInfo('howTo')" class="w3-button w3-block w3-border w3-left-align w3-border-black import-help-menu" style="width:50%; margin-bottom:10px;" > How to import diet set data</button>
+    <button onclick="showInfo('import')" 
+    class="w3-button w3-block w3-border w3-left-align w3-border-black" 
+    style="width:50%; margin-bottom:10px;"> 
+    Import data
+    </button>
+  </div>
+  <div id="import" class="w3-hide w3-container w3-show" style=" background-color: #f0f0f0; margin-bottom: 10px;">
+    <form action="{% url "import_test" %}" method="POST" enctype="multipart/form-data" class="form-horizontal"> 
+	
+      {% csrf_token %}
+    
+      <div class="form-group">
+        <label for="name" class="col-md-3 col-sm-3 col-xs-12 control-label">File: </label>
+      <div class="col-md-8">
+          <input type="file" name="csv_file" accept=".csv" required="True" class="form-control"/>
+      </div>                    
+    </div>
+    <div class="form-group">                    
+      <div class="col-md-3 col-sm-3 col-xs-12 col-md-offset-3" style="margin-bottom:10px;">
+         <button class="btn btn-primary"> <span class="glyphicon glyphicon-upload" style="margin-right:5px;"></span>Upload </button>
+      </div> 
+    </div>
+    </form>
   </div>
 
+  <div >
+    <button onclick="showInfo('howTo')" 
+    class="w3-button w3-block w3-border w3-left-align w3-border-black" 
+    style="width:50%; margin-bottom:10px;"> 
+    How to import diet set data
+    </button>
+  </div>
   <div id="howTo" class="w3-hide w3-container" style=" background-color: #f0f0f0; margin-bottom: 10px;">
     <p>Press "choose file"-button to select a file to import. After the file is chosen, press "Upload"-button </p>
   </div>
 
   <div>
-    <button onclick="showInfo('supportedFormats')" class="w3-button w3-block w3-border w3-left-align w3-border-black" style="width:50%; margin-bottom:10px"> Supported file formats</button>
+    <button onclick="showInfo('supportedFormats')" 
+    class="w3-button w3-block w3-border w3-left-align w3-border-black"
+    style="width:50%; margin-bottom:10px"> 
+    Supported file formats
+    </button>
   </div>
   <div id="supportedFormats" class="w3-hide w3-container" style=" background-color: #f0f0f0; margin-bottom: 10px;">
     <p>Currently supported formats are: </p>
@@ -58,7 +74,11 @@
   </div>
 
   <div>
-    <button onclick="showInfo('exampleFile')" class="w3-button w3-block w3-border w3-left-align w3-border-black" style="width:50%; margin-bottom:10px"> Example import</button>
+    <button onclick="showInfo('exampleFile')"
+    class="w3-button w3-block w3-border w3-left-align w3-border-black"
+    style="width:50%; margin-bottom:10px">
+    Example import
+    </button>
   </div>
   <div id="exampleFile" class="w3-hide w3-container" style=" background-color: #f0f0f0; margin-bottom: 10px;">
     <p> This example can be used as a basis structure for import </p>

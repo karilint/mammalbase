@@ -1,15 +1,23 @@
-from mb.models import ChoiceValue, DietSet, EntityClass, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod
+from mb.models import ChoiceValue, DietSet, EntityClass, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod, DietSetItem, FoodItem
+from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
+from allauth.socialaccount.models import SocialAccount
 
 import pandas as pd
 import re
+import json
+import urllib.request
+import requests
+import time
 
 class Check:
     def __init__(self, request):
         self.request = request
 
     def check_all(self, df):
+        if self.check_valid_author(df) == False: #Testi menee vikaan
+            return False
         if self.check_headers(df) == False:
             return False
         if self.check_author(df) == False:
@@ -24,6 +32,13 @@ class Check:
             return False
         if self.check_references(df) == False:
             return False
+        return True
+
+    def check_valid_author(self, df):
+        for author in (df.loc[:, 'author']):
+            if SocialAccount.objects.all().filter(uid=author).exists() == False:
+                messages.error(self.request, "The author " + str(author) + " is not a valid ORCID ID.")
+                return False
         return True
 
     def check_headers(self, df):
@@ -44,6 +59,8 @@ class Check:
             if len(str(author)) != 19:
                 messages.error(self.request, "The author on the line number " + str(counter) + " is not in the correct form.")
                 return False
+            if "X" in author:
+                author = author.replace("X", "")
             numbers.append(author.replace("-", ""))
     
         counter = 1
@@ -218,38 +235,26 @@ class Check:
         return True
 
 def get_sourcereference_citation(reference):
-    sr = SourceReference.objects.filter(citation__iexact=reference)
-    if len(sr) > 0:
-        return sr[0]
-    else:
-        new_reference = SourceReference(citation=reference, status=1)
-        new_reference.save()
-        return new_reference
+    new_reference = SourceReference(citation=reference, status=1)
+    new_reference.save()
+    return new_reference
 
 def get_entityclass(taxonRank):
-    ec = EntityClass.objects.filter(name__iexact=taxonRank)
-    if len(ec) > 0:
-        return(ec[0])
-    else:
-        new_entity = EntityClass(name=taxonRank)
-        new_entity.save()
-        return new_entity
+    ec_all = EntityClass.objects.filter(name__iexact=taxonRank)
+    if len(ec_all) > 0:
+        return ec_all[0]
+    new_entity = EntityClass(name=taxonRank)
+    new_entity.save()
+    return new_entity
 
 def get_sourceentity(vs_name, reference, entity):
-    se = SourceEntity.objects.filter(name__iexact=vs_name)
-    if len(se) > 0:
-        return se[0]
-    else:
-        new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name)
-        new_sourceentity.save()
-        return new_sourceentity
+    new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name)
+    new_sourceentity.save()
+    return new_sourceentity
 
 def get_timeperiod(sampling, ref):
     if sampling != sampling:
         return None
-    tp = TimePeriod.objects.filter(name__iexact=sampling)
-    if len(tp) > 0:
-        return tp[0]
     else:
         new_timeperiod = TimePeriod(reference=ref, name=sampling)
         new_timeperiod.save()
@@ -258,9 +263,6 @@ def get_timeperiod(sampling, ref):
 def get_sourcemethod(method, ref):
     if method != method:
         return None
-    sm = SourceMethod.objects.filter(name__iexact=method)
-    if len(sm) > 0:
-        return sm[0]
     else:
         new_sourcemethod = SourceMethod(reference=ref, name=method)
         new_sourcemethod.save()
@@ -269,13 +271,81 @@ def get_sourcemethod(method, ref):
 def get_sourcelocation(location, ref):
     if location != location:
         return None
-    sl = SourceLocation.objects.filter(name__iexact=location)
-    if len(sl) > 0:
-        return sl[0]
     else:
         new_sourcelocation = SourceLocation(reference=ref, name=location)
         new_sourcelocation.save()
         return new_sourcelocation
+
+def get_choicevalue(gender):
+    if gender != gender:
+        return None
+    if gender != '22' or gender != '23':
+        return
+    choicevalue = ChoiceValue.objects.filter(pk=gender)
+    return choicevalue[0]
+
+
+def get_fooditem(food):
+    food_upper = food.upper()
+    food_item = FoodItem.objects.filter(name__iexact=food_upper)
+    if len(food_item) > 0:
+        return food_item[0]
+
+    def get_json(food):
+        url = 'https://resolver.globalnames.org/name_resolvers.json?data_source_ids=3&names=' + food.lower().capitalize().replace(' ', '%20')
+        file = urllib.request.urlopen(url)
+        data = file.read()
+        return json.loads(data)
+
+    def create_fooditem(results):
+        tsn = results['data'][0]['results'][0]['taxon_id']
+        taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
+
+        if len(taxonomic_unit)==0:
+            completename = results['data'][0]['results'][0]['canonical_form']
+            hierarchy_string = results['data'][0]['results'][0]['classification_path_ids'].replace('|', '-')
+            hierarchy = results['data'][0]['results'][0]['classification_path'].replace('|', '-')
+            common_names = None
+            kingdom = hierarchy.split('-')
+            kingdom_id = Kingdom.objects.filter(name=kingdom[0])[0].pk
+            path_ranks = results['data'][0]['results'][0]['classification_path_ranks'].split('|')
+            rank = TaxonUnitTypes.objects.filter(rank_name=path_ranks[-1], kingdom_id=kingdom_id)[0].pk
+            tsn_update_date = None
+            taxonomic_unit = TaxonomicUnits(tsn=tsn, kingdom_id=kingdom_id, rank_id=rank, completename=completename, hierarchy_string=hierarchy_string, hierarchy=hierarchy, common_names=common_names, tsn_update_date=tsn_update_date)
+            taxonomic_unit.save()
+
+        name = food_upper
+        part = ChoiceValue.objects.filter(pk=21)[0]
+        is_cultivar = 0
+        taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
+        print(taxonomic_unit)
+        food_item = FoodItem(name=name, part=part, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=is_cultivar)
+        food_item_exists = FoodItem.objects.filter(name__iexact=name)
+        if len(food_item_exists) > 0:
+            return food_item_exists[0]
+        food_item.save()
+        return food_item
+    foods = get_json(food_upper) 
+    try:
+        foods['data'][0]['results']
+        return create_fooditem(foods)
+
+    except KeyError:
+        new = food_upper.split('(', 1)[0]
+        food_item = FoodItem.objects.filter(name__iexact=new)
+        if len(food_item) > 0:
+            return food_item[0]
+        new_food = get_json(new) 
+        try:
+            new_food['data'][0]['results']
+            return create_fooditem(new_food)
+        except KeyError:
+            food_item = FoodItem.objects.filter(name__iexact=food_upper)
+            if len(food_item) > 0:
+                return food_item[0]
+            empty_food_item = FoodItem(name=food_upper, part=None, tsn=None, pa_tsn=None, is_cultivar=0)
+            empty_food_item.save()
+            return empty_food_item
 
 def possible_nan_to_zero(size):
     if size != size:
@@ -289,19 +359,30 @@ def possible_nan_to_none(possible):
 
 @transaction.atomic
 def create_dietset(row):
-    reference = get_sourcereference_citation(getattr(row, 'references'))
-    entityclass = get_entityclass(getattr(row, 'taxonRank'))
-    taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass)
-    location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference)
-	# gender =
-    sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
-    cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
-    time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
-    method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
-    study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
+    
+        reference = get_sourcereference_citation(getattr(row, 'references'))
+        entityclass = get_entityclass(getattr(row, 'taxonRank'))
+        taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass)
+        location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference)
+        gender = get_choicevalue(getattr(row, 'sex'))
+        sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
+        cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
+        time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
+        method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
+        study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
 
-    ds = DietSet(reference=reference, taxon=taxon, location=location, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
-    ds.save()
+        ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
+        if (getattr(row, 'sequence') == 1):
+            ds.save()
+        create_dietsetitem(row, ds)
+
+def create_dietsetitem(row, diet_set):
+    food_item = get_fooditem(getattr(row, 'verbatimAssociatedTaxa'))
+    list_order = getattr(row, 'sequence')
+    percentage = possible_nan_to_zero(getattr(row, 'measurementValue'))
+
+    dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)
+    print(dietsetitem)
 
 def trim(text:str):
     return " ".join(text.split())
@@ -311,3 +392,4 @@ def trim_df(df):
     for i, row in df.iterrows():
         for header in headers:
             df.at[i, header] = trim(str(df.at[i, header]))
+
