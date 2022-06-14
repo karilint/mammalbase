@@ -19,19 +19,19 @@ import re
 
 # Search citation from CrossrefApi: https://api.crossref.org/swagger-ui/index.htm
 # Please do not make any unnessecary queries: https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/
-def get_referencedata_from_crossref(citation):
+def get_referencedata_from_crossref(citation):  # pragma: no cover
 	c = citation.replace(" ", "%20")
 	url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=mammalbase@gmail.com&rows=2'
 	x = requests.get(url)
 	y = x.json()
-	print(y)
+	# print(y)
 	create_masterreference(citation, y)
 
 # Check if SourceReference.citation matching MasterReference exists
 def get_masterreference(citation):
 	sr_all = SourceReference.objects.filter(citation__iexact=citation, status=1, master_reference=None)
 	if len(sr_all) > 0:
-		print("No masterreference for given citation found.")
+		#print("No masterreference for given citation found.")
 		return False
 	return True
 
@@ -39,7 +39,7 @@ def title_matches_citation(title, citation):
 	# https://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string
 	title_without_html = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', title)
 	if title_without_html.lower() not in citation.lower():
-		print('Title ', title_without_html , ' is not in citation')
+		# print('Title ', title_without_html , ' is not in citation')
 		return False
 	return True
 
@@ -62,11 +62,11 @@ def create_masterreference(citation, response_data):
 		volume = x['volume']
 		issue = x['issue']
 		page = x['page']
-		print('Reference details: ',title, t, d, first_author, year, container_title, volume, issue, page)
+		# print('Reference details: ',title, t, d, first_author, year, container_title, volume, issue, page)
 		make_harvard_citation_journalarticle(title, d, authors, year, container_title, volume, issue, page)
 		return True
 
-	print('Reference details: ', title, t, d, first_author, year, container_title)
+	#print('Reference details: ', title, t, d, first_author, year, container_title)
 	return True
 
 def make_harvard_citation_journalarticle(title, d, authors, year, container_title, volume, issue, page):
@@ -86,7 +86,7 @@ def import_test(request):
 		return render(request, "import/import_test.html")
 	try:
 		csv_file = request.FILES["csv_file"]
-		df = pd.read_csv(csv_file)
+		df = pd.read_csv(csv_file, sep='\t')
 		trim_df(df)
 		check = Check(request)
 
