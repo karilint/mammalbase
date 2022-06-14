@@ -40,7 +40,6 @@ class Check:
         numbers = []
         counter = 1
         for author in (df.loc[:, 'author']):
-            print(author)
             counter += 1
             if len(str(author)) != 19:
                 messages.error(self.request, "The author on the line number " + str(counter) + " is not in the correct form.")
