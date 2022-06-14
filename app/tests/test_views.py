@@ -67,16 +67,5 @@ class ImportViewTests(TestCase):
         self.assertEqual('Unable to upload file.' in str(messages[0]), True)
         self.assertEqual(response.status_code, 302)
 
-    def test_create_masterreference(self):
-        answer = views.create_masterreference('Tester, T., TesterToo, T., Testing, testing', self.res)
-        self.assertEquals(answer, True)
-
-    def test_create_masterreference_with_wrong_title(self):
-        answer = views.create_masterreference('Tester, T., TesterToo, T., Testing, not testing at all', self.res)
-        self.assertEquals(answer, False)
-
-    def test_title_matches_citation_correct(self):
-        answer = views.title_matches_citation('<i>This is a correct title</i>', 'This is a correct title')
-        self.assertEquals(answer, True)
     
     

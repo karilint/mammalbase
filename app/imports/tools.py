@@ -11,7 +11,6 @@ import json
 import urllib.request
 import requests
 import time
-import logging
 
 class Check:
     def __init__(self, request):
@@ -19,8 +18,8 @@ class Check:
         self.id = None
 
     def check_all(self, df):
-        # if self.check_valid_author(df) == False: #Testi menee vikaan
-        #     return False
+        if self.check_valid_author(df) == False: #Testi menee vikaan
+            return False
         if self.check_headers(df) == False:
             return False
         if self.check_author(df) == False:
