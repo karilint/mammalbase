@@ -18,8 +18,8 @@ class Check:
         self.id = None
 
     def check_all(self, df):
-        if self.check_valid_author(df) == False: #Testi menee vikaan
-            return False
+        # if self.check_valid_author(df) == False: #Testi menee vikaan
+        #     return False
         if self.check_headers(df) == False:
             return False
         if self.check_author(df) == False:
@@ -256,11 +256,14 @@ class Check:
 def get_sourcereference_citation(reference):
     sr_old = SourceReference.objects.filter(citation__iexact=reference)
     if len(sr_old) > 0:
+        if sr_old[0].master_reference == None:
+            response_data = get_referencedata_from_crossref(reference)
+            create_masterreference(reference, response_data, sr_old[0])
         return sr_old[0]
     new_reference = SourceReference(citation=reference, status=1)
     new_reference.save()
-    #response_data = get_referencedata_from_crossref(reference)
-    #create_masterreference(reference, response_data, new_reference)
+    response_data = get_referencedata_from_crossref(reference)
+    create_masterreference(reference, response_data, new_reference)
     return new_reference
 
 def get_entityclass(taxonRank):
@@ -442,13 +445,6 @@ def get_referencedata_from_crossref(citation):
 	except requests.exceptions.RequestException as e:
 		print('Error: ', e)
 
-# Check if SourceReference.citation matching MasterReference exists
-def get_masterreference(citation):
-	sr_all = SourceReference.objects.filter(citation__iexact=citation, status=1, master_reference=None)
-	if len(sr_all) > 0:
-		return False
-	return True
-
 def title_matches_citation(title, source_citation):
 	# https://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string
     title_without_html = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', title)
@@ -458,8 +454,6 @@ def title_matches_citation(title, source_citation):
     return True
 
 def create_masterreference(source_citation, response_data, sr):
-    if get_masterreference == True:
-        return False
     try:
         if response_data['message']['total-results'] == 0:
             return False
