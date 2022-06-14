@@ -679,6 +679,33 @@ class SourceMethod(BaseModel):
         """
         return '%s' % (self.name)
 
+class SourceStatistic(BaseModel):
+    """
+    Model representing a Source Statistic in MammalBase
+    """
+
+    reference = models.ForeignKey(
+        'SourceReference',
+        on_delete = models.CASCADE,
+        )
+    name = models.CharField(max_length=500, help_text="Enter the statistic described in the Reference")
+
+    class Meta:
+        ordering = ['name']
+        unique_together = ('reference','name')
+
+    def get_absolute_url(self):
+        """
+        Returns the url to access a particular Source Statistic.
+        """
+        return reverse('source-statistic-detail', args=[str(self.id)])
+
+    def __str__(self):
+        """
+        String for representing the Model object (in Admin site etc.)
+        """
+        return '%s' % (self.name)
+
 class SourceUnit(BaseModel):
     """
     Model representing a SourceUnit in MammalBase
