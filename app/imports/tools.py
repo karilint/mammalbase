@@ -14,6 +14,7 @@ import time
 class Check:
     def __init__(self, request):
         self.request = request
+        self.id = None
 
     def check_all(self, df):
         if self.check_valid_author(df) == False: #Testi menee vikaan
@@ -36,9 +37,11 @@ class Check:
 
     def check_valid_author(self, df):
         for author in (df.loc[:, 'author']):
-            if SocialAccount.objects.all().filter(uid=author).exists() == False:
+            data = SocialAccount.objects.all().filter(uid=author)
+            if data.exists() == False:
                 messages.error(self.request, "The author " + str(author) + " is not a valid ORCID ID.")
                 return False
+            self.id = data[0].id
         return True
 
     def check_headers(self, df):
@@ -79,12 +82,22 @@ class Check:
                 messages.error(self.request, "Scientific name is empty on the line " + str(counter) + ".")
                 return False
 
+        df_new = df[['verbatimScientificName', 'taxonRank']]
         counter = 1
-        for name in (df.loc[:, 'verbatimScientificName']):
+        for item in df_new.values:
             counter += 1
-            names_list = name.split()
+            names_list = item[0].split()
             if len(names_list) > 3:
-                messages.error(self.request, "Scientific name is not in the correct form on the line " + str(counter) + ".")
+                messages.error(self.request, "Scientific name is not in the correct format on the line " + str(counter) + ".")
+                return False
+            if len(names_list) == 3 and item[1] not in ['Subspecies', 'subspecies']:
+                messages.error(self.request, "Scientific name is not in the correct format or taxonomic rank should be 'Subspecies' on the line " + str(counter) + ".")
+                return False
+            if len(names_list) == 2 and item[1] not in ['Species', 'species']:
+                messages.error(self.request, "Scientific name is not in the correct format or taxonomic rank should be 'Species' on the line " + str(counter) + ".")
+                return False
+            if len(names_list) == 1 and item[1] not in ['Genus', 'genus']:
+                messages.error(self.request, "Scientific name is not in the correct format or taxonomic rank should be 'Genus' on the line " + str(counter) + ".")
                 return False
         return True
 
