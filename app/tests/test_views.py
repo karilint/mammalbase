@@ -71,7 +71,7 @@ class ImportViewTests(TestCase):
 
     def test_import_post(self):
         with open('test_post.csv', 'w') as file:
-            writer = csv.writer(file)
+            writer = csv.writer(file, delimiter='\t')
             writer.writerow(['author', 'verbatimScientificName', 'taxonRank', 'verbatimLocality', 'habitat', 'samplingEffort', 'sex', 'individualCount', 'verbatimEventDate', 'measurementMethod', 'verbatimAssociatedTaxa', 'sequence', 'measurementValue', 'associatedReferences',  'references'])
             #rivi 10 mallissa
             writer.writerow(['0000-0001-9627-8821', 'Lagothrix flavicauda', 'Species', '', '', '', '', '', '', '',  'primarily frugivorous', '1','', 'Leo Luna 1980 | deLuycker 2007 | S. Shanee and N. Shanee 2011b | Shanee 2014a | Fack et al. 2018a','Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
@@ -92,7 +92,7 @@ class ImportViewTests(TestCase):
 
     def test_import_post_failing_file(self):
         with open('test_bad.csv', 'w') as file:
-            writer = csv.writer(file)
+            writer = csv.writer(file, delimiter='\t')
             writer.writerow(['writer', 'verbatimScientificName', 'taxonRank', 'verbatimAssociatedTaxa', 'sequence', 'measurementValue',  'references'])
             writer.writerow(['0000-0001-9627-8821', 'Lagothrix flavicauda Lagothrix flavicauda', 'Species', 'primarily frugivorous', '1', '', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
             writer.writerow(['0000-0001-9627-8821',	'Lagothrix flavicauda',	'animal',	'leaves', '2', '', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
