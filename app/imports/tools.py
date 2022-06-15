@@ -20,7 +20,7 @@ class Check:
 
     def check_all(self, df):
         if self.check_valid_author(df) == False: #Testi menee vikaan
-             return False
+            return False
         if self.check_headers(df) == False:
             return False
         if self.check_author(df) == False:
@@ -113,7 +113,12 @@ class Check:
         return True
 
     def check_sequence(self, df):
-        df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references', 'measurementValue']]
+        import_headers = list(df.columns.values)
+        has_measurementvalue =  "measurementValue" in import_headers
+        if has_measurementvalue:
+            df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references', 'measurementValue']]
+        else:
+            df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references']]
         counter = 0
         total = 1
         fooditems = []
@@ -125,10 +130,12 @@ class Check:
             lines += 1
             if str(item[2]).isnumeric():
                 if int(item[2]) == counter:
-                    if item[4] > measurementvalue_reference:
-                        messages.error(self.request, "Measurement value on the line " + str(lines) + " should not be larger than " + str(measurementvalue_reference) + ".")
-                        return False
-                    measurementvalue_reference = item[4]
+                    if has_measurementvalue:
+                        if item[4] > measurementvalue_reference:
+                            messages.error(self.request, "Measurement value on the line " + str(lines) + " should not be larger than " + str(measurementvalue_reference) + ".")
+                            return False
+                    if has_measurementvalue:
+                        measurementvalue_reference = item[4]
                     if item[0] != scientific_name:
                         messages.error(self.request, "Scientific name on the line " + str(lines) + " should be '" + str(scientific_name) + "'.")
                         return False
@@ -145,7 +152,8 @@ class Check:
                 else:
                     if int(item[2]) == 1:
                         reference_list = [item[0], item[3]]
-                        measurementvalue_reference = item[4]
+                        if has_measurementvalue:
+                            measurementvalue_reference = item[4]
                         if 'verbatimLocality' in df.columns.values:
                             for vl in df.loc[(lines-2):(lines-2), 'verbatimLocality'].fillna(0):
                                 reference_list.append(vl)
@@ -455,7 +463,7 @@ def title_matches_citation(title, source_citation):
 	# https://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string
     title_without_html = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', title)
     if title_without_html.lower() not in source_citation.lower():
-        print('Title ', title_without_html , ' is not in citation')
+        # print('Title ', title_without_html , ' is not in citation')
         return False
     return True
 
@@ -516,7 +524,7 @@ def create_masterreference(source_citation, response_data, sr, user_author):
         return True
         
     except Exception as e:
-        print('Error: ', e)
+        #print('Error: ', e)
         return False
   
 
