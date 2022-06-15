@@ -4,6 +4,7 @@ from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
 from allauth.socialaccount.models import SocialAccount
+from django.contrib.auth.models import User
 
 import pandas as pd
 import re
@@ -18,8 +19,8 @@ class Check:
         self.id = None
 
     def check_all(self, df):
-        # if self.check_valid_author(df) == False: #Testi menee vikaan
-        #     return False
+        if self.check_valid_author(df) == False: #Testi menee vikaan
+             return False
         if self.check_headers(df) == False:
             return False
         if self.check_author(df) == False:
@@ -253,36 +254,41 @@ class Check:
 
         return True
 
-def get_sourcereference_citation(reference):
+def get_author(id):
+    author = User.objects.filter(socialaccount__uid=id)[0]
+    return author
+
+def get_sourcereference_citation(reference, author):
     sr_old = SourceReference.objects.filter(citation__iexact=reference)
     if len(sr_old) > 0:
         if sr_old[0].master_reference == None:
-            response_data = get_referencedata_from_crossref(reference)
-            create_masterreference(reference, response_data, sr_old[0])
+            response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois, hidastaa testejä..
+            create_masterreference(reference, response_data, sr_old[0], author) # Voi kommentoida pois, hidastaa testejä..
+            return sr_old[0]
         return sr_old[0]
-    new_reference = SourceReference(citation=reference, status=1)
+    new_reference = SourceReference(citation=reference, status=1, created_by=author)
     new_reference.save()
-    response_data = get_referencedata_from_crossref(reference)
-    create_masterreference(reference, response_data, new_reference)
+    response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois, hidastaa testejä..
+    create_masterreference(reference, response_data, new_reference, author) # Voi kommentoida pois, hidastaa testejä..
     return new_reference
 
-def get_entityclass(taxonRank):
+def get_entityclass(taxonRank, author):
     ec_all = EntityClass.objects.filter(name__iexact=taxonRank)
     if len(ec_all) > 0:
         return ec_all[0]
-    new_entity = EntityClass(name=taxonRank)
+    new_entity = EntityClass(name=taxonRank, created_by=author)
     new_entity.save()
     return new_entity
 
-def get_sourceentity(vs_name, reference, entity):
+def get_sourceentity(vs_name, reference, entity, author):
     se_old = SourceEntity.objects.filter(reference=reference, entity=entity, name=vs_name)
     if len(se_old) > 0:
         return se_old[0]
-    new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name)
+    new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name, created_by=author)
     new_sourceentity.save()
     return new_sourceentity
 
-def get_timeperiod(sampling, ref):
+def get_timeperiod(sampling, ref, author):
     if sampling != sampling:
         return None
     else:
@@ -290,29 +296,29 @@ def get_timeperiod(sampling, ref):
         if len(tp_all) > 0:
             return tp_all[0]
         else:
-            new_timeperiod = TimePeriod(reference=ref, name=sampling)
+            new_timeperiod = TimePeriod(reference=ref, name=sampling, created_by=author)
             new_timeperiod.save()
             return new_timeperiod
 
-def get_sourcemethod(method, ref):
+def get_sourcemethod(method, ref, author):
     if method != method:
         return None
     sr_old = SourceMethod.objects.filter(reference=ref, name=method)
     if len(sr_old) > 0:
         return sr_old[0]
     else:
-        new_sourcemethod = SourceMethod(reference=ref, name=method)
+        new_sourcemethod = SourceMethod(reference=ref, name=method, created_by=author)
         new_sourcemethod.save()
         return new_sourcemethod
 
-def get_sourcelocation(location, ref):
+def get_sourcelocation(location, ref, author):
     if location != location:
         return None
     sl_old = SourceLocation.objects.filter(name=location, reference=ref)
     if len(sl_old) > 0:
         return sl_old[0]
     else:
-        new_sourcelocation = SourceLocation(reference=ref, name=location)
+        new_sourcelocation = SourceLocation(reference=ref, name=location, created_by=author)
         new_sourcelocation.save()
         return new_sourcelocation
 
@@ -399,19 +405,19 @@ def possible_nan_to_none(possible):
 
 @transaction.atomic
 def create_dietset(row):
-    
-        reference = get_sourcereference_citation(getattr(row, 'references'))
-        entityclass = get_entityclass(getattr(row, 'taxonRank'))
-        taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass)
-        location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference)
+        author = get_author(getattr(row, 'author'))
+        reference = get_sourcereference_citation(getattr(row, 'references'), author)
+        entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
+        taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+        location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
         gender = get_choicevalue(getattr(row, 'sex'))
         sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
         cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
-        time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
-        method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
+        time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference, author)
+        method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
         study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
 
-        ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
+        ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time, created_by=author)
         if (getattr(row, 'sequence') == 1):
             ds.save()
         create_dietsetitem(row, ds)
@@ -453,7 +459,7 @@ def title_matches_citation(title, source_citation):
         return False
     return True
 
-def create_masterreference(source_citation, response_data, sr):
+def create_masterreference(source_citation, response_data, sr, user_author):
     try:
         if response_data['message']['total-results'] == 0:
             return False
@@ -503,7 +509,7 @@ def create_masterreference(source_citation, response_data, sr):
             else:
                 citation = str(first_author) + '. ' + str(title) + '. Available at: ' + str(doi)
         
-        mr = MasterReference(type=type, doi=doi, uri=uri, first_author=first_author, year=year, title=title, container_title=container_title, volume=volume, issue=issue, page=page, citation=citation)
+        mr = MasterReference(type=type, doi=doi, uri=uri, first_author=first_author, year=year, title=title, container_title=container_title, volume=volume, issue=issue, page=page, citation=citation, created_by=user_author)
         mr.save()
         sr.master_reference = mr
         sr.save()

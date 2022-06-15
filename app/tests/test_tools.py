@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.test.client import RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
+from django.contrib.auth.models import User
 from mb.models import EntityClass, SourceEntity, SourceLocation, SourceMethod, SourceReference
 from allauth.socialaccount.models import SocialAccount
 from imports.tools import Check
@@ -9,11 +10,13 @@ import tempfile, csv, os
 import pandas as pd
 
 
+
 class ToolsTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.request = self.factory.get('import/test')
         self.check = Check(self.request)
+        self.user = User.objects.create_user(username='Testuser', password='12345')
         setattr(self.request, 'session', 'session')
         messages = FallbackStorage(self.request)
 
@@ -41,14 +44,14 @@ class ToolsTest(TestCase):
   
         self.file = pd.read_csv('test.csv')
         self.false_file = pd.read_csv('false_test.csv')
-        self.reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][1])
+        self.reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][1], self.user)
         self.dict = {'author': ['1111-1111-2222-2222', '1111-1111-2222-2233'], 
         'verbatimScientificName':['kapistelija', 'kapistelija'], 
         'taxonRank':['genus', 'genus'],
         'verbatimAssociatedTaxa':['moi', 'hello'],
         'sequence':[1,1],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'] }
-        self.entity = tools.get_entityclass(self.file.loc[:, 'taxonRank'][1])    
+        self.entity = tools.get_entityclass(self.file.loc[:, 'taxonRank'][1], self.user)    
         #print(tools.get_entityclass(self.file.loc[:, 'taxonRank'][0]).name)
         #print('Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
 
@@ -243,31 +246,31 @@ class ToolsTest(TestCase):
 
 
     def test_new_get_sourcereference_citation(self):
-        self.assertEqual(tools.get_sourcereference_citation(self.file.loc[:, 'references'][0]).citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
+        self.assertEqual(tools.get_sourcereference_citation(self.file.loc[:, 'references'][0], self.user).citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
 
     def test_new_get_entityclass(self):
-        self.assertEqual(tools.get_entityclass(self.file.loc[:, 'taxonRank'][0]).name, 'Species')
+        self.assertEqual(tools.get_entityclass(self.file.loc[:, 'taxonRank'][0], self.user).name, 'Species')
 
     def test_existing_entityclass(self):
-        self.assertEqual(tools.get_entityclass(self.entity).name, 'Species')
+        self.assertEqual(tools.get_entityclass(self.entity, self.user).name, 'Species')
 
     def test_new_get_sourceentity(self):
         vs_name = self.file.loc[:, 'verbatimScientificName'][0]
-        reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][0])
-        entityclass = tools.get_entityclass(self.file.loc[:, 'taxonRank'][0])
-        self.assertEqual(tools.get_sourceentity(vs_name, reference, entityclass).name, 'Lagothrix flavicauda')
+        reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][0], self.user)
+        entityclass = tools.get_entityclass(self.file.loc[:, 'taxonRank'][0], self.user)
+        self.assertEqual(tools.get_sourceentity(vs_name, reference, entityclass, self.user).name, 'Lagothrix flavicauda')
     
     def test_new_get_timeperiod(self):
-       reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][2])
-       self.assertEqual(tools.get_timeperiod(self.file.loc[:, 'samplingEffort'][2], reference).name, '15-month-study')
+       reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][2], self.user)
+       self.assertEqual(tools.get_timeperiod(self.file.loc[:, 'samplingEffort'][2], reference, self.user).name, '15-month-study')
     
     def test_new_get_sourcemethod(self):
-       reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][3])
-       self.assertEqual(tools.get_sourcemethod(self.file.loc[:, 'measurementMethod'][3], reference).name, 'observations of fruit consumption')
+       reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][3], self.user)
+       self.assertEqual(tools.get_sourcemethod(self.file.loc[:, 'measurementMethod'][3], reference, self.user).name, 'observations of fruit consumption')
     
     def test_new_get_sourcelocation(self):
-       reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][4])
-       self.assertEqual(tools.get_sourcelocation(self.file.loc[:, 'verbatimLocality'][4], reference).name, 'Mandu Mandu Gorge, Cape Range National Park, Western Australia')        
+       reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][4], self.user)
+       self.assertEqual(tools.get_sourcelocation(self.file.loc[:, 'verbatimLocality'][4], reference, self.user).name, 'Mandu Mandu Gorge, Cape Range National Park, Western Australia')        
 
     def test_nan_to_zero_empty(self):
         self.assertEqual(tools.possible_nan_to_zero(self.file.loc[:, 'individualCount'][4]), 108)
@@ -292,15 +295,15 @@ class ToolsTest(TestCase):
         self.assertEqual(df.at[0, 'references'],'tosi tieteellinen tutkimus tm. 2000' )
 
     def test_create_masterreference(self):
-        answer = tools.create_masterreference('Tester, T., TesterToo, T., Testing, testing', self.res, self.sr)
+        answer = tools.create_masterreference('Tester, T., TesterToo, T., Testing, testing', self.res, self.sr, self.user)
         self.assertEquals(answer, True)
 
     def test_create_masterreference_with_wrong_title(self):
-        answer = tools.create_masterreference('Tester, T., TesterToo, T., Testing, not testing at all', self.res, self.sr)
+        answer = tools.create_masterreference('Tester, T., TesterToo, T., Testing, not testing at all', self.res, self.sr, self.user)
         self.assertEquals(answer, False)
 
     def test_create_masterreference_empty(self):
-        answer = tools.create_masterreference('Tester, T., TesterToo, T., Testing, testing', self.empty_res, self.sr)
+        answer = tools.create_masterreference('Tester, T., TesterToo, T., Testing, testing', self.empty_res, self.sr, self.user)
         self.assertEquals(answer, False)
 
     def test_title_matches_citation_correct(self):
