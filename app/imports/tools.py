@@ -266,14 +266,14 @@ def get_sourcereference_citation(reference, author):
     sr_old = SourceReference.objects.filter(citation__iexact=reference)
     if len(sr_old) > 0:
         if sr_old[0].master_reference == None:
-        #    response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois, hidastaa testejä..
-        #    create_masterreference(reference, response_data, sr_old[0], author) # Voi kommentoida pois, hidastaa testejä..
+            response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois testeissä, hidastaa testejä..
+            create_masterreference(reference, response_data, sr_old[0], author) # Voi kommentoida pois testeissä, hidastaa testejä..
             return sr_old[0]
         return sr_old[0]
     new_reference = SourceReference(citation=reference, status=1, created_by=author)
     new_reference.save()
-#    response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois, hidastaa testejä..
-#   create_masterreference(reference, response_data, new_reference, author) # Voi kommentoida pois, hidastaa testejä..
+    response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois testeissä, hidastaa testejä..
+    create_masterreference(reference, response_data, new_reference, author) # Voi kommentoida pois testeissä, hidastaa testejä..
     return new_reference
 
 def get_entityclass(taxonRank, author):
@@ -463,7 +463,6 @@ def title_matches_citation(title, source_citation):
     source_citation_without_space = re.sub('\s+', '', source_citation_without_html)
 
     if title_without_space.lower() not in source_citation_without_space.lower():
-        # print('Title ', title_without_space , ' is not in citation')
         return False
     return True
 
@@ -515,7 +514,13 @@ def create_masterreference(source_citation, response_data, sr, user_author):
             if type == 'journal-article':
                 citation = make_harvard_citation_journalarticle(title, doi, authors, year, container_title, volume, issue, page)
             else:
-                citation = str(first_author) + '. ' + str(title) + '. Available at: ' + str(doi)
+                citation = ""
+                for a in authors:
+                    if authors.index(a) == len(authors) - 1:
+                        citation += str(a)
+                    else:
+                        citation += str(a) + ", "
+                citation += " " + str(year) + ". " + str(title) + ". Available at: " + str(doi) + "."
         
         mr = MasterReference(type=type, doi=doi, uri=uri, first_author=first_author, year=year, title=title, container_title=container_title, volume=volume, issue=issue, page=page, citation=citation, created_by=user_author)
         mr.save()
@@ -524,7 +529,6 @@ def create_masterreference(source_citation, response_data, sr, user_author):
         return True
         
     except Exception as e:
-        #print('Error: ', e)
         return False
   
 

@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import User
-from mb.models import EntityClass, SourceEntity, SourceLocation, SourceMethod, SourceReference
+from mb.models import EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference
 from imports.tools import Check
 import imports.tools as tools
 import tempfile, csv, os
@@ -79,25 +79,24 @@ class ToolsTest(TestCase):
         #print(tools.get_entityclass(self.file.loc[:, 'taxonRank'][0]).name)
         #print('Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
 
-        self.sr = SourceReference(citation='Tester, T., TesterToo, T., Testing, testing', status=1)
+        self.sr = SourceReference.objects.create(citation='Tester, T., TesterToo, T., Testing, testing', status=1)
+        self.mr = MasterReference.objects.create(title='Testing, testing', created_by=self.user)
+        self.sr_with_mr = SourceReference.objects.create(citation="Title and author", status=2, master_reference=self.mr)
         self.res = {'status': 'ok', 
                 'message-type': 'work-list', 
                 'message-version': '1.0.0', 
                 'message': {'facets': {}, 'total-results': 2,
                             'items': [
-                                        {'publisher': 'Wildlife ent Society', 
+                                        {
                                         'issue': '2', 
-                                        'DOI': '12.12345/jott.1234.12.1.12345-12345', 
-                                        'type': 'journal-article', 
+                                        'DOI': '10.12345/jott.1234.12.1.12345-12345', 
+                                        'type': 'book', 
                                         'created': {'date-parts': [[2022, 2, 26]], 'date-time': '2022-02-26T13:24:30Z', 'timestamp': 1645881870000}, 
-                                        'page': '20539-20549', 
-                                        'source': 'Crossref', 
-                                        'is-referenced-by-count': 0, 
-                                        'title': ['Testing, testing'],
+                                        'page': '20539-20549',
+                                        'title': ['Testing, <i>testing</i>'],
                                         'volume': '20', 
                                         'author': [{'given': 'Teresa', 'family': 'Tester', 'sequence': 'first', 'affiliation': []},
                                                     {'given': 'Timothy', 'family': 'TesterToo', 'sequence': 'additional', 'affiliation': []}], 
-                                        'member': '4876', 
                                         'published-online': {'date-parts': [[2022, 2, 26]]}, 
                                         'deposited': {'date-parts': [[2022, 2, 26]], 'date-time': '2022-02-26T13:25:01Z', 'timestamp': 1645881901000}, 
                                         'issued': {'date-parts': [[2022, 2, 26]]}, 
@@ -107,27 +106,12 @@ class ToolsTest(TestCase):
                                         'URL': 'http://dx.doi.org/10.11609/jott.6786.14.2.20539-20549', 
                                         'ISSN': ['0974-7907', '0974-7893'], 
                                         'issn-type': [{'value': '0974-7907', 'type': 'electronic'}, {'value': '0974-7893', 'type': 'print'}], 
-                                        'published': {'date-parts': [[2022, 2, 26]]}},
-                                        {'publisher': 'Wildlife ent Society', 
-                                        'issue': '20', 
-                                        'DOI': '12.12345/jott.1234.12.1.12345-12345', 
-                                        'type': 'journal-article', 
-                                        'created': {'date-parts': [[2022, 2, 26]], 'date-time': '2022-02-26T13:24:30Z', 'timestamp': 1645881870000}, 
-                                        'page': '20539-20549', 
-                                        'title': ['Testing, not testing'],
-                                        'volume': '20', 
-                                        'author': [{'given': 'Teresa', 'family': 'Tester', 'sequence': 'first', 'affiliation': []},
-                                                    {'given': 'Timothy', 'family': 'TesterToo', 'sequence': 'additional', 'affiliation': []}], 
-                                        'container-title': ['Testing container-title'], 
-                                        'journal-issue': {'issue': '2', 'published-online': {'date-parts': [[2022, 2, 26]]}}, 
-                                        'URL': 'http://dx.doi.org/10.11609/jott.6786.14.2.20539-20549', 
-                                        'ISSN': ['0974-7907', '0974-7893'], 
-                                        'issn-type': [{'value': '0974-7907', 'type': 'electronic'}, {'value': '0974-7893', 'type': 'print'}], 
                                         'published': {'date-parts': [[2022, 2, 26]]}}
                                         ]}, 
                                         'items-per-page': 2, 'query': {'start-index': 0, 'search-terms': None}}
         self.empty_res = {'status': 'ok', 'message-type': 'work-list', 'message-version': '1.0.0', 'message': {'facets': {}, 'total-results': 0, 'items': [], 'items-per-page': 2, 'query': {'start-index': 0, 'search-terms': None}}}
-       
+        self.empty_title = {'status': 'ok', 'message-type': 'work-list', 'message-version': '1.0.0', 'message': {'facets': {}, 'total-results': 1, 'items': [{'title': None}], 'items-per-page': 2, 'query': {'start-index': 0, 'search-terms': None}}}
+        self.empty_author = {'status': 'ok', 'message-type': 'work-list', 'message-version': '1.0.0', 'message': {'facets': {}, 'total-results': 1, 'items': [{'author': None}], 'items-per-page': 2, 'query': {'start-index': 0, 'search-terms': None}}}
 
     def test_check_valid_author(self):
         self.assertEqual(self.check.check_valid_author(self.file), True)
@@ -292,6 +276,10 @@ class ToolsTest(TestCase):
     def test_new_get_sourcereference_citation(self):
         self.assertEqual(tools.get_sourcereference_citation(self.file.loc[:, 'references'][0], self.user).citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
 
+    def test_get_sourcereference_citation_with_existing_masterreference(self):
+        old_sr = tools.get_sourcereference_citation('Title and author', self.user)
+        self.assertEqual(old_sr, self.sr_with_mr)
+
     def test_new_get_entityclass(self):
         self.assertEqual(tools.get_entityclass(self.file.loc[:, 'taxonRank'][0], self.user).name, 'Species')
 
@@ -342,6 +330,23 @@ class ToolsTest(TestCase):
         answer = tools.create_masterreference('Tester, T., TesterToo, T., Testing, testing', self.res, self.sr, self.user)
         self.assertEquals(answer, True)
 
+    def test_create_masterreference_saves_correct_info(self):
+        tools.create_masterreference('Tester, T., TesterToo, T., Testing, testing', self.res, self.sr, self.user)
+        sourceref = SourceReference.objects.filter(citation='Tester, T., TesterToo, T., Testing, testing')[0]
+        mr = sourceref.master_reference
+        self.assertEqual(mr.title, 'Testing, testing')
+        self.assertEqual(mr.first_author, 'Tester, T.')
+        self.assertEqual(mr.doi, '10.12345/jott.1234.12.1.12345-12345')
+        self.assertEqual(mr.type, 'book')
+        self.assertEqual(mr.uri, None)
+        self.assertEqual(mr.year, 2022)
+        self.assertEqual(mr.container_title, 'Testing container-title')
+        self.assertEqual(mr.volume, 20)
+        self.assertEqual(mr.issue, '2')
+        self.assertEqual(mr.page, '20539-20549')
+        self.assertEqual(mr.citation, 'Tester, T., TesterToo, T. 2022. Testing, testing. Available at: 10.12345/jott.1234.12.1.12345-12345.')
+        self.assertEqual(mr.created_by, self.user)
+
     def test_create_masterreference_with_wrong_title(self):
         answer = tools.create_masterreference('Tester, T., TesterToo, T., Testing, not testing at all', self.res, self.sr, self.user)
         self.assertEquals(answer, False)
@@ -349,9 +354,17 @@ class ToolsTest(TestCase):
     def test_create_masterreference_empty(self):
         answer = tools.create_masterreference('Tester, T., TesterToo, T., Testing, testing', self.empty_res, self.sr, self.user)
         self.assertEquals(answer, False)
+    
+    def test_create_masterreference_without_title(self):
+        answer = tools.create_masterreference('Tester, T., TesterToo, T., Testing, testing', self.empty_title, self.sr, self.user)
+        self.assertEquals(answer, False)
+    
+    def test_create_masterreference_without_author(self):
+        answer = tools.create_masterreference('Tester, T., TesterToo, T., Testing, testing', self.empty_author, self.sr, self.user)
+        self.assertEquals(answer, False)
 
     def test_title_matches_citation_correct(self):
-        answer = tools.title_matches_citation('<i>This is a correct title</i>', 'This is a correct title')
+        answer = tools.title_matches_citation('<i>This is          a correct title  \n          </i>', 'This is a correct title')
         self.assertEquals(answer, True)
     
     def test_title_matches_citation_false(self):
@@ -362,5 +375,4 @@ class ToolsTest(TestCase):
         test_citation = tools.make_harvard_citation_journalarticle('Testing, testing', 'doi123', ['Tester, T.', 'TesterToo, T.', 'TesterThree, T.'],
                                                                         '2022', 'Testing container-title', '20', '2', '123-321')
         self.assertEquals('Tester, T., TesterToo, T., TesterThree, T. 2022. Testing, testing. Testing container-title. 20(2), pp.123-321. Available at: doi123.', test_citation)
-
 
