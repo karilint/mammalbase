@@ -25,6 +25,8 @@ def import_test(request):
 		trim_df(df)
 		check = Check(request)
 
+		if check.check_valid_author(df) == False:
+			return HttpResponseRedirect(reverse("import_test"))
 		if check.check_all(df) != True:
 			return HttpResponseRedirect(reverse("import_test"))
 		else:

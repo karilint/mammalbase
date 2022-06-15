@@ -3,7 +3,6 @@ from django.test.client import RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import User
 from mb.models import EntityClass, SourceEntity, SourceLocation, SourceMethod, SourceReference
-from allauth.socialaccount.models import SocialAccount
 from imports.tools import Check
 import imports.tools as tools
 import tempfile, csv, os
@@ -25,25 +24,50 @@ class ToolsTest(TestCase):
             writer = csv.writer(file)
             writer.writerow(['author', 'verbatimScientificName', 'taxonRank', 'verbatimLocality', 'habitat', 'samplingEffort', 'sex', 'individualCount', 'verbatimEventDate', 'measurementMethod', 'verbatimAssociatedTaxa', 'sequence', 'measurementValue', 'associatedReferences',  'references'])
             #rivi 10 mallissa
-            writer.writerow(['1111-1111-2222-2222', 'Lagothrix flavicauda', 'Species', '', '', '', '', '', '', '',  'primarily frugivorous', '1','', 'Leo Luna 1980 | deLuycker 2007 | S. Shanee and N. Shanee 2011b | Shanee 2014a | Fack et al. 2018a','Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
+            writer.writerow(['1111-1111-2222-222X', 'Lagothrix flavicauda', 'Species', '', '', '', '', '', '', '',  'primarily frugivorous', '1','', 'Leo Luna 1980 | deLuycker 2007 | S. Shanee and N. Shanee 2011b | Shanee 2014a | Fack et al. 2018a','Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
             #rivi 11 mallissa
-            writer.writerow(['1111-1111-2222-2222', 'Lagothrix flavicauda',	'Species', '', '', '', '', '', '', '',  'leaves', '2', '', 'Leo Luna 1980 | deLuycker 2007 | S. Shanee and N. Shanee 2011b | Shanee 2014a | Fack et al. 2018a', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
+            writer.writerow(['1111-1111-2222-222X', 'Lagothrix flavicauda',	'Species', '', '', '', '', '', '', '',  'leaves', '2', '', 'Leo Luna 1980 | deLuycker 2007 | S. Shanee and N. Shanee 2011b | Shanee 2014a | Fack et al. 2018a', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
             #rivi 17 mallissa
-            writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda',	'Species', '', '', '15-month-study', '', '', 'October 2009-June 2010 and August 2010-February 2011', '', 'fruit', '1', '46.3', 'S. Shanee (2014)', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
+            writer.writerow(['1111-1111-2222-222X',	'Lagothrix flavicauda',	'Species', '', '', '15-month-study', '', '', 'October 2009-June 2010 and August 2010-February 2011', '', 'fruit', '1', '46.3', 'S. Shanee (2014)', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
             #rivi 23 mallissa
-            writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda',	'Species',	'', '', '', '', '', '', 'observations of fruit consumption', 'fruits of Ficus',	'1', '43', 'S. Shanee and N. Shanee 2011b',	'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
+            writer.writerow(['1111-1111-2222-222X',	'Lagothrix flavicauda',	'Species',	'', '', '', '', '', '', 'observations of fruit consumption', 'fruits of Ficus',	'1', '43', 'S. Shanee and N. Shanee 2011b',	'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
             #rivi 38 mallissa
-            writer.writerow(['1111-1111-2222-2222',	'Capra hircus',	'Species', 'Mandu Mandu Gorge, Cape Range National Park, Western Australia', 'Summer (February, March, April and October)', '', '', '108', 'between February and October 2006', 'The percentage of plant species found in scats.', 'Unidentiﬁed monocots', '1','36.8', 'Original study', 'Creese, S., Davies, S.J. and Bowen, B.J., 2019. Comparative dietary analysis of the black-flanked rock-wallaby (Petrogale lateralis lateralis), the euro (Macropus robustus erubescens) and the feral goat (Capra hircus) from Cape Range National Park, Western Australia. Australian Mammalogy, 41(2), pp.220-230.'])
+            writer.writerow(['1111-1111-2222-222X',	'Capra hircus',	'Species', 'Mandu Mandu Gorge, Cape Range National Park, Western Australia', 'Summer (February, March, April and October)', '', '', '108', 'between February and October 2006', 'The percentage of plant species found in scats.', 'Unidentiﬁed monocots', '1','36.8', 'Original study', 'Creese, S., Davies, S.J. and Bowen, B.J., 2019. Comparative dietary analysis of the black-flanked rock-wallaby (Petrogale lateralis lateralis), the euro (Macropus robustus erubescens) and the feral goat (Capra hircus) from Cape Range National Park, Western Australia. Australian Mammalogy, 41(2), pp.220-230.'])
         with open('false_test.csv', 'w') as file2:
             writer = csv.writer(file2)
             writer.writerow(['writer', 'verbatimScientificName', 'taxonRank', 'verbatimAssociatedTaxa', 'sequence', 'measurementValue',  'references'])
             writer.writerow(['1111-1111-2222-2222', 'Lagothrix flavicauda Lagothrix flavicauda', 'Species', 'primarily frugivorous', '1', '', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
             writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda',	'animal',	'leaves', '2', '', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
             writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda',	'Species',	'fruit', '1', '46.3a','Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
+        with open('false_measurement_value.csv', 'w') as file3:
+            writer = csv.writer(file3)
+            writer.writerow(['writer', 'verbatimScientificName', 'taxonRank', 'verbatimAssociatedTaxa', 'sequence', 'measurementValue',  'references'])
+            writer.writerow(['1111-1111-2222-2222', 'Lagothrix flavicauda Lagothrix flavicauda', 'Species', 'primarily frugivorous', '1', '5', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
+            writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda',	'animal',	'leaves', '2', '10', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
+        with open('false_file2.csv', 'w') as file4:
+            writer = csv.writer(file4)
+            writer.writerow(['writer', 'verbatimScientificName', 'taxonRank', 'verbatimAssociatedTaxa', 'sequence', 'measurementValue',  'references'])
+            writer.writerow(['1111-1111-2222-2222', 'Lagothrix flavicauda flavicauda', 'Species', 'primarily frugivorous', '1', '', 'Book'])
+            writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda flavicauda',	'Species',	'leaves', '2', '',  'Book'])
+            writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda flavicauda',	'Species',	'fruit', '1', '',   'Book'])
+        with open('false_vsn.csv', 'w') as file5:
+            writer = csv.writer(file5)
+            writer.writerow(['writer', 'verbatimScientificName', 'taxonRank', 'verbatimAssociatedTaxa', 'sequence', 'measurementValue',  'references'])
+            writer.writerow(['1111-1111-2222-2222', 'Lagothrix flavicauda', 'Genus', 'primarily frugivorous', 'a', '5', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
+        with open('false_sequence.csv', 'w') as file6:
+            writer = csv.writer(file6)
+            writer.writerow(['writer', 'verbatimScientificName', 'taxonRank', 'verbatimAssociatedTaxa', 'sequence', 'measurementValue',  'references'])
+            writer.writerow(['1111-1111-2222-2222', 'Lagothrix flavicauda flavicauda', 'Species', 'primarily frugivorous', '1', '', 'Book'])
+            writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda flavicauda',	'Species',	'leaves', '2', '',  'Book'])
+            writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda flavicauda',	'Species',	'fruit', '4', '',   'Book'])
 
-  
+
         self.file = pd.read_csv('test.csv')
         self.false_file = pd.read_csv('false_test.csv')
+        self.false_measurement_value = pd.read_csv('false_measurement_value.csv')
+        self.false_file2 = pd.read_csv('false_file2.csv')
+        self.false_vsn = pd.read_csv('false_vsn.csv')
+        self.false_sequence = pd.read_csv('false_sequence.csv')
         self.reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][1], self.user)
         self.dict = {'author': ['1111-1111-2222-2222', '1111-1111-2222-2233'], 
         'verbatimScientificName':['kapistelija', 'kapistelija'], 
@@ -121,8 +145,14 @@ class ToolsTest(TestCase):
     def test_check_verbatimScientificName(self):
         self.assertEqual(self.check.check_verbatimScientificName(self.file), True)
     
-    def test_false_check_verbatimScientificName(self):
+    def test_false_check_verbatimScientificName_four_words(self):
         self.assertEqual(self.check.check_verbatimScientificName(self.false_file), False)
+
+    def test_false_check_verbatimScientificName_three_words(self):
+        self.assertEqual(self.check.check_verbatimScientificName(self.false_file2), False)
+
+    def test_false_check_verbatimScientificName_two_words(self):
+        self.assertEqual(self.check.check_verbatimScientificName(self.false_vsn), False)
     
     def test_check_taxonRank(self):
         self.assertEqual(self.check.check_taxonRank(self.file), True)
@@ -133,17 +163,31 @@ class ToolsTest(TestCase):
     def test_check_sequence(self):
         self.assertEqual(self.check.check_sequence(self.file), True)
     
+    def test_false_check_sequence_one_in_wrong_place(self):
+        self.assertEqual(self.check.check_sequence(self.false_file2), False)
+    
+    def test_false_check_sequence_wrong_number(self):
+        self.assertEqual(self.check.check_sequence(self.false_sequence), False)
+    
+    def test_false_check_sequence_not_numeric(self):
+        self.assertEqual(self.check.check_sequence(self.false_vsn), False)
+    
+    def test_check_false_measumerementValue_according_to_sequence(self):
+        self.assertEqual(self.check.check_sequence(self.false_measurement_value), False)
+    
     def test_check_measurmentValue(self):
         self.assertEqual(self.check.check_measurementValue(self.file), True)
     
     def test_false_check_measurementValue(self):
         self.assertEqual(self.check.check_measurementValue(self.false_file), False)
+    
+    def test_false_check_references(self):
+        self.assertEqual(self.check.check_references(self.false_file2), False)
 
     def test_check_all(self):
         self.assertEqual(self.check.check_all(self.file), True)
         df = pd.DataFrame.from_dict(self.dict)
         self.assertEqual(self.check.check_all(df), True)
-        # Tiedossa etta ei mene lapi
 
     def test_check_all_wrong_headers(self):
         df = pd.DataFrame.from_dict({'kirjlaia': ['1111-1111-2222-2222', '0000-0001-9627-8821'], 
@@ -175,10 +219,11 @@ class ToolsTest(TestCase):
     def test_check_all_wrong_taxonrank(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '0000-0001-9627-8821'], 
         'verbatimScientificName':['kapistelija', 'kapistelija'], 
-        'taxonRank':['genius', 'genus'],
+        'taxonRank':['laji', 'genus'],
         'verbatimAssociatedTaxa':['moi', 'moi'],
         'sequence':[1,2],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
+        print(self.check.check_all(df))
         self.assertEqual(self.check.check_all(df), False)
 
     def test_check_all_wrong_sequence(self):
@@ -243,7 +288,6 @@ class ToolsTest(TestCase):
         'sequence':[1,2],
         'references':['tosi  tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
         self.assertEqual(self.check.check_sequence(df), False)
-
 
     def test_new_get_sourcereference_citation(self):
         self.assertEqual(tools.get_sourcereference_citation(self.file.loc[:, 'references'][0], self.user).citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')

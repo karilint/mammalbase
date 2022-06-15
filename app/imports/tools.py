@@ -19,21 +19,19 @@ class Check:
         self.id = None
 
     def check_all(self, df):
-        if self.check_valid_author(df) == False: #Testi menee vikaan
-            return False
         if self.check_headers(df) == False:
             return False
-        if self.check_author(df) == False:
+        elif self.check_author(df) == False:
             return False
-        if self.check_verbatimScientificName(df) == False:
+        elif self.check_verbatimScientificName(df) == False:
             return False
-        if self.check_taxonRank(df) == False:
+        elif self.check_taxonRank(df) == False:
             return False
-        if self.check_sequence(df) == False:
+        elif self.check_sequence(df) == False:
             return False
-        if self.check_measurementValue(df) == False:
+        elif self.check_measurementValue(df) == False:
             return False
-        if self.check_references(df) == False:
+        elif self.check_references(df) == False:
             return False
         return True
 
@@ -166,7 +164,7 @@ class Check:
                         if 'sex' in df.columns.values:
                             for sex in df.loc[(lines-2):(lines-2), 'sex'].fillna(0):
                                 reference_list.append(sex)
-                        if 'individuaCount' in df.columns.values:
+                        if 'individualCount' in df.columns.values:
                             for ic in df.loc[(lines-2):(lines-2), 'individualCount'].fillna(0):
                                 reference_list.append(ic)
                         if 'verbatimEventDate' in df.columns.values:
@@ -201,7 +199,7 @@ class Check:
                         if 'sex' in df.columns.values:
                             for sex in df.loc[(lines-2):(lines-2), 'sex'].fillna(0):
                                 compare.append(sex)
-                        if 'individuaCount' in df.columns.values:
+                        if 'individualCount' in df.columns.values:
                             for ic in df.loc[(lines-2):(lines-2), 'individualCount'].fillna(0):
                                 compare.append(ic)
                         if 'verbatimEventDate' in df.columns.values:
@@ -220,9 +218,7 @@ class Check:
                         counter -= 1
                         if counter != -1 and sum != total:
                             messages.error(self.request, "Check the sequence numbering on the line " + str(lines) + ".")
-                            return False
-                        else:
-                            continue
+                            return False                
             else:
                 messages.error(self.request, "Sequence number on the line " + str(lines) + " is not numeric.")
                 return False
@@ -270,14 +266,14 @@ def get_sourcereference_citation(reference, author):
     sr_old = SourceReference.objects.filter(citation__iexact=reference)
     if len(sr_old) > 0:
         if sr_old[0].master_reference == None:
-            response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois, hidastaa testejä..
-            create_masterreference(reference, response_data, sr_old[0], author) # Voi kommentoida pois, hidastaa testejä..
+        #    response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois, hidastaa testejä..
+        #    create_masterreference(reference, response_data, sr_old[0], author) # Voi kommentoida pois, hidastaa testejä..
             return sr_old[0]
         return sr_old[0]
     new_reference = SourceReference(citation=reference, status=1, created_by=author)
     new_reference.save()
-    response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois, hidastaa testejä..
-    create_masterreference(reference, response_data, new_reference, author) # Voi kommentoida pois, hidastaa testejä..
+#    response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois, hidastaa testejä..
+#   create_masterreference(reference, response_data, new_reference, author) # Voi kommentoida pois, hidastaa testejä..
     return new_reference
 
 def get_entityclass(taxonRank, author):
