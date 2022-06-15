@@ -449,21 +449,25 @@ def trim_df(df):
 
 # Search citation from CrossrefApi: https://api.crossref.org/swagger-ui/index.htm
 # Please do not make any unnessecary queries: https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/
-def get_referencedata_from_crossref(citation):
-	c = citation.replace(" ", "%20")
-	url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=mammalbase@gmail.com&rows=2'
-	try:
-		x = requests.get(url)
-		y = x.json()
-		return y
-	except requests.exceptions.RequestException as e:
-		print('Error: ', e)
+def get_referencedata_from_crossref(citation): # pragma: no cover
+    c = citation.replace(" ", "%20")
+    url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=mammalbase@gmail.com&rows=2'
+    try:
+        x = requests.get(url)
+        y = x.json()
+        return y
+    except requests.exceptions.RequestException as e:
+        print('Error: ', e)
 
 def title_matches_citation(title, source_citation):
 	# https://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string
     title_without_html = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', title)
-    if title_without_html.lower() not in source_citation.lower():
-        # print('Title ', title_without_html , ' is not in citation')
+    title_without_space = re.sub('\s+', '', title_without_html)
+    source_citation_without_html = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', source_citation)
+    source_citation_without_space = re.sub('\s+', '', source_citation_without_html)
+
+    if title_without_space.lower() not in source_citation_without_space.lower():
+        # print('Title ', title_without_space , ' is not in citation')
         return False
     return True
 
