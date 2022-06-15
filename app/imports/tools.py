@@ -18,8 +18,8 @@ class Check:
         self.id = None
 
     def check_all(self, df):
-        # if self.check_valid_author(df) == False: #Testi menee vikaan
-        #     return False
+        if self.check_valid_author(df) == False: #Testi menee vikaan
+            return False
         if self.check_headers(df) == False:
             return False
         if self.check_author(df) == False:
