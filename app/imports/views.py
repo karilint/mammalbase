@@ -31,7 +31,7 @@ def import_test(request):
 			return HttpResponseRedirect(reverse("import_test"))
 		else:
 			for row in df.itertuples():
-				create_dietset(row)
+				create_dietset(row, df)
 			success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
 			messages.add_message(request, 50 ,success_message, extra_tags="import-message")
 			messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")
