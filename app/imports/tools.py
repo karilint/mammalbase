@@ -222,7 +222,6 @@ class Check:
             else:
                 messages.error(self.request, "Sequence number on the line " + str(lines) + " is not numeric.")
                 return False
-
         return True
 
     def check_measurementValue(self, df):
@@ -368,7 +367,6 @@ def get_fooditem(food):
         part = ChoiceValue.objects.filter(pk=21)[0]
         is_cultivar = 0
         taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
-        # print(taxonomic_unit)
         food_item = FoodItem(name=name, part=part, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=is_cultivar)
         food_item_exists = FoodItem.objects.filter(name__iexact=name)
         if len(food_item_exists) > 0:
@@ -413,13 +411,34 @@ def create_dietset(row):
         reference = get_sourcereference_citation(getattr(row, 'references'), author)
         entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
         taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
-        location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
-        gender = get_choicevalue(getattr(row, 'sex'))
-        sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
-        cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
-        time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference, author)
-        method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
-        study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
+        if 'verbatimLocality' in row:
+            location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+        else:
+            location = None
+        if 'sex' in row:
+            gender = get_choicevalue(getattr(row, 'sex'))
+        else:
+            gender = None
+        if 'individualCount' in row:
+            sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
+        else:
+            sample_size = 0
+        if 'associatedReferences' in row:
+            cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
+        else:
+            cited_reference = None
+        if 'samplingEffort' in row:
+            time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference, author)
+        else:
+            time_period = None
+        if 'measurementMethod' in row:
+            method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
+        else:
+            method = None
+        if 'verbatimEventdate' in row:
+            study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
+        else:
+            study_time = None
 
         ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time, created_by=author)
         if (getattr(row, 'sequence') == 1):
@@ -429,10 +448,12 @@ def create_dietset(row):
 def create_dietsetitem(row, diet_set):
     food_item = get_fooditem(getattr(row, 'verbatimAssociatedTaxa'))
     list_order = getattr(row, 'sequence')
-    percentage = possible_nan_to_zero(getattr(row, 'measurementValue'))
+    if 'measurementValue' in row:
+        percentage = possible_nan_to_zero(getattr(row, 'measurementValue'))
+    else:
+        percentage = 0
 
     dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)
-    # print(dietsetitem)
 
 def trim(text:str):
     return " ".join(text.split())
