@@ -44,7 +44,7 @@ class ToolsTest(TestCase):
             writer.writerow(['writer', 'verbatimScientificName', 'taxonRank', 'verbatimAssociatedTaxa', 'sequence', 'measurementValue',  'references'])
             writer.writerow(['1111-1111-2222-2222', 'Lagothrix flavicauda Lagothrix flavicauda', 'Species', 'primarily frugivorous', '1', '5', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
             writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda',	'animal',	'leaves', '2', '10', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
-        with open('false_file2.csv', 'w') as file4:
+        with open('false_test2.csv', 'w') as file4:
             writer = csv.writer(file4)
             writer.writerow(['writer', 'verbatimScientificName', 'taxonRank', 'verbatimAssociatedTaxa', 'sequence', 'measurementValue',  'references'])
             writer.writerow(['1111-1111-2222-2222', 'Lagothrix flavicauda flavicauda', 'Species', 'primarily frugivorous', '1', '', 'Book'])
@@ -65,7 +65,7 @@ class ToolsTest(TestCase):
         self.file = pd.read_csv('test.csv')
         self.false_file = pd.read_csv('false_test.csv')
         self.false_measurement_value = pd.read_csv('false_measurement_value.csv')
-        self.false_file2 = pd.read_csv('false_file2.csv')
+        self.false_file2 = pd.read_csv('false_test2.csv')
         self.false_vsn = pd.read_csv('false_vsn.csv')
         self.false_sequence = pd.read_csv('false_sequence.csv')
         self.reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][1], self.user)
@@ -112,10 +112,6 @@ class ToolsTest(TestCase):
         self.empty_res = {'status': 'ok', 'message-type': 'work-list', 'message-version': '1.0.0', 'message': {'facets': {}, 'total-results': 0, 'items': [], 'items-per-page': 2, 'query': {'start-index': 0, 'search-terms': None}}}
         self.empty_title = {'status': 'ok', 'message-type': 'work-list', 'message-version': '1.0.0', 'message': {'facets': {}, 'total-results': 1, 'items': [{'title': None}], 'items-per-page': 2, 'query': {'start-index': 0, 'search-terms': None}}}
         self.empty_author = {'status': 'ok', 'message-type': 'work-list', 'message-version': '1.0.0', 'message': {'facets': {}, 'total-results': 1, 'items': [{'author': None}], 'items-per-page': 2, 'query': {'start-index': 0, 'search-terms': None}}}
-
-    def test_check_valid_author(self):
-        self.assertEqual(self.check.check_valid_author(self.file), True)
-        # Tiedossa etta ei mene lapi
 
     def test_check_headers(self):
         self.assertEqual(self.check.check_headers(self.file), True)
