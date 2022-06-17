@@ -41,7 +41,7 @@ def get_var(name, default_value=None):
 SECRET_KEY = get_var('SECRET_KEY', 'development_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True #bool(int(get_var('DEBUG', 0)))
+DEBUG = bool(int(get_var('DEBUG', 0)))
 
 
 # For debug_toolbar
