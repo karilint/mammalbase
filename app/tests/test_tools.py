@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import User
-from mb.models import EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference
+from mb.models import EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
 from imports.tools import Check
 import imports.tools as tools
 import tempfile, csv, os
@@ -371,4 +371,9 @@ class ToolsTest(TestCase):
         test_citation = tools.make_harvard_citation_journalarticle('Testing, testing', 'doi123', ['Tester, T.', 'TesterToo, T.', 'TesterThree, T.'],
                                                                         '2022', 'Testing container-title', '20', '2', '123-321')
         self.assertEquals('Tester, T., TesterToo, T., TesterThree, T. 2022. Testing, testing. Testing container-title. 20(2), pp.123-321. Available at: doi123.', test_citation)
-
+    
+    def test_get_existing_fooditem(self):
+        food_item = FoodItem(name='TEST', part=None, tsn=None, pa_tsn=None, is_cultivar=0)
+        food_item.save()
+        result = tools.get_fooditem('TEST')
+        self.assertEqual(result.name, 'TEST')

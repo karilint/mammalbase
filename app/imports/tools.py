@@ -11,7 +11,6 @@ import re
 import json
 import urllib.request
 import requests
-import time
 
 class Check:
     def __init__(self, request):
