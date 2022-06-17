@@ -14,13 +14,13 @@ class ImportViewTests(TestCase):
         #self.user = User.objects.create_user('testi', 'testi@jotain.com', '1234')
         #self.client.login(username='testi', password='1234')
     
-    def test_import_test_view(self):
+    def test_import_diet_set_view(self):
         response = self.client.get('/import/test')
         #print('helo', response.content, 'helo', response.client, response.context)
         self.assertEqual(response.status_code, 200)
     
-    def test_import_test_reverse(self):
-        response = self.client.get(reverse('import_test'))
+    def test_import_diet_set_reverse(self):
+        response = self.client.get(reverse('import_diet_set'))
         self.assertEqual(response.status_code, 200)
     
     def test_import_post_failing_file(self):
