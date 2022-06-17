@@ -4,6 +4,7 @@ from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
 from allauth.socialaccount.models import SocialAccount
+from django.contrib.auth.models import User
 
 import pandas as pd
 import re
@@ -18,21 +19,19 @@ class Check:
         self.id = None
 
     def check_all(self, df):
-        if self.check_valid_author(df) == False: #Testi menee vikaan
-            return False
         if self.check_headers(df) == False:
             return False
-        if self.check_author(df) == False:
+        elif self.check_author(df) == False:
             return False
-        if self.check_verbatimScientificName(df) == False:
+        elif self.check_verbatimScientificName(df) == False:
             return False
-        if self.check_taxonRank(df) == False:
+        elif self.check_taxonRank(df) == False:
             return False
-        if self.check_sequence(df) == False:
+        elif self.check_sequence(df) == False:
             return False
-        if self.check_measurementValue(df) == False:
+        elif self.check_measurementValue(df) == False:
             return False
-        if self.check_references(df) == False:
+        elif self.check_references(df) == False:
             return False
         return True
 
@@ -112,7 +111,12 @@ class Check:
         return True
 
     def check_sequence(self, df):
-        df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references', 'measurementValue']]
+        import_headers = list(df.columns.values)
+        has_measurementvalue =  "measurementValue" in import_headers
+        if has_measurementvalue:
+            df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references', 'measurementValue']]
+        else:
+            df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references']]
         counter = 0
         total = 1
         fooditems = []
@@ -124,10 +128,12 @@ class Check:
             lines += 1
             if str(item[2]).isnumeric():
                 if int(item[2]) == counter:
-                    if item[4] > measurementvalue_reference:
-                        messages.error(self.request, "Measurement value on the line " + str(lines) + " should not be larger than " + str(measurementvalue_reference) + ".")
-                        return False
-                    measurementvalue_reference = item[4]
+                    if has_measurementvalue:
+                        if item[4] > measurementvalue_reference:
+                            messages.error(self.request, "Measurement value on the line " + str(lines) + " should not be larger than " + str(measurementvalue_reference) + ".")
+                            return False
+                    if has_measurementvalue:
+                        measurementvalue_reference = item[4]
                     if item[0] != scientific_name:
                         messages.error(self.request, "Scientific name on the line " + str(lines) + " should be '" + str(scientific_name) + "'.")
                         return False
@@ -144,7 +150,8 @@ class Check:
                 else:
                     if int(item[2]) == 1:
                         reference_list = [item[0], item[3]]
-                        measurementvalue_reference = item[4]
+                        if has_measurementvalue:
+                            measurementvalue_reference = item[4]
                         if 'verbatimLocality' in df.columns.values:
                             for vl in df.loc[(lines-2):(lines-2), 'verbatimLocality'].fillna(0):
                                 reference_list.append(vl)
@@ -157,7 +164,7 @@ class Check:
                         if 'sex' in df.columns.values:
                             for sex in df.loc[(lines-2):(lines-2), 'sex'].fillna(0):
                                 reference_list.append(sex)
-                        if 'individuaCount' in df.columns.values:
+                        if 'individualCount' in df.columns.values:
                             for ic in df.loc[(lines-2):(lines-2), 'individualCount'].fillna(0):
                                 reference_list.append(ic)
                         if 'verbatimEventDate' in df.columns.values:
@@ -192,7 +199,7 @@ class Check:
                         if 'sex' in df.columns.values:
                             for sex in df.loc[(lines-2):(lines-2), 'sex'].fillna(0):
                                 compare.append(sex)
-                        if 'individuaCount' in df.columns.values:
+                        if 'individualCount' in df.columns.values:
                             for ic in df.loc[(lines-2):(lines-2), 'individualCount'].fillna(0):
                                 compare.append(ic)
                         if 'verbatimEventDate' in df.columns.values:
@@ -211,13 +218,10 @@ class Check:
                         counter -= 1
                         if counter != -1 and sum != total:
                             messages.error(self.request, "Check the sequence numbering on the line " + str(lines) + ".")
-                            return False
-                        else:
-                            continue
+                            return False                
             else:
                 messages.error(self.request, "Sequence number on the line " + str(lines) + " is not numeric.")
                 return False
-
         return True
 
     def check_measurementValue(self, df):
@@ -253,33 +257,42 @@ class Check:
 
         return True
 
-def get_sourcereference_citation(reference):
+
+def get_author(id):
+    author = User.objects.filter(socialaccount__uid=id)[0]
+    return author
+
+def get_sourcereference_citation(reference, author):
     sr_old = SourceReference.objects.filter(citation__iexact=reference)
     if len(sr_old) > 0:
+        if sr_old[0].master_reference == None:
+            response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois testeissä, hidastaa testejä..
+            create_masterreference(reference, response_data, sr_old[0], author) # Voi kommentoida pois testeissä, hidastaa testejä..
+            return sr_old[0]
         return sr_old[0]
-    new_reference = SourceReference(citation=reference, status=1)
+    new_reference = SourceReference(citation=reference, status=1, created_by=author)
     new_reference.save()
-    #response_data = get_referencedata_from_crossref(reference)
-    #create_masterreference(reference, response_data, new_reference)
+    response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois testeissä, hidastaa testejä..
+    create_masterreference(reference, response_data, new_reference, author) # Voi kommentoida pois testeissä, hidastaa testejä..
     return new_reference
 
-def get_entityclass(taxonRank):
+def get_entityclass(taxonRank, author):
     ec_all = EntityClass.objects.filter(name__iexact=taxonRank)
     if len(ec_all) > 0:
         return ec_all[0]
-    new_entity = EntityClass(name=taxonRank)
+    new_entity = EntityClass(name=taxonRank, created_by=author)
     new_entity.save()
     return new_entity
 
-def get_sourceentity(vs_name, reference, entity):
+def get_sourceentity(vs_name, reference, entity, author):
     se_old = SourceEntity.objects.filter(reference=reference, entity=entity, name=vs_name)
     if len(se_old) > 0:
         return se_old[0]
-    new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name)
+    new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name, created_by=author)
     new_sourceentity.save()
     return new_sourceentity
 
-def get_timeperiod(sampling, ref):
+def get_timeperiod(sampling, ref, author):
     if sampling != sampling:
         return None
     else:
@@ -287,29 +300,29 @@ def get_timeperiod(sampling, ref):
         if len(tp_all) > 0:
             return tp_all[0]
         else:
-            new_timeperiod = TimePeriod(reference=ref, name=sampling)
+            new_timeperiod = TimePeriod(reference=ref, name=sampling, created_by=author)
             new_timeperiod.save()
             return new_timeperiod
 
-def get_sourcemethod(method, ref):
+def get_sourcemethod(method, ref, author):
     if method != method:
         return None
     sr_old = SourceMethod.objects.filter(reference=ref, name=method)
     if len(sr_old) > 0:
         return sr_old[0]
     else:
-        new_sourcemethod = SourceMethod(reference=ref, name=method)
+        new_sourcemethod = SourceMethod(reference=ref, name=method, created_by=author)
         new_sourcemethod.save()
         return new_sourcemethod
 
-def get_sourcelocation(location, ref):
+def get_sourcelocation(location, ref, author):
     if location != location:
         return None
     sl_old = SourceLocation.objects.filter(name=location, reference=ref)
     if len(sl_old) > 0:
         return sl_old[0]
     else:
-        new_sourcelocation = SourceLocation(reference=ref, name=location)
+        new_sourcelocation = SourceLocation(reference=ref, name=location, created_by=author)
         new_sourcelocation.save()
         return new_sourcelocation
 
@@ -355,7 +368,6 @@ def get_fooditem(food):
         part = ChoiceValue.objects.filter(pk=21)[0]
         is_cultivar = 0
         taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
-        # print(taxonomic_unit)
         food_item = FoodItem(name=name, part=part, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=is_cultivar)
         food_item_exists = FoodItem.objects.filter(name__iexact=name)
         if len(food_item_exists) > 0:
@@ -394,32 +406,60 @@ def possible_nan_to_none(possible):
         return None
     return possible
 
-@transaction.atomic
-def create_dietset(row):
-    
-        reference = get_sourcereference_citation(getattr(row, 'references'))
-        entityclass = get_entityclass(getattr(row, 'taxonRank'))
-        taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass)
-        location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference)
-        gender = get_choicevalue(getattr(row, 'sex'))
-        sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
-        cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
-        time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
-        method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
-        study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
 
-        ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
+@transaction.atomic
+def create_dietset(row, df):
+        headers = list(df.columns.values)
+        author = get_author(getattr(row, 'author'))
+        reference = get_sourcereference_citation(getattr(row, 'references'), author)
+        entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
+        taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+        if 'verbatimLocality' in headers:
+            location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+        else:
+            location = None
+        if 'sex' in headers:
+            gender = get_choicevalue(getattr(row, 'sex'))
+        else:
+            gender = None
+        if 'individualCount' in headers:
+            sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
+        else:
+            sample_size = 0
+        if 'associatedReferences' in headers:
+            cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
+        else:
+            cited_reference = None
+        if 'samplingEffort' in headers:
+            time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference, author)
+        else:
+            time_period = None
+        if 'measurementMethod' in headers:
+            method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
+        else:
+            method = None
+        if 'verbatimEventdate' in headers:
+            study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
+        else:
+            study_time = None
+
+        ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time, created_by=author)
         if (getattr(row, 'sequence') == 1):
             ds.save()
-        create_dietsetitem(row, ds)
+        create_dietsetitem(row, ds, headers)
 
-def create_dietsetitem(row, diet_set):
+def create_dietsetitem(row, diet_set, headers):
     food_item = get_fooditem(getattr(row, 'verbatimAssociatedTaxa'))
     list_order = getattr(row, 'sequence')
-    percentage = possible_nan_to_zero(getattr(row, 'measurementValue'))
-
-    dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)
-    # print(dietsetitem)
+    if 'measurementValue' in headers:
+        percentage = possible_nan_to_zero(getattr(row, 'measurementValue'))
+    else:
+        percentage = 0
+    ds = DietSet.objects.filter(taxon=diet_set.taxon, reference=diet_set.reference)[0]
+    dietsetitem = DietSetItem(diet_set=ds, food_item=food_item, list_order=list_order, percentage=percentage)
+    old_ds = DietSetItem.objects.filter(diet_set=ds, food_item=food_item)
+    if len(old_ds) == 0:
+        dietsetitem.save()
 
 def trim(text:str):
     return " ".join(text.split())
@@ -432,34 +472,28 @@ def trim_df(df):
 
 # Search citation from CrossrefApi: https://api.crossref.org/swagger-ui/index.htm
 # Please do not make any unnessecary queries: https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/
-def get_referencedata_from_crossref(citation):
-	c = citation.replace(" ", "%20")
-	url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=mammalbase@gmail.com&rows=2'
-	try:
-		x = requests.get(url)
-		y = x.json()
-		return y
-	except requests.exceptions.RequestException as e:
-		print('Error: ', e)
-
-# Check if SourceReference.citation matching MasterReference exists
-def get_masterreference(citation):
-	sr_all = SourceReference.objects.filter(citation__iexact=citation, status=1, master_reference=None)
-	if len(sr_all) > 0:
-		return False
-	return True
+def get_referencedata_from_crossref(citation): # pragma: no cover
+    c = citation.replace(" ", "%20")
+    url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=mammalbase@gmail.com&rows=2'
+    try:
+        x = requests.get(url)
+        y = x.json()
+        return y
+    except requests.exceptions.RequestException as e:
+        print('Error: ', e)
 
 def title_matches_citation(title, source_citation):
 	# https://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string
     title_without_html = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', title)
-    if title_without_html.lower() not in source_citation.lower():
-        print('Title ', title_without_html , ' is not in citation')
+    title_without_space = re.sub('\s+', '', title_without_html)
+    source_citation_without_html = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', source_citation)
+    source_citation_without_space = re.sub('\s+', '', source_citation_without_html)
+
+    if title_without_space.lower() not in source_citation_without_space.lower():
         return False
     return True
 
-def create_masterreference(source_citation, response_data, sr):
-    if get_masterreference == True:
-        return False
+def create_masterreference(source_citation, response_data, sr, user_author):
     try:
         if response_data['message']['total-results'] == 0:
             return False
@@ -507,16 +541,21 @@ def create_masterreference(source_citation, response_data, sr):
             if type == 'journal-article':
                 citation = make_harvard_citation_journalarticle(title, doi, authors, year, container_title, volume, issue, page)
             else:
-                citation = str(first_author) + '. ' + str(title) + '. Available at: ' + str(doi)
+                citation = ""
+                for a in authors:
+                    if authors.index(a) == len(authors) - 1:
+                        citation += str(a)
+                    else:
+                        citation += str(a) + ", "
+                citation += " " + str(year) + ". " + str(title) + ". Available at: " + str(doi) + "."
         
-        mr = MasterReference(type=type, doi=doi, uri=uri, first_author=first_author, year=year, title=title, container_title=container_title, volume=volume, issue=issue, page=page, citation=citation)
+        mr = MasterReference(type=type, doi=doi, uri=uri, first_author=first_author, year=year, title=title, container_title=container_title, volume=volume, issue=issue, page=page, citation=citation, created_by=user_author)
         mr.save()
         sr.master_reference = mr
         sr.save()
         return True
         
     except Exception as e:
-        print('Error: ', e)
         return False
   
 
