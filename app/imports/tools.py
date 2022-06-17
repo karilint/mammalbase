@@ -11,7 +11,6 @@ import re
 import json
 import urllib.request
 import requests
-import time
 
 class Check:
     def __init__(self, request):
@@ -409,44 +408,48 @@ def possible_nan_to_none(possible):
 
 @transaction.atomic
 def create_dietset(row, df):
-        headers = list(df.columns.values)
-        author = get_author(getattr(row, 'author'))
-        reference = get_sourcereference_citation(getattr(row, 'references'), author)
-        entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
-        taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
-        if 'verbatimLocality' in headers:
-            location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
-        else:
-            location = None
-        if 'sex' in headers:
-            gender = get_choicevalue(getattr(row, 'sex'))
-        else:
-            gender = None
-        if 'individualCount' in headers:
-            sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
-        else:
-            sample_size = 0
-        if 'associatedReferences' in headers:
-            cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
-        else:
-            cited_reference = None
-        if 'samplingEffort' in headers:
-            time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference, author)
-        else:
-            time_period = None
-        if 'measurementMethod' in headers:
-            method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
-        else:
-            method = None
-        if 'verbatimEventdate' in headers:
-            study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
-        else:
-            study_time = None
-
+    headers = list(df.columns.values)
+    author = get_author(getattr(row, 'author'))
+    reference = get_sourcereference_citation(getattr(row, 'references'), author)
+    entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
+    taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+    if 'verbatimLocality' in headers:
+        location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+    else:
+        location = None
+    if 'sex' in headers:
+        gender = get_choicevalue(getattr(row, 'sex'))
+    else:
+        gender = None
+    if 'individualCount' in headers:
+        sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
+    else:
+        sample_size = 0
+    if 'associatedReferences' in headers:
+        cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
+    else:
+        cited_reference = None
+    if 'samplingEffort' in headers:
+        time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference, author)
+    else:
+        time_period = None
+    if 'measurementMethod' in headers:
+        method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
+    else:
+        method = None
+    if 'verbatimEventdate' in headers:
+        study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
+    else:
+        study_time = None
+        
+    ds_old = DietSet.objects.filter(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time, created_by=author)
+    if len(ds_old) > 0:
+        ds = ds_old[0]
+    else:
         ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time, created_by=author)
-        if (getattr(row, 'sequence') == 1):
-            ds.save()
-        create_dietsetitem(row, ds, headers)
+        ds.save()
+
+    create_dietsetitem(row, ds, headers)
 
 def create_dietsetitem(row, diet_set, headers):
     food_item = get_fooditem(getattr(row, 'verbatimAssociatedTaxa'))
