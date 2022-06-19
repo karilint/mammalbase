@@ -33,7 +33,7 @@ from .models import (AttributeRelation, ChoiceSetOptionRelation, DietSet
     , RelationClass
     , SourceAttribute, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceEntity
     , SourceMeasurementValue, SourceReference, TimePeriod, ViewMasterTraitValue, ViewProximateAnalysisTable)
-from imports.views import import_diet_set, import_test
+from imports.views import import_diet_set, import_ets
 from itis.models import TaxonomicUnits
 from itis.views import *
 from ratelimit.decorators import ratelimit

@@ -12,7 +12,6 @@ import re
 import json
 import urllib.request
 import requests
-import time
 
 import sys, traceback
 
@@ -260,6 +259,7 @@ class Check:
 
         return True
 
+
 def get_author(id):
     author = User.objects.filter(socialaccount__uid=id)[0]
     return author
@@ -296,7 +296,7 @@ def get_sourceentity(vs_name, reference, entity, author):
     return new_sourceentity
 
 def get_timeperiod(sampling, ref, author):
-    if sampling != sampling:
+    if sampling != sampling or sampling == 'nan':
         return None
     else:
         tp_all = TimePeriod.objects.filter(reference=ref, name=sampling)
@@ -308,7 +308,7 @@ def get_timeperiod(sampling, ref, author):
             return new_timeperiod
 
 def get_sourcemethod(method, ref, author):
-    if method != method:
+    if method != method or method == 'nan':
         return None
     sr_old = SourceMethod.objects.filter(reference=ref, name=method)
     if len(sr_old) > 0:
@@ -319,7 +319,7 @@ def get_sourcemethod(method, ref, author):
         return new_sourcemethod
 
 def get_sourcelocation(location, ref, author):
-    if location != location:
+    if location != location or location == 'nan':
         return None
     sl_old = SourceLocation.objects.filter(name=location, reference=ref)
     if len(sl_old) > 0:
@@ -330,7 +330,7 @@ def get_sourcelocation(location, ref, author):
         return new_sourcelocation
 
 def get_choicevalue(gender):
-    if gender != gender:
+    if gender != gender or gender == 'nan':
         return None
     if gender != '22' or gender != '23':
         return
@@ -409,55 +409,64 @@ def possible_nan_to_none(possible):
         return None
     return possible
 
+
 @transaction.atomic
-def create_dietset(row):
-        author = get_author(getattr(row, 'author'))
-        reference = get_sourcereference_citation(getattr(row, 'references'), author)
-        entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
-        taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
-        if 'verbatimLocality' in row:
-            location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
-        else:
-            location = None
-        if 'sex' in row:
-            gender = get_choicevalue(getattr(row, 'sex'))
-        else:
-            gender = None
-        if 'individualCount' in row:
-            sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
-        else:
-            sample_size = 0
-        if 'associatedReferences' in row:
-            cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
-        else:
-            cited_reference = None
-        if 'samplingEffort' in row:
-            time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference, author)
-        else:
-            time_period = None
-        if 'measurementMethod' in row:
-            method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
-        else:
-            method = None
-        if 'verbatimEventdate' in row:
-            study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
-        else:
-            study_time = None
-
+def create_dietset(row, df):
+    headers = list(df.columns.values)
+    author = get_author(getattr(row, 'author'))
+    reference = get_sourcereference_citation(getattr(row, 'references'), author)
+    entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
+    taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+    if 'verbatimLocality' in headers:
+        location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+    else:
+        location = None
+    if 'sex' in headers:
+        gender = get_choicevalue(getattr(row, 'sex'))
+    else:
+        gender = None
+    if 'individualCount' in headers:
+        sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
+    else:
+        sample_size = 0
+    if 'associatedReferences' in headers:
+        cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
+    else:
+        cited_reference = None
+    if 'samplingEffort' in headers:
+        time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference, author)
+    else:
+        time_period = None
+    if 'measurementMethod' in headers:
+        method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
+    else:
+        method = None
+    if 'verbatimEventdate' in headers:
+        study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
+    else:
+        study_time = None
+        
+    ds_old = DietSet.objects.filter(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time, created_by=author)
+    if len(ds_old) > 0:
+        ds = ds_old[0]
+    else:
         ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time, created_by=author)
-        if (getattr(row, 'sequence') == 1):
-            ds.save()
-        create_dietsetitem(row, ds)
+        ds.save()
 
-def create_dietsetitem(row, diet_set):
+    create_dietsetitem(row, ds, headers)
+
+def create_dietsetitem(row, diet_set, headers):
     food_item = get_fooditem(getattr(row, 'verbatimAssociatedTaxa'))
     list_order = getattr(row, 'sequence')
-    if 'measurementValue' in row:
+    if 'measurementValue' in headers:
         percentage = possible_nan_to_zero(getattr(row, 'measurementValue'))
     else:
         percentage = 0
-
-    dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)
+    ds = DietSet.objects.filter(taxon=diet_set.taxon, reference=diet_set.reference)[0]
+    dietsetitem = DietSetItem(diet_set=ds, food_item=food_item, list_order=list_order, percentage=percentage)
+    old_ds = DietSetItem.objects.filter(diet_set=ds, food_item=food_item)
+    if len(old_ds) == 0:
+        dietsetitem.save()
 
 def trim(text:str):
     return " ".join(text.split())

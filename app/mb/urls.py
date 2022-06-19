@@ -3,8 +3,8 @@ from django.conf.urls import url
 from django.urls import path, re_path, include
 from . import views
 from mb.views import (
-    import_test,
-	import_diet_set,
+    import_diet_set,
+    import_ets,
 )
 import debug_toolbar
 #from rest_framework.urlpatterns import format_suffix_patterns
@@ -50,8 +50,9 @@ urlpatterns = [
     path('fi/<int:pk>/', views.food_item_detail, name='food_item-detail'),
     path('fi/<int:pk>/delete/', views.food_item_delete.as_view(), name='food_item-delete'),
     path('fi/<int:pk>/edit/', views.food_item_edit, name='food_item-edit'),
-    path('import/ds', import_diet_set, name='diet_set-import'),
-    path('import/test', import_test, name='import_test'),
+#    path('import/ds', import_diet_set, name='diet_set-import'),
+    path('import/diet_set', import_diet_set, name='import_diet_set'),
+    path('import/ets', import_ets, name='import_ets'),
     path('ma/', views.master_attribute_list, name='master_attribute-list'),
     path('ma/<int:pk>/', views.master_attribute_detail, name='master_attribute-detail'),
     path('ma/<int:pk>/delete/', views.master_attribute_delete.as_view(), name='master_attribute-delete'),
