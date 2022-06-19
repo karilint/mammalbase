@@ -1,5 +1,6 @@
 from doctest import master
-from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod, DietSetItem, FoodItem
+from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod, DietSetItem, FoodItem, EntityRelation
+from mb.models import ChoiceValue, DietSet, EntityClass, MasterEntity, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod, DietSetItem, FoodItem
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
@@ -12,6 +13,8 @@ import json
 import urllib.request
 import requests
 import time
+
+import sys, traceback
 
 class Check:
     def __init__(self, request):
@@ -289,6 +292,7 @@ def get_sourceentity(vs_name, reference, entity, author):
         return se_old[0]
     new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name, created_by=author)
     new_sourceentity.save()
+    create_new_entity_relation(new_sourceentity)
     return new_sourceentity
 
 def get_timeperiod(sampling, ref, author):
@@ -563,3 +567,63 @@ def make_harvard_citation_journalarticle(title, d, authors, year, container_titl
     
     citation += " " + str(year) + ". " + str(title) + ". " + str(container_title) + ". " + str(volume) + "(" + str(issue) + "), pp." + str(page) + ". Available at: " + str(d) + "." 
     return citation
+
+def api_query_globalnames_by_name(name):
+    trimmed_name = name.replace(" ", "%20")
+    url = "https://resolver.globalnames.org/name_resolvers.json?names="+trimmed_name.capitalize()+"&data_source_ids=174"
+    result = requests.get(url)
+    return result.json()
+
+def check_entity_realtions(source_entity):
+    try:
+        found_entity_relation = EntityRelation.objects.is_active().filter(
+            source_entity__name__iexact=source_entity[0].name).filter(
+            data_status_id=5).filter(
+            master_entity__reference_id=4).filter(
+            relation__name__iexact='Taxon Match')
+        return found_entity_relation
+    except:
+        print('Error searching entity relation', sys.exc_info(),traceback.format_exc())
+
+def create_new_entityrelation_with_api_data(source_entity):
+    api_result = api_query_globalnames_by_name(source_entity[0].name)["data"][0]
+    if api_result["is_known_name"]:
+        canonical_form = api_result["results"][0]["canonical_form"]
+        master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity[0].entity_id,reference_id=4)
+        EntityRelation(master_entity=master_entity_result[0],
+                        source_entity=source_entity[0],
+                        relation_id=1,
+                        data_status_id=5,
+                        relation_status_id=1,
+                        remarks=master_entity_result[0].reference).save()
+
+    elif api_result["results"][0]['score']>=0.75 and api_result["results"][0]['edit_distance'] <= 2:
+        canonical_form = api_result["results"][0]["canonical_form"]
+        master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity[0].entity_id,reference_id=4)
+        if len(master_entity_result) > 0:
+            EntityRelation(master_entity=master_entity_result[0],
+                            source_entity=source_entity[0],
+                            relation_id=1,
+                            data_status_id=5,
+                            relation_status_id=1,
+                            remarks=master_entity_result[0].reference).save()
+    else:
+        return
+
+def create_new_entity_relation(source_entity):
+    try:
+        result = check_entity_realtions(source_entity)
+        if len(result) < 1:
+            create_new_entityrelation_with_api_data(source_entity)
+        else:
+            try:
+                EntityRelation(master_entity=result[0].master_entity
+                            ,source_entity=source_entity[0]
+                            ,relation=result[0].relation
+                            ,data_status=result[0].data_status
+                            ,relation_status=result[0].relation_status
+                            ,remarks=result[0].remarks).save()
+            except:
+                print('Error creating new entity relation ', sys.exc_info(), traceback.format_exc())
+    except:
+        print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
