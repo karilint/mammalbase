@@ -1,6 +1,10 @@
 from doctest import master
+<<<<<<< HEAD
 from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod, DietSetItem, FoodItem, EntityRelation
 from mb.models import ChoiceValue, DietSet, EntityClass, MasterEntity, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod, DietSetItem, FoodItem
+=======
+from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSetItem, FoodItem
+>>>>>>> main
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
@@ -240,7 +244,7 @@ class Check:
                 messages.error(self.request, "The measurement value on the line " + str(counter) + " is not a number.")
                 return False
             if value <= 0:
-                messages.error(self.request, "The measurement value on the line " + str(counter) + " nneds to be bigger than zero.")
+                messages.error(self.request, "The measurement value on the line " + str(counter) + " needs to be bigger than zero.")
                 return False
 
         return True
@@ -564,7 +568,7 @@ def create_masterreference(source_citation, response_data, sr, user_author):
         
     except Exception as e:
         return False
-  
+
 
 def make_harvard_citation_journalarticle(title, d, authors, year, container_title, volume, issue, page):
     citation = ""
@@ -577,6 +581,7 @@ def make_harvard_citation_journalarticle(title, d, authors, year, container_titl
     citation += " " + str(year) + ". " + str(title) + ". " + str(container_title) + ". " + str(volume) + "(" + str(issue) + "), pp." + str(page) + ". Available at: " + str(d) + "." 
     return citation
 
+<<<<<<< HEAD
 def api_query_globalnames_by_name(name):
     trimmed_name = name.replace(" ", "%20")
     url = "https://resolver.globalnames.org/name_resolvers.json?names="+trimmed_name.capitalize()+"&data_source_ids=174"
@@ -636,3 +641,31 @@ def create_new_entity_relation(source_entity):
                 print('Error creating new entity relation ', sys.exc_info(), traceback.format_exc())
     except:
         print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
+=======
+@transaction.atomic
+def create_ets(row):
+    author = get_author(getattr(row, 'author'))
+    reference = get_sourcereference_citation(getattr(row, 'references'), author)
+    entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
+    taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+    measurementMethod = get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
+    locality = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+    statisticalMethod = get_sourceStatistic(getattr(row, 'statisticalMethod'), reference, author)
+    verbatimTraitUnit = getattr(row, 'verbatimTraitUnit')
+    if verbatimTraitUnit == 'NA':
+        print('VerbatimTraitUnit is NA')
+        # do something
+    else:
+        print('VerbatimTraitUnit not NA')
+        # do something else
+
+def get_sourceStatistic(statistic, ref, author):
+    if statistic != statistic or statistic == 'nan':
+        return None
+    ss_old = SourceStatistic.objects.filter(name=statistic, reference=ref)
+    if len(ss_old) > 0:
+        return ss_old[0]
+    ss = SourceStatistic(name=statistic, reference=ref, created_by=author)
+    ss.save()
+    return ss
+>>>>>>> main

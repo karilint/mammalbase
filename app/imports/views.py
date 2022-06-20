@@ -46,6 +46,24 @@ def import_diet_set(request):
 def import_ets(request):
 	if "GET" == request.method:
 		return render(request, "import/import_ets.html")
+	try:
+		csv_file = request.FILES["csv_file"]
+		df = pd.read_csv(csv_file, sep='\t')
+		trim_df(df)
+		# ToDo: Checks for ETS
+		
+		for row in df.itertuples():
+			create_ets(row)
+		success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
+		messages.add_message(request, 50 ,success_message, extra_tags="import-message")
+		messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")
+		return HttpResponseRedirect(reverse("import_ets"))
+
+	except Exception as e:
+		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
+		messages.error(request,"Unable to upload file. "+repr(e))
+	return HttpResponseRedirect(reverse("import_ets"))
+
 
 """@login_required
 def import_diet_set(request): # pragma: no cover
