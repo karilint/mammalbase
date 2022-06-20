@@ -1,5 +1,5 @@
 from doctest import master
-from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod, DietSetItem, FoodItem
+from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSetItem, FoodItem
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
@@ -560,7 +560,7 @@ def create_masterreference(source_citation, response_data, sr, user_author):
         
     except Exception as e:
         return False
-  
+
 
 def make_harvard_citation_journalarticle(title, d, authors, year, container_title, volume, issue, page):
     citation = ""
@@ -572,3 +572,30 @@ def make_harvard_citation_journalarticle(title, d, authors, year, container_titl
     
     citation += " " + str(year) + ". " + str(title) + ". " + str(container_title) + ". " + str(volume) + "(" + str(issue) + "), pp." + str(page) + ". Available at: " + str(d) + "." 
     return citation
+
+@transaction.atomic
+def create_ets(row):
+    author = get_author(getattr(row, 'author'))
+    reference = get_sourcereference_citation(getattr(row, 'references'), author)
+    entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
+    taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+    measurementMethod = get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
+    locality = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+    statisticalMethod = get_sourceStatistic(getattr(row, 'statisticalMethod'), reference, author)
+    verbatimTraitUnit = getattr(row, 'verbatimTraitUnit')
+    if verbatimTraitUnit == 'NA':
+        print('VerbatimTraitUnit is NA')
+        # do something
+    else:
+        print('VerbatimTraitUnit not NA')
+        # do something else
+
+def get_sourceStatistic(statistic, ref, author):
+    if statistic != statistic or statistic == 'nan':
+        return None
+    ss_old = SourceStatistic.objects.filter(name=statistic, reference=ref)
+    if len(ss_old) > 0:
+        return ss_old[0]
+    ss = SourceStatistic(name=statistic, reference=ref, created_by=author)
+    ss.save()
+    return ss
