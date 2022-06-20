@@ -1,10 +1,5 @@
 from doctest import master
-<<<<<<< HEAD
-from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod, DietSetItem, FoodItem, EntityRelation
-from mb.models import ChoiceValue, DietSet, EntityClass, MasterEntity, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod, DietSetItem, FoodItem
-=======
-from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSetItem, FoodItem
->>>>>>> main
+from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
@@ -12,10 +7,7 @@ from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
 
 import pandas as pd
-import re
-import json
-import urllib.request
-import requests
+import re, json, urllib.request, requests, sys, traceback
 
 import sys, traceback
 
@@ -581,7 +573,6 @@ def make_harvard_citation_journalarticle(title, d, authors, year, container_titl
     citation += " " + str(year) + ". " + str(title) + ". " + str(container_title) + ". " + str(volume) + "(" + str(issue) + "), pp." + str(page) + ". Available at: " + str(d) + "." 
     return citation
 
-<<<<<<< HEAD
 def api_query_globalnames_by_name(name):
     trimmed_name = name.replace(" ", "%20")
     url = "https://resolver.globalnames.org/name_resolvers.json?names="+trimmed_name.capitalize()+"&data_source_ids=174"
@@ -641,7 +632,6 @@ def create_new_entity_relation(source_entity):
                 print('Error creating new entity relation ', sys.exc_info(), traceback.format_exc())
     except:
         print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
-=======
 @transaction.atomic
 def create_ets(row):
     author = get_author(getattr(row, 'author'))
@@ -668,4 +658,3 @@ def get_sourceStatistic(statistic, ref, author):
     ss = SourceStatistic(name=statistic, reference=ref, created_by=author)
     ss.save()
     return ss
->>>>>>> main
