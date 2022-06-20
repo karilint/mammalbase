@@ -16,8 +16,8 @@ class Check:
         self.request = request
         self.id = None
 
-    def check_all(self, df):
-        if self.check_headers(df) == False:
+    def check_all_ds(self, df):
+        if self.check_headers_ds(df) == False:
             return False
         elif self.check_author(df) == False:
             return False
@@ -32,19 +32,41 @@ class Check:
         elif self.check_references(df) == False:
             return False
         return True
+    
+    def check_all_ets(self, df):
+        if self.check_headers_ets(df) == False:
+            return False
+        elif self.check_author(df) == False:
+            return False
+        elif self.check_verbatimScientificName(df) == False:
+            return False
+        elif self.check_taxonRank(df) == False:
+            return False
+        return True
 
     def check_valid_author(self, df):
         for author in (df.loc[:, 'author']):
             data = SocialAccount.objects.all().filter(uid=author)
             if data.exists() == False:
+                self.id = None
                 messages.error(self.request, "The author " + str(author) + " is not a valid ORCID ID.")
                 return False
             self.id = data[0].user_id
         return True
 
-    def check_headers(self, df):
+    def check_headers_ds(self, df):
         import_headers = list(df.columns.values)
         accepted_headers = ['author', 'verbatimScientificName', 'taxonRank', 'verbatimAssociatedTaxa', 'sequence',  'references']
+
+        for header in accepted_headers:
+            if header not in import_headers:
+                messages.error(self.request, "The import file does not contain the required headers. The missing header is: " + str(header) + ".")
+                return False
+        return True
+    
+    def check_headers_ets(self, df):
+        import_headers = list(df.columns.values)
+        accepted_headers = ['references', 'verbatimScientificName', 'taxonRank', 'verbatimTraitName', 'verbatimTraitUnit', 'author']
 
         for header in accepted_headers:
             if header not in import_headers:
