@@ -51,7 +51,13 @@
         <a class="w3-bar-item w3-button w3-hover-white" href="{% url 'index_proximate_analysis' %}">Proximate Analysis</a>
         <a class="w3-bar-item w3-button w3-hover-white" href="{% url 'index_news' %}">News</a>
         <a class="w3-bar-item w3-button w3-hover-white" href="{% url 'index_about' %}">About</a>
-        <a class="w3-bar-item w3-button w3-hover-white" href="{% url 'import_diet_set' %}">Import</a>
+        <div class="w3-dropdown-hover">
+          <button class="w3-button">Import</button>
+          <div class="w3-dropdown-content w3-bar-block w3-border">
+            <a href="{% url 'import_diet_set' %}" class="w3-bar-item w3-button">Diet Set</a>
+            <a href="{% url 'import_ets' %}" class="w3-bar-item w3-button">ETS</a>
+          </div>
+        </div>     
       </div>
     </div>
     <!---keeps the nav bar form being on top of conent-->
@@ -74,7 +80,7 @@
       </a>
       {% block nav %}
         <p>
-          {% load static %} <img src="{% static 'images/logo.png' %}" style="position:relative; right:-6%; bottom:0%; width:30%; border:none;" />
+         {% load static %} <img src="{% static 'images/logo.png' %}" style="position:relative; right:-6%; bottom:0%; width:30%; border:none;" />
         </p>
         <h4 class="w3-bar-item"><strong>Mammals</strong></h4>
         <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'master_entity-list'%}">Taxa</a>

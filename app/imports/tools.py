@@ -237,7 +237,7 @@ class Check:
                 messages.error(self.request, "The measurement value on the line " + str(counter) + " is not a number.")
                 return False
             if value <= 0:
-                messages.error(self.request, "The measurement value on the line " + str(counter) + " nneds to be bigger than zero.")
+                messages.error(self.request, "The measurement value on the line " + str(counter) + " needs to be bigger than zero.")
                 return False
 
         return True
@@ -292,7 +292,7 @@ def get_sourceentity(vs_name, reference, entity, author):
     return new_sourceentity
 
 def get_timeperiod(sampling, ref, author):
-    if sampling != sampling:
+    if sampling != sampling or sampling == 'nan':
         return None
     else:
         tp_all = TimePeriod.objects.filter(reference=ref, name=sampling)
@@ -304,7 +304,7 @@ def get_timeperiod(sampling, ref, author):
             return new_timeperiod
 
 def get_sourcemethod(method, ref, author):
-    if method != method:
+    if method != method or method == 'nan':
         return None
     sr_old = SourceMethod.objects.filter(reference=ref, name=method)
     if len(sr_old) > 0:
@@ -315,7 +315,7 @@ def get_sourcemethod(method, ref, author):
         return new_sourcemethod
 
 def get_sourcelocation(location, ref, author):
-    if location != location:
+    if location != location or location == 'nan':
         return None
     sl_old = SourceLocation.objects.filter(name=location, reference=ref)
     if len(sl_old) > 0:
@@ -326,7 +326,7 @@ def get_sourcelocation(location, ref, author):
         return new_sourcelocation
 
 def get_choicevalue(gender):
-    if gender != gender:
+    if gender != gender or gender == 'nan':
         return None
     if gender != '22' or gender != '23':
         return
