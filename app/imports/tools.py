@@ -1,5 +1,5 @@
 from doctest import master
-from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod, DietSetItem, FoodItem
+from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
@@ -7,10 +7,9 @@ from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
 
 import pandas as pd
-import re
-import json
-import urllib.request
-import requests
+import re, json, urllib.request, requests, sys, traceback
+
+import sys, traceback
 
 class Check:
     def __init__(self, request):
@@ -289,6 +288,7 @@ def get_sourceentity(vs_name, reference, entity, author):
         return se_old[0]
     new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name, created_by=author)
     new_sourceentity.save()
+    create_new_entity_relation(new_sourceentity)
     return new_sourceentity
 
 def get_timeperiod(sampling, ref, author):
@@ -560,7 +560,7 @@ def create_masterreference(source_citation, response_data, sr, user_author):
         
     except Exception as e:
         return False
-  
+
 
 def make_harvard_citation_journalarticle(title, d, authors, year, container_title, volume, issue, page):
     citation = ""
@@ -572,3 +572,89 @@ def make_harvard_citation_journalarticle(title, d, authors, year, container_titl
     
     citation += " " + str(year) + ". " + str(title) + ". " + str(container_title) + ". " + str(volume) + "(" + str(issue) + "), pp." + str(page) + ". Available at: " + str(d) + "." 
     return citation
+
+def api_query_globalnames_by_name(name):
+    trimmed_name = name.replace(" ", "%20")
+    url = "https://resolver.globalnames.org/name_resolvers.json?names="+trimmed_name.capitalize()+"&data_source_ids=174"
+    result = requests.get(url)
+    return result.json()
+
+def check_entity_realtions(source_entity):
+    try:
+        found_entity_relation = EntityRelation.objects.is_active().filter(
+            source_entity__name__iexact=source_entity.name).filter(
+            data_status_id=5).filter(
+            master_entity__reference_id=4).filter(
+            relation__name__iexact='Taxon Match')
+        return found_entity_relation
+    except:
+        print('Error searching entity relation', sys.exc_info(),traceback.format_exc())
+
+def create_new_entityrelation_with_api_data(source_entity):
+    api_result = api_query_globalnames_by_name(source_entity.name)["data"][0]
+    if api_result["is_known_name"]:
+        canonical_form = api_result["results"][0]["canonical_form"]
+        master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity.entity_id,reference_id=4)
+        EntityRelation(master_entity=master_entity_result[0],
+                        source_entity=source_entity.id,
+                        relation_id=1,
+                        data_status_id=5,
+                        relation_status_id=1,
+                        remarks=master_entity_result[0].reference).save()
+
+    elif api_result["results"][0]['score']>=0.75 and api_result["results"][0]['edit_distance'] <= 2:
+        canonical_form = api_result["results"][0]["canonical_form"]
+        master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity.entity_id,reference_id=4)
+        if len(master_entity_result) > 0:
+            EntityRelation(master_entity=master_entity_result[0],
+                            source_entity=source_entity.id,
+                            relation_id=1,
+                            data_status_id=5,
+                            relation_status_id=1,
+                            remarks=master_entity_result[0].reference).save()
+    else:
+        return
+
+def create_new_entity_relation(source_entity):
+    try:
+        result = check_entity_realtions(source_entity)
+        if len(result) < 1:
+            create_new_entityrelation_with_api_data(source_entity)
+        else:
+            try:
+                EntityRelation(master_entity=result[0].master_entity
+                            ,source_entity=source_entity
+                            ,relation=result[0].relation
+                            ,data_status=result[0].data_status
+                            ,relation_status=result[0].relation_status
+                            ,remarks=result[0].remarks).save()
+            except:
+                print('Error creating new entity relation ', sys.exc_info(), traceback.format_exc())
+    except:
+        print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
+@transaction.atomic
+def create_ets(row):
+    author = get_author(getattr(row, 'author'))
+    reference = get_sourcereference_citation(getattr(row, 'references'), author)
+    entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
+    taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+    measurementMethod = get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
+    locality = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+    statisticalMethod = get_sourceStatistic(getattr(row, 'statisticalMethod'), reference, author)
+    verbatimTraitUnit = getattr(row, 'verbatimTraitUnit')
+    if verbatimTraitUnit == 'NA':
+        print('VerbatimTraitUnit is NA')
+        # do something
+    else:
+        print('VerbatimTraitUnit not NA')
+        # do something else
+
+def get_sourceStatistic(statistic, ref, author):
+    if statistic != statistic or statistic == 'nan':
+        return None
+    ss_old = SourceStatistic.objects.filter(name=statistic, reference=ref)
+    if len(ss_old) > 0:
+        return ss_old[0]
+    ss = SourceStatistic(name=statistic, reference=ref, created_by=author)
+    ss.save()
+    return ss
