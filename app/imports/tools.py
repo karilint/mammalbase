@@ -237,7 +237,7 @@ class Check:
                 messages.error(self.request, "The measurement value on the line " + str(counter) + " is not a number.")
                 return False
             if value <= 0:
-                messages.error(self.request, "The measurement value on the line " + str(counter) + " nneds to be bigger than zero.")
+                messages.error(self.request, "The measurement value on the line " + str(counter) + " needs to be bigger than zero.")
                 return False
 
         return True
