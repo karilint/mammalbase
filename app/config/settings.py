@@ -43,7 +43,6 @@ SECRET_KEY = get_var('SECRET_KEY', 'development_key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(get_var('DEBUG', 0)))
 
-
 # For debug_toolbar
 if DEBUG:
     #import os  # only if you haven't already imported this
