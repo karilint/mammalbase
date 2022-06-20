@@ -586,7 +586,7 @@ def api_query_globalnames_by_name(name):
 def check_entity_realtions(source_entity):
     try:
         found_entity_relation = EntityRelation.objects.is_active().filter(
-            source_entity__name__iexact=source_entity[0].name).filter(
+            source_entity__name__iexact=source_entity.name).filter(
             data_status_id=5).filter(
             master_entity__reference_id=4).filter(
             relation__name__iexact='Taxon Match')
@@ -595,12 +595,12 @@ def check_entity_realtions(source_entity):
         print('Error searching entity relation', sys.exc_info(),traceback.format_exc())
 
 def create_new_entityrelation_with_api_data(source_entity):
-    api_result = api_query_globalnames_by_name(source_entity[0].name)["data"][0]
+    api_result = api_query_globalnames_by_name(source_entity.name)["data"][0]
     if api_result["is_known_name"]:
         canonical_form = api_result["results"][0]["canonical_form"]
-        master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity[0].entity_id,reference_id=4)
+        master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity.entity_id,reference_id=4)
         EntityRelation(master_entity=master_entity_result[0],
-                        source_entity=source_entity[0],
+                        source_entity=source_entity.id,
                         relation_id=1,
                         data_status_id=5,
                         relation_status_id=1,
@@ -608,10 +608,10 @@ def create_new_entityrelation_with_api_data(source_entity):
 
     elif api_result["results"][0]['score']>=0.75 and api_result["results"][0]['edit_distance'] <= 2:
         canonical_form = api_result["results"][0]["canonical_form"]
-        master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity[0].entity_id,reference_id=4)
+        master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity.entity_id,reference_id=4)
         if len(master_entity_result) > 0:
             EntityRelation(master_entity=master_entity_result[0],
-                            source_entity=source_entity[0],
+                            source_entity=source_entity.id,
                             relation_id=1,
                             data_status_id=5,
                             relation_status_id=1,
@@ -627,7 +627,7 @@ def create_new_entity_relation(source_entity):
         else:
             try:
                 EntityRelation(master_entity=result[0].master_entity
-                            ,source_entity=source_entity[0]
+                            ,source_entity=source_entity
                             ,relation=result[0].relation
                             ,data_status=result[0].data_status
                             ,relation_status=result[0].relation_status
