@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import User
-from mb.models import EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
+from mb.models import EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
 from imports.tools import Check
 import imports.tools as tools
 import tempfile, csv, os
@@ -377,3 +377,40 @@ class ToolsTest(TestCase):
         food_item.save()
         result = tools.get_fooditem('TEST')
         self.assertEqual(result.name, 'TEST')
+
+    def test_get_sourcestatistic_existing(self):
+        source_statistic = SourceStatistic(name='Test statistic', reference=self.sr, created_by=self.user)
+        source_statistic.save()
+        result = tools.get_sourceStatistic('Test statistic', self.sr, self.user)
+        self.assertEqual(result.name, 'Test statistic')
+
+    def test_get_sourcestatistic_new(self):
+        new_sr = SourceReference(citation='New sourcereference, 2000')
+        new_sr.save()
+        source_statistic = tools.get_sourceStatistic('Test statistic two', new_sr, self.user)
+        result = source_statistic.reference
+        self.assertEqual(result.citation, 'New sourcereference, 2000')
+        self.assertEqual(source_statistic.name, 'Test statistic two')
+
+    def test_no_nans_are_saved(self):
+        df = pd.DataFrame.from_dict({'samplingEffort': ['   '], 
+        'sex':[' '], 
+        'individualCount':[''],
+        'associatedReferences':[''],
+        'samplingEffort':[''],
+        'measurementMethod':[''],
+        'verbatimEventDate':[''],
+             })
+        tools.trim_df(df)
+
+        time_period = tools.get_timeperiod(df.loc[:, 'samplingEffort'][0], self.sr, self.user)
+        gender = tools.get_choicevalue(df.loc[:, 'sex'][0])
+        sample_size = tools.possible_nan_to_zero(df.loc[:, 'individualCount'][0])
+        cited_reference = tools.possible_nan_to_none(df.loc[:, 'associatedReferences'][0])
+        method = tools.get_sourcemethod(df.loc[:, 'measurementMethod'][0], self.sr, self.user)
+        self.assertNotEqual(time_period.name, 'nan')
+        self.assertNotEqual(type(gender), ChoiceValue)
+        self.assertNotEqual(sample_size, 0.0)
+        self.assertNotEqual(cited_reference, 'nan')
+        self.assertNotEqual(method.name, 'nan')
+        self.assertEqual(method.name, '')
