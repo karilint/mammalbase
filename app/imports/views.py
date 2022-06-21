@@ -20,12 +20,12 @@ def import_test(request):
 	if "GET" == request.method:
 		return render(request, "import/import_test.html")
 	try:
-		csv_file = request.FILES["csv_file"]
-		df = pd.read_csv(csv_file, sep='\t')
+		file = request.FILES["csv_file"]
+		df = pd.read_csv(file, sep='\t')
 		trim_df(df)
 		check = Check(request)
-
-		if check.check_all(df) != True:
+		force = "force" in request.POST
+		if check.check_all(df, force) != True:
 			return HttpResponseRedirect(reverse("import_test"))
 		else:
 			for row in df.itertuples():

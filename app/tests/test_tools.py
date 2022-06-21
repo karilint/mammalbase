@@ -104,7 +104,7 @@ class ToolsTest(TestCase):
 
     def test_check_valid_author(self):
         self.assertEqual(self.check.check_valid_author(self.file), True)
-        # Tiedossa etta ei mene lapi
+    #     # Tiedossa etta ei mene lapi
 
     def test_check_headers(self):
         self.assertEqual(self.check.check_headers(self.file), True)
@@ -137,10 +137,13 @@ class ToolsTest(TestCase):
         self.assertEqual(self.check.check_measurementValue(self.false_file), False)
 
     def test_check_all(self):
-        self.assertEqual(self.check.check_all(self.file), True)
+        self.assertEqual(self.check.check_all(self.file, True), True)
         df = pd.DataFrame.from_dict(self.dict)
-        self.assertEqual(self.check.check_all(df), True)
+        self.assertEqual(self.check.check_all(df, True), True)
         # Tiedossa etta ei mene lapi
+    
+    def test_check_all_reference_in_db(self):
+        self.assertEqual(self.check.check_all(self.file, False), False)
 
     def test_check_all_wrong_headers(self):
         df = pd.DataFrame.from_dict({'kirjlaia': ['1111-1111-2222-2222', '0000-0001-9627-8821'], 
@@ -149,7 +152,7 @@ class ToolsTest(TestCase):
         'verbatimAssociatedTaxa':['moi', 'moi'],
         'sequence':[1,2],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
-        self.assertEqual(self.check.check_all(df), False)
+        self.assertEqual(self.check.check_all(df, True), False)
 
     def test_check_all_wrong_author(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-222-2222', '0000-0001-9627-8821'], 
@@ -158,7 +161,7 @@ class ToolsTest(TestCase):
         'verbatimAssociatedTaxa':['moi', 'moi'],
         'sequence':[1,2],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
-        self.assertEqual(self.check.check_all(df), False)
+        self.assertEqual(self.check.check_all(df, True), False)
 
     def test_check_all_missing_werbatim_scientificname(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '0000-0001-9627-8821'], 
@@ -167,7 +170,7 @@ class ToolsTest(TestCase):
         'verbatimAssociatedTaxa':['moi', 'moi'],
         'sequence':[1,2],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
-        self.assertEqual(self.check.check_all(df), False)
+        self.assertEqual(self.check.check_all(df, True), False)
 
     def test_check_all_wrong_taxonrank(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '0000-0001-9627-8821'], 
@@ -176,7 +179,7 @@ class ToolsTest(TestCase):
         'verbatimAssociatedTaxa':['moi', 'moi'],
         'sequence':[1,2],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
-        self.assertEqual(self.check.check_all(df), False)
+        self.assertEqual(self.check.check_all(df, True), False)
 
     def test_check_all_wrong_sequence(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '0000-0001-9627-8821'], 
@@ -185,7 +188,7 @@ class ToolsTest(TestCase):
         'verbatimAssociatedTaxa':['moi', 'moi'],
         'sequence':[1,2],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000']})
-        self.assertEqual(self.check.check_all(df), False)
+        self.assertEqual(self.check.check_all(df, True), False)
 
     def test_check_all_wrong_measurement_value(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '1111-1111-2222-2233',], 
@@ -194,7 +197,7 @@ class ToolsTest(TestCase):
         'verbatimAssociatedTaxa':['moi', 'hello'],
         'sequence':[1,1],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'], 'measurementValue':[0,1] })
-        self.assertEqual(self.check.check_all(df), False)
+        self.assertEqual(self.check.check_all(df, True), False)
 
     def test_check_all_wrong_reference(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '1111-1111-2222-2233',], 
@@ -203,7 +206,7 @@ class ToolsTest(TestCase):
         'verbatimAssociatedTaxa':['moi', 'hello'],
         'sequence':[1,1],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. '], 'measurementValue':[1,1] })
-        self.assertEqual(self.check.check_all(df), False)
+        self.assertEqual(self.check.check_all(df, True), False)
     
     def test_check_author_not_a_number(self):
         df = pd.DataFrame.from_dict({'author': ['pena-pena-pena-pena', '1111-1111-2222-2233',], 
