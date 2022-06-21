@@ -107,16 +107,17 @@ class Check:
         for item in df_new.values:
             counter += 1
             names_list = item[0].split()
-            if len(names_list) > 3:
+
+            if len(names_list) > 3 and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list:
                 messages.error(self.request, "Scientific name is not in the correct format on the line " + str(counter) + ".")
                 return False
-            if len(names_list) == 3 and item[1] not in ['Subspecies', 'subspecies']:
+            if len(names_list) == 3 and item[1] not in ['Subspecies', 'subspecies'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list:
                 messages.error(self.request, "Scientific name is not in the correct format or taxonomic rank should be 'Subspecies' on the line " + str(counter) + ".")
                 return False
-            if len(names_list) == 2 and item[1] not in ['Species', 'species']:
+            if len(names_list) == 2 and item[1] not in ['Species', 'species'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list:
                 messages.error(self.request, "Scientific name is not in the correct format or taxonomic rank should be 'Species' on the line " + str(counter) + ".")
                 return False
-            if len(names_list) == 1 and item[1] not in ['Genus', 'genus']:
+            if len(names_list) == 1 and item[1] not in ['Genus', 'genus'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list:
                 messages.error(self.request, "Scientific name is not in the correct format or taxonomic rank should be 'Genus' on the line " + str(counter) + ".")
                 return False
         return True
@@ -364,9 +365,12 @@ def get_fooditem(food):
 
     def get_json(food):
         url = 'https://resolver.globalnames.org/name_resolvers.json?data_source_ids=3&names=' + food.lower().capitalize().replace(' ', '%20')
-        file = urllib.request.urlopen(url)
-        data = file.read()
-        return json.loads(data)
+        try:
+            file = urllib.request.urlopen(url)
+            data = file.read()
+            return json.loads(data)
+        except:
+            return {}
 
     def create_fooditem(results):
         tsn = results['data'][0]['results'][0]['taxon_id']
@@ -386,10 +390,9 @@ def get_fooditem(food):
             taxonomic_unit.save()
 
         name = food_upper
-        part = ChoiceValue.objects.filter(pk=21)[0]
         is_cultivar = 0
         taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
-        food_item = FoodItem(name=name, part=part, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=is_cultivar)
+        food_item = FoodItem(name=name, part=None, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=is_cultivar)
         food_item_exists = FoodItem.objects.filter(name__iexact=name)
         if len(food_item_exists) > 0:
             return food_item_exists[0]
@@ -459,7 +462,7 @@ def create_dietset(row, df):
         method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
     else:
         method = None
-    if 'verbatimEventdate' in headers:
+    if 'verbatimEventDate' in headers:
         study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
     else:
         study_time = None
@@ -480,10 +483,9 @@ def create_dietsetitem(row, diet_set, headers):
         percentage = possible_nan_to_zero(getattr(row, 'measurementValue'))
     else:
         percentage = 0
-    ds = DietSet.objects.filter(taxon=diet_set.taxon, reference=diet_set.reference)[0]
-    dietsetitem = DietSetItem(diet_set=ds, food_item=food_item, list_order=list_order, percentage=percentage)
-    old_ds = DietSetItem.objects.filter(diet_set=ds, food_item=food_item)
+    old_ds = DietSetItem.objects.filter(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)
     if len(old_ds) == 0:
+        dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)        
         dietsetitem.save()
 
 def trim(text:str):

@@ -15,7 +15,7 @@ class ImportViewTests(TestCase):
         #self.client.login(username='testi', password='1234')
     
     def test_import_diet_set_view(self):
-        response = self.client.get('/import/test')
+        response = self.client.get('/import/diet_set')
         #print('helo', response.content, 'helo', response.client, response.context)
         self.assertEqual(response.status_code, 200)
     
@@ -31,7 +31,7 @@ class ImportViewTests(TestCase):
             writer.writerow(['0000-0000-0000-000X',	'Lagothrix flavicauda',	'animal',	'leaves', '2', '', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
             writer.writerow(['0000-0000-0000-000X',	'Lagothrix flavicauda',	'Species',	'fruit', '1', '46.3a','Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
         with open('test_bad.csv', 'r') as fp:
-            response = self.client.post('/import/test', {'name': 'fred', 'csv_file': fp})
+            response = self.client.post('/import/diet_set', {'name': 'fred', 'csv_file': fp})
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'The author 0000-0000-0000-000X is not a valid ORCID ID.')
@@ -39,12 +39,20 @@ class ImportViewTests(TestCase):
             
     def test_import_post_wrong_file(self):
         with open('tests/test_tools.py', 'r') as fp:
-            response = self.client.post('/import/test', {'name': 'fred', 'csv_file': fp})
+            response = self.client.post('/import/diet_set', {'name': 'fred', 'csv_file': fp})
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1) 
         self.assertEqual('Unable to upload file.' in str(messages[0]), True)
         self.assertEqual(response.status_code, 302)
 
+
+    def test_import_ets_view(self):
+        response = self.client.get('/import/ets')
+        self.assertEqual(response.status_code, 200)
+
+    def test_import_ets_reverse(self):
+        response = self.client.get(reverse('import_ets'))
+        self.assertEqual(response.status_code, 200)
 """ def test_import_post(self):
         with open('test_post.csv', 'w') as file:
             writer = csv.writer(file, delimiter='\t')
