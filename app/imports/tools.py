@@ -29,7 +29,7 @@ class Check:
             return False
         elif self.check_measurementValue(df) == False:
             return False
-        elif self.check_references(df) == False:
+        elif self.check_references(df, force) == False:
             return False
         return True
     
