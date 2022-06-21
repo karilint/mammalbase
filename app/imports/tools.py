@@ -369,7 +369,7 @@ def get_fooditem(food):
             data = file.read()
             return json.loads(data)
         except:
-            return
+            return {}
 
     def create_fooditem(results):
         tsn = results['data'][0]['results'][0]['taxon_id']
@@ -461,7 +461,7 @@ def create_dietset(row, df):
         method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
     else:
         method = None
-    if 'verbatimEventdate' in headers:
+    if 'verbatimEventDate' in headers:
         study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
     else:
         study_time = None
@@ -482,10 +482,9 @@ def create_dietsetitem(row, diet_set, headers):
         percentage = possible_nan_to_zero(getattr(row, 'measurementValue'))
     else:
         percentage = 0
-    ds = DietSet.objects.filter(taxon=diet_set.taxon, reference=diet_set.reference)[0]
-    dietsetitem = DietSetItem(diet_set=ds, food_item=food_item, list_order=list_order, percentage=percentage)
-    old_ds = DietSetItem.objects.filter(diet_set=ds, food_item=food_item)
+    old_ds = DietSetItem.objects.filter(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)
     if len(old_ds) == 0:
+        dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)        
         dietsetitem.save()
 
 def trim(text:str):
