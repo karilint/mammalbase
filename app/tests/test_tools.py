@@ -60,9 +60,16 @@ class ToolsTest(TestCase):
             writer.writerow(['1111-1111-2222-2222', 'Lagothrix flavicauda flavicauda', 'Species', 'primarily frugivorous', '1', '', 'Book'])
             writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda flavicauda',	'Species',	'leaves', '2', '',  'Book'])
             writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda flavicauda',	'Species',	'fruit', '4', '',   'Book'])
-
+        with open('test_ets', 'w') as file7:
+            writer = csv.writer(file7)
+            writer.writerow(['references', 'verbatimScientificName', 'taxonRank', 'verbatimTraitName', 'verbatimTraitUnit', 'individualCount', 'measurementValue_min', 'measurementValue_max', 'dispersion', 'statisticalMethod', 'verbatimTraitValue', 'sex', 'lifeStage', 'measurementMethod', 'measurementDeterminedBy', 'measurementAccuracy', 'measurementRemarks', 'verbatimLocality', 'author', 'associatedReferences'])
+            writer.writerow(['Richard-Hansen, C., Vié, J.C., Vidal, N. and Kéravec, J., 1999. Body measurements on 40 species of mammals from French Guiana. Journal of zoology, 247(4), pp.419-428.', 'Caluromys philander', 'Species', 'body weight (Wt)', 'kg', '22', '0.24', '0.46', '0.06', 'SD', '0.33', 'unknown', '', 'Fleming, T.H., 1991. LH Emmons, & F. Feer 1990. Neotropical rainforest mammals. A field guide. University of Chicago Press, Chicago, xiv+ 281 pages. Hardback: ISBN 0-226-20716-1; Price: UK£ 35.95/US 22.95. Journal of Tropical Ecology, 7(3), pp.400-400.', '', '', '', 'Sinnamary River in French Guiana', '0000-0000-0000-000X', ''])
+            writer.writerow(['Richard-Hansen, C., Vié, J.C., Vidal, N. and Kéravec, J., 1999. Body measurements on 40 species of mammals from French Guiana. Journal of zoology, 247(4), pp.419-428.', 'Didelphis albiventris', 'Species', 'body weight (Wt)', 'kg', '24', '0.44', '1.14', '0.18', 'SD', '0.77', 'unknown', '', 'Fleming, T.H., 1991. LH Emmons, & F. Feer 1990. Neotropical rainforest mammals. A field guide. University of Chicago Press, Chicago, xiv+ 281 pages. Hardback: ISBN 0-226-20716-1; Price: UK£ 35.95/US 22.95. Journal of Tropical Ecology, 7(3), pp.400-400.', '', '', '', 'Sinnamary River in French Guiana', '0000-0000-0000-000X', ''])
+            writer.writerow(['Richard-Hansen, C., Vié, J.C., Vidal, N. and Kéravec, J., 1999. Body measurements on 40 species of mammals from French Guiana. Journal of zoology, 247(4), pp.419-428.', 'Caluromys philander', 'Species', 'head and body length (HB), tip of nose to inflection point of tail', 'mm', '25', '225', '385', '29', 'SD', '265', 'unknown', '', 'Fleming, T.H., 1991. LH Emmons, & F. Feer 1990. Neotropical rainforest mammals. A field guide. University of Chicago Press, Chicago, xiv+ 281 pages. Hardback: ISBN 0-226-20716-1; Price: UK£ 35.95/US 22.95. Journal of Tropical Ecology, 7(3), pp.400-400.', '', '', '', 'Sinnamary River in French Guiana', '0000-0000-0000-000X', ''])
+            writer.writerow(['Richard-Hansen, C., Vié, J.C., Vidal, N. and Kéravec, J., 1999. Body measurements on 40 species of mammals from French Guiana. Journal of zoology, 247(4), pp.419-428.', 'Didelphis albiventris', 'Species', 'head and body length (HB), tip of nose to inflection point of tail', 'mm', '35', '270', '390', '33', 'SD', '334', 'unknown', '', 'Fleming, T.H., 1991. LH Emmons, & F. Feer 1990. Neotropical rainforest mammals. A field guide. University of Chicago Press, Chicago, xiv+ 281 pages. Hardback: ISBN 0-226-20716-1; Price: UK£ 35.95/US 22.95. Journal of Tropical Ecology, 7(3), pp.400-400.', '', '', '', 'Sinnamary River in French Guiana', '0000-0000-0000-000X', ''])
 
         self.file = pd.read_csv('test.csv')
+        self.file_ets = pd.read_csv('test_ets')
         self.false_file = pd.read_csv('false_test.csv')
         self.false_measurement_value = pd.read_csv('false_measurement_value.csv')
         self.false_file2 = pd.read_csv('false_test2.csv')
@@ -75,6 +82,12 @@ class ToolsTest(TestCase):
         'verbatimAssociatedTaxa':['moi', 'hello'],
         'sequence':[1,1],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'] }
+        self.dict_ets = {'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'],
+        'verbatimScientificName':['kapistelija', 'kapistelija'],
+        'taxonRank':['genus', 'genus'],
+        'verbatimTraitName':['body weight (Wt)', 'body weight (Wt)'],
+        'verbatimTraitUnit':['kg', 'kg'],
+        'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']}
         self.entity = tools.get_entityclass(self.file.loc[:, 'taxonRank'][1], self.user)    
         #print(tools.get_entityclass(self.file.loc[:, 'taxonRank'][0]).name)
         #print('Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
@@ -115,10 +128,16 @@ class ToolsTest(TestCase):
 
     def test_check_headers_ds(self):
         self.assertEqual(self.check.check_headers_ds(self.file), True)
+    
+    def test_check_headers_ets(self):
+        self.assertEqual(self.check.check_headers_ets(self.file_ets), True)
 
     def test_check_headers_ds_false(self):
         self.assertEqual(self.check.check_headers_ds(self.false_file), False)
     
+    def test_check_headers_ets_false(self):
+        self.assertEqual(self.check.check_headers_ets(self.file), False)
+
     def test_check_author(self):
         self.assertEqual(self.check.check_author(self.file), True)
     
@@ -203,7 +222,6 @@ class ToolsTest(TestCase):
         'verbatimAssociatedTaxa':['moi', 'moi'],
         'sequence':[1,2],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
-        print(self.check.check_all_ds(df))
         self.assertEqual(self.check.check_all_ds(df), False)
 
     def test_check_all_ds_wrong_sequence(self):
@@ -268,6 +286,48 @@ class ToolsTest(TestCase):
         'sequence':[1,2],
         'references':['tosi  tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
         self.assertEqual(self.check.check_sequence(df), False)
+    
+    def test_check_all_ets(self):
+        self.assertEqual(self.check.check_all_ets(self.file_ets), True)
+        df = pd.DataFrame.from_dict(self.dict_ets)
+        print("jippii")
+        self.assertEqual(self.check.check_all_ets(df), True)
+
+    def test_check_all_ets_wrong_headers(self):
+        df = pd.DataFrame.from_dict({'viitteet':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'],
+        'verbatimScientificName':['kapistelija', 'kapistelija'],
+        'taxonRank':['genus', 'genus'],
+        'verbatimTraitName':['body weight (Wt)', 'body weight (Wt)'],
+        'verbatimTraitUnit':['kg', 'kg'],
+        'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']})
+        self.assertEqual(self.check.check_all_ets(df), False)
+    
+    def test_check_all_ets_wrong_author(self):
+        df = pd.DataFrame.from_dict({'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'],
+        'verbatimScientificName':['kapistelija', 'kapistelija'],
+        'taxonRank':['genus', 'genus'],
+        'verbatimTraitName':['body weight (Wt)', 'body weight (Wt)'],
+        'verbatimTraitUnit':['kg', 'kg'],
+        'author': ['1111-1111-2222-2222', 'abcd-1111-2222-2233']})
+        self.assertEqual(self.check.check_all_ets(df), False)
+
+    def test_check_all_ets_missing_werbatim_scientificname(self):
+        df = pd.DataFrame.from_dict({'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'],
+        'verbatimScientificName':['a a a a', 'kapistelija'],
+        'taxonRank':['genus', 'genus'],
+        'verbatimTraitName':['body weight (Wt)', 'body weight (Wt)'],
+        'verbatimTraitUnit':['kg', 'kg'],
+        'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']})
+        self.assertEqual(self.check.check_all_ets(df), False)
+
+    def test_check_all_ets_wrong_taxonrank(self):
+        df = pd.DataFrame.from_dict({'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'],
+        'verbatimScientificName':['kapistelija', 'kapistelija'],
+        'taxonRank':['subspecies', 'subspecies'],
+        'verbatimTraitName':['body weight (Wt)', 'body weight (Wt)'],
+        'verbatimTraitUnit':['kg', 'kg'],
+        'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']})
+        self.assertEqual(self.check.check_all_ets(df), False)
 
     def test_new_get_sourcereference_citation(self):
         self.assertEqual(tools.get_sourcereference_citation(self.file.loc[:, 'references'][0], self.user).citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
