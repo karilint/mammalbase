@@ -20,14 +20,14 @@ def import_diet_set(request):
 	if "GET" == request.method:
 		return render(request, "import/import_diet_set.html")
 	try:
-		csv_file = request.FILES["csv_file"]
-		df = pd.read_csv(csv_file, sep='\t')
+		file = request.FILES["csv_file"]
+		df = pd.read_csv(file, sep='\t')
 		trim_df(df)
 		check = Check(request)
-
+		force = "force" in request.POST
 		if check.check_valid_author(df) == False:
 			return HttpResponseRedirect(reverse("import_diet_set"))
-		if check.check_all_ds(df) != True:
+		if check.check_all_ds(df, force) != True:
 			return HttpResponseRedirect(reverse("import_diet_set"))
 		else:
 			for row in df.itertuples():

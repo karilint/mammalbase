@@ -16,7 +16,7 @@ class Check:
         self.request = request
         self.id = None
 
-    def check_all_ds(self, df):
+    def check_all_ds(self, df, force=False):
         if self.check_headers_ds(df) == False:
             return False
         elif self.check_author(df) == False:
@@ -29,7 +29,7 @@ class Check:
             return False
         elif self.check_measurementValue(df) == False:
             return False
-        elif self.check_references(df) == False:
+        elif self.check_references(df, force) == False:
             return False
         return True
     
@@ -264,9 +264,17 @@ class Check:
 
         return True
 
-    def check_references(self, df):
+    def check_reference_in_db(self, reference):
+        return len(SourceReference.objects.filter(citation=reference)) == 0
+
+    def check_references(self, df, force:bool):
         counter = 1
         for ref in (df.loc[:, 'references']):
+            if not force:
+                if not self.check_reference_in_db(ref):
+                    messages.error(self.request, "Reference in line "+ str(counter) +" already in database. Are you sure you want to import this file? If you are sure use force upload.")
+                    return False
+
             if len(ref) < 10 or len(ref) > 500:
                 messages.error(self.request, "Reference is too short or too long on the line " + str(counter) + ".")
                 return False
