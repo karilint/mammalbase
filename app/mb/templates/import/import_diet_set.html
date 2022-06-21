@@ -6,36 +6,120 @@
 {% endblock %}
 
 {% block title %}
-  <title>MammalBase - Import Diet Sets</title>
+  <title>MammalBase - Import Diet Sets TEST</title>
 {% endblock %}
+
 {% block content %} {% load custom_tags %}
   <!--Article header -->
   <header style="display:none">
-    <h1>MammalBase - Import Diet Sets</h1>
+    <h1>MammalBase - Import Diet Sets TEST</h1>
   </header>
   <!--End of article header -->
-  <section class="w3-threequarter w3-container">
+  <section class=" w3-container">
     <header class="w3-container w3-text-teal">
-      <h2>Import Diet Sets</h2>
+      <h2>Import Diet Sets TEST</h2>
     </header>
+    
     {% if user.is_authenticated %}
 		{% include 'includes/messaging.html' %}
-	<form action="{% url "diet_set-import" %}" method="POST" enctype="multipart/form-data" class="form-horizontal"> 
-	{% csrf_token %}
-	<div class="form-group">
-		<label for="name" class="col-md-3 col-sm-3 col-xs-12 control-label">File: </label>
-		<div class="col-md-8">
-			<input type="file" name="csv_file" id="csv_file" required="True" class="form-control">
-		</div>                    
-	</div>
-	<div class="form-group">                    
-		<div class="col-md-3 col-sm-3 col-xs-12 col-md-offset-3" style="margin-bottom:10px;">
-			 <button class="btn btn-primary"> <span class="glyphicon glyphicon-upload" style="margin-right:5px;"></span>Upload </button>
-		</div> 
-	</div>
-	</form>
+  <div >
+    <button onclick="showInfo('import')" 
+    class="w3-button w3-block w3-border w3-left-align w3-border-black" 
+    style="width:50%; margin-bottom:10px;"> 
+    Import data
+    </button>
+  </div>
+  <div id="import" class="w3-hide w3-container w3-show" style=" background-color: #f0f0f0; margin-bottom: 10px;">
+    <form action="{% url "import_test" %}" method="POST" enctype="multipart/form-data" class="form-horizontal">
+      {% csrf_token %} 
+    <div class="form-group">
+      <label for="name" class="col-md-3 col-sm-3 col-xs-12 control-label">File: <br> </label>
+      <input type="file" name="csv_file" accept=".tsv, .csv" required="True" class="form-control"/>
+    </div>
+    <div class="form-group">                    
+      <div class="col-md-3 col-sm-3 col-xs-12 col-md-offset-3" style="margin-bottom:10px;">
+        <button type="submit" class="btn btn-primary">Upload</button>
+      </div> 
+    </div>
+    <div class="form-check">
+      <div class="col-md-3 col-sm-3 col-xs-12 col-md-offset-3 left-align" style="margin-bottom:10px;"></div> 
+        <input type="checkbox" name ="force" class="form-check-input w3-hide" id="forceUpload2">
+        <label  id="forceUpload1" class="form-check-label w3-hide" for="exampleCheck1">Force upload</label>
+      </div>
+    </div>
+    </div>
+    </form>
+  </div>
+  <div >
+    <button onclick="showInfo('howTo')" 
+    class="w3-button w3-block w3-border w3-left-align w3-border-black" 
+    style="width:50%; margin-bottom:10px;"> 
+    How to import diet set data
+    </button>
+  </div>
+  <div id="howTo" class="w3-hide w3-container" style=" background-color: #f0f0f0; margin-bottom: 10px;">
+    <p>Press "choose file"-button to select a file to import. After the file is chosen, press "Upload"-button </p>
+  </div>
+
+  <div>
+    <button onclick="showInfo('supportedFormats')" 
+    class="w3-button w3-block w3-border w3-left-align w3-border-black"
+    style="width:50%; margin-bottom:10px"> 
+    Supported file formats
+    </button>
+  </div>
+  <div id="supportedFormats" class="w3-hide w3-container" style=" background-color: #f0f0f0; margin-bottom: 10px;">
+    <p>Currently supported formats are: </p>
+    <div class="w3-panel w3-border w3-white w3-round-large" style="width: fit-content;">
+      TSV (tab separated values)
+    </div>
+  </div>
+
+  <div>
+    <button onclick="showInfo('exampleFile')"
+    class="w3-button w3-block w3-border w3-left-align w3-border-black"
+    style="width:50%; margin-bottom:10px">
+    Example import
+    </button>
+  </div>
+  <div id="exampleFile" class="w3-hide w3-container" style=" background-color: #f0f0f0; margin-bottom: 10px;">
+    <p> This example can be used as a basis structure for import </p>
+    <div class="w3-panel w3-border w3-white w3-round-large" style="width: fit-content;">
+      Title Author  Year  Type
+      <br>
+      Mammals Jones 1999  Book
+    </div>
+    <div class="w3-panel w3-border w3-white w3-round-large" style="width: fit-content;">
+      Title\tAuthor\tYear\tType
+      <br>
+      Mammals\tJones\t1999\tBook
+    </div>
+  </div>
+  <div >
+    <button onclick="showInfo('forceUpload1'); showInfo('forceUpload2'); showInfo('forceUpload3');" 
+    class="w3-button w3-block w3-border w3-left-align w3-border-black" 
+    style="width:50%; margin-bottom:10px;"> 
+    Force upload
+    </button>
+  </div>
+  <div id="forceUpload3" class="w3-hide w3-container" style=" background-color: #f0f0f0; margin-bottom: 10px;">
+    <p>Only use this option if you know what you are doing and you are prompted to do so. <br> It will upload your file even if the reference is already in the database. </p>
+  </div>
+
+  <script>
+  function showInfo(id) {
+    var x = document.getElementById(id);
+    if (x.className.indexOf("w3-show") == -1) {
+      x.className += " w3-show";
+    } else { 
+      x.className = x.className.replace(" w3-show", "");
+    }
+}
+  </script>
+
     {% else %}
       <p><a href="{% url 'login'%}?next={{request.path}}">Please login first</a></p>
     {% endif %}
+
   </section>
 {% endblock %}

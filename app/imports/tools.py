@@ -1,38 +1,46 @@
 from doctest import master
-from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, TimePeriod, DietSetItem, FoodItem
+from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
 from allauth.socialaccount.models import SocialAccount
+from django.contrib.auth.models import User
 
 import pandas as pd
-import re
-import json
-import urllib.request
-import requests
-import time
+import re, json, urllib.request, requests, sys, traceback
+
+import sys, traceback
 
 class Check:
     def __init__(self, request):
         self.request = request
         self.id = None
 
-    def check_all(self, df, force=False):
-        if self.check_valid_author(df) == False: #Testi menee vikaan
+    def check_all_ds(self, df, force=False):
+        if self.check_headers_ds(df) == False:
             return False
-        if self.check_headers(df) == False:
+        elif self.check_author(df) == False:
             return False
-        if self.check_author(df) == False:
+        elif self.check_verbatimScientificName(df) == False:
             return False
-        if self.check_verbatimScientificName(df) == False:
+        elif self.check_taxonRank(df) == False:
             return False
-        if self.check_taxonRank(df) == False:
+        elif self.check_sequence(df) == False:
             return False
-        if self.check_sequence(df) == False:
+        elif self.check_measurementValue(df) == False:
             return False
-        if self.check_measurementValue(df) == False:
+        elif self.check_references(df) == False:
             return False
-        if self.check_references(df, force) == False:
+        return True
+    
+    def check_all_ets(self, df):
+        if self.check_headers_ets(df) == False:
+            return False
+        elif self.check_author(df) == False:
+            return False
+        elif self.check_verbatimScientificName(df) == False:
+            return False
+        elif self.check_taxonRank(df) == False:
             return False
         return True
 
@@ -40,14 +48,25 @@ class Check:
         for author in (df.loc[:, 'author']):
             data = SocialAccount.objects.all().filter(uid=author)
             if data.exists() == False:
+                self.id = None
                 messages.error(self.request, "The author " + str(author) + " is not a valid ORCID ID.")
                 return False
             self.id = data[0].user_id
         return True
 
-    def check_headers(self, df):
+    def check_headers_ds(self, df):
         import_headers = list(df.columns.values)
         accepted_headers = ['author', 'verbatimScientificName', 'taxonRank', 'verbatimAssociatedTaxa', 'sequence',  'references']
+
+        for header in accepted_headers:
+            if header not in import_headers:
+                messages.error(self.request, "The import file does not contain the required headers. The missing header is: " + str(header) + ".")
+                return False
+        return True
+    
+    def check_headers_ets(self, df):
+        import_headers = list(df.columns.values)
+        accepted_headers = ['references', 'verbatimScientificName', 'taxonRank', 'verbatimTraitName', 'verbatimTraitUnit', 'author']
 
         for header in accepted_headers:
             if header not in import_headers:
@@ -88,16 +107,17 @@ class Check:
         for item in df_new.values:
             counter += 1
             names_list = item[0].split()
-            if len(names_list) > 3:
+
+            if len(names_list) > 3 and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list:
                 messages.error(self.request, "Scientific name is not in the correct format on the line " + str(counter) + ".")
                 return False
-            if len(names_list) == 3 and item[1] not in ['Subspecies', 'subspecies']:
+            if len(names_list) == 3 and item[1] not in ['Subspecies', 'subspecies'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list:
                 messages.error(self.request, "Scientific name is not in the correct format or taxonomic rank should be 'Subspecies' on the line " + str(counter) + ".")
                 return False
-            if len(names_list) == 2 and item[1] not in ['Species', 'species']:
+            if len(names_list) == 2 and item[1] not in ['Species', 'species'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list:
                 messages.error(self.request, "Scientific name is not in the correct format or taxonomic rank should be 'Species' on the line " + str(counter) + ".")
                 return False
-            if len(names_list) == 1 and item[1] not in ['Genus', 'genus']:
+            if len(names_list) == 1 and item[1] not in ['Genus', 'genus'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list:
                 messages.error(self.request, "Scientific name is not in the correct format or taxonomic rank should be 'Genus' on the line " + str(counter) + ".")
                 return False
         return True
@@ -165,7 +185,7 @@ class Check:
                         if 'sex' in df.columns.values:
                             for sex in df.loc[(lines-2):(lines-2), 'sex'].fillna(0):
                                 reference_list.append(sex)
-                        if 'individuaCount' in df.columns.values:
+                        if 'individualCount' in df.columns.values:
                             for ic in df.loc[(lines-2):(lines-2), 'individualCount'].fillna(0):
                                 reference_list.append(ic)
                         if 'verbatimEventDate' in df.columns.values:
@@ -200,7 +220,7 @@ class Check:
                         if 'sex' in df.columns.values:
                             for sex in df.loc[(lines-2):(lines-2), 'sex'].fillna(0):
                                 compare.append(sex)
-                        if 'individuaCount' in df.columns.values:
+                        if 'individualCount' in df.columns.values:
                             for ic in df.loc[(lines-2):(lines-2), 'individualCount'].fillna(0):
                                 compare.append(ic)
                         if 'verbatimEventDate' in df.columns.values:
@@ -219,13 +239,10 @@ class Check:
                         counter -= 1
                         if counter != -1 and sum != total:
                             messages.error(self.request, "Check the sequence numbering on the line " + str(lines) + ".")
-                            return False
-                        else:
-                            continue
+                            return False                
             else:
                 messages.error(self.request, "Sequence number on the line " + str(lines) + " is not numeric.")
                 return False
-
         return True
 
     def check_measurementValue(self, df):
@@ -242,7 +259,7 @@ class Check:
                 messages.error(self.request, "The measurement value on the line " + str(counter) + " is not a number.")
                 return False
             if value <= 0:
-                messages.error(self.request, "The measurement value on the line " + str(counter) + " nneds to be bigger than zero.")
+                messages.error(self.request, "The measurement value on the line " + str(counter) + " needs to be bigger than zero.")
                 return False
 
         return True
@@ -269,74 +286,78 @@ class Check:
 
         return True
 
-    
 
+def get_author(id):
+    author = User.objects.filter(socialaccount__uid=id)[0]
+    return author
 
-def get_sourcereference_citation(reference):
+def get_sourcereference_citation(reference, author):
     sr_old = SourceReference.objects.filter(citation__iexact=reference)
     if len(sr_old) > 0:
         if sr_old[0].master_reference == None:
-            response_data = get_referencedata_from_crossref(reference)
-            create_masterreference(reference, response_data, sr_old[0])
+            response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois testeissä, hidastaa testejä..
+            create_masterreference(reference, response_data, sr_old[0], author) # Voi kommentoida pois testeissä, hidastaa testejä..
+            return sr_old[0]
         return sr_old[0]
-    new_reference = SourceReference(citation=reference, status=1)
+    new_reference = SourceReference(citation=reference, status=1, created_by=author)
     new_reference.save()
-    response_data = get_referencedata_from_crossref(reference)
-    create_masterreference(reference, response_data, new_reference)
+    response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois testeissä, hidastaa testejä..
+    create_masterreference(reference, response_data, new_reference, author) # Voi kommentoida pois testeissä, hidastaa testejä..
     return new_reference
 
-def get_entityclass(taxonRank):
+def get_entityclass(taxonRank, author):
     ec_all = EntityClass.objects.filter(name__iexact=taxonRank)
     if len(ec_all) > 0:
         return ec_all[0]
-    new_entity = EntityClass(name=taxonRank)
+    new_entity = EntityClass(name=taxonRank, created_by=author)
     new_entity.save()
     return new_entity
 
-def get_sourceentity(vs_name, reference, entity):
+def get_sourceentity(vs_name, reference, entity, author):
     se_old = SourceEntity.objects.filter(reference=reference, entity=entity, name=vs_name)
     if len(se_old) > 0:
         return se_old[0]
-    new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name)
+    new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name, created_by=author)
     new_sourceentity.save()
+    create_new_entity_relation(new_sourceentity)
     return new_sourceentity
 
-def get_timeperiod(sampling, ref):
-    if sampling != sampling:
+def get_timeperiod(sampling, ref, author):
+    if sampling != sampling or sampling == 'nan':
         return None
     else:
         tp_all = TimePeriod.objects.filter(reference=ref, name=sampling)
         if len(tp_all) > 0:
             return tp_all[0]
         else:
-            new_timeperiod = TimePeriod(reference=ref, name=sampling)
+            new_timeperiod = TimePeriod(reference=ref, name=sampling, created_by=author)
             new_timeperiod.save()
             return new_timeperiod
 
-def get_sourcemethod(method, ref):
-    if method != method:
+def get_sourcemethod(method, ref, author):
+    if method != method or method == 'nan':
         return None
     sr_old = SourceMethod.objects.filter(reference=ref, name=method)
     if len(sr_old) > 0:
         return sr_old[0]
     else:
-        new_sourcemethod = SourceMethod(reference=ref, name=method)
+        new_sourcemethod = SourceMethod(reference=ref, name=method, created_by=author)
         new_sourcemethod.save()
         return new_sourcemethod
 
-def get_sourcelocation(location, ref):
-    if location != location:
+def get_sourcelocation(location, ref, author):
+    if location != location or location == 'nan':
         return None
     sl_old = SourceLocation.objects.filter(name=location, reference=ref)
     if len(sl_old) > 0:
         return sl_old[0]
     else:
-        new_sourcelocation = SourceLocation(reference=ref, name=location)
+        new_sourcelocation = SourceLocation(reference=ref, name=location, created_by=author)
         new_sourcelocation.save()
         return new_sourcelocation
 
 def get_choicevalue(gender):
-    if gender != gender:
+    if gender != gender or gender == 'nan':
         return None
     if gender != '22' or gender != '23':
         return
@@ -352,9 +373,12 @@ def get_fooditem(food):
 
     def get_json(food):
         url = 'https://resolver.globalnames.org/name_resolvers.json?data_source_ids=3&names=' + food.lower().capitalize().replace(' ', '%20')
-        file = urllib.request.urlopen(url)
-        data = file.read()
-        return json.loads(data)
+        try:
+            file = urllib.request.urlopen(url)
+            data = file.read()
+            return json.loads(data)
+        except:
+            return {}
 
     def create_fooditem(results):
         tsn = results['data'][0]['results'][0]['taxon_id']
@@ -374,11 +398,9 @@ def get_fooditem(food):
             taxonomic_unit.save()
 
         name = food_upper
-        part = ChoiceValue.objects.filter(pk=21)[0]
         is_cultivar = 0
         taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
-        # print(taxonomic_unit)
-        food_item = FoodItem(name=name, part=part, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=is_cultivar)
+        food_item = FoodItem(name=name, part=None, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=is_cultivar)
         food_item_exists = FoodItem.objects.filter(name__iexact=name)
         if len(food_item_exists) > 0:
             return food_item_exists[0]
@@ -416,32 +438,63 @@ def possible_nan_to_none(possible):
         return None
     return possible
 
+
 @transaction.atomic
-def create_dietset(row):
-    
-        reference = get_sourcereference_citation(getattr(row, 'references'))
-        entityclass = get_entityclass(getattr(row, 'taxonRank'))
-        taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass)
-        location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference)
+def create_dietset(row, df):
+    headers = list(df.columns.values)
+    author = get_author(getattr(row, 'author'))
+    reference = get_sourcereference_citation(getattr(row, 'references'), author)
+    entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
+    taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+    if 'verbatimLocality' in headers:
+        location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+    else:
+        location = None
+    if 'sex' in headers:
         gender = get_choicevalue(getattr(row, 'sex'))
+    else:
+        gender = None
+    if 'individualCount' in headers:
         sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
+    else:
+        sample_size = 0
+    if 'associatedReferences' in headers:
         cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
-        time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference)
-        method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference)
+    else:
+        cited_reference = None
+    if 'samplingEffort' in headers:
+        time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference, author)
+    else:
+        time_period = None
+    if 'measurementMethod' in headers:
+        method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
+    else:
+        method = None
+    if 'verbatimEventDate' in headers:
         study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
+    else:
+        study_time = None
+        
+    ds_old = DietSet.objects.filter(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time, created_by=author)
+    if len(ds_old) > 0:
+        ds = ds_old[0]
+    else:
+        ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time, created_by=author)
+        ds.save()
 
-        ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time)
-        if (getattr(row, 'sequence') == 1):
-            ds.save()
-        create_dietsetitem(row, ds)
+    create_dietsetitem(row, ds, headers)
 
-def create_dietsetitem(row, diet_set):
+def create_dietsetitem(row, diet_set, headers):
     food_item = get_fooditem(getattr(row, 'verbatimAssociatedTaxa'))
     list_order = getattr(row, 'sequence')
-    percentage = possible_nan_to_zero(getattr(row, 'measurementValue'))
-
-    dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)
-    # print(dietsetitem)
+    if 'measurementValue' in headers:
+        percentage = possible_nan_to_zero(getattr(row, 'measurementValue'))
+    else:
+        percentage = 0
+    old_ds = DietSetItem.objects.filter(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)
+    if len(old_ds) == 0:
+        dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)        
+        dietsetitem.save()
 
 def trim(text:str):
     return " ".join(text.split())
@@ -454,25 +507,28 @@ def trim_df(df):
 
 # Search citation from CrossrefApi: https://api.crossref.org/swagger-ui/index.htm
 # Please do not make any unnessecary queries: https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/
-def get_referencedata_from_crossref(citation):
-	c = citation.replace(" ", "%20")
-	url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=mammalbase@gmail.com&rows=2'
-	try:
-		x = requests.get(url)
-		y = x.json()
-		return y
-	except requests.exceptions.RequestException as e:
-		print('Error: ', e)
+def get_referencedata_from_crossref(citation): # pragma: no cover
+    c = citation.replace(" ", "%20")
+    url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=mammalbase@gmail.com&rows=2'
+    try:
+        x = requests.get(url)
+        y = x.json()
+        return y
+    except requests.exceptions.RequestException as e:
+        print('Error: ', e)
 
 def title_matches_citation(title, source_citation):
 	# https://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string
     title_without_html = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', title)
-    if title_without_html.lower() not in source_citation.lower():
-        # print('Title ', title_without_html , ' is not in citation')
+    title_without_space = re.sub('\s+', '', title_without_html)
+    source_citation_without_html = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', source_citation)
+    source_citation_without_space = re.sub('\s+', '', source_citation_without_html)
+
+    if title_without_space.lower() not in source_citation_without_space.lower():
         return False
     return True
 
-def create_masterreference(source_citation, response_data, sr):
+def create_masterreference(source_citation, response_data, sr, user_author):
     try:
         if response_data['message']['total-results'] == 0:
             return False
@@ -520,18 +576,23 @@ def create_masterreference(source_citation, response_data, sr):
             if type == 'journal-article':
                 citation = make_harvard_citation_journalarticle(title, doi, authors, year, container_title, volume, issue, page)
             else:
-                citation = str(first_author) + '. ' + str(title) + '. Available at: ' + str(doi)
+                citation = ""
+                for a in authors:
+                    if authors.index(a) == len(authors) - 1:
+                        citation += str(a)
+                    else:
+                        citation += str(a) + ", "
+                citation += " " + str(year) + ". " + str(title) + ". Available at: " + str(doi) + "."
         
-        mr = MasterReference(type=type, doi=doi, uri=uri, first_author=first_author, year=year, title=title, container_title=container_title, volume=volume, issue=issue, page=page, citation=citation)
+        mr = MasterReference(type=type, doi=doi, uri=uri, first_author=first_author, year=year, title=title, container_title=container_title, volume=volume, issue=issue, page=page, citation=citation, created_by=user_author)
         mr.save()
         sr.master_reference = mr
         sr.save()
         return True
         
     except Exception as e:
-        #print('Error: ', e)
-         return False
-  
+        return False
+
 
 def make_harvard_citation_journalarticle(title, d, authors, year, container_title, volume, issue, page):
     citation = ""
@@ -543,3 +604,89 @@ def make_harvard_citation_journalarticle(title, d, authors, year, container_titl
     
     citation += " " + str(year) + ". " + str(title) + ". " + str(container_title) + ". " + str(volume) + "(" + str(issue) + "), pp." + str(page) + ". Available at: " + str(d) + "." 
     return citation
+
+def api_query_globalnames_by_name(name):
+    trimmed_name = name.replace(" ", "%20")
+    url = "https://resolver.globalnames.org/name_resolvers.json?names="+trimmed_name.capitalize()+"&data_source_ids=174"
+    result = requests.get(url)
+    return result.json()
+
+def check_entity_realtions(source_entity):
+    try:
+        found_entity_relation = EntityRelation.objects.is_active().filter(
+            source_entity__name__iexact=source_entity.name).filter(
+            data_status_id=5).filter(
+            master_entity__reference_id=4).filter(
+            relation__name__iexact='Taxon Match')
+        return found_entity_relation
+    except:
+        print('Error searching entity relation', sys.exc_info(),traceback.format_exc())
+
+def create_new_entityrelation_with_api_data(source_entity):
+    api_result = api_query_globalnames_by_name(source_entity.name)["data"][0]
+    if api_result["is_known_name"]:
+        canonical_form = api_result["results"][0]["canonical_form"]
+        master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity.entity_id,reference_id=4)
+        EntityRelation(master_entity=master_entity_result[0],
+                        source_entity=source_entity.id,
+                        relation_id=1,
+                        data_status_id=5,
+                        relation_status_id=1,
+                        remarks=master_entity_result[0].reference).save()
+
+    elif api_result["results"][0]['score']>=0.75 and api_result["results"][0]['edit_distance'] <= 2:
+        canonical_form = api_result["results"][0]["canonical_form"]
+        master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity.entity_id,reference_id=4)
+        if len(master_entity_result) > 0:
+            EntityRelation(master_entity=master_entity_result[0],
+                            source_entity=source_entity.id,
+                            relation_id=1,
+                            data_status_id=5,
+                            relation_status_id=1,
+                            remarks=master_entity_result[0].reference).save()
+    else:
+        return
+
+def create_new_entity_relation(source_entity):
+    try:
+        result = check_entity_realtions(source_entity)
+        if len(result) < 1:
+            create_new_entityrelation_with_api_data(source_entity)
+        else:
+            try:
+                EntityRelation(master_entity=result[0].master_entity
+                            ,source_entity=source_entity
+                            ,relation=result[0].relation
+                            ,data_status=result[0].data_status
+                            ,relation_status=result[0].relation_status
+                            ,remarks=result[0].remarks).save()
+            except:
+                print('Error creating new entity relation ', sys.exc_info(), traceback.format_exc())
+    except:
+        print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
+@transaction.atomic
+def create_ets(row):
+    author = get_author(getattr(row, 'author'))
+    reference = get_sourcereference_citation(getattr(row, 'references'), author)
+    entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
+    taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+    measurementMethod = get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
+    locality = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+    statisticalMethod = get_sourceStatistic(getattr(row, 'statisticalMethod'), reference, author)
+    verbatimTraitUnit = getattr(row, 'verbatimTraitUnit')
+    if verbatimTraitUnit == 'NA':
+        print('VerbatimTraitUnit is NA')
+        # do something
+    else:
+        print('VerbatimTraitUnit not NA')
+        # do something else
+
+def get_sourceStatistic(statistic, ref, author):
+    if statistic != statistic or statistic == 'nan':
+        return None
+    ss_old = SourceStatistic.objects.filter(name=statistic, reference=ref)
+    if len(ss_old) > 0:
+        return ss_old[0]
+    ss = SourceStatistic(name=statistic, reference=ref, created_by=author)
+    ss.save()
+    return ss

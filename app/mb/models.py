@@ -631,7 +631,18 @@ class SourceMeasurementValue(BaseModel):
         blank=True,
         null = True,
         limit_choices_to={'choice_set': 'Gender'},
+        related_name='gender%(class)s',
         )
+    life_stage = models.ForeignKey(
+        'ChoiceValue',
+        on_delete = models.SET_NULL,
+        blank=True,
+        null = True,
+        limit_choices_to={'choice_set': 'LifeStage'},
+        related_name='lifestage%(class)s',
+        )
+    measurement_accuracy = models.TextField(blank=True, null=True, max_length=50, help_text="The description of the potential error associated with the measurementValue.")
+    measured_by = models.TextField(blank=True, null=True, max_length=100, help_text="A list (concatenated and separated) of names of people, groups, or organizations who determined the value of the measurement. The recommended best practice is to separate the values with a vertical bar (' | ').")
     remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Source Measurement")
     # unit is no longer in use - to be deleted
     cited_reference = models.CharField(

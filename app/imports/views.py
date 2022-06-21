@@ -16,33 +16,61 @@ import pandas as pd
 import re
 
 @login_required
-def import_test(request):
+def import_diet_set(request):
 	if "GET" == request.method:
-		return render(request, "import/import_test.html")
+		return render(request, "import/import_diet_set.html")
 	try:
 		file = request.FILES["csv_file"]
 		df = pd.read_csv(file, sep='\t')
 		trim_df(df)
 		check = Check(request)
 		force = "force" in request.POST
-		if check.check_all(df, force) != True:
-			return HttpResponseRedirect(reverse("import_test"))
+		if check.check_valid_author(df) == False:
+			return HttpResponseRedirect(reverse("import_diet_set"))
+		if check.check_all_ds(df, force) != True:
+			return HttpResponseRedirect(reverse("import_diet_set"))
 		else:
 			for row in df.itertuples():
-				create_dietset(row)
+				create_dietset(row, df)
 			success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
 			messages.add_message(request, 50 ,success_message, extra_tags="import-message")
 			messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")
-			return HttpResponseRedirect(reverse("import_test"))
+			return HttpResponseRedirect(reverse("import_diet_set"))
 
 	except Exception as e:
 		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
 		messages.error(request,"Unable to upload file. "+repr(e))
-	return HttpResponseRedirect(reverse("import_test"))
-
-
+	return HttpResponseRedirect(reverse("import_diet_set"))
 
 @login_required
+def import_ets(request):
+	if "GET" == request.method:
+		return render(request, "import/import_ets.html")
+	try:
+		csv_file = request.FILES["csv_file"]
+		df = pd.read_csv(csv_file, sep='\t')
+		trim_df(df)
+		check = Check(request)
+
+		if check.check_valid_author(df) == False:
+			return HttpResponseRedirect(reverse("import_ets"))
+		if check.check_all_ets(df) != True:
+			return HttpResponseRedirect(reverse("import_ets"))
+		else:
+			for row in df.itertuples():
+				create_ets(row)
+			success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
+			messages.add_message(request, 50 ,success_message, extra_tags="import-message")
+			messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")
+			return HttpResponseRedirect(reverse("import_ets"))
+
+	except Exception as e:
+		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
+		messages.error(request,"Unable to upload file. "+repr(e))
+	return HttpResponseRedirect(reverse("import_ets"))
+
+
+"""@login_required
 def import_diet_set(request): # pragma: no cover
 	data = {}
 	if "GET" == request.method:
@@ -320,12 +348,12 @@ def import_diet_set(request): # pragma: no cover
 				print("An IndexError occurred: No relations found") 
 
 				# Check MasterReference for the SourceReference. If not, add it
-			"""
+		
 			if source_reference.master_reference == None:
 				source_reference.master_reference = mr_new
 				source_reference.save()
 
-			"""
+			
 		# Update DietSet with Id's
 		ds_df = pd.merge(ds_df, r_df[['references', 'source_reference_id']],on='references', how='inner') # Must have a reference
 		ds_df = pd.merge(ds_df, t_df[['source_reference_id', 'verbatimScientificName', 'taxon_id']],on=['source_reference_id', 'verbatimScientificName'], how='inner') # Must have a source_taxon_id
@@ -509,4 +537,4 @@ def import_diet_set(request): # pragma: no cover
 		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
 		messages.error(request,"Unable to upload file. "+repr(e))
 
-	return HttpResponseRedirect(reverse("diet_set-import"))
+	return HttpResponseRedirect(reverse("diet_set-import"))"""
