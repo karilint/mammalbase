@@ -291,7 +291,6 @@ class ToolsTest(TestCase):
     def test_check_all_ets(self):
         self.assertEqual(self.check.check_all_ets(self.file_ets), True)
         df = pd.DataFrame.from_dict(self.dict_ets)
-        print("jippii")
         self.assertEqual(self.check.check_all_ets(df), True)
 
     def test_check_all_ets_wrong_headers(self):
