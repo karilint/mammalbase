@@ -113,11 +113,11 @@ class ToolsTest(TestCase):
         self.empty_title = {'status': 'ok', 'message-type': 'work-list', 'message-version': '1.0.0', 'message': {'facets': {}, 'total-results': 1, 'items': [{'title': None}], 'items-per-page': 2, 'query': {'start-index': 0, 'search-terms': None}}}
         self.empty_author = {'status': 'ok', 'message-type': 'work-list', 'message-version': '1.0.0', 'message': {'facets': {}, 'total-results': 1, 'items': [{'author': None}], 'items-per-page': 2, 'query': {'start-index': 0, 'search-terms': None}}}
 
-    def test_check_headers(self):
-        self.assertEqual(self.check.check_headers(self.file), True)
+    def test_check_headers_ds(self):
+        self.assertEqual(self.check.check_headers_ds(self.file), True)
 
-    def test_check_headers_false(self):
-        self.assertEqual(self.check.check_headers(self.false_file), False)
+    def test_check_headers_ds_false(self):
+        self.assertEqual(self.check.check_headers_ds(self.false_file), False)
     
     def test_check_author(self):
         self.assertEqual(self.check.check_author(self.file), True)
@@ -164,74 +164,74 @@ class ToolsTest(TestCase):
     def test_false_check_references(self):
         self.assertEqual(self.check.check_references(self.false_file2), False)
 
-    def test_check_all(self):
-        self.assertEqual(self.check.check_all(self.file), True)
+    def test_check_all_ds(self):
+        self.assertEqual(self.check.check_all_ds(self.file), True)
         df = pd.DataFrame.from_dict(self.dict)
-        self.assertEqual(self.check.check_all(df), True)
+        self.assertEqual(self.check.check_all_ds(df), True)
 
-    def test_check_all_wrong_headers(self):
+    def test_check_all_ds_wrong_headers(self):
         df = pd.DataFrame.from_dict({'kirjlaia': ['1111-1111-2222-2222', '0000-0001-9627-8821'], 
         'verbatimScientificName':['kapistelija', 'kapistelija'], 
         'taxonRank':['genus', 'genus'],
         'verbatimAssociatedTaxa':['moi', 'moi'],
         'sequence':[1,2],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
-        self.assertEqual(self.check.check_all(df), False)
+        self.assertEqual(self.check.check_all_ds(df), False)
 
-    def test_check_all_wrong_author(self):
+    def test_check_all_ds_wrong_author(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-222-2222', '0000-0001-9627-8821'], 
         'verbatimScientificName':['kapistelija', 'kapistelija'], 
         'taxonRank':['genus', 'genus'],
         'verbatimAssociatedTaxa':['moi', 'moi'],
         'sequence':[1,2],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
-        self.assertEqual(self.check.check_all(df), False)
+        self.assertEqual(self.check.check_all_ds(df), False)
 
-    def test_check_all_missing_werbatim_scientificname(self):
+    def test_check_all_ds_missing_werbatim_scientificname(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '0000-0001-9627-8821'], 
         'verbatimScientificName':["a a a a", 'kapistelija'], 
         'taxonRank':['genus', 'genus'],
         'verbatimAssociatedTaxa':['moi', 'moi'],
         'sequence':[1,2],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
-        self.assertEqual(self.check.check_all(df), False)
+        self.assertEqual(self.check.check_all_ds(df), False)
 
-    def test_check_all_wrong_taxonrank(self):
+    def test_check_all_ds_wrong_taxonrank(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '0000-0001-9627-8821'], 
         'verbatimScientificName':['kapistelija', 'kapistelija'], 
         'taxonRank':['laji', 'genus'],
         'verbatimAssociatedTaxa':['moi', 'moi'],
         'sequence':[1,2],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
-        print(self.check.check_all(df))
-        self.assertEqual(self.check.check_all(df), False)
+        print(self.check.check_all_ds(df))
+        self.assertEqual(self.check.check_all_ds(df), False)
 
-    def test_check_all_wrong_sequence(self):
+    def test_check_all_ds_wrong_sequence(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '0000-0001-9627-8821'], 
         'verbatimScientificName':['kapistelija', 'kapistelija'], 
         'taxonRank':['genus', 'genus'],
         'verbatimAssociatedTaxa':['moi', 'moi'],
         'sequence':[1,2],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000']})
-        self.assertEqual(self.check.check_all(df), False)
+        self.assertEqual(self.check.check_all_ds(df), False)
 
-    def test_check_all_wrong_measurement_value(self):
+    def test_check_all_ds_wrong_measurement_value(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '1111-1111-2222-2233',], 
         'verbatimScientificName':['kapistelifa', 'kapistelija'], 
         'taxonRank':['genus', 'genus'],
         'verbatimAssociatedTaxa':['moi', 'hello'],
         'sequence':[1,1],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'], 'measurementValue':[0,1] })
-        self.assertEqual(self.check.check_all(df), False)
+        self.assertEqual(self.check.check_all_ds(df), False)
 
-    def test_check_all_wrong_reference(self):
+    def test_check_all_ds_wrong_reference(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '1111-1111-2222-2233',], 
         'verbatimScientificName':['kapistelifa', 'kapistelija'], 
         'taxonRank':['genus', 'genus'],
         'verbatimAssociatedTaxa':['moi', 'hello'],
         'sequence':[1,1],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. '], 'measurementValue':[1,1] })
-        self.assertEqual(self.check.check_all(df), False)
+        self.assertEqual(self.check.check_all_ds(df), False)
     
     def test_check_author_not_a_number(self):
         df = pd.DataFrame.from_dict({'author': ['pena-pena-pena-pena', '1111-1111-2222-2233',], 
