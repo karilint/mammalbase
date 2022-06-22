@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import User
-from mb.models import EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
+from mb.models import EntityClass, MasterReference, SourceAttribute, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
 from imports.tools import Check
 import imports.tools as tools
 import tempfile, csv, os
@@ -86,13 +86,17 @@ class ToolsTest(TestCase):
         'verbatimTraitName':['body weight (Wt)', 'body weight (Wt)'],
         'verbatimTraitUnit':['kg', 'kg'],
         'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']}
-        self.entity = tools.get_entityclass(self.file.loc[:, 'taxonRank'][1], self.user)    
+        self.entity = tools.get_entityclass(self.file.loc[:, 'taxonRank'][1], self.user)
+           
         #print(tools.get_entityclass(self.file.loc[:, 'taxonRank'][0]).name)
         #print('Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
 
         self.sr = SourceReference.objects.create(citation='Tester, T., TesterToo, T., Testing, testing', status=1)
         self.mr = MasterReference.objects.create(title='Testing, testing', created_by=self.user)
         self.sr_with_mr = SourceReference.objects.create(citation="Title and author", status=2, master_reference=self.mr)
+        self.method = SourceMethod.objects.create(reference=self.sr, name='TestMethod')
+        self.attribute = SourceAttribute.objects.create(name='SelfAttribute', reference=self.sr, entity=self.entity, method=self.method, remarks='TestRemarks') 
+        self.source_entity = SourceEntity.objects.create(name='SelfSourceEntity', reference=self.sr, entity=self.entity)
         self.res = {'status': 'ok', 
                 'message-type': 'work-list', 
                 'message-version': '1.0.0', 
@@ -474,3 +478,14 @@ class ToolsTest(TestCase):
         self.assertNotEqual(cited_reference, 'nan')
         self.assertNotEqual(method.name, 'nan')
         self.assertEqual(method.name, '')
+
+    def test_get_sourcechoicesetoption_and_value(self):
+        scso = tools.get_sourcechoicesetoption('TestName', self.attribute)
+        self.assertEqual(scso.name, 'TestName')
+        scsov = tools.get_sourcechoicesetoptionvalue(self.source_entity, scso)
+        self.assertEqual(scsov.source_choiceset_option, scso)
+        self.assertEqual(scsov.source_entity.name, 'SelfSourceEntity')
+
+    def test_get_sourceattribute_na(self):
+        attribute = tools.get_sourceattribute_na('TestAttribute', self.sr, self.entity, self.method, 'TestRemarks')
+        self.assertEqual(attribute.name, 'TestAttribute')
