@@ -1,5 +1,5 @@
 from doctest import master
-from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
+from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
@@ -359,7 +359,6 @@ def get_choicevalue(gender):
     choicevalue = ChoiceValue.objects.filter(pk=gender)
     return choicevalue[0]
 
-
 def get_fooditem(food):
     food_upper = food.upper()
     food_item = FoodItem.objects.filter(name__iexact=food_upper)
@@ -659,22 +658,58 @@ def create_new_entity_relation(source_entity):
                 print('Error creating new entity relation ', sys.exc_info(), traceback.format_exc())
     except:
         print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
+
 @transaction.atomic
-def create_ets(row):
+def create_ets(row, headers):
     author = get_author(getattr(row, 'author'))
     reference = get_sourcereference_citation(getattr(row, 'references'), author)
     entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
     taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
-    measurementMethod = get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
-    locality = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
-    statisticalMethod = get_sourceStatistic(getattr(row, 'statisticalMethod'), reference, author)
+    if 'measurementMethod' in headers:
+        method = get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
+    else:
+        method = None
+    if 'measurementRemarks' in headers:
+        remarks = getattr(row, 'measurementRemarks')
+    else:
+        remarks = None
+    if 'verbatimLoccality' in headers:
+        locality = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+    else:
+        locality = None
+    if 'statisticalMethod' in headers:
+        statisethod = get_sourceStatistic(getattr(row, 'statisticalMethod'), reference, author)
+    else:
+        statisticalMethod = None
     verbatimTraitUnit = getattr(row, 'verbatimTraitUnit')
-    if verbatimTraitUnit == 'NA':
-        print('VerbatimTraitUnit is NA')
-        # do something
+
+    if verbatimTraitUnit == 'nan' or verbatimTraitUnit != verbatimTraitUnit or verbatimTraitUnit == 'NA':
+        name = getattr(row, 'verbatimTraitName')
+        attribute = get_sourceattribute_na(name, reference, entityclass, method, remarks)
+        choicesetoption = get_sourcechoicesetoption(getattr(row, 'verbatimTraitValue'), attribute)
+        choicesetoptionvalue = get_sourcechoicesetoptionvalue(taxon, choicesetoption)
+
     else:
         print('VerbatimTraitUnit not NA')
-        # do something else
+        # ToDo 
+
+def get_sourcechoicesetoptionvalue(entity, sourcechoiceoption):
+    scov_old = SourceChoiceSetOptionValue.objects.filter(source_entity=entity, source_choiceset_option=sourcechoiceoption)
+    if len(scov_old) > 0:
+        return scov_old[0]
+    scov = SourceChoiceSetOptionValue(source_entity=entity, source_choiceset_option=sourcechoiceoption)
+    scov.save()
+    return scov
+
+
+def get_sourcechoicesetoption(name, attribute):
+    sco_old = SourceChoiceSetOption.objects.filter(source_attribute=attribute, name=name)
+    if len(sco_old) > 0:
+        return sco_old[0]
+    sco = SourceChoiceSetOption(source_attribute=attribute, name=name)
+    sco.save()
+    return sco
+
 
 def get_sourceStatistic(statistic, ref, author):
     if statistic != statistic or statistic == 'nan':
@@ -685,3 +720,11 @@ def get_sourceStatistic(statistic, ref, author):
     ss = SourceStatistic(name=statistic, reference=ref, created_by=author)
     ss.save()
     return ss
+
+def get_sourceattribute_na(name, ref, entity, method, remarks):
+    sa_old = SourceAttribute.objects.filter(name=name, reference=ref, entity=entity, method=method, type=2, remarks=remarks)
+    if len(sa_old) > 0:
+        return sa_old[0]
+    sa = SourceAttribute(name=name, reference=ref, entity=entity, method=method, type=2, remarks=remarks)
+    sa.save()
+    return sa
