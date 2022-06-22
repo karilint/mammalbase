@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import User
+from allauth.socialaccount.models import SocialAccount
 from mb.models import EntityClass, MasterReference, SourceAttribute, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
 from imports.tools import Check
 import imports.tools as tools
@@ -18,7 +19,7 @@ class ToolsTest(TestCase):
         messages = FallbackStorage(self.request)
         self.reference1 = SourceReference.objects.create(citation='Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
         self.reference2 = SourceReference.objects.create(citation='Creese, S., Davies, S.J. and Bowen, B.J., 2019. Comparative dietary analysis of the black-flanked rock-wallaby (Petrogale lateralis lateralis), the euro (Macropus robustus erubescens) and the feral goat (Capra hircus) from Cape Range National Park, Western Australia. Australian Mammalogy, 41(2), pp.220-230.')
-
+        self.accountuser = SocialAccount.objects.create(uid='1111-1111-2222-222X', user_id=self.user.pk)
 
         setattr(self.request, '_messages', messages)
         with open('test.csv', 'w') as file:
@@ -499,3 +500,6 @@ class ToolsTest(TestCase):
         attribute = tools.get_sourceattribute_na('TestAttribute', self.sr, self.entity, self.method, 'TestRemarks', self.user)
         self.assertEqual(attribute.name, 'TestAttribute')
         self.assertEqual(attribute.created_by.username, 'Testuser')
+
+    def test_get_author(self):
+        self.assertEqual(tools.get_author('1111-1111-2222-222X'), self.user)

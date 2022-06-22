@@ -44,7 +44,14 @@ class ImportViewTests(TestCase):
         self.assertEqual(len(messages), 1) 
         self.assertEqual('Unable to upload file.' in str(messages[0]), True)
         self.assertEqual(response.status_code, 302)
-
+    
+    def test_import_ets_post_wrong_file(self):
+        with open('tests/test_tools.py', 'r') as fp:
+            response = self.client.post('/import/ets', {'name': 'fred', 'csv_file': fp})
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1) 
+        self.assertEqual('Unable to upload file.' in str(messages[0]), True)
+        self.assertEqual(response.status_code, 302)
 
     def test_import_ets_view(self):
         response = self.client.get('/import/ets')
@@ -53,6 +60,7 @@ class ImportViewTests(TestCase):
     def test_import_ets_reverse(self):
         response = self.client.get(reverse('import_ets'))
         self.assertEqual(response.status_code, 200)
+
 """ def test_import_post(self):
         with open('test_post.csv', 'w') as file:
             writer = csv.writer(file, delimiter='\t')
