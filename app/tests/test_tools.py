@@ -16,6 +16,9 @@ class ToolsTest(TestCase):
         self.user = User.objects.create_user(username='Testuser', password='12345')
         setattr(self.request, 'session', 'session')
         messages = FallbackStorage(self.request)
+        self.reference1 = SourceReference.objects.create(citation='Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
+        self.reference2 = SourceReference.objects.create(citation='Creese, S., Davies, S.J. and Bowen, B.J., 2019. Comparative dietary analysis of the black-flanked rock-wallaby (Petrogale lateralis lateralis), the euro (Macropus robustus erubescens) and the feral goat (Capra hircus) from Cape Range National Park, Western Australia. Australian Mammalogy, 41(2), pp.220-230.')
+
 
         setattr(self.request, '_messages', messages)
         with open('test.csv', 'w') as file:
@@ -73,7 +76,7 @@ class ToolsTest(TestCase):
         self.false_file2 = pd.read_csv('false_test2.csv')
         self.false_vsn = pd.read_csv('false_vsn.csv')
         self.false_sequence = pd.read_csv('false_sequence.csv')
-        self.reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][1], self.user)
+        #self.reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][1], self.user)
         self.dict = {'author': ['1111-1111-2222-2222', '1111-1111-2222-2233'], 
         'verbatimScientificName':['kapistelija', 'kapistelija'], 
         'taxonRank':['genus', 'genus'],
@@ -348,21 +351,25 @@ class ToolsTest(TestCase):
 
     def test_new_get_sourceentity(self):
         vs_name = self.file.loc[:, 'verbatimScientificName'][0]
-        reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][0], self.user)
+        #reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][0], self.user)
         entityclass = tools.get_entityclass(self.file.loc[:, 'taxonRank'][0], self.user)
-        self.assertEqual(tools.get_sourceentity(vs_name, reference, entityclass, self.user).name, 'Lagothrix flavicauda')
+        #self.assertEqual(tools.get_sourceentity(vs_name, reference, entityclass, self.user).name, 'Lagothrix flavicauda')
+        self.assertEqual(tools.get_sourceentity(vs_name, self.sr, entityclass, self.user).name, 'Lagothrix flavicauda')
     
     def test_new_get_timeperiod(self):
-       reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][2], self.user)
-       self.assertEqual(tools.get_timeperiod(self.file.loc[:, 'samplingEffort'][2], reference, self.user).name, '15-month-study')
+       #reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][2], self.user)
+       #self.assertEqual(tools.get_timeperiod(self.file.loc[:, 'samplingEffort'][2], reference, self.user).name, '15-month-study')
+       self.assertEqual(tools.get_timeperiod(self.file.loc[:, 'samplingEffort'][2], self.sr, self.user).name, '15-month-study')
     
     def test_new_get_sourcemethod(self):
-       reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][3], self.user)
-       self.assertEqual(tools.get_sourcemethod(self.file.loc[:, 'measurementMethod'][3], reference, self.user).name, 'observations of fruit consumption')
-    
+       #reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][3], self.user)
+       #self.assertEqual(tools.get_sourcemethod(self.file.loc[:, 'measurementMethod'][3], reference, self.user).name, 'observations of fruit consumption')
+        self.assertEqual(tools.get_sourcemethod(self.file.loc[:, 'measurementMethod'][3], self.sr, self.user).name, 'observations of fruit consumption')
+
     def test_new_get_sourcelocation(self):
-       reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][4], self.user)
-       self.assertEqual(tools.get_sourcelocation(self.file.loc[:, 'verbatimLocality'][4], reference, self.user).name, 'Mandu Mandu Gorge, Cape Range National Park, Western Australia')        
+       #reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][4], self.user)
+       self.assertEqual(tools.get_sourcelocation(self.file.loc[:, 'verbatimLocality'][4], self.sr, self.user).name, 'Mandu Mandu Gorge, Cape Range National Park, Western Australia')        
+        #self.assertEqual(tools.get_sourcelocation(self.file.loc[:, 'verbatimLocality'][4], reference, self.user).name, 'Mandu Mandu Gorge, Cape Range National Park, Western Australia')        
 
     def test_nan_to_zero_empty(self):
         self.assertEqual(tools.possible_nan_to_zero(self.file.loc[:, 'individualCount'][4]), 108)

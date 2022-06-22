@@ -296,8 +296,8 @@ def get_sourcereference_citation(reference, author):
         return sr_old[0]
     new_reference = SourceReference(citation=reference, status=1, created_by=author)
     new_reference.save()
-    response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois testeissä, hidastaa testejä..
-    create_masterreference(reference, response_data, new_reference, author) # Voi kommentoida pois testeissä, hidastaa testejä..
+    response_data = get_referencedata_from_crossref(reference)
+    create_masterreference(reference, response_data, new_reference, author)
     return new_reference
 
 def get_entityclass(taxonRank, author):
