@@ -685,28 +685,28 @@ def create_ets(row, headers):
 
     if verbatimTraitUnit == 'nan' or verbatimTraitUnit != verbatimTraitUnit or verbatimTraitUnit == 'NA':
         name = getattr(row, 'verbatimTraitName')
-        attribute = get_sourceattribute_na(name, reference, entityclass, method, remarks)
-        choicesetoption = get_sourcechoicesetoption(getattr(row, 'verbatimTraitValue'), attribute)
-        choicesetoptionvalue = get_sourcechoicesetoptionvalue(taxon, choicesetoption)
+        attribute = get_sourceattribute_na(name, reference, entityclass, method, remarks, author)
+        choicesetoption = get_sourcechoicesetoption(getattr(row, 'verbatimTraitValue'), attribute, author)
+        choicesetoptionvalue = get_sourcechoicesetoptionvalue(taxon, choicesetoption, author)
 
     else:
         print('VerbatimTraitUnit not NA')
         # ToDo 
 
-def get_sourcechoicesetoptionvalue(entity, sourcechoiceoption):
+def get_sourcechoicesetoptionvalue(entity, sourcechoiceoption, author):
     scov_old = SourceChoiceSetOptionValue.objects.filter(source_entity=entity, source_choiceset_option=sourcechoiceoption)
     if len(scov_old) > 0:
         return scov_old[0]
-    scov = SourceChoiceSetOptionValue(source_entity=entity, source_choiceset_option=sourcechoiceoption)
+    scov = SourceChoiceSetOptionValue(source_entity=entity, source_choiceset_option=sourcechoiceoption, created_by=author)
     scov.save()
     return scov
 
 
-def get_sourcechoicesetoption(name, attribute):
+def get_sourcechoicesetoption(name, attribute, author):
     sco_old = SourceChoiceSetOption.objects.filter(source_attribute=attribute, name=name)
     if len(sco_old) > 0:
         return sco_old[0]
-    sco = SourceChoiceSetOption(source_attribute=attribute, name=name)
+    sco = SourceChoiceSetOption(source_attribute=attribute, name=name, created_by=author)
     sco.save()
     return sco
 
@@ -721,10 +721,10 @@ def get_sourceStatistic(statistic, ref, author):
     ss.save()
     return ss
 
-def get_sourceattribute_na(name, ref, entity, method, remarks):
+def get_sourceattribute_na(name, ref, entity, method, remarks, author):
     sa_old = SourceAttribute.objects.filter(name=name, reference=ref, entity=entity, method=method, type=2, remarks=remarks)
     if len(sa_old) > 0:
         return sa_old[0]
-    sa = SourceAttribute(name=name, reference=ref, entity=entity, method=method, type=2, remarks=remarks)
+    sa = SourceAttribute(name=name, reference=ref, entity=entity, method=method, type=2, remarks=remarks, created_by=author)
     sa.save()
     return sa

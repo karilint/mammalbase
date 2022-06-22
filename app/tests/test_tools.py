@@ -487,12 +487,15 @@ class ToolsTest(TestCase):
         self.assertEqual(method.name, '')
 
     def test_get_sourcechoicesetoption_and_value(self):
-        scso = tools.get_sourcechoicesetoption('TestName', self.attribute)
+        scso = tools.get_sourcechoicesetoption('TestName', self.attribute, self.user)
         self.assertEqual(scso.name, 'TestName')
-        scsov = tools.get_sourcechoicesetoptionvalue(self.source_entity, scso)
+        self.assertEqual(scso.created_by.username, 'Testuser')
+        scsov = tools.get_sourcechoicesetoptionvalue(self.source_entity, scso, self.user)
         self.assertEqual(scsov.source_choiceset_option, scso)
         self.assertEqual(scsov.source_entity.name, 'SelfSourceEntity')
+        self.assertEqual(scsov.created_by.username, 'Testuser')
 
     def test_get_sourceattribute_na(self):
-        attribute = tools.get_sourceattribute_na('TestAttribute', self.sr, self.entity, self.method, 'TestRemarks')
+        attribute = tools.get_sourceattribute_na('TestAttribute', self.sr, self.entity, self.method, 'TestRemarks', self.user)
         self.assertEqual(attribute.name, 'TestAttribute')
+        self.assertEqual(attribute.created_by.username, 'Testuser')
