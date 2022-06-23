@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import User
+from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from allauth.socialaccount.models import SocialAccount
 from mb.models import EntityClass, MasterReference, SourceAttribute, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
 from imports.tools import Check
@@ -459,6 +460,29 @@ class ToolsTest(TestCase):
         food_item.save()
         result = tools.get_fooditem('TEST')
         self.assertEqual(result.name, 'TEST')
+    
+    def test_get_fooditem_json(self):
+        results = tools.get_fooditem_json('TARAXACUM OFFICINALE')
+        self.assertEqual(results['data'][0]['results'][0]['taxon_id'], '36213')
+    
+    def test_false_get_fooditem_json(self):
+        results = tools.get_fooditem_json('VOIKUKKA')
+        self.assertRaises(KeyError, lambda: results['data'][0]['results'])
+    
+    def test_create_fooditem(self):
+        test_results = {'data':{0:{'results': {0:
+                        {'canonical_form': 'Taraxacum officinale',
+                        'classification_path': 'Plantae|Viridiplantae|Streptophyta|Embryophyta|Tracheophyta|Spermatophytina|Magnoliopsida|Asteranae|Asterales|Asteraceae|Taraxacum|Taraxacum officinale',
+                        'classification_path_ranks': 'Kingdom|Subkingdom|Infrakingdom|Superdivision|Division|Subdivision|Class|Superorder|Order|Family|Genus|Species',
+                        'classification_path_ids': 	'202422|954898|846494|954900|846496|846504|18063|846535|35419|35420|36199|36213',
+                        'taxon_id':'36213'}}}}}
+        kingdom = Kingdom(pk = 3, name = 'Plantae')
+        kingdom.save()
+        rank = TaxonUnitTypes(rank_id = 220, rank_name = 'Species', kingdom_id = 3, dir_parent_rank_id = 190,req_parent_rank_id = 180)
+        rank.save()
+        food_item = tools.create_fooditem(test_results, 'TARAXACUM OFFICINALE')
+        self.assertEqual(food_item.tsn.tsn, 36213)
+
 
     def test_get_sourcestatistic_existing(self):
         source_statistic = SourceStatistic(name='Test statistic', reference=self.sr, created_by=self.user)
