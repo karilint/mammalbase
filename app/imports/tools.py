@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.db import transaction
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
+import itis.views as itis
 
 import pandas as pd
 import re, json, urllib.request, requests, sys, traceback
@@ -359,68 +360,73 @@ def get_choicevalue(gender):
     choicevalue = ChoiceValue.objects.filter(pk=gender)
     return choicevalue[0]
 
+
+def get_fooditem_json(food):
+    url = 'https://resolver.globalnames.org/name_resolvers.json?data_source_ids=3&names=' + food.lower().capitalize().replace(' ', '%20')
+    try:
+        file = urllib.request.urlopen(url)
+        data = file.read()
+        return json.loads(data)
+    except:
+        return {}
+
+def create_fooditem(results, food_upper):
+    tsn = results['data'][0]['results'][0]['taxon_id']
+    taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
+
+    if len(taxonomic_unit)==0:
+        completename = results['data'][0]['results'][0]['canonical_form']
+        hierarchy_string = results['data'][0]['results'][0]['classification_path_ids'].replace('|', '-')
+        hierarchy = results['data'][0]['results'][0]['classification_path'].replace('|', '-')
+        kingdom = hierarchy.split('-')
+        kingdom_id = Kingdom.objects.filter(name=kingdom[0])[0].pk
+        path_ranks = results['data'][0]['results'][0]['classification_path_ranks'].split('|')
+        rank = TaxonUnitTypes.objects.filter(rank_name=path_ranks[-1], kingdom_id=kingdom_id)[0].pk
+        taxonomic_unit = TaxonomicUnits(tsn=tsn, kingdom_id=kingdom_id, rank_id=rank, completename=completename, hierarchy_string=hierarchy_string, hierarchy=hierarchy, common_names=None, tsn_update_date=None)
+        taxonomic_unit.save()
+
+    name = food_upper
+    taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
+    food_item = FoodItem(name=name, part=None, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=0)
+    food_item_exists = FoodItem.objects.filter(name__iexact=name)
+    if len(food_item_exists) > 0:
+        return food_item_exists[0]
+    food_item.save()
+    return food_item
+
+
 def get_fooditem(food):
     food_upper = food.upper()
     food_item = FoodItem.objects.filter(name__iexact=food_upper)
     if len(food_item) > 0:
         return food_item[0]
-
-    def get_json(food):
-        url = 'https://resolver.globalnames.org/name_resolvers.json?data_source_ids=3&names=' + food.lower().capitalize().replace(' ', '%20')
+    associated_taxa = re.sub('\W+', ' ', food).split(' ')
+    rank_id = {}
+    for item in associated_taxa:
+        if len(item) < 3:
+            associated_taxa.remove(item)
+    for x in range(len(associated_taxa)-1):
+        results = get_fooditem_json(associated_taxa[x] + ' ' + associated_taxa[x+1])
         try:
-            file = urllib.request.urlopen(url)
-            data = file.read()
-            return json.loads(data)
+            results['data'][0]['results']
+            rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
+            rank_id[rank] = results
         except:
-            return {}
-
-    def create_fooditem(results):
-        tsn = results['data'][0]['results'][0]['taxon_id']
-        taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
-
-        if len(taxonomic_unit)==0:
-            completename = results['data'][0]['results'][0]['canonical_form']
-            hierarchy_string = results['data'][0]['results'][0]['classification_path_ids'].replace('|', '-')
-            hierarchy = results['data'][0]['results'][0]['classification_path'].replace('|', '-')
-            common_names = None
-            kingdom = hierarchy.split('-')
-            kingdom_id = Kingdom.objects.filter(name=kingdom[0])[0].pk
-            path_ranks = results['data'][0]['results'][0]['classification_path_ranks'].split('|')
-            rank = TaxonUnitTypes.objects.filter(rank_name=path_ranks[-1], kingdom_id=kingdom_id)[0].pk
-            tsn_update_date = None
-            taxonomic_unit = TaxonomicUnits(tsn=tsn, kingdom_id=kingdom_id, rank_id=rank, completename=completename, hierarchy_string=hierarchy_string, hierarchy=hierarchy, common_names=common_names, tsn_update_date=tsn_update_date)
-            taxonomic_unit.save()
-
-        name = food_upper
-        is_cultivar = 0
-        taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
-        food_item = FoodItem(name=name, part=None, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=is_cultivar)
-        food_item_exists = FoodItem.objects.filter(name__iexact=name)
-        if len(food_item_exists) > 0:
-            return food_item_exists[0]
+            pass
+    if len(rank_id) == 0:
+        for y in range(len(associated_taxa)):
+            results = get_fooditem_json(associated_taxa[y])
+        try:
+            results['data'][0]['results']
+            rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
+            rank_id[rank] = results
+        except:
+            pass
+    if len(rank_id) == 0:
+        food_item = FoodItem(name=food_upper, part=None, tsn=None, pa_tsn=None, is_cultivar=0)
         food_item.save()
         return food_item
-    foods = get_json(food_upper) 
-    try:
-        foods['data'][0]['results']
-        return create_fooditem(foods)
-
-    except KeyError:
-        new = food_upper.split('(', 1)[0]
-        food_item = FoodItem.objects.filter(name__iexact=new)
-        if len(food_item) > 0:
-            return food_item[0]
-        new_food = get_json(new) 
-        try:
-            new_food['data'][0]['results']
-            return create_fooditem(new_food)
-        except KeyError:
-            food_item = FoodItem.objects.filter(name__iexact=food_upper)
-            if len(food_item) > 0:
-                return food_item[0]
-            empty_food_item = FoodItem(name=food_upper, part=None, tsn=None, pa_tsn=None, is_cultivar=0)
-            empty_food_item.save()
-            return empty_food_item
+    return create_fooditem(rank_id[max(rank_id)], food_upper)
 
 def possible_nan_to_zero(size):
     if size != size:
@@ -478,6 +484,7 @@ def create_dietset(row, df):
 
     create_dietsetitem(row, ds, headers)
 
+@transaction.atomic
 def create_dietsetitem(row, diet_set, headers):
     food_item = get_fooditem(getattr(row, 'verbatimAssociatedTaxa'))
     list_order = getattr(row, 'sequence')
@@ -487,7 +494,7 @@ def create_dietsetitem(row, diet_set, headers):
         percentage = 0
     old_ds = DietSetItem.objects.filter(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)
     if len(old_ds) == 0:
-        dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)        
+        dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage) 
         dietsetitem.save()
 
 def trim(text:str):
