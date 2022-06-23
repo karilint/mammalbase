@@ -226,7 +226,7 @@ class ToolsTest(TestCase):
 
     def test_check_all_ds_wrong_taxonrank(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '0000-0001-9627-8821'], 
-        'verbatimScientificName':['kapistelija', 'kapistelija'], 
+        'verbatimScientificName':['sp kapistelija', ' sp kapistelija'], 
         'taxonRank':['laji', 'genus'],
         'verbatimAssociatedTaxa':['moi', 'moi'],
         'sequence':[1,2],
@@ -328,7 +328,7 @@ class ToolsTest(TestCase):
         'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']})
         self.assertEqual(self.check.check_all_ets(df), False)
 
-    def test_check_all_ets_wrong_taxonrank(self):
+    def test_check_all_ets_wrong_taxonrank_for_scientificname(self):
         df = pd.DataFrame.from_dict({'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'],
         'verbatimScientificName':['kapistelija', 'kapistelija'],
         'taxonRank':['subspecies', 'subspecies'],
@@ -336,6 +336,16 @@ class ToolsTest(TestCase):
         'verbatimTraitUnit':['kg', 'kg'],
         'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']})
         self.assertEqual(self.check.check_all_ets(df), False)
+
+    def test_check_all_ets_wrong_taxonrank(self):
+        df = pd.DataFrame.from_dict({'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'],
+        'verbatimScientificName':['sp kapistelija', 'sp kapistelija'],
+        'taxonRank':['subspecies', 'laji'],
+        'verbatimTraitName':['body weight (Wt)', 'body weight (Wt)'],
+        'verbatimTraitUnit':['kg', 'kg'],
+        'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']})
+        self.assertEqual(self.check.check_all_ets(df), False)
+
 
     def test_new_get_sourcereference_citation(self):
         self.assertEqual(tools.get_sourcereference_citation(self.file.loc[:, 'references'][0], self.user).citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
