@@ -1,5 +1,5 @@
 from doctest import master
-from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
+from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
@@ -17,7 +17,7 @@ class Check:
         self.request = request
         self.id = None
 
-    def check_all_ds(self, df):
+    def check_all_ds(self, df, force=False):
         if self.check_headers_ds(df) == False:
             return False
         elif self.check_author(df) == False:
@@ -30,7 +30,7 @@ class Check:
             return False
         elif self.check_measurementValue(df) == False:
             return False
-        elif self.check_references(df) == False:
+        elif self.check_references(df, force) == False:
             return False
         return True
     
@@ -109,16 +109,16 @@ class Check:
             counter += 1
             names_list = item[0].split()
 
-            if len(names_list) > 3 and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list:
+            if len(names_list) > 3 and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list and "spp." not in names_list and "spp" not in names_list:
                 messages.error(self.request, "Scientific name is not in the correct format on the line " + str(counter) + ".")
                 return False
-            if len(names_list) == 3 and item[1] not in ['Subspecies', 'subspecies'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list:
+            if len(names_list) == 3 and item[1] not in ['Subspecies', 'subspecies'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list and "aff." not in names_list and "aff" not in names_list and "spp." not in names_list and "spp" not in names_list:
                 messages.error(self.request, "Scientific name is not in the correct format or taxonomic rank should be 'Subspecies' on the line " + str(counter) + ".")
                 return False
-            if len(names_list) == 2 and item[1] not in ['Species', 'species'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list:
+            if len(names_list) == 2 and item[1] not in ['Species', 'species'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list and "aff." not in names_list and "aff" not in names_list and "spp." not in names_list and "spp" not in names_list:
                 messages.error(self.request, "Scientific name is not in the correct format or taxonomic rank should be 'Species' on the line " + str(counter) + ".")
                 return False
-            if len(names_list) == 1 and item[1] not in ['Genus', 'genus'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list:
+            if len(names_list) == 1 and item[1] not in ['Genus', 'genus'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list and "aff." not in names_list and "aff" not in names_list and "spp." not in names_list and "spp" not in names_list:
                 messages.error(self.request, "Scientific name is not in the correct format or taxonomic rank should be 'Genus' on the line " + str(counter) + ".")
                 return False
         return True
@@ -265,9 +265,17 @@ class Check:
 
         return True
 
-    def check_references(self, df):
+    def check_reference_in_db(self, reference):
+        return len(SourceReference.objects.filter(citation=reference)) == 0
+
+    def check_references(self, df, force:bool):
         counter = 1
         for ref in (df.loc[:, 'references']):
+            if not force:
+                if not self.check_reference_in_db(ref):
+                    messages.error(self.request, "Reference in line "+ str(counter) +" already in database. Are you sure you want to import this file? If you are sure use force upload.")
+                    return False
+
             if len(ref) < 10 or len(ref) > 500:
                 messages.error(self.request, "Reference is too short or too long on the line " + str(counter) + ".")
                 return False
@@ -279,7 +287,6 @@ class Check:
 
         return True
 
-
 def get_author(id):
     author = User.objects.filter(socialaccount__uid=id)[0]
     return author
@@ -287,15 +294,11 @@ def get_author(id):
 def get_sourcereference_citation(reference, author):
     sr_old = SourceReference.objects.filter(citation__iexact=reference)
     if len(sr_old) > 0:
-        if sr_old[0].master_reference == None:
-            response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois testeissä, hidastaa testejä..
-            create_masterreference(reference, response_data, sr_old[0], author) # Voi kommentoida pois testeissä, hidastaa testejä..
-            return sr_old[0]
         return sr_old[0]
     new_reference = SourceReference(citation=reference, status=1, created_by=author)
     new_reference.save()
-    response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois testeissä, hidastaa testejä..
-    create_masterreference(reference, response_data, new_reference, author) # Voi kommentoida pois testeissä, hidastaa testejä..
+    response_data = get_referencedata_from_crossref(reference)
+    create_masterreference(reference, response_data, new_reference, author)
     return new_reference
 
 def get_entityclass(taxonRank, author):
@@ -662,22 +665,58 @@ def create_new_entity_relation(source_entity):
                 print('Error creating new entity relation ', sys.exc_info(), traceback.format_exc())
     except:
         print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
+
 @transaction.atomic
-def create_ets(row):
+def create_ets(row, headers):
     author = get_author(getattr(row, 'author'))
     reference = get_sourcereference_citation(getattr(row, 'references'), author)
     entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
     taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
-    measurementMethod = get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
-    locality = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
-    statisticalMethod = get_sourceStatistic(getattr(row, 'statisticalMethod'), reference, author)
+    if 'measurementMethod' in headers:
+        method = get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
+    else:
+        method = None
+    if 'measurementRemarks' in headers:
+        remarks = getattr(row, 'measurementRemarks')
+    else:
+        remarks = None
+    if 'verbatimLoccality' in headers:
+        locality = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+    else:
+        locality = None
+    if 'statisticalMethod' in headers:
+        statisethod = get_sourceStatistic(getattr(row, 'statisticalMethod'), reference, author)
+    else:
+        statisticalMethod = None
     verbatimTraitUnit = getattr(row, 'verbatimTraitUnit')
-    if verbatimTraitUnit == 'NA':
-        print('VerbatimTraitUnit is NA')
-        # do something
+
+    if verbatimTraitUnit == 'nan' or verbatimTraitUnit != verbatimTraitUnit or verbatimTraitUnit == 'NA':
+        name = getattr(row, 'verbatimTraitName')
+        attribute = get_sourceattribute_na(name, reference, entityclass, method, remarks, author)
+        choicesetoption = get_sourcechoicesetoption(getattr(row, 'verbatimTraitValue'), attribute, author)
+        choicesetoptionvalue = get_sourcechoicesetoptionvalue(taxon, choicesetoption, author)
+
     else:
         print('VerbatimTraitUnit not NA')
-        # do something else
+        # ToDo 
+
+def get_sourcechoicesetoptionvalue(entity, sourcechoiceoption, author):
+    scov_old = SourceChoiceSetOptionValue.objects.filter(source_entity=entity, source_choiceset_option=sourcechoiceoption)
+    if len(scov_old) > 0:
+        return scov_old[0]
+    scov = SourceChoiceSetOptionValue(source_entity=entity, source_choiceset_option=sourcechoiceoption, created_by=author)
+    scov.save()
+    return scov
+
+
+def get_sourcechoicesetoption(name, attribute, author):
+    sco_old = SourceChoiceSetOption.objects.filter(source_attribute=attribute, name=name)
+    if len(sco_old) > 0:
+        return sco_old[0]
+    sco = SourceChoiceSetOption(source_attribute=attribute, name=name, created_by=author)
+    sco.save()
+    return sco
+
 
 def get_sourceStatistic(statistic, ref, author):
     if statistic != statistic or statistic == 'nan':
@@ -688,3 +727,11 @@ def get_sourceStatistic(statistic, ref, author):
     ss = SourceStatistic(name=statistic, reference=ref, created_by=author)
     ss.save()
     return ss
+
+def get_sourceattribute_na(name, ref, entity, method, remarks, author):
+    sa_old = SourceAttribute.objects.filter(name=name, reference=ref, entity=entity, method=method, type=2, remarks=remarks)
+    if len(sa_old) > 0:
+        return sa_old[0]
+    sa = SourceAttribute(name=name, reference=ref, entity=entity, method=method, type=2, remarks=remarks, created_by=author)
+    sa.save()
+    return sa

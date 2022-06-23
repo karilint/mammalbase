@@ -20,14 +20,14 @@ def import_diet_set(request):
 	if "GET" == request.method:
 		return render(request, "import/import_diet_set.html")
 	try:
-		csv_file = request.FILES["csv_file"]
-		df = pd.read_csv(csv_file, sep='\t')
+		file = request.FILES["csv_file"]
+		df = pd.read_csv(file, sep='\t')
 		trim_df(df)
 		check = Check(request)
-
+		force = "force" in request.POST
 		if check.check_valid_author(df) == False:
 			return HttpResponseRedirect(reverse("import_diet_set"))
-		if check.check_all_ds(df) != True:
+		if check.check_all_ds(df, force) != True:
 			return HttpResponseRedirect(reverse("import_diet_set"))
 		else:
 			for row in df.itertuples():
@@ -57,8 +57,9 @@ def import_ets(request):
 		if check.check_all_ets(df) != True:
 			return HttpResponseRedirect(reverse("import_ets"))
 		else:
+			headers =  list(df.columns.values)
 			for row in df.itertuples():
-				create_ets(row)
+				create_ets(row, headers)
 			success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
 			messages.add_message(request, 50 ,success_message, extra_tags="import-message")
 			messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")
