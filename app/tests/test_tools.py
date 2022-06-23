@@ -2,7 +2,8 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import User
-from mb.models import EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
+from allauth.socialaccount.models import SocialAccount
+from mb.models import EntityClass, MasterReference, SourceAttribute, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
 from imports.tools import Check
 import imports.tools as tools
 import tempfile, csv, os
@@ -16,6 +17,9 @@ class ToolsTest(TestCase):
         self.user = User.objects.create_user(username='Testuser', password='12345')
         setattr(self.request, 'session', 'session')
         messages = FallbackStorage(self.request)
+        self.reference1 = SourceReference.objects.create(citation='Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
+        self.reference2 = SourceReference.objects.create(citation='Creese, S., Davies, S.J. and Bowen, B.J., 2019. Comparative dietary analysis of the black-flanked rock-wallaby (Petrogale lateralis lateralis), the euro (Macropus robustus erubescens) and the feral goat (Capra hircus) from Cape Range National Park, Western Australia. Australian Mammalogy, 41(2), pp.220-230.')
+        self.accountuser = SocialAccount.objects.create(uid='1111-1111-2222-222X', user_id=self.user.pk)
 
         setattr(self.request, '_messages', messages)
         with open('test.csv', 'w') as file:
@@ -73,7 +77,7 @@ class ToolsTest(TestCase):
         self.false_file2 = pd.read_csv('false_test2.csv')
         self.false_vsn = pd.read_csv('false_vsn.csv')
         self.false_sequence = pd.read_csv('false_sequence.csv')
-        self.reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][1], self.user)
+        #self.reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][1], self.user)
         self.dict = {'author': ['1111-1111-2222-2222', '1111-1111-2222-2233'], 
         'verbatimScientificName':['kapistelija', 'kapistelija'], 
         'taxonRank':['genus', 'genus'],
@@ -86,13 +90,17 @@ class ToolsTest(TestCase):
         'verbatimTraitName':['body weight (Wt)', 'body weight (Wt)'],
         'verbatimTraitUnit':['kg', 'kg'],
         'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']}
-        self.entity = tools.get_entityclass(self.file.loc[:, 'taxonRank'][1], self.user)    
+        self.entity = tools.get_entityclass(self.file.loc[:, 'taxonRank'][1], self.user)
+           
         #print(tools.get_entityclass(self.file.loc[:, 'taxonRank'][0]).name)
         #print('Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
 
         self.sr = SourceReference.objects.create(citation='Tester, T., TesterToo, T., Testing, testing', status=1)
         self.mr = MasterReference.objects.create(title='Testing, testing', created_by=self.user)
         self.sr_with_mr = SourceReference.objects.create(citation="Title and author", status=2, master_reference=self.mr)
+        self.method = SourceMethod.objects.create(reference=self.sr, name='TestMethod')
+        self.attribute = SourceAttribute.objects.create(name='SelfAttribute', reference=self.sr, entity=self.entity, method=self.method, remarks='TestRemarks') 
+        self.source_entity = SourceEntity.objects.create(name='SelfSourceEntity', reference=self.sr, entity=self.entity)
         self.res = {'status': 'ok', 
                 'message-type': 'work-list', 
                 'message-version': '1.0.0', 
@@ -218,7 +226,7 @@ class ToolsTest(TestCase):
 
     def test_check_all_ds_wrong_taxonrank(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '0000-0001-9627-8821'], 
-        'verbatimScientificName':['kapistelija', 'kapistelija'], 
+        'verbatimScientificName':['sp kapistelija', ' sp kapistelija'], 
         'taxonRank':['laji', 'genus'],
         'verbatimAssociatedTaxa':['moi', 'moi'],
         'sequence':[1,2],
@@ -320,7 +328,7 @@ class ToolsTest(TestCase):
         'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']})
         self.assertEqual(self.check.check_all_ets(df), False)
 
-    def test_check_all_ets_wrong_taxonrank(self):
+    def test_check_all_ets_wrong_taxonrank_for_scientificname(self):
         df = pd.DataFrame.from_dict({'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'],
         'verbatimScientificName':['kapistelija', 'kapistelija'],
         'taxonRank':['subspecies', 'subspecies'],
@@ -328,6 +336,16 @@ class ToolsTest(TestCase):
         'verbatimTraitUnit':['kg', 'kg'],
         'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']})
         self.assertEqual(self.check.check_all_ets(df), False)
+
+    def test_check_all_ets_wrong_taxonrank(self):
+        df = pd.DataFrame.from_dict({'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'],
+        'verbatimScientificName':['sp kapistelija', 'sp kapistelija'],
+        'taxonRank':['subspecies', 'laji'],
+        'verbatimTraitName':['body weight (Wt)', 'body weight (Wt)'],
+        'verbatimTraitUnit':['kg', 'kg'],
+        'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']})
+        self.assertEqual(self.check.check_all_ets(df), False)
+
 
     def test_new_get_sourcereference_citation(self):
         self.assertEqual(tools.get_sourcereference_citation(self.file.loc[:, 'references'][0], self.user).citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
@@ -344,21 +362,25 @@ class ToolsTest(TestCase):
 
     def test_new_get_sourceentity(self):
         vs_name = self.file.loc[:, 'verbatimScientificName'][0]
-        reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][0], self.user)
+        #reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][0], self.user)
         entityclass = tools.get_entityclass(self.file.loc[:, 'taxonRank'][0], self.user)
-        self.assertEqual(tools.get_sourceentity(vs_name, reference, entityclass, self.user).name, 'Lagothrix flavicauda')
+        #self.assertEqual(tools.get_sourceentity(vs_name, reference, entityclass, self.user).name, 'Lagothrix flavicauda')
+        self.assertEqual(tools.get_sourceentity(vs_name, self.sr, entityclass, self.user).name, 'Lagothrix flavicauda')
     
     def test_new_get_timeperiod(self):
-       reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][2], self.user)
-       self.assertEqual(tools.get_timeperiod(self.file.loc[:, 'samplingEffort'][2], reference, self.user).name, '15-month-study')
+       #reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][2], self.user)
+       #self.assertEqual(tools.get_timeperiod(self.file.loc[:, 'samplingEffort'][2], reference, self.user).name, '15-month-study')
+       self.assertEqual(tools.get_timeperiod(self.file.loc[:, 'samplingEffort'][2], self.sr, self.user).name, '15-month-study')
     
     def test_new_get_sourcemethod(self):
-       reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][3], self.user)
-       self.assertEqual(tools.get_sourcemethod(self.file.loc[:, 'measurementMethod'][3], reference, self.user).name, 'observations of fruit consumption')
-    
+       #reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][3], self.user)
+       #self.assertEqual(tools.get_sourcemethod(self.file.loc[:, 'measurementMethod'][3], reference, self.user).name, 'observations of fruit consumption')
+        self.assertEqual(tools.get_sourcemethod(self.file.loc[:, 'measurementMethod'][3], self.sr, self.user).name, 'observations of fruit consumption')
+
     def test_new_get_sourcelocation(self):
-       reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][4], self.user)
-       self.assertEqual(tools.get_sourcelocation(self.file.loc[:, 'verbatimLocality'][4], reference, self.user).name, 'Mandu Mandu Gorge, Cape Range National Park, Western Australia')        
+       #reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][4], self.user)
+       self.assertEqual(tools.get_sourcelocation(self.file.loc[:, 'verbatimLocality'][4], self.sr, self.user).name, 'Mandu Mandu Gorge, Cape Range National Park, Western Australia')        
+        #self.assertEqual(tools.get_sourcelocation(self.file.loc[:, 'verbatimLocality'][4], reference, self.user).name, 'Mandu Mandu Gorge, Cape Range National Park, Western Australia')        
 
     def test_nan_to_zero_empty(self):
         self.assertEqual(tools.possible_nan_to_zero(self.file.loc[:, 'individualCount'][4]), 108)
@@ -474,3 +496,20 @@ class ToolsTest(TestCase):
         self.assertNotEqual(cited_reference, 'nan')
         self.assertNotEqual(method.name, 'nan')
         self.assertEqual(method.name, '')
+
+    def test_get_sourcechoicesetoption_and_value(self):
+        scso = tools.get_sourcechoicesetoption('TestName', self.attribute, self.user)
+        self.assertEqual(scso.name, 'TestName')
+        self.assertEqual(scso.created_by.username, 'Testuser')
+        scsov = tools.get_sourcechoicesetoptionvalue(self.source_entity, scso, self.user)
+        self.assertEqual(scsov.source_choiceset_option, scso)
+        self.assertEqual(scsov.source_entity.name, 'SelfSourceEntity')
+        self.assertEqual(scsov.created_by.username, 'Testuser')
+
+    def test_get_sourceattribute_na(self):
+        attribute = tools.get_sourceattribute_na('TestAttribute', self.sr, self.entity, self.method, 'TestRemarks', self.user)
+        self.assertEqual(attribute.name, 'TestAttribute')
+        self.assertEqual(attribute.created_by.username, 'Testuser')
+
+    def test_get_author(self):
+        self.assertEqual(tools.get_author('1111-1111-2222-222X'), self.user)

@@ -1,5 +1,5 @@
 from doctest import master
-from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
+from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
@@ -293,15 +293,11 @@ def get_author(id):
 def get_sourcereference_citation(reference, author):
     sr_old = SourceReference.objects.filter(citation__iexact=reference)
     if len(sr_old) > 0:
-        if sr_old[0].master_reference == None:
-            response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois testeissä, hidastaa testejä..
-            create_masterreference(reference, response_data, sr_old[0], author) # Voi kommentoida pois testeissä, hidastaa testejä..
-            return sr_old[0]
         return sr_old[0]
     new_reference = SourceReference(citation=reference, status=1, created_by=author)
     new_reference.save()
-    response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois testeissä, hidastaa testejä..
-    create_masterreference(reference, response_data, new_reference, author) # Voi kommentoida pois testeissä, hidastaa testejä..
+    response_data = get_referencedata_from_crossref(reference)
+    create_masterreference(reference, response_data, new_reference, author)
     return new_reference
 
 def get_entityclass(taxonRank, author):
@@ -362,7 +358,6 @@ def get_choicevalue(gender):
         return
     choicevalue = ChoiceValue.objects.filter(pk=gender)
     return choicevalue[0]
-
 
 def get_fooditem(food):
     food_upper = food.upper()
@@ -663,22 +658,58 @@ def create_new_entity_relation(source_entity):
                 print('Error creating new entity relation ', sys.exc_info(), traceback.format_exc())
     except:
         print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
+
 @transaction.atomic
-def create_ets(row):
+def create_ets(row, headers):
     author = get_author(getattr(row, 'author'))
     reference = get_sourcereference_citation(getattr(row, 'references'), author)
     entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
     taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
-    measurementMethod = get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
-    locality = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
-    statisticalMethod = get_sourceStatistic(getattr(row, 'statisticalMethod'), reference, author)
+    if 'measurementMethod' in headers:
+        method = get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
+    else:
+        method = None
+    if 'measurementRemarks' in headers:
+        remarks = getattr(row, 'measurementRemarks')
+    else:
+        remarks = None
+    if 'verbatimLoccality' in headers:
+        locality = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+    else:
+        locality = None
+    if 'statisticalMethod' in headers:
+        statisethod = get_sourceStatistic(getattr(row, 'statisticalMethod'), reference, author)
+    else:
+        statisticalMethod = None
     verbatimTraitUnit = getattr(row, 'verbatimTraitUnit')
-    if verbatimTraitUnit == 'NA':
-        print('VerbatimTraitUnit is NA')
-        # do something
+
+    if verbatimTraitUnit == 'nan' or verbatimTraitUnit != verbatimTraitUnit or verbatimTraitUnit == 'NA':
+        name = getattr(row, 'verbatimTraitName')
+        attribute = get_sourceattribute_na(name, reference, entityclass, method, remarks, author)
+        choicesetoption = get_sourcechoicesetoption(getattr(row, 'verbatimTraitValue'), attribute, author)
+        choicesetoptionvalue = get_sourcechoicesetoptionvalue(taxon, choicesetoption, author)
+
     else:
         print('VerbatimTraitUnit not NA')
-        # do something else
+        # ToDo 
+
+def get_sourcechoicesetoptionvalue(entity, sourcechoiceoption, author):
+    scov_old = SourceChoiceSetOptionValue.objects.filter(source_entity=entity, source_choiceset_option=sourcechoiceoption)
+    if len(scov_old) > 0:
+        return scov_old[0]
+    scov = SourceChoiceSetOptionValue(source_entity=entity, source_choiceset_option=sourcechoiceoption, created_by=author)
+    scov.save()
+    return scov
+
+
+def get_sourcechoicesetoption(name, attribute, author):
+    sco_old = SourceChoiceSetOption.objects.filter(source_attribute=attribute, name=name)
+    if len(sco_old) > 0:
+        return sco_old[0]
+    sco = SourceChoiceSetOption(source_attribute=attribute, name=name, created_by=author)
+    sco.save()
+    return sco
+
 
 def get_sourceStatistic(statistic, ref, author):
     if statistic != statistic or statistic == 'nan':
@@ -689,3 +720,11 @@ def get_sourceStatistic(statistic, ref, author):
     ss = SourceStatistic(name=statistic, reference=ref, created_by=author)
     ss.save()
     return ss
+
+def get_sourceattribute_na(name, ref, entity, method, remarks, author):
+    sa_old = SourceAttribute.objects.filter(name=name, reference=ref, entity=entity, method=method, type=2, remarks=remarks)
+    if len(sa_old) > 0:
+        return sa_old[0]
+    sa = SourceAttribute(name=name, reference=ref, entity=entity, method=method, type=2, remarks=remarks, created_by=author)
+    sa.save()
+    return sa
