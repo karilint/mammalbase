@@ -513,3 +513,6 @@ class ToolsTest(TestCase):
 
     def test_get_author(self):
         self.assertEqual(tools.get_author('1111-1111-2222-222X'), self.user)
+
+    def test_valid_author(self):
+        self.assertEqual(self.check.check_valid_author(self.file), True)
