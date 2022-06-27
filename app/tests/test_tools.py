@@ -4,7 +4,7 @@ from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import User
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from allauth.socialaccount.models import SocialAccount
-from mb.models import EntityClass, MasterReference, SourceAttribute, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
+from mb.models import EntityClass, MasterReference, SourceAttribute, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
 from imports.tools import Check
 import imports.tools as tools
 import tempfile, csv, os
@@ -92,7 +92,26 @@ class ToolsTest(TestCase):
         'verbatimTraitUnit':['kg', 'kg'],
         'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']}
         self.entity = tools.get_entityclass(self.file.loc[:, 'taxonRank'][1], self.user)
-           
+
+        self.ets_numerical_df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-222X'], 
+        'references':['Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'], 
+        'taxonRank':['Species'],
+        'verbatimScientificName':['SelfSourceEntity'],
+        'verbatimTraitName':['TestName'],
+        'measurementMethod':['SD'],
+        'measurementRemarks':['TestRemarks'],
+        'verbatimTraitUnit':['km'], 
+        'verbatimTraitValue':['5'],
+        'verbatimLocality':['TestPlace'],
+        'associatedReferences':['TestAssociatedReference'],
+        'measurementValue_min':['1'],
+        'measurementValue_max':['10'],
+        'dispersion':['0.5'],
+        'sex':['Female'],
+        'lifeStage':['Juvenile'],
+        'measurementAccuracy':['0.1'],
+        'individualCount':['10'],
+             }) 
         #print(tools.get_entityclass(self.file.loc[:, 'taxonRank'][0]).name)
         #print('Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
 
@@ -487,13 +506,13 @@ class ToolsTest(TestCase):
     def test_get_sourcestatistic_existing(self):
         source_statistic = SourceStatistic(name='Test statistic', reference=self.sr, created_by=self.user)
         source_statistic.save()
-        result = tools.get_sourceStatistic('Test statistic', self.sr, self.user)
+        result = tools.get_sourcestatistic('Test statistic', self.sr, self.user)
         self.assertEqual(result.name, 'Test statistic')
 
     def test_get_sourcestatistic_new(self):
         new_sr = SourceReference(citation='New sourcereference, 2000')
         new_sr.save()
-        source_statistic = tools.get_sourceStatistic('Test statistic two', new_sr, self.user)
+        source_statistic = tools.get_sourcestatistic('Test statistic two', new_sr, self.user)
         result = source_statistic.reference
         self.assertEqual(result.citation, 'New sourcereference, 2000')
         self.assertEqual(source_statistic.name, 'Test statistic two')
@@ -531,7 +550,7 @@ class ToolsTest(TestCase):
         self.assertEqual(scsov.created_by.username, 'Testuser')
 
     def test_get_sourceattribute_na(self):
-        attribute = tools.get_sourceattribute_na('TestAttribute', self.sr, self.entity, self.method, 'TestRemarks', self.user)
+        attribute = tools.get_sourceattribute('TestAttribute', self.sr, self.entity, self.method, 2, 'TestRemarks', self.user)
         self.assertEqual(attribute.name, 'TestAttribute')
         self.assertEqual(attribute.created_by.username, 'Testuser')
 
@@ -540,3 +559,17 @@ class ToolsTest(TestCase):
 
     def test_valid_author(self):
         self.assertEqual(self.check.check_valid_author(self.file), True)
+
+    # def test_get_sourcemearuementvalue(self):
+    #     tools.get_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, mean, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author)
+
+    def test_create_ets_numerical(self):
+        df = self.ets_numerical_df
+        tools.trim_df(df)
+        headers =  list(df.columns.values)
+        for row in df.itertuples():
+            tools.create_ets(row, headers)
+        smv = SourceMeasurementValue.objects.get(measurement_accuracy=0.1)
+        self.assertEqual(smv.source_entity.name, 'SelfSourceEntity')
+        
+    

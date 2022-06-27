@@ -1,5 +1,5 @@
 from doctest import master
-from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
+from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
@@ -446,12 +446,12 @@ def get_fooditem(food):
     return create_fooditem(rank_id[max(rank_id)], food_upper)
 
 def possible_nan_to_zero(size):
-    if size != size:
+    if size != size or size == 'nan':
         return 0
     return size
 
 def possible_nan_to_none(possible):
-    if possible != possible:
+    if possible != possible or possible == 'nan':
         return None
     return possible
 
@@ -689,33 +689,110 @@ def create_ets(row, headers):
     reference = get_sourcereference_citation(getattr(row, 'references'), author)
     entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
     taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+    name = possible_nan_to_none(getattr(row, 'verbatimTraitName'))
+    verbatimTraitUnit = getattr(row, 'verbatimTraitUnit')
     if 'measurementMethod' in headers:
         method = get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
     else:
         method = None
     if 'measurementRemarks' in headers:
-        remarks = getattr(row, 'measurementRemarks')
+        remarks = possible_nan_to_none(getattr(row, 'measurementRemarks'))
     else:
         remarks = None
-    if 'verbatimLoccality' in headers:
-        locality = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+    if 'verbatimTraitValue' in headers:
+        vt_value = possible_nan_to_none(getattr(row, 'verbatimTraitValue'))
     else:
-        locality = None
-    if 'statisticalMethod' in headers:
-        statisethod = get_sourceStatistic(getattr(row, 'statisticalMethod'), reference, author)
-    else:
-        statisticalMethod = None
-    verbatimTraitUnit = getattr(row, 'verbatimTraitUnit')
+        vt_value = 0
 
     if verbatimTraitUnit == 'nan' or verbatimTraitUnit != verbatimTraitUnit or verbatimTraitUnit == 'NA':
-        name = getattr(row, 'verbatimTraitName')
-        attribute = get_sourceattribute_na(name, reference, entityclass, method, remarks, author)
-        choicesetoption = get_sourcechoicesetoption(getattr(row, 'verbatimTraitValue'), attribute, author)
+        attribute = get_sourceattribute(name, reference, entityclass, method, 2, remarks, author)
+        choicesetoption = get_sourcechoicesetoption(vt_value, attribute, author)
         choicesetoptionvalue = get_sourcechoicesetoptionvalue(taxon, choicesetoption, author)
 
-    else:
-        print('VerbatimTraitUnit not NA')
-        # ToDo 
+    else:  
+        attribute = get_sourceattribute(name, reference, entityclass, method, 1, remarks, author)
+        unit = get_sourceunit(verbatimTraitUnit, author)
+        choicesetoption = get_sourcechoicesetoption(vt_value, attribute, author)
+        if 'verbatimLocality' in headers:
+            locality = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+        else:
+            locality = None
+        if 'statisticalMethod' in headers:
+            statistic = get_sourcestatistic(getattr(row, 'statisticalMethod'), reference, author)
+        else:
+            statistic = None
+        if 'associatedReferences' in headers:
+            cited_reference = possible_nan_to_none(getattr(row, 'associatedReferences'))
+        else:
+            cited_reference = None
+        if 'measurementValue_min' and 'measurementValue_max' in headers:
+            mes_min = possible_nan_to_zero(getattr(row, 'measurementValue_min'))
+            mes_max = possible_nan_to_zero(getattr(row, 'measurementValue_max'))
+        else:
+            mes_min = 0
+            mes_max = 0
+        if 'dispersion' in headers:
+            std = possible_nan_to_zero(getattr(row, 'dispersion'))
+        else:
+            std = 0
+        if 'sex' in headers:
+            gender = get_choicevalue_ets(getattr(row, 'sex'), 'gender', author)
+        else:
+            gender = None
+        if 'lifeStage' in headers:
+            lifestage = get_choicevalue_ets(getattr(row, 'lifeStage'), 'lifestage', author)
+        else:
+            lifeStage = None
+        if 'measurementDeterminedBy' in headers:
+            measured_by = possible_nan_to_none(getattr(row, 'measurementDeterminedBy'))
+        else:
+            measured_by = None
+        if 'measurementAccuracy' in headers:
+            accuracy = possible_nan_to_none(getattr(row, 'measurementAccuracy'))
+        else:
+            accuracy = None
+        if 'individualCount' in headers:
+            count = possible_nan_to_zero(getattr(row, 'individualCount'))
+        else:
+            count = 0
+        create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author)
+
+def create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author):
+        if gender == 'Female':
+            smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_female=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+            if len(smv_old) > 0:
+                return
+            sm_value = SourceMeasurementValue(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_female=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+        elif gender == 'Male':
+            smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_male=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+            if len(smv_old) > 0:
+                return
+            sm_value = SourceMeasurementValue(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_male=count, minimum=mes_min, maximum=mes_max, std=std,  mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+        else:
+            smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_unknown=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+            if len(smv_old) > 0:
+                return
+            sm_value = SourceMeasurementValue(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_unknown=count, minimum=mes_min, maximum=mes_max, std=std,  mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+        sm_value.save()
+
+def get_choicevalue_ets(choice, set, author):
+    if choice != choice or choice == 'nan':
+        return None
+    choiceset = ChoiceValue.objects.filter(caption=choice, choice_set=set)
+    if len(choiceset) > 0:
+        return choiceset[0]
+    cv = ChoiceValue.objects.create(caption=choice, choice_set=set, created_by=author)
+    return cv
+
+def get_sourceunit(unit, author):
+    if unit != unit or unit == 'nan':
+        return None
+    su_old = SourceUnit.objects.filter(name=unit)
+    if len(su_old) > 0:
+        return su_old[0]
+    su = SourceUnit(name=unit, created_by=author)
+    su.save()
+    return su
 
 def get_sourcechoicesetoptionvalue(entity, sourcechoiceoption, author):
     scov_old = SourceChoiceSetOptionValue.objects.filter(source_entity=entity, source_choiceset_option=sourcechoiceoption)
@@ -725,8 +802,9 @@ def get_sourcechoicesetoptionvalue(entity, sourcechoiceoption, author):
     scov.save()
     return scov
 
-
 def get_sourcechoicesetoption(name, attribute, author):
+    if name == 'nan' or name == 'NA' or name != name:
+        return None
     sco_old = SourceChoiceSetOption.objects.filter(source_attribute=attribute, name=name)
     if len(sco_old) > 0:
         return sco_old[0]
@@ -735,7 +813,7 @@ def get_sourcechoicesetoption(name, attribute, author):
     return sco
 
 
-def get_sourceStatistic(statistic, ref, author):
+def get_sourcestatistic(statistic, ref, author):
     if statistic != statistic or statistic == 'nan':
         return None
     ss_old = SourceStatistic.objects.filter(name=statistic, reference=ref)
@@ -745,10 +823,10 @@ def get_sourceStatistic(statistic, ref, author):
     ss.save()
     return ss
 
-def get_sourceattribute_na(name, ref, entity, method, remarks, author):
-    sa_old = SourceAttribute.objects.filter(name=name, reference=ref, entity=entity, method=method, type=2, remarks=remarks)
+def get_sourceattribute(name, ref, entity, method, type_value, remarks, author):
+    sa_old = SourceAttribute.objects.filter(name=name, reference=ref, entity=entity, method=method, type=type_value, remarks=remarks)
     if len(sa_old) > 0:
         return sa_old[0]
-    sa = SourceAttribute(name=name, reference=ref, entity=entity, method=method, type=2, remarks=remarks, created_by=author)
+    sa = SourceAttribute(name=name, reference=ref, entity=entity, method=method, type=type_value, remarks=remarks, created_by=author)
     sa.save()
     return sa
