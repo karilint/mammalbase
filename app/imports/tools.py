@@ -674,6 +674,7 @@ def create_ets(row, headers):
     taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
     name = possible_nan_to_none(getattr(row, 'verbatimTraitName'))
     verbatimTraitUnit = getattr(row, 'verbatimTraitUnit')
+
     if 'measurementMethod' in headers:
         method = get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
     else:
@@ -718,14 +719,10 @@ def create_ets(row, headers):
             std = possible_nan_to_zero(getattr(row, 'dispersion'))
         else:
             std = 0
-        if 'sex' in headers:
-            gender = get_choicevalue_ets(getattr(row, 'sex'), 'gender', author)
-        else:
-            gender = None
         if 'lifeStage' in headers:
             lifestage = get_choicevalue_ets(getattr(row, 'lifeStage'), 'lifestage', author)
         else:
-            lifeStage = None
+            lifestage = None
         if 'measurementDeterminedBy' in headers:
             measured_by = possible_nan_to_none(getattr(row, 'measurementDeterminedBy'))
         else:
@@ -738,25 +735,37 @@ def create_ets(row, headers):
             count = possible_nan_to_zero(getattr(row, 'individualCount'))
         else:
             count = 0
-        create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author)
+        if 'sex' in headers:
+            gender = get_choicevalue_ets(getattr(row, 'sex'), 'gender', author)
+            if gender == gender:
+                create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author)
+        else: 
+            create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, lifestage, accuracy, measured_by, remarks, cited_reference, author)
+        
+def create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, lifestage, accuracy, measured_by, remarks, cited_reference, author):
+    smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+    if len(smv_old) > 0:
+        return
+    sm_value = SourceMeasurementValue(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, minimum=mes_min, maximum=mes_max, std=std,  mean=vt_value, source_statistic=statistic, source_unit=unit, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+    sm_value.save()
 
 def create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author):
-        if gender == 'Female':
-            smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_female=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
-            if len(smv_old) > 0:
-                return
-            sm_value = SourceMeasurementValue(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_female=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
-        elif gender == 'Male':
-            smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_male=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
-            if len(smv_old) > 0:
-                return
-            sm_value = SourceMeasurementValue(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_male=count, minimum=mes_min, maximum=mes_max, std=std,  mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
-        else:
-            smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_unknown=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
-            if len(smv_old) > 0:
-                return
-            sm_value = SourceMeasurementValue(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_unknown=count, minimum=mes_min, maximum=mes_max, std=std,  mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
-        sm_value.save()
+    n_female = 0
+    n_male = 0
+    n_unknown = 0
+
+    if gender.caption.lower() == 'female':
+        n_female = count
+    elif gender.caption.lower() == 'male':
+        n_male = count
+    else:
+        n_unknown = count
+            
+    smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_female=n_female, n_male=n_male, n_unknown=n_unknown, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+    if len(smv_old) > 0:
+        return
+    sm_value = SourceMeasurementValue(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_female=n_female, n_male=n_male, n_unknown=n_unknown, minimum=mes_min, maximum=mes_max, std=std,  mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+    sm_value.save()
 
 def get_choicevalue_ets(choice, set, author):
     if choice != choice or choice == 'nan':
@@ -794,7 +803,6 @@ def get_sourcechoicesetoption(name, attribute, author):
     sco = SourceChoiceSetOption(source_attribute=attribute, name=name, created_by=author)
     sco.save()
     return sco
-
 
 def get_sourcestatistic(statistic, ref, author):
     if statistic != statistic or statistic == 'nan':
