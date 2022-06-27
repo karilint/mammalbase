@@ -1,10 +1,11 @@
 from doctest import master
-from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
+from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
+import itis.views as itis
 
 import pandas as pd
 import re, json, urllib.request, requests, sys, traceback
@@ -293,15 +294,11 @@ def get_author(id):
 def get_sourcereference_citation(reference, author):
     sr_old = SourceReference.objects.filter(citation__iexact=reference)
     if len(sr_old) > 0:
-        if sr_old[0].master_reference == None:
-            response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois testeissä, hidastaa testejä..
-            create_masterreference(reference, response_data, sr_old[0], author) # Voi kommentoida pois testeissä, hidastaa testejä..
-            return sr_old[0]
         return sr_old[0]
     new_reference = SourceReference(citation=reference, status=1, created_by=author)
     new_reference.save()
-    response_data = get_referencedata_from_crossref(reference) # Voi kommentoida pois testeissä, hidastaa testejä..
-    create_masterreference(reference, response_data, new_reference, author) # Voi kommentoida pois testeissä, hidastaa testejä..
+    response_data = get_referencedata_from_crossref(reference)
+    create_masterreference(reference, response_data, new_reference, author)
     return new_reference
 
 def get_entityclass(taxonRank, author):
@@ -364,76 +361,80 @@ def get_choicevalue(gender):
     return choicevalue[0]
 
 
+def get_fooditem_json(food):
+    url = 'https://resolver.globalnames.org/name_resolvers.json?data_source_ids=3&names=' + food.lower().capitalize().replace(' ', '%20')
+    try:
+        file = urllib.request.urlopen(url)
+        data = file.read()
+        return json.loads(data)
+    except:
+        return {}
+
+def create_fooditem(results, food_upper):
+    tsn = results['data'][0]['results'][0]['taxon_id']
+    taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
+
+    if len(taxonomic_unit)==0:
+        completename = results['data'][0]['results'][0]['canonical_form']
+        hierarchy_string = results['data'][0]['results'][0]['classification_path_ids'].replace('|', '-')
+        hierarchy = results['data'][0]['results'][0]['classification_path'].replace('|', '-')
+        kingdom = hierarchy.split('-')
+        kingdom_id = Kingdom.objects.filter(name=kingdom[0])[0].pk
+        path_ranks = results['data'][0]['results'][0]['classification_path_ranks'].split('|')
+        rank = TaxonUnitTypes.objects.filter(rank_name=path_ranks[-1], kingdom_id=kingdom_id)[0].pk
+        taxonomic_unit = TaxonomicUnits(tsn=tsn, kingdom_id=kingdom_id, rank_id=rank, completename=completename, hierarchy_string=hierarchy_string, hierarchy=hierarchy, common_names=None, tsn_update_date=None)
+        taxonomic_unit.save()
+
+    name = food_upper
+    taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
+    food_item = FoodItem(name=name, part=None, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=0)
+    food_item_exists = FoodItem.objects.filter(name__iexact=name)
+    if len(food_item_exists) > 0:
+        return food_item_exists[0]
+    food_item.save()
+    return food_item
+
+
 def get_fooditem(food):
     food_upper = food.upper()
     food_item = FoodItem.objects.filter(name__iexact=food_upper)
     if len(food_item) > 0:
         return food_item[0]
-
-    def get_json(food):
-        url = 'https://resolver.globalnames.org/name_resolvers.json?data_source_ids=3&names=' + food.lower().capitalize().replace(' ', '%20')
+    associated_taxa = re.sub('\W+', ' ', food).split(' ')
+    rank_id = {}
+    for item in associated_taxa:
+        if len(item) < 3:
+            associated_taxa.remove(item)
+    for x in range(len(associated_taxa)-1):
+        results = get_fooditem_json(associated_taxa[x] + ' ' + associated_taxa[x+1])
         try:
-            file = urllib.request.urlopen(url)
-            data = file.read()
-            return json.loads(data)
+            results['data'][0]['results']
+            rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
+            rank_id[rank] = results
         except:
-            return {}
-
-    def create_fooditem(results):
-        tsn = results['data'][0]['results'][0]['taxon_id']
-        taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
-
-        if len(taxonomic_unit)==0:
-            completename = results['data'][0]['results'][0]['canonical_form']
-            hierarchy_string = results['data'][0]['results'][0]['classification_path_ids'].replace('|', '-')
-            hierarchy = results['data'][0]['results'][0]['classification_path'].replace('|', '-')
-            common_names = None
-            kingdom = hierarchy.split('-')
-            kingdom_id = Kingdom.objects.filter(name=kingdom[0])[0].pk
-            path_ranks = results['data'][0]['results'][0]['classification_path_ranks'].split('|')
-            rank = TaxonUnitTypes.objects.filter(rank_name=path_ranks[-1], kingdom_id=kingdom_id)[0].pk
-            tsn_update_date = None
-            taxonomic_unit = TaxonomicUnits(tsn=tsn, kingdom_id=kingdom_id, rank_id=rank, completename=completename, hierarchy_string=hierarchy_string, hierarchy=hierarchy, common_names=common_names, tsn_update_date=tsn_update_date)
-            taxonomic_unit.save()
-
-        name = food_upper
-        is_cultivar = 0
-        taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
-        food_item = FoodItem(name=name, part=None, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=is_cultivar)
-        food_item_exists = FoodItem.objects.filter(name__iexact=name)
-        if len(food_item_exists) > 0:
-            return food_item_exists[0]
+            pass
+    if len(rank_id) == 0:
+        for y in range(len(associated_taxa)):
+            results = get_fooditem_json(associated_taxa[y])
+        try:
+            results['data'][0]['results']
+            rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
+            rank_id[rank] = results
+        except:
+            pass
+    if len(rank_id) == 0:
+        food_item = FoodItem(name=food_upper, part=None, tsn=None, pa_tsn=None, is_cultivar=0)
         food_item.save()
         return food_item
-    foods = get_json(food_upper) 
-    try:
-        foods['data'][0]['results']
-        return create_fooditem(foods)
-
-    except KeyError:
-        new = food_upper.split('(', 1)[0]
-        food_item = FoodItem.objects.filter(name__iexact=new)
-        if len(food_item) > 0:
-            return food_item[0]
-        new_food = get_json(new) 
-        try:
-            new_food['data'][0]['results']
-            return create_fooditem(new_food)
-        except KeyError:
-            food_item = FoodItem.objects.filter(name__iexact=food_upper)
-            if len(food_item) > 0:
-                return food_item[0]
-            empty_food_item = FoodItem(name=food_upper, part=None, tsn=None, pa_tsn=None, is_cultivar=0)
-            empty_food_item.save()
-            return empty_food_item
+    return create_fooditem(rank_id[max(rank_id)], food_upper)
 
 def possible_nan_to_zero(size):
-    if size != size:
+    if size != size or size == 'nan':
         return 0
     return size
 
 def possible_nan_to_none(possible):
-    if possible != possible:
+    if possible != possible or possible == 'nan':
         return None
     return possible
 
@@ -483,6 +484,7 @@ def create_dietset(row, df):
 
     create_dietsetitem(row, ds, headers)
 
+@transaction.atomic
 def create_dietsetitem(row, diet_set, headers):
     food_item = get_fooditem(getattr(row, 'verbatimAssociatedTaxa'))
     list_order = getattr(row, 'sequence')
@@ -492,7 +494,7 @@ def create_dietsetitem(row, diet_set, headers):
         percentage = 0
     old_ds = DietSetItem.objects.filter(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)
     if len(old_ds) == 0:
-        dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)        
+        dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage) 
         dietsetitem.save()
 
 def trim(text:str):
@@ -663,24 +665,146 @@ def create_new_entity_relation(source_entity):
                 print('Error creating new entity relation ', sys.exc_info(), traceback.format_exc())
     except:
         print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
+
 @transaction.atomic
-def create_ets(row):
+def create_ets(row, headers):
     author = get_author(getattr(row, 'author'))
     reference = get_sourcereference_citation(getattr(row, 'references'), author)
     entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
     taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
-    measurementMethod = get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
-    locality = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
-    statisticalMethod = get_sourceStatistic(getattr(row, 'statisticalMethod'), reference, author)
+    name = possible_nan_to_none(getattr(row, 'verbatimTraitName'))
     verbatimTraitUnit = getattr(row, 'verbatimTraitUnit')
-    if verbatimTraitUnit == 'NA':
-        print('VerbatimTraitUnit is NA')
-        # do something
-    else:
-        print('VerbatimTraitUnit not NA')
-        # do something else
 
-def get_sourceStatistic(statistic, ref, author):
+    if 'measurementMethod' in headers:
+        method = get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
+    else:
+        method = None
+    if 'measurementRemarks' in headers:
+        remarks = possible_nan_to_none(getattr(row, 'measurementRemarks'))
+    else:
+        remarks = None
+    if 'verbatimTraitValue' in headers:
+        vt_value = possible_nan_to_none(getattr(row, 'verbatimTraitValue'))
+    else:
+        vt_value = 0
+
+    if verbatimTraitUnit == 'nan' or verbatimTraitUnit != verbatimTraitUnit or verbatimTraitUnit == 'NA':
+        attribute = get_sourceattribute(name, reference, entityclass, method, 2, remarks, author)
+        choicesetoption = get_sourcechoicesetoption(vt_value, attribute, author)
+        choicesetoptionvalue = get_sourcechoicesetoptionvalue(taxon, choicesetoption, author)
+
+    else:  
+        attribute = get_sourceattribute(name, reference, entityclass, method, 1, remarks, author)
+        unit = get_sourceunit(verbatimTraitUnit, author)
+        choicesetoption = get_sourcechoicesetoption(vt_value, attribute, author)
+        if 'verbatimLocality' in headers:
+            locality = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+        else:
+            locality = None
+        if 'statisticalMethod' in headers:
+            statistic = get_sourcestatistic(getattr(row, 'statisticalMethod'), reference, author)
+        else:
+            statistic = None
+        if 'associatedReferences' in headers:
+            cited_reference = possible_nan_to_none(getattr(row, 'associatedReferences'))
+        else:
+            cited_reference = None
+        if 'measurementValue_min' and 'measurementValue_max' in headers:
+            mes_min = possible_nan_to_zero(getattr(row, 'measurementValue_min'))
+            mes_max = possible_nan_to_zero(getattr(row, 'measurementValue_max'))
+        else:
+            mes_min = 0
+            mes_max = 0
+        if 'dispersion' in headers:
+            std = possible_nan_to_zero(getattr(row, 'dispersion'))
+        else:
+            std = 0
+        if 'lifeStage' in headers:
+            lifestage = get_choicevalue_ets(getattr(row, 'lifeStage'), 'lifestage', author)
+        else:
+            lifestage = None
+        if 'measurementDeterminedBy' in headers:
+            measured_by = possible_nan_to_none(getattr(row, 'measurementDeterminedBy'))
+        else:
+            measured_by = None
+        if 'measurementAccuracy' in headers:
+            accuracy = possible_nan_to_none(getattr(row, 'measurementAccuracy'))
+        else:
+            accuracy = None
+        if 'individualCount' in headers:
+            count = possible_nan_to_zero(getattr(row, 'individualCount'))
+        else:
+            count = 0
+        if 'sex' in headers:
+            gender = get_choicevalue_ets(getattr(row, 'sex'), 'gender', author)
+            if gender == gender:
+                create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author)
+        else: 
+            create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, lifestage, accuracy, measured_by, remarks, cited_reference, author)
+        
+def create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, lifestage, accuracy, measured_by, remarks, cited_reference, author):
+    smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+    if len(smv_old) > 0:
+        return
+    sm_value = SourceMeasurementValue(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, minimum=mes_min, maximum=mes_max, std=std,  mean=vt_value, source_statistic=statistic, source_unit=unit, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+    sm_value.save()
+
+def create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author):
+    n_female = 0
+    n_male = 0
+    n_unknown = 0
+
+    if gender.caption.lower() == 'female':
+        n_female = count
+    elif gender.caption.lower() == 'male':
+        n_male = count
+    else:
+        n_unknown = count
+            
+    smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_female=n_female, n_male=n_male, n_unknown=n_unknown, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+    if len(smv_old) > 0:
+        return
+    sm_value = SourceMeasurementValue(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_female=n_female, n_male=n_male, n_unknown=n_unknown, minimum=mes_min, maximum=mes_max, std=std,  mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+    sm_value.save()
+
+def get_choicevalue_ets(choice, set, author):
+    if choice != choice or choice == 'nan':
+        return None
+    choiceset = ChoiceValue.objects.filter(caption=choice, choice_set=set)
+    if len(choiceset) > 0:
+        return choiceset[0]
+    cv = ChoiceValue.objects.create(caption=choice, choice_set=set, created_by=author)
+    return cv
+
+def get_sourceunit(unit, author):
+    if unit != unit or unit == 'nan':
+        return None
+    su_old = SourceUnit.objects.filter(name=unit)
+    if len(su_old) > 0:
+        return su_old[0]
+    su = SourceUnit(name=unit, created_by=author)
+    su.save()
+    return su
+
+def get_sourcechoicesetoptionvalue(entity, sourcechoiceoption, author):
+    scov_old = SourceChoiceSetOptionValue.objects.filter(source_entity=entity, source_choiceset_option=sourcechoiceoption)
+    if len(scov_old) > 0:
+        return scov_old[0]
+    scov = SourceChoiceSetOptionValue(source_entity=entity, source_choiceset_option=sourcechoiceoption, created_by=author)
+    scov.save()
+    return scov
+
+def get_sourcechoicesetoption(name, attribute, author):
+    if name == 'nan' or name == 'NA' or name != name:
+        return None
+    sco_old = SourceChoiceSetOption.objects.filter(source_attribute=attribute, name=name)
+    if len(sco_old) > 0:
+        return sco_old[0]
+    sco = SourceChoiceSetOption(source_attribute=attribute, name=name, created_by=author)
+    sco.save()
+    return sco
+
+def get_sourcestatistic(statistic, ref, author):
     if statistic != statistic or statistic == 'nan':
         return None
     ss_old = SourceStatistic.objects.filter(name=statistic, reference=ref)
@@ -689,3 +813,11 @@ def get_sourceStatistic(statistic, ref, author):
     ss = SourceStatistic(name=statistic, reference=ref, created_by=author)
     ss.save()
     return ss
+
+def get_sourceattribute(name, ref, entity, method, type_value, remarks, author):
+    sa_old = SourceAttribute.objects.filter(name=name, reference=ref, entity=entity, method=method, type=type_value, remarks=remarks)
+    if len(sa_old) > 0:
+        return sa_old[0]
+    sa = SourceAttribute(name=name, reference=ref, entity=entity, method=method, type=type_value, remarks=remarks, created_by=author)
+    sa.save()
+    return sa

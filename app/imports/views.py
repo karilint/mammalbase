@@ -57,8 +57,9 @@ def import_ets(request):
 		if check.check_all_ets(df) != True:
 			return HttpResponseRedirect(reverse("import_ets"))
 		else:
+			headers =  list(df.columns.values)
 			for row in df.itertuples():
-				create_ets(row)
+				create_ets(row, headers)
 			success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
 			messages.add_message(request, 50 ,success_message, extra_tags="import-message")
 			messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")
