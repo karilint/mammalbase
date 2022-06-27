@@ -26,6 +26,8 @@ class Check:
             return False
         elif self.check_taxonRank(df) == False:
             return False
+        elif self.check_verbatim_associated_taxa(df) == False:
+            return False
         elif self.check_sequence(df) == False:
             return False
         elif self.check_measurementValue(df) == False:
@@ -48,11 +50,16 @@ class Check:
         return True
 
     def check_valid_author(self, df):
+        counter = 1
         for author in (df.loc[:, 'author']):
+            counter += 1
+            if author == "nan":
+                messages.error(self.request, "The author is empty at row " +  str(counter) + ".")
+                return False
             data = SocialAccount.objects.all().filter(uid=author)
             if data.exists() == False:
                 self.id = None
-                messages.error(self.request, "The author " + str(author) + " is not a valid ORCID ID.")
+                messages.error(self.request, "The author " + str(author) + " is not a valid ORCID ID at row " +  str(counter) + ".")
                 return False
             self.id = data[0].user_id
         return True
@@ -131,6 +138,15 @@ class Check:
             counter += 1
             if rank not in ['Genus', 'Species', 'Subspecies', 'genus', 'species', 'subspecies']:
                 messages.error(self.request, "Taxonomic rank is not in the correct form on the line " + str(counter) + ".")
+                return False
+        return True
+
+    def check_verbatim_associated_taxa(self, df):
+        counter = 1
+        for item in (df.loc[:, 'verbatimAssociatedTaxa']):
+            counter += 1
+            if item == "nan":
+                messages.error(self.request, "The line " + str(counter) + " should not be empty on the column 'verbatimAssociatedTaxa'.")
                 return False
         return True
 
