@@ -531,7 +531,7 @@ class ToolsTest(TestCase):
         self.assertEqual(scsov.created_by.username, 'Testuser')
 
     def test_get_sourceattribute_na(self):
-        attribute = tools.get_sourceattribute_na('TestAttribute', self.sr, self.entity, self.method, 'TestRemarks', self.user)
+        attribute = tools.get_sourceattribute('TestAttribute', self.sr, self.entity, self.method, 2, 'TestRemarks', self.user)
         self.assertEqual(attribute.name, 'TestAttribute')
         self.assertEqual(attribute.created_by.username, 'Testuser')
 
