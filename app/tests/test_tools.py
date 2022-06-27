@@ -4,7 +4,7 @@ from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import User
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from allauth.socialaccount.models import SocialAccount
-from mb.models import EntityClass, MasterReference, SourceAttribute, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
+from mb.models import EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
 from imports.tools import Check
 import imports.tools as tools
 import tempfile, csv, os
@@ -94,24 +94,32 @@ class ToolsTest(TestCase):
         self.entity = tools.get_entityclass(self.file.loc[:, 'taxonRank'][1], self.user)
 
         self.ets_numerical_df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-222X'], 
-        'references':['Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'], 
-        'taxonRank':['Species'],
-        'verbatimScientificName':['SelfSourceEntity'],
-        'verbatimTraitName':['TestName'],
-        'measurementMethod':['SD'],
-        'measurementRemarks':['TestRemarks'],
-        'verbatimTraitUnit':['km'], 
-        'verbatimTraitValue':['5'],
-        'verbatimLocality':['TestPlace'],
-        'associatedReferences':['TestAssociatedReference'],
-        'measurementValue_min':['1'],
-        'measurementValue_max':['10'],
-        'dispersion':['0.5'],
-        'sex':['Female'],
-        'lifeStage':['Juvenile'],
-        'measurementAccuracy':['0.1'],
-        'individualCount':['10'],
-             }) 
+            'references':['Tester, T., TesterToo, T., Testing, testing'], 
+            'taxonRank':['Species'],
+            'verbatimScientificName':['Lagothrix flavicauda'],
+            'verbatimTraitName':['TestName'],
+            'measurementMethod':['SD'],
+            'measurementRemarks':['TestRemarks'],
+            'verbatimTraitUnit':['km'], 
+            'verbatimTraitValue':['5'],
+            'verbatimLocality':['TestPlace'],
+            'associatedReferences':['TestAssociatedReference'],
+            'measurementValue_min':['1'],
+            'measurementValue_max':['10'],
+            'dispersion':['0.5'],
+            'sex':['Female'],
+            'lifeStage':['Juvenile'],
+            'measurementAccuracy':['0.1'],
+            'individualCount':['10']}) 
+        self.ets_nonnumerical_df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-222X'], 
+            'references':['Tester, T., TesterToo, T., Testing, testing'], 
+            'taxonRank':['Species'],
+            'verbatimScientificName':['Lagothrix flavicauda'],
+            'verbatimTraitName':['TestName'],
+            'measurementMethod':[''],
+            'measurementRemarks':[''],
+            'verbatimTraitUnit':['NA'], 
+            'verbatimTraitValue':['TestValues']}) 
         #print(tools.get_entityclass(self.file.loc[:, 'taxonRank'][0]).name)
         #print('Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
 
@@ -120,7 +128,7 @@ class ToolsTest(TestCase):
         self.sr_with_mr = SourceReference.objects.create(citation="Title and author", status=2, master_reference=self.mr)
         self.method = SourceMethod.objects.create(reference=self.sr, name='TestMethod')
         self.attribute = SourceAttribute.objects.create(name='SelfAttribute', reference=self.sr, entity=self.entity, method=self.method, remarks='TestRemarks') 
-        self.source_entity = SourceEntity.objects.create(name='SelfSourceEntity', reference=self.sr, entity=self.entity)
+        self.source_entity = SourceEntity.objects.create(name='Lagothrix flavicauda', reference=self.sr, entity=self.entity)
         self.res = {'status': 'ok', 
                 'message-type': 'work-list', 
                 'message-version': '1.0.0', 
@@ -530,11 +538,13 @@ class ToolsTest(TestCase):
 
         time_period = tools.get_timeperiod(df.loc[:, 'samplingEffort'][0], self.sr, self.user)
         gender = tools.get_choicevalue(df.loc[:, 'sex'][0])
+        gender_ets = tools.get_choicevalue_ets(df.loc[:, 'sex'][0], 'gender', self.user)
         sample_size = tools.possible_nan_to_zero(df.loc[:, 'individualCount'][0])
         cited_reference = tools.possible_nan_to_none(df.loc[:, 'associatedReferences'][0])
         method = tools.get_sourcemethod(df.loc[:, 'measurementMethod'][0], self.sr, self.user)
         self.assertNotEqual(time_period.name, 'nan')
         self.assertNotEqual(type(gender), ChoiceValue)
+        self.assertEqual(gender_ets.caption, '')
         self.assertNotEqual(sample_size, 0.0)
         self.assertNotEqual(cited_reference, 'nan')
         self.assertNotEqual(method.name, 'nan')
@@ -546,7 +556,7 @@ class ToolsTest(TestCase):
         self.assertEqual(scso.created_by.username, 'Testuser')
         scsov = tools.get_sourcechoicesetoptionvalue(self.source_entity, scso, self.user)
         self.assertEqual(scsov.source_choiceset_option, scso)
-        self.assertEqual(scsov.source_entity.name, 'SelfSourceEntity')
+        self.assertEqual(scsov.source_entity.name, 'Lagothrix flavicauda')
         self.assertEqual(scsov.created_by.username, 'Testuser')
 
     def test_get_sourceattribute_na(self):
@@ -560,9 +570,6 @@ class ToolsTest(TestCase):
     def test_valid_author(self):
         self.assertEqual(self.check.check_valid_author(self.file), True)
 
-    # def test_get_sourcemearuementvalue(self):
-    #     tools.get_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, mean, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author)
-
     def test_create_ets_numerical(self):
         df = self.ets_numerical_df
         tools.trim_df(df)
@@ -570,6 +577,39 @@ class ToolsTest(TestCase):
         for row in df.itertuples():
             tools.create_ets(row, headers)
         smv = SourceMeasurementValue.objects.get(measurement_accuracy=0.1)
-        self.assertEqual(smv.source_entity.name, 'SelfSourceEntity')
+        self.assertEqual(smv.source_entity.name, 'Lagothrix flavicauda')
+        self.assertEqual(smv.n_male, 0)
+        self.assertEqual(smv.n_unknown, 0)
+        self.assertEqual(smv.n_female, 10)
+        self.assertEqual(smv.n_total, 10)
         
-    
+    def test_create_ets_nonnumerical(self):
+        df = self.ets_nonnumerical_df
+        tools.trim_df(df)   
+        headers =  list(df.columns.values)
+        for row in df.itertuples():
+            tools.create_ets(row, headers)
+        sa = SourceAttribute.objects.get(name='TestName')
+        self.assertEqual(sa.type, 2)
+        cso = SourceChoiceSetOption.objects.get(source_attribute=sa)
+        self.assertEqual(cso.name, 'TestValues')
+        csov = SourceChoiceSetOptionValue.objects.get(source_choiceset_option=cso)
+        self.assertEqual(csov.source_entity.name, 'Lagothrix flavicauda')
+
+    def test_create_ets_minimum_headers(self):
+        df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-222X'], 
+            'references':['Tester, T., TesterToo, T., Testing, testing'], 
+            'taxonRank':['Species'],
+            'verbatimScientificName':['Lagothrix flavicauda'],
+            'verbatimTraitName':['TestName'],
+            'verbatimTraitUnit':['km'], 
+            'verbatimTraitValue':[4.2]}) 
+
+        tools.trim_df(df)
+        headers =  list(df.columns.values)
+        for row in df.itertuples():
+            tools.create_ets(row, headers)
+        sa = SourceAttribute.objects.get(name='TestName')
+        smv = SourceMeasurementValue.objects.get(source_attribute=sa)
+        self.assertEqual(smv.source_entity.name, 'Lagothrix flavicauda')
+        self.assertEqual(smv.n_total, 0)
