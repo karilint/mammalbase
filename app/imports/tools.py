@@ -43,6 +43,8 @@ class Check:
             return False
         elif self.check_taxonRank(df) == False:
             return False
+        elif self.check_min_max(df) == False:
+            return False
         return True
 
     def check_valid_author(self, df):
@@ -286,6 +288,21 @@ class Check:
                 return False
 
         return True
+    
+    def check_min_max(self, df):
+        import_headers = list(df.columns.values)
+        
+        if "measurementValue_min" in import_headers:
+            if "measurementValue_max" not in import_headers:
+                messages.error(self.request, "There should be a header called 'measurementValue_max'.")
+                return False
+        elif "measurementValue_max" in import_headers:
+            if "measurementValue_min" not in import_headers:
+                messages.error(self.request, "There should be a header called 'measurementValue_min'.")
+                return False
+        
+        
+
 
 def get_author(id):
     author = User.objects.filter(socialaccount__uid=id)[0]
