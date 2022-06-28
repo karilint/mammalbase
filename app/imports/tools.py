@@ -333,6 +333,20 @@ class Check:
                     messages.error(self.request, "Habitat is too long at row " + str(counter) + ".")
                     return False
             counter = 1
+        if "samplingEffort" in import_headers:
+            for se in (df.loc[:, 'samplingEffort']):
+                counter += 1
+                if len(str(se)) > 250:
+                    messages.error(self.request, "Sampling effort is too long at row " + str(counter) + ".")
+                    return False
+            counter = 1
+        if "verbatimEventDate" in import_headers:
+            for ved in (df.loc[:, 'verbatimEventDate']):
+                counter += 1
+                if len(str(ved)) > 250:
+                    messages.error(self.request, "verbatimEventDate is too long at row " + str(counter) + ".")
+                    return False
+            counter = 1
         if "measurementMethod" in import_headers:
             for mm in (df.loc[:, 'measurementMethod']):
                 counter += 1
@@ -347,6 +361,67 @@ class Check:
                     messages.error(self.request, "Associated references line is too long at row " + str(counter) + ".")
                     return False
             counter = 1
+        if "verbatimTraitName" in import_headers:
+            for vtn in (df.loc[:, 'verbatimTraitName']):
+                counter += 1
+                if len(str(vtn)) > 250:
+                    messages.error(self.request, "verbatimTraitName is too long at row " + str(counter) + ".")
+                    return False
+        if "verbatimTraitValue" in import_headers:
+            for vtv in (df.loc[:, 'verbatimTraitValue']):
+                counter += 1
+                if len(str(vtv)) > 250:
+                    messages.error(self.request, "verbatimTraitValue is too long at row " + str(counter) + ".")
+                    return False
+            counter = 1
+        if "verbatimTraitUnit" in import_headers:
+            for vtu in (df.loc[:, 'verbatimTraitUnit']):
+                counter += 1
+                if len(str(vtu)) > 250:
+                    messages.error(self.request, "verbatimTraitUnit is too long at row " + str(counter) + ".")
+                    return False
+        if "measurementDeterminedBy" in import_headers:
+            for mdb in (df.loc[:, 'measurementDeterminedBy']):
+                counter += 1
+                if len(str(mdb)) > 250:
+                    messages.error(self.request, "measurementDeterminedBy is too long at row " + str(counter) + ".")
+                    return False
+        if "measurementRemarks" in import_headers:
+            for mr in (df.loc[:, 'measurementRemarks']):
+                counter += 1
+                if len(str(mr)) > 250:
+                    messages.error(self.request, "measurementRemarks is too long at row " + str(counter) + ".")
+                    return False
+        if "measurementAccuracy" in import_headers:
+            for ma in (df.loc[:, 'measurementAccuracy']):
+                counter += 1
+                if len(str(ma)) > 250:
+                    messages.error(self.request, "measurementAccuracy is too long at row " + str(counter) + ".")
+                    return False
+        if "statisticalMethod" in import_headers:
+            for sm in (df.loc[:, 'statisticalMethod']):
+                counter += 1
+                if len(str(sm)) > 250:
+                    messages.error(self.request, "Statistical method is too long at row " + str(counter) + ".")
+                    return False
+        if "lifeStage" in import_headers:
+            for ls in (df.loc[:, 'lifeStage']):
+                counter += 1
+                if len(str(ls)) > 250:
+                    messages.error(self.request, "lifeStage is too long at row " + str(counter) + ".")
+                    return False
+        if "verbatimLatitude" in import_headers:
+            for vla in (df.loc[:, 'verbatimLatitude']):
+                counter += 1
+                if len(str(vla)) > 250:
+                    messages.error(self.request, "verbatimLatitude is too long at row " + str(counter) + ".")
+                    return False
+        if "verbatimLongitude" in import_headers:
+            for vlo in (df.loc[:, 'verbatimLongitude']):
+                counter += 1
+                if len(str(vlo)) > 250:
+                    messages.error(self.request, "verbatimLongitude is too long at row " + str(counter) + ".")
+                    return False
         return True
 
     
