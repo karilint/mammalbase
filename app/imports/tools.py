@@ -812,11 +812,11 @@ def create_ets(row, headers):
             count = 0
         if 'sex' in headers:
             gender = get_choicevalue_ets(getattr(row, 'sex'), 'gender', author)
-            if gender == gender:
-                create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author)
-        else: 
-            create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, lifestage, accuracy, measured_by, remarks, cited_reference, author)
-        
+        else:
+            gender = None
+        create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author)
+        return
+
 def create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, lifestage, accuracy, measured_by, remarks, cited_reference, author):
     smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
     if len(smv_old) > 0:
@@ -828,19 +828,21 @@ def create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, me
     n_female = 0
     n_male = 0
     n_unknown = 0
-
-    if gender.caption.lower() == 'female':
+    if isinstance(gender, type(None)):
+        create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, lifestage, accuracy, measured_by, remarks, cited_reference, author)
+        return 
+    elif gender.caption.lower() == 'female':
         n_female = count
     elif gender.caption.lower() == 'male':
         n_male = count
     else:
-        n_unknown = count
-            
+        n_unknown = count     
     smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_female=n_female, n_male=n_male, n_unknown=n_unknown, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
     if len(smv_old) > 0:
         return
     sm_value = SourceMeasurementValue(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_female=n_female, n_male=n_male, n_unknown=n_unknown, minimum=mes_min, maximum=mes_max, std=std,  mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
     sm_value.save()
+    return
 
 def get_choicevalue_ets(choice, set, author):
     if choice != choice or choice == 'nan':
