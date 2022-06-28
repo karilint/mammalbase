@@ -1,4 +1,5 @@
 from doctest import master
+from multiprocessing.spawn import import_main_path
 from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
@@ -34,6 +35,8 @@ class Check:
             return False
         elif self.check_references(df, force) == False:
             return False
+        elif self.check_lengths(df) == False:
+            return False
         return True
     
     def check_all_ets(self, df):
@@ -47,6 +50,8 @@ class Check:
             return False
         elif self.check_min_max(df) == False:
             return False
+        elif self.check_lengths(df) == False:
+           return False
         return True
 
     def check_valid_author(self, df):
@@ -106,10 +111,13 @@ class Check:
 
     def check_verbatimScientificName(self, df):
         counter = 1
-        for name in pd.isnull(df.loc[:, 'verbatimScientificName']):
+        for name in df.loc[:, 'verbatimScientificName']:
             counter += 1
-            if name == True:
-                messages.error(self.request, "Scientific name is empty on the line " + str(counter) + ".")
+            if name == "nan":
+                messages.error(self.request, "Scientific name is empty at row " + str(counter) + ".")
+                return False
+            if len(name) > 250:
+                messages.error(self.request, "Scientific name is too long at row " + str(counter) + ".")
                 return False
 
         df_new = df[['verbatimScientificName', 'taxonRank']]
@@ -147,6 +155,9 @@ class Check:
             counter += 1
             if item == "nan":
                 messages.error(self.request, "The line " + str(counter) + " should not be empty on the column 'verbatimAssociatedTaxa'.")
+                return False
+            if len(item) > 250:
+                messages.error(self.request, "verbatimAssociatedTaxa is too long at row " + str(counter) + ".")
                 return False
         return True
 
@@ -305,6 +316,40 @@ class Check:
 
         return True
     
+    def check_lengths(self, df):
+        import_headers = list(df.columns.values)
+        counter = 1
+        if "verbatimLocality" in import_headers:
+            for vl in (df.loc[:, 'verbatimLocality']):
+                counter += 1
+                if len(str(vl)) > 250:
+                    messages.error(self.request, "verbatimLocality is too long at row " + str(counter) + ".")
+                    return False
+            counter = 1
+        if "habitat" in import_headers:
+            for hab in (df.loc[:, 'habitat']):
+                counter += 1
+                if len(str(hab)) > 250:
+                    messages.error(self.request, "Habitat is too long at row " + str(counter) + ".")
+                    return False
+            counter = 1
+        if "measurementMethod" in import_headers:
+            for mm in (df.loc[:, 'measurementMethod']):
+                counter += 1
+                if len(str(mm)) > 500:
+                    messages.error(self.request, "Measurement method is too long at row " + str(counter) + ".")
+                    return False
+            counter = 1
+        if "associatedReferences" in import_headers:
+            for ar in (df.loc[:, 'associatedReferences']):
+                counter += 1
+                if len(str(ar)) > 500:
+                    messages.error(self.request, "Associated references line is too long at row " + str(counter) + ".")
+                    return False
+            counter = 1
+        return True
+
+    
     def check_min_max(self, df):
         import_headers = list(df.columns.values)
         
@@ -317,9 +362,6 @@ class Check:
                 messages.error(self.request, "There should be a header called 'measurementValue_min'.")
                 return False
         
-        
-
-
 def get_author(id):
     author = User.objects.filter(socialaccount__uid=id)[0]
     return author
