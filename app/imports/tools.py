@@ -1,4 +1,5 @@
 from doctest import master
+from multiprocessing.spawn import import_main_path
 from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
@@ -34,6 +35,8 @@ class Check:
             return False
         elif self.check_references(df, force) == False:
             return False
+        elif self.check_lengths(df) == False:
+            return False
         return True
     
     def check_all_ets(self, df):
@@ -47,6 +50,8 @@ class Check:
             return False
         elif self.check_min_max(df) == False:
             return False
+        elif self.check_lengths(df) == False:
+           return False
         return True
 
     def check_valid_author(self, df):
@@ -106,10 +111,13 @@ class Check:
 
     def check_verbatimScientificName(self, df):
         counter = 1
-        for name in pd.isnull(df.loc[:, 'verbatimScientificName']):
+        for name in df.loc[:, 'verbatimScientificName']:
             counter += 1
-            if name == True:
-                messages.error(self.request, "Scientific name is empty on the line " + str(counter) + ".")
+            if name == "nan":
+                messages.error(self.request, "Scientific name is empty at row " + str(counter) + ".")
+                return False
+            if len(name) > 250:
+                messages.error(self.request, "Scientific name is too long at row " + str(counter) + ".")
                 return False
 
         df_new = df[['verbatimScientificName', 'taxonRank']]
@@ -147,6 +155,9 @@ class Check:
             counter += 1
             if item == "nan":
                 messages.error(self.request, "The line " + str(counter) + " should not be empty on the column 'verbatimAssociatedTaxa'.")
+                return False
+            if len(item) > 250:
+                messages.error(self.request, "verbatimAssociatedTaxa is too long at row " + str(counter) + ".")
                 return False
         return True
 
@@ -305,6 +316,115 @@ class Check:
 
         return True
     
+    def check_lengths(self, df):
+        import_headers = list(df.columns.values)
+        counter = 1
+        if "verbatimLocality" in import_headers:
+            for vl in (df.loc[:, 'verbatimLocality']):
+                counter += 1
+                if len(str(vl)) > 250:
+                    messages.error(self.request, "verbatimLocality is too long at row " + str(counter) + ".")
+                    return False
+            counter = 1
+        if "habitat" in import_headers:
+            for hab in (df.loc[:, 'habitat']):
+                counter += 1
+                if len(str(hab)) > 250:
+                    messages.error(self.request, "Habitat is too long at row " + str(counter) + ".")
+                    return False
+            counter = 1
+        if "samplingEffort" in import_headers:
+            for se in (df.loc[:, 'samplingEffort']):
+                counter += 1
+                if len(str(se)) > 250:
+                    messages.error(self.request, "Sampling effort is too long at row " + str(counter) + ".")
+                    return False
+            counter = 1
+        if "verbatimEventDate" in import_headers:
+            for ved in (df.loc[:, 'verbatimEventDate']):
+                counter += 1
+                if len(str(ved)) > 250:
+                    messages.error(self.request, "verbatimEventDate is too long at row " + str(counter) + ".")
+                    return False
+            counter = 1
+        if "measurementMethod" in import_headers:
+            for mm in (df.loc[:, 'measurementMethod']):
+                counter += 1
+                if len(str(mm)) > 500:
+                    messages.error(self.request, "Measurement method is too long at row " + str(counter) + ".")
+                    return False
+            counter = 1
+        if "associatedReferences" in import_headers:
+            for ar in (df.loc[:, 'associatedReferences']):
+                counter += 1
+                if len(str(ar)) > 500:
+                    messages.error(self.request, "Associated references line is too long at row " + str(counter) + ".")
+                    return False
+            counter = 1
+        if "verbatimTraitName" in import_headers:
+            for vtn in (df.loc[:, 'verbatimTraitName']):
+                counter += 1
+                if len(str(vtn)) > 250:
+                    messages.error(self.request, "verbatimTraitName is too long at row " + str(counter) + ".")
+                    return False
+        if "verbatimTraitValue" in import_headers:
+            for vtv in (df.loc[:, 'verbatimTraitValue']):
+                counter += 1
+                if len(str(vtv)) > 250:
+                    messages.error(self.request, "verbatimTraitValue is too long at row " + str(counter) + ".")
+                    return False
+            counter = 1
+        if "verbatimTraitUnit" in import_headers:
+            for vtu in (df.loc[:, 'verbatimTraitUnit']):
+                counter += 1
+                if len(str(vtu)) > 250:
+                    messages.error(self.request, "verbatimTraitUnit is too long at row " + str(counter) + ".")
+                    return False
+        if "measurementDeterminedBy" in import_headers:
+            for mdb in (df.loc[:, 'measurementDeterminedBy']):
+                counter += 1
+                if len(str(mdb)) > 250:
+                    messages.error(self.request, "measurementDeterminedBy is too long at row " + str(counter) + ".")
+                    return False
+        if "measurementRemarks" in import_headers:
+            for mr in (df.loc[:, 'measurementRemarks']):
+                counter += 1
+                if len(str(mr)) > 250:
+                    messages.error(self.request, "measurementRemarks is too long at row " + str(counter) + ".")
+                    return False
+        if "measurementAccuracy" in import_headers:
+            for ma in (df.loc[:, 'measurementAccuracy']):
+                counter += 1
+                if len(str(ma)) > 250:
+                    messages.error(self.request, "measurementAccuracy is too long at row " + str(counter) + ".")
+                    return False
+        if "statisticalMethod" in import_headers:
+            for sm in (df.loc[:, 'statisticalMethod']):
+                counter += 1
+                if len(str(sm)) > 250:
+                    messages.error(self.request, "Statistical method is too long at row " + str(counter) + ".")
+                    return False
+        if "lifeStage" in import_headers:
+            for ls in (df.loc[:, 'lifeStage']):
+                counter += 1
+                if len(str(ls)) > 250:
+                    messages.error(self.request, "lifeStage is too long at row " + str(counter) + ".")
+                    return False
+        if "verbatimLatitude" in import_headers:
+            for vla in (df.loc[:, 'verbatimLatitude']):
+                counter += 1
+                if len(str(vla)) > 250:
+                    messages.error(self.request, "verbatimLatitude is too long at row " + str(counter) + ".")
+                    return False
+        if "verbatimLongitude" in import_headers:
+            for vlo in (df.loc[:, 'verbatimLongitude']):
+                counter += 1
+                if len(str(vlo)) > 250:
+                    messages.error(self.request, "verbatimLongitude is too long at row " + str(counter) + ".")
+                    return False
+        return True
+
+    
     def check_min_max(self, df):
         import_headers = list(df.columns.values)
         
@@ -317,9 +437,6 @@ class Check:
                 messages.error(self.request, "There should be a header called 'measurementValue_min'.")
                 return False
         
-        
-
-
 def get_author(id):
     author = User.objects.filter(socialaccount__uid=id)[0]
     return author
