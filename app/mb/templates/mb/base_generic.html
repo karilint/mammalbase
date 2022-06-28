@@ -155,6 +155,18 @@
         }
       }
 
+      function backFunction() {
+        var referer = document.referrer;
+        if (referer.includes('edit')) {
+          history.go(-3)
+        }
+       else if (referer.includes('delete')) {
+          history.go(-3)
+        }
+        else {
+          history.go(-1)
+        }}
+
     </script>
     <noscript>Sorry, your browser does not support JavaScript!</noscript>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
