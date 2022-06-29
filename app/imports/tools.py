@@ -719,7 +719,7 @@ def trim_df(df):
 # Please do not make any unnessecary queries: https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/
 def get_referencedata_from_crossref(citation): # pragma: no cover
     c = citation.replace(" ", "%20")
-    url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=mammalbase@gmail.com&rows=2'
+    url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=kari.lintulaakso@helsinki.fi&rows=2'
     try:
         x = requests.get(url)
         y = x.json()
