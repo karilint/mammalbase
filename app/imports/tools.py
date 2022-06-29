@@ -153,7 +153,7 @@ class Check:
         counter = 1
         for item in (df.loc[:, 'verbatimAssociatedTaxa']):
             counter += 1
-            if item == "nan":
+            if item == "nan" or pd.isna(item):
                 messages.error(self.request, "The line " + str(counter) + " should not be empty on the column 'verbatimAssociatedTaxa'.")
                 return False
             if len(item) > 250:
