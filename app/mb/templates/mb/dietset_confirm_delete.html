@@ -10,7 +10,7 @@
         {% csrf_token %}
         <input type="submit" action="" value="Yes, delete." />
     </form>
-    <p><a onclick="history.back()">Go back</a></p>
+    <p><a onclick="backFunction()">Go back</a></p>
   {% else %}
     <p><a href="{% url 'login'%}?next={{request.path}}">Please login first</a></p>
   {% endif %}
