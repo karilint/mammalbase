@@ -443,6 +443,8 @@ class Check:
             return True
         
         if "verbatimTraitValue" in import_headers:
+            if "measurementValue_min" not in import_headers or "measurementValue_max" not in import_headers:
+                return True
             counter = 1
             df_new = df[['measurementValue_min', 'measurementValue_max', 'verbatimTraitValue']]
             for value in df_new.values:
@@ -450,10 +452,19 @@ class Check:
                 if value[0] > value[1]:
                     messages.error(self.request, "Minimum measurement value should be smaller than maximum measurement value at row " + str(counter) + ".")
                     return False
-                if value[1] < value[2]:
-                    print(value[0], value[1])
-                    messages.error(self.request, "Mean measurement value should be smaller than maximum measurement value at row " + str(counter) + ".")
-                    return False
+                if value[2][0].isalpha() == True or value[2][-1].isalpha() == True:
+                    if value[1] == 'nan' or pd.isnull(value[1]):
+                        continue
+                    else:
+                        messages.error(self.request, "Mean value should be numeric at row " + str(counter) + ".")
+                        return False
+                else:
+                    if float(value[1]) < float(value[2]):
+                        messages.error(self.request, "Mean measurement value should be smaller than maximum measurement value at row " + str(counter) + ".")
+                        return False
+                    if float(value[0]) > float(value[2]):
+                        messages.error(self.request, "Mean measurement value should be larger than minimum measurement value at row " + str(counter) + ".")
+                        return False
         else:
             counter = 1
             df_new = df[['measurementValue_min', 'measurementValue_max']]

@@ -90,7 +90,8 @@ class ToolsTest(TestCase):
         'taxonRank':['genus', 'genus'],
         'verbatimTraitName':['body weight (Wt)', 'body weight (Wt)'],
         'verbatimTraitUnit':['kg', 'kg'],
-        'verbatimTraitValue':['1', '1'],
+        'measurementValue_min':['1'],
+        'measurementValue_max':['2'],
         'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']}
         self.entity = tools.get_entityclass(self.file.loc[:, 'taxonRank'][1], self.user)
 
