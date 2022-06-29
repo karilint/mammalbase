@@ -295,7 +295,7 @@ class Check:
         return True
 
     def check_reference_in_db(self, reference):
-        return len(SourceReference.objects.filter(citation=reference)) == 0
+        return len(SourceReference.objects.filter(citation__iexact=reference)) == 0
 
     def check_references(self, df, force:bool):
         counter = 1
@@ -487,7 +487,7 @@ def get_entityclass(taxonRank, author):
     return new_entity
 
 def get_sourceentity(vs_name, reference, entity, author):
-    se_old = SourceEntity.objects.filter(reference=reference, entity=entity, name=vs_name)
+    se_old = SourceEntity.objects.filter(reference=reference, entity=entity, name__iexact=vs_name)
     if len(se_old) > 0:
         return se_old[0]
     new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name, created_by=author)
@@ -499,7 +499,7 @@ def get_timeperiod(sampling, ref, author):
     if sampling != sampling or sampling == 'nan':
         return None
     else:
-        tp_all = TimePeriod.objects.filter(reference=ref, name=sampling)
+        tp_all = TimePeriod.objects.filter(reference=ref, name__iexact=sampling)
         if len(tp_all) > 0:
             return tp_all[0]
         else:
@@ -510,7 +510,7 @@ def get_timeperiod(sampling, ref, author):
 def get_sourcemethod(method, ref, author):
     if method != method or method == 'nan':
         return None
-    sr_old = SourceMethod.objects.filter(reference=ref, name=method)
+    sr_old = SourceMethod.objects.filter(reference=ref, name__iexact=method)
     if len(sr_old) > 0:
         return sr_old[0]
     else:
@@ -521,7 +521,7 @@ def get_sourcemethod(method, ref, author):
 def get_sourcelocation(location, ref, author):
     if location != location or location == 'nan':
         return None
-    sl_old = SourceLocation.objects.filter(name=location, reference=ref)
+    sl_old = SourceLocation.objects.filter(name__iexact=location, reference=ref)
     if len(sl_old) > 0:
         return sl_old[0]
     else:
@@ -901,7 +901,7 @@ def create_ets(row, headers):
         else:
             std = 0
         if 'lifeStage' in headers:
-            lifestage = get_choicevalue_ets(getattr(row, 'lifeStage'), 'lifestage', author)
+            lifestage = get_choicevalue_ets(getattr(row, 'lifeStage'), 'Lifestage', author)
         else:
             lifestage = None
         if 'measurementDeterminedBy' in headers:
@@ -917,7 +917,7 @@ def create_ets(row, headers):
         else:
             count = 0
         if 'sex' in headers:
-            gender = get_choicevalue_ets(getattr(row, 'sex'), 'gender', author)
+            gender = get_choicevalue_ets(getattr(row, 'sex'), 'Gender', author)
         else:
             gender = None
         create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author)
@@ -953,7 +953,7 @@ def create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, me
 def get_choicevalue_ets(choice, set, author):
     if choice != choice or choice == 'nan':
         return None
-    choiceset = ChoiceValue.objects.filter(caption__iexact=choice, choice_set=set)
+    choiceset = ChoiceValue.objects.filter(caption__iexact=choice, choice_set__iexact=set)
     if len(choiceset) > 0:
         return choiceset[0]
     cv = ChoiceValue.objects.create(caption=choice, choice_set=set, created_by=author)
