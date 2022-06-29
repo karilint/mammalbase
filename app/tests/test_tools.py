@@ -90,6 +90,7 @@ class ToolsTest(TestCase):
         'taxonRank':['genus', 'genus'],
         'verbatimTraitName':['body weight (Wt)', 'body weight (Wt)'],
         'verbatimTraitUnit':['kg', 'kg'],
+        'verbatimTraitValue':['1', '1'],
         'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']}
         self.entity = tools.get_entityclass(self.file.loc[:, 'taxonRank'][1], self.user)
 
@@ -423,6 +424,35 @@ class ToolsTest(TestCase):
         'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']})
         self.assertEqual(self.check.check_all_ets(df), False)
     
+    def test_no_max_check_min_max(self):
+        df = pd.DataFrame.from_dict({'measurementValue_min':['2']})
+        self.assertEqual(self.check.check_min_max(df), False)
+
+    def test_no_min_check_min_max(self):
+        df = pd.DataFrame.from_dict({'measurementValue_max':['2']})
+        self.assertEqual(self.check.check_min_max(df), False)
+
+    def test_false_check_min_max(self):
+        df = pd.DataFrame.from_dict({'measurementValue_min':['3'],
+        'measurementValue_max':['2']})
+        self.assertEqual(self.check.check_min_max(df), False)
+    
+    def test_false_check_min_max_with_mean(self):
+        df = pd.DataFrame.from_dict({'measurementValue_min':['3'],
+        'measurementValue_max':['2'],
+        'verbatimTraitValue':[1]})
+        self.assertEqual(self.check.check_min_max(df), False)
+
+    def test_false_mean_check_min_max(self):
+        df = pd.DataFrame.from_dict({'measurementValue_min':['1'],
+        'measurementValue_max':['2'],
+        'verbatimTraitValue':['3']})
+        self.assertEqual(self.check.check_min_max(df), False)
+    
+    def test_check_min_max_with_mean_with_characters(self):
+        df = pd.DataFrame.from_dict({'verbatimTraitValue':['keskiarvoinen']})
+        self.assertEqual(self.check.check_min_max(df), True)
+
     def test_false_vl_check_lengths(self):
         df = pd.DataFrame.from_dict({'verbatimLocality':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
         self.assertEqual(self.check.check_lengths(df), False)

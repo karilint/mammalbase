@@ -436,6 +436,34 @@ class Check:
                 messages.error(self.request, "There should be a header called 'measurementValue_min'.")
                 return False
         
+        if "measurementValue_min" not in import_headers and "measurementValue_max" not in import_headers:
+            if "verbatimTraitValue" not in import_headers:
+                messages.error(self.request, "There should be headerd called 'measurementValue_min' and 'measurementValue_max' or a header called 'verbatimTraitValue'.")
+                return False
+            return True
+        
+        if "verbatimTraitValue" in import_headers:
+            counter = 1
+            df_new = df[['measurementValue_min', 'measurementValue_max', 'verbatimTraitValue']]
+            for value in df_new.values:
+                counter += 1
+                if value[0] > value[1]:
+                    messages.error(self.request, "Minimum measurement value should be smaller than maximum measurement value at row " + str(counter) + ".")
+                    return False
+                if value[1] < value[2]:
+                    print(value[0], value[1])
+                    messages.error(self.request, "Mean measurement value should be smaller than maximum measurement value at row " + str(counter) + ".")
+                    return False
+        else:
+            counter = 1
+            df_new = df[['measurementValue_min', 'measurementValue_max']]
+            for value in df_new.values:
+                counter += 1
+                if value[0] > value[1]:
+                    messages.error(self.request, "Minimum measurement value should be smaller than maximum measurement value at row " + str(counter) + ".")
+                    return False
+        return True
+        
 def get_author(id):
     author = User.objects.filter(socialaccount__uid=id)[0]
     return author
