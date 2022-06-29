@@ -10,7 +10,7 @@
   <header class="w3-container w3-text-teal"><h2 style="display:none">Taxonomic Serial No.: {{ tsn.tsn }} ({{ tsn.completename }})</h2></header>
   <br>
   <div class="mb-detail w3-bar w3-right-align">
-    <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" onclick="history.back()"><span class="fa fa-arrow-left"></span></a>
+    <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" onclick="backFunction()"><span class="fa fa-arrow-left"></span></a>
     {% if request.user|is_data_admin_or_contributor %}
       <a title="Press to Edit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'tsn-edit' tsn=tsn.tsn %}"><span class="fa fa-pencil-square-o"></span></a>
       <button title="Delete is disabled" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
