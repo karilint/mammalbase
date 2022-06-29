@@ -90,7 +90,8 @@ class ToolsTest(TestCase):
         'taxonRank':['genus', 'genus'],
         'verbatimTraitName':['body weight (Wt)', 'body weight (Wt)'],
         'verbatimTraitUnit':['kg', 'kg'],
-        'verbatimTraitValue':['1', '1'],
+        'measurementValue_min':['1'],
+        'measurementValue_max':['2'],
         'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']}
         self.entity = tools.get_entityclass(self.file.loc[:, 'taxonRank'][1], self.user)
 
@@ -627,7 +628,7 @@ class ToolsTest(TestCase):
     def test_get_existing_fooditem(self):
         food_item = FoodItem(name='TEST', part=None, tsn=None, pa_tsn=None, is_cultivar=0)
         food_item.save()
-        result = tools.get_fooditem('TEST')
+        result = tools.get_fooditem('TEST', None)
         self.assertEqual(result.name, 'TEST')
     
     def test_get_fooditem_json(self):
@@ -649,7 +650,7 @@ class ToolsTest(TestCase):
         kingdom.save()
         rank = TaxonUnitTypes(rank_id = 220, rank_name = 'Species', kingdom_id = 3, dir_parent_rank_id = 190,req_parent_rank_id = 180)
         rank.save()
-        food_item = tools.create_fooditem(test_results, 'TARAXACUM OFFICINALE')
+        food_item = tools.create_fooditem(test_results, 'TARAXACUM OFFICINALE', None)
         self.assertEqual(food_item.tsn.tsn, 36213)
 
 

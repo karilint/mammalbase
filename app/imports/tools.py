@@ -33,6 +33,8 @@ class Check:
             return False
         elif self.check_measurementValue(df) == False:
             return False
+        elif self.check_part(df) == False:
+            return False
         elif self.check_references(df, force) == False:
             return False
         elif self.check_lengths(df) == False:
@@ -293,6 +295,22 @@ class Check:
                 return False
 
         return True
+    
+    def check_part(self, df):
+        headers = list(df.columns.values)
+        accepted = ['BANK', 'BLOOD', 'BONES', 'BUD', 'CARRION', 'EGGS', 'EXUDATES', 'FECES', 'FLOWER', 'FRUIT', 'LARVAE', 'LEAF', 'MINERAL', 'NECTAR/JUICE', 'NONE', 'POLLEN', 'ROOT', 'SEED', 'SHOOT', 'STEM', 'WHOLE']
+        if 'PartOfOrganism' not in headers:
+            return True
+        counter = 1
+        for value in (df.loc[:, 'PartOfOrganism']):
+            counter += 1
+            if value.lower() != 'nan':
+                if value.upper() not in accepted:
+                    messages.error(self.request, "Part is in the wrong form on the line " + str(counter) + " The correct are: bank. blood, bones, bud, carrion, eggs, exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, none, pollen, root, seed, shoot, stem, whole")
+                    return False
+        return True
+
+
 
     def check_reference_in_db(self, reference):
         return len(SourceReference.objects.filter(citation__iexact=reference)) == 0
@@ -443,6 +461,8 @@ class Check:
             return True
         
         if "verbatimTraitValue" in import_headers:
+            if "measurementValue_min" not in import_headers or "measurementValue_max" not in import_headers:
+                return True
             counter = 1
             df_new = df[['measurementValue_min', 'measurementValue_max', 'verbatimTraitValue']]
             for value in df_new.values:
@@ -450,10 +470,19 @@ class Check:
                 if value[0] > value[1]:
                     messages.error(self.request, "Minimum measurement value should be smaller than maximum measurement value at row " + str(counter) + ".")
                     return False
-                if value[1] < value[2]:
-                    print(value[0], value[1])
-                    messages.error(self.request, "Mean measurement value should be smaller than maximum measurement value at row " + str(counter) + ".")
-                    return False
+                if value[2][0].isalpha() == True or value[2][-1].isalpha() == True:
+                    if value[1] == 'nan' or pd.isnull(value[1]):
+                        continue
+                    else:
+                        messages.error(self.request, "Mean value should be numeric at row " + str(counter) + ".")
+                        return False
+                else:
+                    if float(value[1]) < float(value[2]):
+                        messages.error(self.request, "Mean measurement value should be smaller than maximum measurement value at row " + str(counter) + ".")
+                        return False
+                    if float(value[0]) > float(value[2]):
+                        messages.error(self.request, "Mean measurement value should be larger than minimum measurement value at row " + str(counter) + ".")
+                        return False
         else:
             counter = 1
             df_new = df[['measurementValue_min', 'measurementValue_max']]
@@ -547,10 +576,10 @@ def get_fooditem_json(food):
     except:
         return {}
 
-def create_fooditem(results, food_upper):
+def create_fooditem(results, food_upper, part):
     tsn = results['data'][0]['results'][0]['taxon_id']
     taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
-
+    print(part)
     if len(taxonomic_unit)==0:
         completename = results['data'][0]['results'][0]['canonical_form']
         hierarchy_string = results['data'][0]['results'][0]['classification_path_ids'].replace('|', '-')
@@ -563,8 +592,13 @@ def create_fooditem(results, food_upper):
         taxonomic_unit.save()
 
     name = food_upper
+    print(part)
+    if part != 'nan' and part != None:
+        part = ChoiceValue.objects.filter(caption=part)[0]
+    else:
+        part = None
     taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
-    food_item = FoodItem(name=name, part=None, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=0)
+    food_item = FoodItem(name=name, part=part, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=0)
     food_item_exists = FoodItem.objects.filter(name__iexact=name)
     if len(food_item_exists) > 0:
         return food_item_exists[0]
@@ -572,7 +606,7 @@ def create_fooditem(results, food_upper):
     return food_item
 
 
-def get_fooditem(food):
+def get_fooditem(food, part):
     food_upper = food.upper()
     food_item = FoodItem.objects.filter(name__iexact=food_upper)
     if len(food_item) > 0:
@@ -582,14 +616,15 @@ def get_fooditem(food):
     for item in associated_taxa:
         if len(item) < 3:
             associated_taxa.remove(item)
-    for x in range(len(associated_taxa)-1):
-        results = get_fooditem_json(associated_taxa[x] + ' ' + associated_taxa[x+1])
-        try:
-            results['data'][0]['results']
-            rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
-            rank_id[rank] = results
-        except:
-            pass
+    if len(associated_taxa) > 1:
+        for x in range(len(associated_taxa)-1):
+            results = get_fooditem_json(associated_taxa[x] + ' ' + associated_taxa[x+1])
+            try:
+                results['data'][0]['results']
+                rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
+                rank_id[rank] = results
+            except:
+                pass
     if len(rank_id) == 0:
         for y in range(len(associated_taxa)):
             results = get_fooditem_json(associated_taxa[y])
@@ -600,10 +635,15 @@ def get_fooditem(food):
         except:
             pass
     if len(rank_id) == 0:
-        food_item = FoodItem(name=food_upper, part=None, tsn=None, pa_tsn=None, is_cultivar=0)
+        print(part)
+        if part != 'nan' and part != None:
+            part = ChoiceValue.objects.filter(caption=part.upper())[0]
+        else:
+            part = None
+        food_item = FoodItem(name=food_upper, part=part, tsn=None, pa_tsn=None, is_cultivar=0)
         food_item.save()
         return food_item
-    return create_fooditem(rank_id[max(rank_id)], food_upper)
+    return create_fooditem(rank_id[max(rank_id)], food_upper, part)
 
 def possible_nan_to_zero(size):
     if size != size or size == 'nan':
@@ -663,7 +703,10 @@ def create_dietset(row, df):
 
 @transaction.atomic
 def create_dietsetitem(row, diet_set, headers):
-    food_item = get_fooditem(getattr(row, 'verbatimAssociatedTaxa'))
+    if 'PartOfOrganism' in headers:
+        food_item = get_fooditem(getattr(row, 'verbatimAssociatedTaxa'), possible_nan_to_none(getattr(row, 'PartOfOrganism')))
+    else:
+        food_item = get_fooditem(getattr(row, 'verbatimAssociatedTaxa'), None)
     list_order = getattr(row, 'sequence')
     if 'measurementValue' in headers:
         percentage = possible_nan_to_zero(getattr(row, 'measurementValue'))
@@ -687,7 +730,7 @@ def trim_df(df):
 # Please do not make any unnessecary queries: https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/
 def get_referencedata_from_crossref(citation): # pragma: no cover
     c = citation.replace(" ", "%20")
-    url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=mammalbase@gmail.com&rows=2'
+    url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=kari.lintulaakso@helsinki.fi&rows=2'
     try:
         x = requests.get(url)
         y = x.json()
