@@ -50,7 +50,7 @@ class ToolsTest(TestCase):
         with open('false_test2.csv', 'w') as file4:
             writer = csv.writer(file4)
             writer.writerow(['writer', 'verbatimScientificName', 'taxonRank', 'verbatimAssociatedTaxa', 'sequence', 'measurementValue',  'references'])
-            writer.writerow(['1111-1111-2222-2222', 'Lagothrix flavicauda flavicauda', 'Species', 'primarily frugivorous', '1', '', 'Book'])
+            writer.writerow(['1111-1111-2222-2222', 'Lagothrix flavicauda flavicauda', 'Species', '', '1', '', 'Book'])
             writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda flavicauda',	'Species',	'leaves', '2', '',  'Book'])
             writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda flavicauda',	'Species',	'fruit', '1', '',   'Book'])
         with open('false_vsn.csv', 'w') as file5:
@@ -193,6 +193,9 @@ class ToolsTest(TestCase):
     def test_false_taxonRank(self):
         self.assertEqual(self.check.check_taxonRank(self.false_file), False)
     
+    def test_empty_check_verbatim_associated_taxa(self):
+        self.assertEqual(self.check.check_verbatim_associated_taxa(self.false_file2), False)
+    
     def test_check_sequence(self):
         self.assertEqual(self.check.check_sequence(self.file), True)
     
@@ -243,7 +246,7 @@ class ToolsTest(TestCase):
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
         self.assertEqual(self.check.check_all_ds(df, True), False)
 
-    def test_check_all_ds_missing_werbatim_scientificname(self):
+    def test_check_all_ds_missing_verbatim_scientificname(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '0000-0001-9627-8821'], 
         'verbatimScientificName':["a a a a", 'kapistelija'], 
         'taxonRank':['genus', 'genus'],
@@ -257,6 +260,15 @@ class ToolsTest(TestCase):
         'verbatimScientificName':['sp kapistelija', ' sp kapistelija'], 
         'taxonRank':['laji', 'genus'],
         'verbatimAssociatedTaxa':['moi', 'moi'],
+        'sequence':[1,2],
+        'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
+        self.assertEqual(self.check.check_all_ds(df, True), False)
+    
+    def test_check_all_ds_empty_verbatim_associated_taxa(self):
+        df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '0000-0001-9627-8821'], 
+        'verbatimScientificName':['kapistelija', 'kapistelija'], 
+        'taxonRank':['genus', 'genus'],
+        'verbatimAssociatedTaxa':['nan', 'nan'],
         'sequence':[1,2],
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
         self.assertEqual(self.check.check_all_ds(df, True), False)
@@ -288,6 +300,25 @@ class ToolsTest(TestCase):
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. '], 'measurementValue':[1,1] })
         self.assertEqual(self.check.check_all_ds(df, True), False)
     
+    def test_check_all_ds_too_long_verbatim_associated_taxa(self):
+        df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '0000-0001-9627-8821'], 
+        'verbatimScientificName':['kapistelija', 'kapistelija'], 
+        'taxonRank':['genus', 'genus'],
+        'verbatimAssociatedTaxa':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'moi'],
+        'sequence':[1,2],
+        'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })     
+        self.assertEqual(self.check.check_all_ds(df, True), False)
+
+    def test_check_all_ds_too_long_line(self):
+        df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '1111-1111-2222-2233'], 
+        'verbatimScientificName':['kapistelija', 'kapistelija'], 
+        'taxonRank':['genus', 'genus'],
+        'habitat':['metsa', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
+        'verbatimAssociatedTaxa':['moi', 'hello'],
+        'sequence':[1,1],
+        'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'] })
+        self.assertEqual(self.check.check_all_ds(df, True), False)
+    
     def test_check_author_not_a_number(self):
         df = pd.DataFrame.from_dict({'author': ['pena-pena-pena-pena', '1111-1111-2222-2233',], 
         'verbatimScientificName':['kapistelifa', 'kapistelija'], 
@@ -300,6 +331,15 @@ class ToolsTest(TestCase):
     def test_check_verbatiscientificname_is_empty(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '1111-1111-2222-2233'], 
         'verbatimScientificName':['kapistelija',None], 
+        'taxonRank':['genus', 'genus'],
+        'verbatimAssociatedTaxa':['moi', 'hello'],
+        'sequence':[1,1],
+        'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'] })
+        self.assertEqual(self.check.check_verbatimScientificName(df), False)
+    
+    def test_check_verbatiscientificname_is_too_long(self):
+        df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '1111-1111-2222-2233'], 
+        'verbatimScientificName':['kapistelija','aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'], 
         'taxonRank':['genus', 'genus'],
         'verbatimAssociatedTaxa':['moi', 'hello'],
         'sequence':[1,1],
@@ -373,7 +413,79 @@ class ToolsTest(TestCase):
         'verbatimTraitUnit':['kg', 'kg'],
         'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']})
         self.assertEqual(self.check.check_all_ets(df), False)
+    
+    def test_check_all_ets_too_long_line(self):
+        df = pd.DataFrame.from_dict({'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'],
+        'verbatimScientificName':['sp kapistelija', 'sp kapistelija'],
+        'taxonRank':['subspecies', 'subspecies'],
+        'verbatimTraitName':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'body weight (Wt)'],
+        'verbatimTraitUnit':['kg', 'kg'],
+        'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']})
+        self.assertEqual(self.check.check_all_ets(df), False)
+    
+    def test_false_vl_check_lengths(self):
+        df = pd.DataFrame.from_dict({'verbatimLocality':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
+    
+    def test_false_hab_check_lengths(self):
+        df = pd.DataFrame.from_dict({'habitat':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
 
+    def test_false_se_check_lengths(self):
+        df = pd.DataFrame.from_dict({'samplingEffort':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
+
+    def test_false_ved_check_lengths(self):
+        df = pd.DataFrame.from_dict({'verbatimEventDate':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
+    
+    def test_false_mm_check_lengths(self):
+        df = pd.DataFrame.from_dict({'measurementMethod':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
+
+    def test_false_ar_check_lengths(self):
+        df = pd.DataFrame.from_dict({'associatedReferences':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
+
+    def test_false_vtn_check_lengths(self):
+        df = pd.DataFrame.from_dict({'verbatimTraitName':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
+
+    def test_false_vtv_check_lengths(self):
+        df = pd.DataFrame.from_dict({'verbatimTraitValue':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
+
+    def test_false_vtu_check_lengths(self):
+        df = pd.DataFrame.from_dict({'verbatimTraitUnit':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
+
+    def test_false_mdb_check_lengths(self):
+        df = pd.DataFrame.from_dict({'measurementDeterminedBy':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
+
+    def test_false_mr_check_lengths(self):
+        df = pd.DataFrame.from_dict({'measurementRemarks':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
+
+    def test_false_ma_check_lengths(self):
+        df = pd.DataFrame.from_dict({'measurementAccuracy':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
+
+    def test_false_sm_check_lengths(self):
+        df = pd.DataFrame.from_dict({'statisticalMethod':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
+
+    def test_false_ls_check_lengths(self):
+        df = pd.DataFrame.from_dict({'lifeStage':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
+
+    def test_false_vla_check_lengths(self):
+        df = pd.DataFrame.from_dict({'verbatimLatitude':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
+
+    def test_false_vlo_check_lengths(self):
+        df = pd.DataFrame.from_dict({'verbatimLongitude':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
+        self.assertEqual(self.check.check_lengths(df), False)
 
     def test_new_get_sourcereference_citation(self):
         self.assertEqual(tools.get_sourcereference_citation(self.file.loc[:, 'references'][0], self.user).citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
@@ -569,6 +681,10 @@ class ToolsTest(TestCase):
 
     def test_valid_author(self):
         self.assertEqual(self.check.check_valid_author(self.file), True)
+    
+    def test_empty_valid_author(self):
+        df = pd.DataFrame.from_dict({'author': ['nan'] })
+        self.assertEqual(self.check.check_valid_author(df), False)
 
     def test_create_ets_numerical(self):
         df = self.ets_numerical_df
