@@ -49,7 +49,7 @@ class ImportViewTests(TestCase):
             response = self.client.post('/import/diet_set', {'name': 'fred', 'csv_file': fp})
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'The author 0000-0000-0000-000X is not a valid ORCID ID.')
+        self.assertEqual(str(messages[0]), 'The author 0000-0000-0000-000X is not a valid ORCID ID at row 2.')
         self.assertEqual(response.status_code, 302)
             
     def test_import_ds_post_wrong_file(self):

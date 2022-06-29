@@ -113,7 +113,7 @@ class Check:
         counter = 1
         for name in df.loc[:, 'verbatimScientificName']:
             counter += 1
-            if name == "nan":
+            if name == "nan" or pd.isna(name):
                 messages.error(self.request, "Scientific name is empty at row " + str(counter) + ".")
                 return False
             if len(name) > 250:
@@ -424,7 +424,6 @@ class Check:
                     return False
         return True
 
-    
     def check_min_max(self, df):
         import_headers = list(df.columns.values)
         
