@@ -494,8 +494,17 @@ class Check:
                 if value[0] > value[1]:
                     messages.error(self.request, "Minimum measurement value should be smaller than maximum measurement value at row " + str(counter) + ".")
                     return False
-                if value[2][0].isalpha() == True or value[2][-1].isalpha() == True:
+                if isinstance(value[2], float):
+                    if float(value[1]) < float(value[2]):
+                        messages.error(self.request, "Mean measurement value should be smaller than maximum measurement value at row " + str(counter) + ".")
+                        return False
+                    if float(value[0]) > float(value[2]):
+                        messages.error(self.request, "Mean measurement value should be larger than minimum measurement value at row " + str(counter) + ".")
+                        return False
+                elif value[2][0].isalpha() == True or value[2][-1].isalpha() == True:
                     if value[1] == 'nan' or pd.isnull(value[1]):
+                        continue
+                    elif value[2] == "nan" or pd.isnull(value[2]):
                         continue
                     else:
                         messages.error(self.request, "Mean value should be numeric at row " + str(counter) + ".")

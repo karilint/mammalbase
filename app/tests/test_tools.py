@@ -91,8 +91,8 @@ class ToolsTest(TestCase):
         'taxonRank':['genus', 'genus'],
         'verbatimTraitName':['body weight (Wt)', 'body weight (Wt)'],
         'verbatimTraitUnit':['kg', 'kg'],
-        'measurementValue_min':['1'],
-        'measurementValue_max':['2'],
+        'measurementValue_min':['1', '1'],
+        'measurementValue_max':['2', '1'],
         'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']}
         self.entity = tools.get_entityclass(self.file.loc[:, 'taxonRank'][1], self.user)
 
@@ -367,10 +367,10 @@ class ToolsTest(TestCase):
         'references':['tosi  tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
         self.assertEqual(self.check.check_sequence(df), False)
     
-#    def test_check_all_ets(self):
-#        self.assertEqual(self.check.check_all_ets(self.file_ets), True)
-#        df = pd.DataFrame.from_dict(self.dict_ets)
-#        self.assertEqual(self.check.check_all_ets(df), True)
+    def test_check_all_ets(self):
+        self.assertEqual(self.check.check_all_ets(self.file_ets), True)
+        df = pd.DataFrame.from_dict(self.dict_ets)
+        self.assertEqual(self.check.check_all_ets(df), True)
 #    Test is actually ok but throws "IndexError: invalid index to scalar variable" because of the line "if value[2][0].isalpha() == True or value[2][-1].isalpha() == True:" on check_min_max().
 
     def test_check_all_ets_wrong_headers(self):
@@ -427,6 +427,16 @@ class ToolsTest(TestCase):
         'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']})
         self.assertEqual(self.check.check_all_ets(df), False)
 
+    def test_check_all_ets_false_min_max(self):
+        df = pd.DataFrame.from_dict({'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'],
+        'verbatimScientificName':['kapistelija', 'kapistelija'],
+        'taxonRank':['genus', 'genus'],
+        'verbatimTraitName':['body weight (Wt)', 'body weight (Wt)'],
+        'verbatimTraitUnit':['kg', 'kg'],
+        'measurementValue_min':['1', '1'],
+        'author': ['1111-1111-2222-2222', '1111-1111-2222-2233']})
+        self.assertEqual(self.check.check_all_ets(df), False)
+
     def test_check_min_max(self):
         df = pd.DataFrame.from_dict({'measurementValue_min':['2'],
         'measurementValue_max':['3']})
@@ -449,8 +459,8 @@ class ToolsTest(TestCase):
         self.assertEqual(self.check.check_min_max(df), False)
 
     def test_false_check_min_max(self):
-        df = pd.DataFrame.from_dict({'measurementValue_min':['3'],
-        'measurementValue_max':['2']})
+        df = pd.DataFrame.from_dict({'measurementValue_min':['3.0'],
+        'measurementValue_max':['2.0']})
         self.assertEqual(self.check.check_min_max(df), False)
     
     def test_false_check_min_max_with_mean(self):
