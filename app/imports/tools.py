@@ -50,10 +50,10 @@ class Check:
             return False
         elif self.check_taxonRank(df) == False:
             return False
-        elif self.check_min_max(df) == False:
-            return False
         elif self.check_lengths(df) == False:
            return False
+        elif self.check_min_max(df) == False:
+            return False
         return True
 
     def check_valid_author(self, df):
@@ -310,8 +310,6 @@ class Check:
                     return False
         return True
 
-
-
     def check_reference_in_db(self, reference):
         return len(SourceReference.objects.filter(citation__iexact=reference)) == 0
 
@@ -385,6 +383,7 @@ class Check:
                 if len(str(vtn)) > 250:
                     messages.error(self.request, "verbatimTraitName is too long at row " + str(counter) + ".")
                     return False
+            counter = 1
         if "verbatimTraitValue" in import_headers:
             for vtv in (df.loc[:, 'verbatimTraitValue']):
                 counter += 1
@@ -398,42 +397,49 @@ class Check:
                 if len(str(vtu)) > 250:
                     messages.error(self.request, "verbatimTraitUnit is too long at row " + str(counter) + ".")
                     return False
+            counter = 1
         if "measurementDeterminedBy" in import_headers:
             for mdb in (df.loc[:, 'measurementDeterminedBy']):
                 counter += 1
                 if len(str(mdb)) > 250:
                     messages.error(self.request, "measurementDeterminedBy is too long at row " + str(counter) + ".")
                     return False
+            counter = 1
         if "measurementRemarks" in import_headers:
             for mr in (df.loc[:, 'measurementRemarks']):
                 counter += 1
                 if len(str(mr)) > 250:
                     messages.error(self.request, "measurementRemarks is too long at row " + str(counter) + ".")
                     return False
+            counter = 1
         if "measurementAccuracy" in import_headers:
             for ma in (df.loc[:, 'measurementAccuracy']):
                 counter += 1
                 if len(str(ma)) > 250:
                     messages.error(self.request, "measurementAccuracy is too long at row " + str(counter) + ".")
                     return False
+            counter = 1
         if "statisticalMethod" in import_headers:
             for sm in (df.loc[:, 'statisticalMethod']):
                 counter += 1
                 if len(str(sm)) > 250:
                     messages.error(self.request, "Statistical method is too long at row " + str(counter) + ".")
                     return False
+            counter = 1
         if "lifeStage" in import_headers:
             for ls in (df.loc[:, 'lifeStage']):
                 counter += 1
                 if len(str(ls)) > 250:
                     messages.error(self.request, "lifeStage is too long at row " + str(counter) + ".")
                     return False
+            counter = 1
         if "verbatimLatitude" in import_headers:
             for vla in (df.loc[:, 'verbatimLatitude']):
                 counter += 1
                 if len(str(vla)) > 250:
                     messages.error(self.request, "verbatimLatitude is too long at row " + str(counter) + ".")
                     return False
+            counter = 1
         if "verbatimLongitude" in import_headers:
             for vlo in (df.loc[:, 'verbatimLongitude']):
                 counter += 1
@@ -461,8 +467,6 @@ class Check:
             return True
         
         if "verbatimTraitValue" in import_headers:
-            if "measurementValue_min" not in import_headers or "measurementValue_max" not in import_headers:
-                return True
             counter = 1
             df_new = df[['measurementValue_min', 'measurementValue_max', 'verbatimTraitValue']]
             for value in df_new.values:
