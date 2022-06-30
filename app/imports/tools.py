@@ -484,6 +484,8 @@ class Check:
                 elif value[2][0].isalpha() == True or value[2][-1].isalpha() == True:
                     if value[1] == 'nan' or pd.isnull(value[1]):
                         continue
+                    elif value[2] == "nan" or pd.isnull(value[2]):
+                        continue
                     else:
                         messages.error(self.request, "Mean value should be numeric at row " + str(counter) + ".")
                         return False
