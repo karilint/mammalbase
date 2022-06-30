@@ -27,6 +27,8 @@ class Check:
             return False
         elif self.check_taxonRank(df) == False:
             return False
+        elif self.check_gender(df) == False:
+            return False
         elif self.check_verbatim_associated_taxa(df) == False:
             return False
         elif self.check_sequence(df) == False:
@@ -150,6 +152,24 @@ class Check:
                 messages.error(self.request, "Taxonomic rank is not in the correct form on the line " + str(counter) + ".")
                 return False
         return True
+    
+    def check_gender(self, df):
+        headers = list(df.columns.values)
+        if 'sex' not in headers:
+            return True
+        counter = 1
+        for value in (df.loc[:, 'sex']):
+            counter += 1
+            if str(value).lower() != 'nan':
+                try: 
+                    if int(value) != 22 and int(value)!= 23:
+                        messages.error(self.request, 'Gender is not in the correct format on the line '+str(counter)+' it should be 22 for male or 23 for female')
+                        return False
+                except:
+                        messages.error(self.request, 'Gender is not in the correct format on the line '+str(counter)+' it should be 22 for male or 23 for female')
+                        return False
+        return True
+
 
     def check_verbatim_associated_taxa(self, df):
         counter = 1
@@ -583,7 +603,6 @@ def get_fooditem_json(food):
 def create_fooditem(results, food_upper, part):
     tsn = results['data'][0]['results'][0]['taxon_id']
     taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
-    print(part)
     if len(taxonomic_unit)==0:
         completename = results['data'][0]['results'][0]['canonical_form']
         hierarchy_string = results['data'][0]['results'][0]['classification_path_ids'].replace('|', '-')
@@ -596,7 +615,6 @@ def create_fooditem(results, food_upper, part):
         taxonomic_unit.save()
 
     name = food_upper
-    print(part)
     if part != 'nan' and part != None:
         part = ChoiceValue.objects.filter(caption=part)[0]
     else:
@@ -639,7 +657,6 @@ def get_fooditem(food, part):
         except:
             pass
     if len(rank_id) == 0:
-        print(part)
         if part != 'nan' and part != None:
             part = ChoiceValue.objects.filter(caption=part.upper())[0]
         else:
