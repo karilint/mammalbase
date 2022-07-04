@@ -130,7 +130,7 @@ class ToolsTest(TestCase):
         self.mr = MasterReference.objects.create(title='Testing, testing', created_by=self.user)
         self.sr_with_mr = SourceReference.objects.create(citation="Title and author", status=2, master_reference=self.mr)
         self.method = SourceMethod.objects.create(reference=self.sr, name='TestMethod')
-        self.attribute = SourceAttribute.objects.create(name='SelfAttribute', reference=self.sr, entity=self.entity, method=self.method, remarks='TestRemarks') 
+        self.attribute = SourceAttribute.objects.create(name='SelfAttribute', reference=self.sr, entity=self.entity, method=self.method) 
         self.source_entity = SourceEntity.objects.create(name='Lagothrix flavicauda', reference=self.sr, entity=self.entity)
         self.res = {'status': 'ok', 
                 'message-type': 'work-list', 
@@ -740,7 +740,7 @@ class ToolsTest(TestCase):
         self.assertEqual(scsov.created_by.username, 'Testuser')
 
     def test_get_sourceattribute_na(self):
-        attribute = tools.get_sourceattribute('TestAttribute', self.sr, self.entity, self.method, 2, 'TestRemarks', self.user)
+        attribute = tools.get_sourceattribute('TestAttribute', self.sr, self.entity, self.method, 2, self.user)
         self.assertEqual(attribute.name, 'TestAttribute')
         self.assertEqual(attribute.created_by.username, 'Testuser')
 
