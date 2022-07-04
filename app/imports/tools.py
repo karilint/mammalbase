@@ -935,7 +935,7 @@ def create_ets(row, headers):
         remarks = None
 
     if verbatimTraitUnit == 'nan' or verbatimTraitUnit != verbatimTraitUnit or verbatimTraitUnit == 'NA':
-        attribute = get_sourceattribute(name, reference, entityclass, method, 2, remarks, author)
+        attribute = get_sourceattribute(name, reference, entityclass, method, 2, author)
         if 'verbatimTraitValue' in headers:
             vt_value = possible_nan_to_none(getattr(row, 'verbatimTraitValue'))
         else:
@@ -944,7 +944,7 @@ def create_ets(row, headers):
         choicesetoptionvalue = get_sourcechoicesetoptionvalue(taxon, choicesetoption, author)
 
     else:  
-        attribute = get_sourceattribute(name, reference, entityclass, method, 1, remarks, author)
+        attribute = get_sourceattribute(name, reference, entityclass, method, 1, author)
         unit = get_sourceunit(verbatimTraitUnit, author)
         if 'verbatimTraitValue' in headers:
             vt_value = possible_nan_to_zero(getattr(row, 'verbatimTraitValue'))
@@ -1070,10 +1070,10 @@ def get_sourcestatistic(statistic, ref, author):
     ss.save()
     return ss
 
-def get_sourceattribute(name, ref, entity, method, type_value, remarks, author):
-    sa_old = SourceAttribute.objects.filter(name__iexact=name, reference=ref, entity=entity, method=method, type=type_value, remarks=remarks)
+def get_sourceattribute(name, ref, entity, method, type_value, author):
+    sa_old = SourceAttribute.objects.filter(name__iexact=name, reference=ref, entity=entity, method=method, type=type_value)
     if len(sa_old) > 0:
         return sa_old[0]
-    sa = SourceAttribute(name=name, reference=ref, entity=entity, method=method, type=type_value, remarks=remarks, created_by=author)
+    sa = SourceAttribute(name=name, reference=ref, entity=entity, method=method, type=type_value, created_by=author)
     sa.save()
     return sa
