@@ -318,7 +318,7 @@ class Check:
     
     def check_part(self, df):
         headers = list(df.columns.values)
-        accepted = ['BANK', 'BLOOD', 'BONES', 'BUD', 'CARRION', 'EGGS', 'EXUDATES', 'FECES', 'FLOWER', 'FRUIT', 'LARVAE', 'LEAF', 'MINERAL', 'NECTAR/JUICE', 'NONE', 'POLLEN', 'ROOT', 'SEED', 'SHOOT', 'STEM', 'WHOLE']
+        accepted = ['BARK', 'BLOOD', 'BONES', 'BUD', 'CARRION', 'EGGS', 'EXUDATES', 'FECES', 'FLOWER', 'FRUIT', 'LARVAE', 'LEAF', 'MINERAL', 'NECTAR/JUICE', 'NONE', 'POLLEN', 'ROOT', 'SEED', 'SHOOT', 'STEM', 'WHOLE']
         if 'PartOfOrganism' not in headers:
             return True
         counter = 1
@@ -935,6 +935,7 @@ def create_ets(row, headers):
         remarks = None
 
     if verbatimTraitUnit == 'nan' or verbatimTraitUnit != verbatimTraitUnit or verbatimTraitUnit == 'NA':
+        entityclass = get_entityclass('Taxon', author)
         attribute = get_sourceattribute(name, reference, entityclass, method, 2, author)
         if 'verbatimTraitValue' in headers:
             vt_value = possible_nan_to_none(getattr(row, 'verbatimTraitValue'))
@@ -944,6 +945,7 @@ def create_ets(row, headers):
         choicesetoptionvalue = get_sourcechoicesetoptionvalue(taxon, choicesetoption, author)
 
     else:  
+        entityclass = get_entityclass('Taxon', author)
         attribute = get_sourceattribute(name, reference, entityclass, method, 1, author)
         unit = get_sourceunit(verbatimTraitUnit, author)
         if 'verbatimTraitValue' in headers:
