@@ -318,7 +318,7 @@ class Check:
     
     def check_part(self, df):
         headers = list(df.columns.values)
-        accepted = ['BANK', 'BLOOD', 'BONES', 'BUD', 'CARRION', 'EGGS', 'EXUDATES', 'FECES', 'FLOWER', 'FRUIT', 'LARVAE', 'LEAF', 'MINERAL', 'NECTAR/JUICE', 'NONE', 'POLLEN', 'ROOT', 'SEED', 'SHOOT', 'STEM', 'WHOLE']
+        accepted = ['BARK', 'BLOOD', 'BONES', 'BUD', 'CARRION', 'EGGS', 'EXUDATES', 'FECES', 'FLOWER', 'FRUIT', 'LARVAE', 'LEAF', 'MINERAL', 'NECTAR/JUICE', 'NONE', 'POLLEN', 'ROOT', 'SEED', 'SHOOT', 'STEM', 'WHOLE']
         if 'PartOfOrganism' not in headers:
             return True
         counter = 1
@@ -326,7 +326,7 @@ class Check:
             counter += 1
             if value.lower() != 'nan':
                 if value.upper() not in accepted:
-                    messages.error(self.request, "Part is in the wrong form on the line " + str(counter) + " The correct are: bank. blood, bones, bud, carrion, eggs, exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, none, pollen, root, seed, shoot, stem, whole")
+                    messages.error(self.request, "Part is in the wrong form on the line " + str(counter) + " The correct are: bark, blood, bones, bud, carrion, eggs, exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, none, pollen, root, seed, shoot, stem, whole")
                     return False
         return True
 
@@ -935,6 +935,7 @@ def create_ets(row, headers):
         remarks = None
 
     if verbatimTraitUnit == 'nan' or verbatimTraitUnit != verbatimTraitUnit or verbatimTraitUnit == 'NA':
+        entityclass = get_entityclass('Taxon', author)
         attribute = get_sourceattribute(name, reference, entityclass, method, 2, author)
         if 'verbatimTraitValue' in headers:
             vt_value = possible_nan_to_none(getattr(row, 'verbatimTraitValue'))
@@ -944,6 +945,7 @@ def create_ets(row, headers):
         choicesetoptionvalue = get_sourcechoicesetoptionvalue(taxon, choicesetoption, author)
 
     else:  
+        entityclass = get_entityclass('Taxon', author)
         attribute = get_sourceattribute(name, reference, entityclass, method, 1, author)
         unit = get_sourceunit(verbatimTraitUnit, author)
         if 'verbatimTraitValue' in headers:
