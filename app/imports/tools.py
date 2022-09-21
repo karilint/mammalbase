@@ -326,7 +326,7 @@ class Check:
             counter += 1
             if value.lower() != 'nan':
                 if value.upper() not in accepted:
-                    messages.error(self.request, "Part is in the wrong form on the line " + str(counter) + " The correct are: bank. blood, bones, bud, carrion, eggs, exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, none, pollen, root, seed, shoot, stem, whole")
+                    messages.error(self.request, "Part is in the wrong form on the line " + str(counter) + " The correct are: bark, blood, bones, bud, carrion, eggs, exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, none, pollen, root, seed, shoot, stem, whole")
                     return False
         return True
 
