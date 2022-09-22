@@ -45,7 +45,35 @@
     <br>
   {% endif %}
   <table class="mb-list w3-table-all w3-small">
-    <caption class="w3-left-align">Table 1. List of Source Trait values for <b><i>{{ source_attribute.name }}</i></b>.</caption>
+    <caption class="w3-left-align">Table 1. List of Standard traits for <b><i>{{ source_attribute.name }}</i></b>.</caption>
+    <thead>
+      <tr>
+        <th>Standard Trait</th>
+        <th>Reference</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if source_attribute.attributerelation_set.count > 0 %}
+      {% for ma in source_attribute.attributerelation_set.all %}
+      <tr>
+        <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_attribute-detail' pk=ma.master_attribute.id %}">{{ ma.master_attribute }} <span class="fa fa-link w3-small"></span></a></td>
+        <td title="{{ ma.master_attribute.reference|safe }}">{{ ma.master_attribute.reference|truncatechars:50|safe }}</td>
+      </tr>
+      {% endfor %}
+      {% else %}
+      <tr><td colspan="2">There are no related standard Traits available.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+  {% if request.user|is_data_admin_or_owner:source_attribute %}
+  <br>
+  <a title="Press to Add new" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'attribute-relation-new' source_attribute.id %}"><span class="fa fa-plus"></span></a>
+  {% else %}
+  <button title="Please login to Add new" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-plus"></span></button>
+  <br>
+  {% endif %}
+  <table class="mb-list w3-table-all w3-small">
+    <caption class="w3-left-align">Table 2. List of Source Trait values for <b><i>{{ source_attribute.name }}</i></b>.</caption>
     <thead>
       <tr>
         <th>Source Trait value</th>
@@ -74,34 +102,6 @@
       {% endfor %}
       {% else %}
       <tr><td colspan="2">There are no Standard Trait values available.</td></tr>
-      {% endif %}
-    </tbody>
-  </table>
-  {% if request.user|is_data_admin_or_owner:source_attribute %}
-  <br>
-  <a title="Press to Add new" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'attribute-relation-new' source_attribute.id %}"><span class="fa fa-plus"></span></a>
-  {% else %}
-  <button title="Please login to Add new" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-plus"></span></button>
-  <br>
-  {% endif %}
-  <table class="mb-list w3-table-all w3-small">
-    <caption class="w3-left-align">Table 2. List of Standard traits for <b><i>{{ source_attribute.name }}</i></b>.</caption>
-    <thead>
-      <tr>
-        <th>Standard Trait</th>
-        <th>Reference</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% if source_attribute.attributerelation_set.count > 0 %}
-      {% for ma in source_attribute.attributerelation_set.all %}
-      <tr>
-        <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_attribute-detail' pk=ma.master_attribute.id %}">{{ ma.master_attribute }} <span class="fa fa-link w3-small"></span></a></td>
-        <td title="{{ ma.master_attribute.reference|safe }}">{{ ma.master_attribute.reference|truncatechars:50|safe }}</td>
-      </tr>
-      {% endfor %}
-      {% else %}
-      <tr><td colspan="2">There are no related standard Traits available.</td></tr>
       {% endif %}
     </tbody>
   </table>
