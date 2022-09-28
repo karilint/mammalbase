@@ -117,7 +117,7 @@
         <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_attribute-detail' pk=trait.master_attribute_id.id %}">{{ trait.master_attribute_name }} <span class="fa fa-link w3-small"></span></a></td>
         <td style="text-align:left" title="{{ trait.n_supporting_value }} out of {{ trait.n_value }} referenses have classified {{ master_entity.name }} as a {{ trait.trait_selected }}.">{{ trait.trait_selected }}</td>
         <td style="text-align:left" title="{{ trait.trait_values }}">{{ trait.trait_values }}</td>
-        <td style="text-align:left" title="{{ trait.trait_references|safe }}">{{ trait.traits_references|truncatechars:10|safe }}</td>
+        <td style="text-align:left" title="{{ trait.traits_references|safe }}">{{ trait.traits_references|truncatechars:10|safe }}</td>
       </tr>
       {% endfor %}
     </tbody>
