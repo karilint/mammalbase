@@ -1197,7 +1197,7 @@ class ViewMasterTraitValue(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'mb_table_master_trait_values'
+        db_table = 'mb_view_master_trait_values'
         ordering = ['id','master_attribute_name']
 
     def get_absolute_url(self):
