@@ -80,8 +80,9 @@ def index_diet(request):
     num_diet_set=DietSet.objects.is_active().count()
     num_diet_set_item=DietSetItem.objects.is_active().count()
     num_food_item=DietSetItem.objects.is_active().values('food_item_id').distinct().count()
+    latest=DietSet.objects.is_active().filter(reference__master_reference__is_active=True).order_by('-pk')[:10]
 
-    return render(request, 'mb/index_diet.html', context={'num_diet_taxa':num_diet_taxa, 'num_diet_set':num_diet_set, 'num_diet_set_item':num_diet_set_item, 'num_food_item':num_food_item},)
+    return render(request, 'mb/index_diet.html', context={'num_diet_taxa':num_diet_taxa, 'num_diet_set':num_diet_set, 'num_diet_set_item':num_diet_set_item, 'num_food_item':num_food_item, 'latest':latest},)
 
 def index_mammals(request):
     return render(request, 'mb/index_mammals.html',)

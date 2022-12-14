@@ -25,8 +25,60 @@
       <img src="{% static "images/Kobus ellipsiprymnus.JPG" %}" alt="Waterbuck - Kobus ellipsiprymnus" width="100%">
     </div>
   </div>
-  <p>We have collected dietary information for {{ num_diet_taxa }} mammalian taxa. This data includes {{ num_diet_set }} Diet Sets which are separate lists of mammalian diets based on the data reference, location, gender, study time and time of year.</p>
+  <p>We have collected dietary information for {{ num_diet_taxa }} mammalian taxa. This data includes {{ num_diet_set }} Diet Sets which are separate lists of mammalian diets based on the data reference, location, gender, study time and time of year (see Table 1 for the latest additions).</p>
   <p>Currently, we have {{ num_diet_set_item }} Diet Set Items that represent {{ num_food_item }} different Food Items.</p>
+
+  {% if latest %}
+    <table class="mb-list w3-table-all w3-small w3-responsive">
+      <caption class="w3-left-align">
+        Table 1. Ten latest Diet Sets added to MammalBase.
+      </caption>
+        <thead>
+        <tr>
+          <th>Date</th>
+          <th>Taxon</th>
+          <th>Location</th>
+          <th>Method</th>
+          <th>Period</th>
+          <th>Months</th>
+          <th>Reference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for x in latest %}
+          <tr>
+            <td class="mb-public-internal"><a title="Press for Details" href="{% url 'diet_set-detail' pk=x.pk %}">{{ x.created_on|date:'Y-m-d' }} <span class="fa fa-link w3-small"></span></a></td>
+            <td class="mb-public-internal"><a title="Press for Details" href="{% url 'diet_set-detail' pk=x.pk %}">{{ x.taxon.name }} <span class="fa fa-link w3-small"></span></a></td>
+            {% if x.location %}
+              <td>{{ x.location }}</td>
+            {% else %}
+              <td style="text-align:center">-</td>
+            {% endif %}
+            {% if x.method %}
+              <td>{{ x.method }}</td>
+            {% else %}
+              <td style="text-align:center">-</td>
+            {% endif %}
+            {% if x.time_period %}
+              <td>{{ x.time_period }}</td>
+            {% else %}
+              <td style="text-align:center">-</td>
+            {% endif %}
+            {% if x.time_period.time_in_months %}
+              <td style="text-align:right">{{ x.time_period.time_in_months }}</td>
+            {% else %}
+              <td style="text-align:right">12</td>
+            {% endif %}
+            <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_reference-detail' pk=x.reference.master_reference.pk %}">{{ x.reference.master_reference.citation|safe }} <span class="fa fa-link w3-small"></span></a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>There are no Diet Sets available.</p>
+  {% endif %}
+
+
 </section>
 {% endblock %}
 {% block nav %}

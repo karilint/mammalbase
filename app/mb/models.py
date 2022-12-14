@@ -648,7 +648,7 @@ class SourceMeasurementValue(BaseModel):
     cited_reference = models.CharField(
         blank=True,
         null=True, 
-        max_length=250, 
+        max_length=1000, 
         help_text="Enter the original reference, if not this study.")
     unit = models.CharField(
         null=True,
