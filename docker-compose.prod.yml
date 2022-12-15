@@ -13,6 +13,9 @@ services:
       - ./app/logs:/src/app/logs
     env_file:
       - ./.env
+    depends_on:
+      - redis
+    container_name: mammalbase_web_production
 
   nginx:
     build: ./nginx

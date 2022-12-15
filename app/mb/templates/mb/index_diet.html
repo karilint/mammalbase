@@ -47,7 +47,7 @@
       <tbody>
         {% for x in latest %}
           <tr>
-            <td class="mb-public-internal"><a title="Press for Details" href="{% url 'diet_set-detail' pk=x.pk %}">{{ x.created_on|date:'Y-m-d' }} <span class="fa fa-link w3-small"></span></a></td>
+            <td>{{ x.created_on|date:'Y-m-d' }}</td>
             <td class="mb-public-internal"><a title="Press for Details" href="{% url 'diet_set-detail' pk=x.pk %}">{{ x.taxon.name }} <span class="fa fa-link w3-small"></span></a></td>
             {% if x.location %}
               <td>{{ x.location }}</td>
