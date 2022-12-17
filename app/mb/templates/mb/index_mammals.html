@@ -14,20 +14,49 @@
   <!-- Photo Grid -->
   <div class="w3-row" id="myGrid" style="margin-bottom:10px">
     <div class="w3-third">
-      <img src="{% static "images/Equus burchelli.JPG" %}" alt="Zepra - Equus quagga" width="100%">
+      <img src="{% static "images/Equus burchelli.JPG" %}" alt="Zepra - Equus quagga" style="width:100%;">
     </div>
 
     <div class="w3-third">
-      <img src="{% static "images/Canis mesomelas.JPG" %}" alt="Jackal - Canis mesomelas" width="100%">
+      <img src="{% static "images/Canis mesomelas.JPG" %}" alt="Jackal - Canis mesomelas" style="width:100%;">
     </div>
 
     <div class="w3-third">
-      <img src="{% static "images/Kobus ellipsiprymnus.JPG" %}" alt="Waterbuck - Kobus ellipsiprymnus" width="100%">
+      <img src="{% static "images/Kobus ellipsiprymnus.JPG" %}" alt="Waterbuck - Kobus ellipsiprymnus" style="width:100%;">
     </div>
   </div>
   <p>Our scope is in the resent species of the class Mammalia.</p>
   <p>We follow the taxonomy of Wilson, D.E. and Reeder, D.M. eds., 2005. <i>Mammal species of the world: a taxonomic and geographic reference</i> (Vol. 1). JHU Press.</p>
   <p>Therefore, we match all taxa in our Data Sources against Wilson & Reeder, 2005.</p>
+
+  {% if measurements %}
+    <table class="mb-list w3-table-all w3-small w3-responsive">
+      <caption class="w3-left-align">
+        Table 1. Ten latest measurement Data Sources added to MammalBase.
+      </caption>
+        <thead>
+        <tr>
+          <th>Date</th>
+          <th>Reference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for x in measurements %}
+          <tr>
+            <td>{{ x.created_on|date:'Y-m-d' }}</td>
+            {% if user.is_authenticated %}
+              <td class="mb-private-internal"><a title="Press for Details" href="{% url 'source_reference-detail' pk=x.pk %}">{{ x.citation|safe }} <span class="fa fa-link w3-small"></span></a></td>
+            {% else %}
+              <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ x.citation|safe }} <span class="fa fa-link w3-small"></span></a></td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>There are no Diet Sets available.</p>
+  {% endif %}
+
 </section>
 {% endblock %}
 {% block info %}
