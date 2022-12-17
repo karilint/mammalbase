@@ -46,6 +46,9 @@
       {% for x in ternary %}
       Fig.1 - Ternary plot of the proximate analysis for the {{ x.name }} diet.<br>
       CF (Crude Fibre) {{ x.cf|floatformat:2 }}, ASH (Ash contents) {{ x.ash|floatformat:2 }}, NFE (Nitrogen-Free-Extract) {{ x.nfe|floatformat:2 }}, CP (Crude Protein) {{ x.cp|floatformat:2 }}, EE (Ether Extract) {{ x.ee|floatformat:2 }}.
+      See details for the calculations in Lintulaakso, K., Tatti, N. and Žliobaitė, I., 2022. Quantifying mammalian diets.
+      <i>Mammalian Biology</i>, pp.1-15.
+      <a href="https://doi.org/10.1007/s42991-022-00323-6" target="_blank">[DOI] <span class="fa fa-external-link"></span></a>
       {% endfor %}
       </p>
     {% endautoescape %}
@@ -95,7 +98,12 @@
       {% endif %}
     </tbody>
   </table>
-  <p class="w3-small"><sup>a.</sup> Standardized values.</p>
+  <p class="w3-small"><sup>a.</sup> Standardized values.
+    See details for the calculations in Lintulaakso, K., Tatti, N. and Žliobaitė, I., 2022. Quantifying mammalian diets.
+    <i>Mammalian Biology</i>, pp.1-15.
+    <a href="https://doi.org/10.1007/s42991-022-00323-6" target="_blank">[DOI] <span class="fa fa-external-link"></span></a>
+  </p>
+
   {% if user.is_authenticated %}
   <br>
   {% else %}
