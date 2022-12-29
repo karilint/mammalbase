@@ -649,7 +649,7 @@ class SourceMeasurementValue(BaseModel):
         blank=True,
         null=True, 
         max_length=1000, 
-        help_text="Enter the original reference, if not this study.")
+        help_text="Enter the original reference, if not this study. If original, enter 'Original study'.")
     unit = models.CharField(
         null=True,
         blank=True,
@@ -960,7 +960,7 @@ class DietSet(BaseModel):
         blank=True,
         null=True, 
         max_length=250, 
-        help_text="Enter the original reference, if not this study.")
+        help_text="Enter the original reference, if not this study. If original, enter 'Original study'.")
     time_period = models.ForeignKey(
         'TimePeriod',
         on_delete=models.CASCADE,

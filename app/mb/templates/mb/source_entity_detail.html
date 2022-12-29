@@ -144,6 +144,7 @@
       <tr>
         <th>Measurement</th>
         <th>Location</th>
+        <th>Gender</th>
         <th>n</th>
         <th>n females</th>
         <th>n males</th>
@@ -152,6 +153,7 @@
         <th>Maximum</th>
         <th>STD</th>
         <th>Unit</th>
+        <th>Cited Reference</th>
       </tr>
     </thead>
     <tbody>
@@ -163,14 +165,23 @@
           <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ measurement.source_attribute.name }} <span class="fa fa-link w3-small"></span></a></td>
         {% endif %}
         <td>{{ measurement.source_location|default_if_none:"-" }}</td>
+        <td>{{ measurement.gender|default_if_none:"-" }}</td>
         {% if measurement.n_total == 0 %}
           <td>-</td>
           <td>-</td>
           <td>-</td>
         {% else %}
           <td>{{ measurement.n_total }}</td>
-          <td>{{ measurement.n_female }}</td>
-          <td>{{ measurement.n_male }}</td>
+          {% if measurement.n_female == 0 %}
+            <td>-</td>
+          {% else %}
+            <td>{{ measurement.n_female }}</td>
+          {% endif %}
+          {% if measurement.n_male == 0 %}
+            <td>-</td>
+          {% else %}
+            <td>{{ measurement.n_male }}</td>
+          {% endif %}
         {% endif %}
         {% if measurement.n_total == 1 %}
           <td>{{ measurement.mean|floatformat:2 }}</td>
@@ -181,7 +192,11 @@
             <td>{{ measurement.minimum|floatformat:2 }}</td>
           {% endif %}
         {% endif %}
-        <td>{{ measurement.mean|floatformat:2 }}</td>
+        {% if measurement.mean == 0 %}
+          <td>-</td>
+        {% else %}
+          <td>{{ measurement.mean|floatformat:2 }}</td>
+        {% endif %}
         {% if measurement.n_total == 1 %}
           <td>{{ measurement.mean|floatformat:2 }}</td>
         {% else %}
@@ -199,11 +214,20 @@
           {% endif %}
         </td>
         <td>{{ measurement.source_unit.name|default_if_none:"-" }}</td>
-        </tr>
+        <td>
+          {% if measurement.cited_reference %}
+            {{ measurement.cited_reference }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
+      </tr>
       {% endfor %}
       {% for attribute in sa_no_measurements %}
       <tr>
         <td>{{ attribute.name }}</td>
+        <td></td>
+        <td></td>
         <td></td>
         <td></td>
         <td></td>
