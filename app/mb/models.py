@@ -1013,8 +1013,7 @@ class DietSetItem(BaseModel):
         )
     # Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
     list_order = models.PositiveSmallIntegerField(default=100_000, help_text='List order on Diet Set')
-    percentage = models.DecimalField(default=0, decimal_places=2, max_digits=6,
-              validators=[MinValueValidator(0)])
+    percentage = models.DecimalField(default=0, decimal_places=2, max_digits=6,)
 
     class Meta:
         unique_together = ('diet_set', 'food_item')
