@@ -108,7 +108,11 @@
     </tr>
     <tr>
       <th class="w3-quarter">Reference:</th>
-      <td class="w3-threequarter"><cite>{{ ds.reference|safe }} </cite></td>
+      {% if user.is_authenticated %}
+        <td class="w3-threequarter"><a title="Press for Details" href="{% url 'source_reference-detail' pk=ds.reference.id %}"><cite>{{ ds.reference|safe }} </cite><span class="fa fa-link w3-small"></span></a></td>
+      {% else %}
+        <td class="w3-threequarter"><a title="Please login for Details" style="color:IndianRed;" href=""><cite>{{ ds.reference|safe }} </cite><span class="fa fa-link w3-small"></span></a></td>
+      {% endif %}
     </tr>
   </table>
   <br>
@@ -129,7 +133,7 @@
           <th style="width:1%"></th>
         {% endif %}
         <th style="text-align:right">List order</th>
-        <th style="text-align:right">Percentage</th>
+        <th style="text-align:right">Ratio</th>
         {% if user.is_authenticated %}
           <th>Food Item</th>
         {% else %}
