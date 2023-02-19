@@ -154,6 +154,7 @@
         <th>STD</th>
         <th>Unit</th>
         <th>Cited Reference</th>
+        <th>Remarks</th>
       </tr>
     </thead>
     <tbody>
@@ -165,7 +166,7 @@
           <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ measurement.source_attribute.name }} <span class="fa fa-link w3-small"></span></a></td>
         {% endif %}
         <td>{{ measurement.source_location|default_if_none:"-" }}</td>
-        <td>{{ measurement.gender|default_if_none:"-" }}</td>
+        <td>{{ measurement.gender.caption|default_if_none:"-" }}</td>
         {% if measurement.n_total == 0 %}
           <td>-</td>
           <td>-</td>
@@ -220,7 +221,13 @@
           {% else %}
             -
           {% endif %}
-        </td>
+          <td>
+            {% if measurement.remarks %}
+              {{ measurement.remarks }}
+            {% else %}
+              -
+            {% endif %}
+          </td>
       </tr>
       {% endfor %}
       {% for attribute in sa_no_measurements %}
