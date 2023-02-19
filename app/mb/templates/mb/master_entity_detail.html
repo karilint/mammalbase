@@ -182,7 +182,11 @@
         {% else %}
           <td style="text-align:right">{{ measurement.coeff_minimum.normalize }}</td>
         {% endif %}
-        <td style="text-align:right">{{ measurement.coeff_mean.normalize }}</td>
+        {% if measurement.coeff_mean.normalize == 0 %}
+          <td style="text-align:center">-</td>
+        {% else %}
+          <td style="text-align:center">{{ measurement.coeff_mean.normalize }}</td>
+          {% endif %}
         {% if measurement.minimum == measurement.maximum %}
           <td style="text-align:center">-</td>
         {% else %}
