@@ -1537,6 +1537,12 @@ def source_reference_detail(request, pk):
         .select_related('entity').order_by('name')
         )
 
+    sr_diet_sets = (DietSet
+        .objects
+        .is_active()
+        .filter(reference = source_reference)
+        )
+
     with connection.cursor() as cursor:
         cursor.execute("""
 			select
@@ -1577,6 +1583,7 @@ def source_reference_detail(request, pk):
         , {'source_reference': source_reference
         , 'sr_traits': sr_traits
         , 'sr_measurements': sr_measurements
+        , 'sr_diet_sets': sr_diet_sets
         , 'sr_entities': sr_entities
         ,})
 

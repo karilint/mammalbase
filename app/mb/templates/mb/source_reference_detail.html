@@ -157,13 +157,77 @@
   {% else %}
   <br>
   {% endif %}
+
   <table class="mb-list w3-table-all w3-small">
     {% if source_entity.name|length > 50 %}
     <caption class="w3-left-align w3-small">
       {% else %}
     <caption class="w3-left-align">
       {% endif %}
-      Table 3. List of Literature Taxa in {{ source_reference.citation|safe }}.
+      Table 3. List of Diet Sets for {{ source_reference.citation|safe }}.
+    </caption>
+    <thead>
+      <tr>
+        <th>Taxon</th>
+        <th>Location</th>
+        <th>Method</th>
+        <th>Period</th>
+        <th>Months</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if sr_diet_sets|length > 0 %}
+        {% for x in sr_diet_sets.all %}
+          <tr>
+            <td class="mb-public-internal"><a title="Press for Details" href="{% url 'diet_set-detail' pk=x.pk %}">{{ x.taxon.name }} <span class="fa fa-link w3-small"></span></a></td>
+            {% if x.location %}
+              <td>{{ x.location }}</td>
+            {% else %}
+              <td style="text-align:left">-</td>
+            {% endif %}
+            {% if x.method %}
+              <td>{{ x.method }}</td>
+            {% else %}
+              <td style="text-align:left">-</td>
+            {% endif %}
+            {% if x.time_period %}
+              <td>{{ x.time_period }}</td>
+            {% else %}
+              <td style="text-align:left">-</td>
+            {% endif %}
+            {% if x.time_period.time_in_months %}
+              <td style="text-align:left">{{ x.time_period.time_in_months }}</td>
+            {% else %}
+              <td style="text-align:left">12</td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      {% else %}
+      <tr>
+        <td colspan="2">There are no Diet Sets available.</td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+  {% if user.is_authenticated %}
+  <br>
+  {% else %}
+  <br>
+  {% endif %}
+
+  {% if user.is_authenticated %}
+  <br>
+  {% else %}
+  <br>
+  {% endif %}
+
+  <table class="mb-list w3-table-all w3-small">
+    {% if source_entity.name|length > 50 %}
+    <caption class="w3-left-align w3-small">
+      {% else %}
+    <caption class="w3-left-align">
+      {% endif %}
+      Table 4. List of Literature Taxa in {{ source_reference.citation|safe }}.
     </caption>
     <thead>
       <tr>
@@ -176,31 +240,32 @@
       </tr>
     </thead>
     <tbody>
-      {% if sr_entities|length > 0 %}
-        {% for se in sr_entities %}
-          {% if user.is_authenticated %}
-            <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_entity-detail' pk=se.source_entity_id %}">{{ se.source_entity_name }} <span class="fa fa-link w3-small"></span></a></td>
-          {% else %}
-            <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ se.source_entity_name }} <span class="fa fa-link w3-small"></span></a></td>
-          {% endif %}
+    {% if sr_entities|length > 0 %}
+      {% for se in sr_entities %}
+        <tr>
+        {% if user.is_authenticated %}
+          <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_entity-detail' pk=se.source_entity_id %}">{{ se.source_entity_name }} <span class="fa fa-link w3-small"></span></a></td>
+        {% else %}
+          <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ se.source_entity_name }} <span class="fa fa-link w3-small"></span></a></td>
+        {% endif %}
           <td>{{ se.source_entity_rank }}</td>
           <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_entity-detail' pk=se.master_entity_id|default:0 %}">{{ se.master_entity_name|default_if_none:"-" }} <span class="fa fa-link w3-small"></span></a></td>
-            <td>
-              {{ se.master_entity_rank|default_if_none:"-" }}
-            </td>
-            <td>
-              {{ se.match_type|default_if_none:"-" }}
-            </td>
-            <td>
-              {{ se.data_status|default_if_none:"-" }}
-            </td>
-          </tr>
-        {% endfor %}
-      {% else %}
-        <tr>
-          <td colspan="6">There are no Taxa available.</td>
+          <td>
+            {{ se.master_entity_rank|default_if_none:"-" }}
+          </td>
+          <td>
+            {{ se.match_type|default_if_none:"-" }}
+          </td>
+          <td>
+            {{ se.data_status|default_if_none:"-" }}
+          </td>
         </tr>
-      {% endif %}
+      {% endfor %}
+    {% else %}
+      <tr>
+        <td colspan="6">There are no Taxa available.</td>
+      </tr>
+    {% endif %}
     </tbody>
   </table>
 </section>
