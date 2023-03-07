@@ -7,12 +7,14 @@
     {% endblock %}
     <script src="https://use.fontawesome.com/baa70f3cd3.js"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@v2.8.9/dist/cookieconsent.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-black.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@v2.8.9/dist/cookieconsent.css" media="print" onload="this.media='all'">
     <style>
       html,body,h1,h2,h3,h4,h5,h6 {font-family: "Roboto", sans-serif;}
       .w3-sidebar {
@@ -31,7 +33,12 @@
     <!-- css used for Django select2 -->
     {{ form.media.css }}
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVNYMFRB68"></script>
+    <!-- Original -->
+    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVNYMFRB68"></script> -->
+
+    <script type="text/plain" data-cookiecategory="analytics" async src="https://www.googletagmanager.com/gtag/js?id=G-NVNYMFRB68"></script>
+    <script type="text/plain" data-cookiecategory="analytics">
+
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
@@ -168,8 +175,9 @@
         }}
 
     </script>
-    <noscript>Sorry, your browser does not support JavaScript!</noscript>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+      <noscript>Sorry, your browser does not support JavaScript!</noscript>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+      <script defer src="{% static 'js/cookieconsent-init.js' %}"></script>
     {% block script %}
     {% endblock %}
   </body>

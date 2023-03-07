@@ -1,0 +1,42 @@
+{% extends "mb/base_generic.html" %}
+{% block title %}
+<title>MammalBase - Privacy Policy</title>
+{% endblock %}
+{% block content %} {% load custom_tags %}
+{% load static %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Privacy Policy</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal"><h2>MammalBase - Privacy Policy</h2></header>
+  <header class="w3-container w3-text-teal"><h3>MammalBase - Database of traits, measurements and diets of the species in class Mammalia</h3></header>
+  <header class="w3-container w3-text-teal"><h4>Privacy Policy Statement</h4></header>
+  <p>This website uses cookies to enhance your browsing experience and to provide us with information about how visitors interact with our site. Cookies are small text files that are placed on your computer or mobile device when you visit a website.</p>
+  <p>We use both session cookies, which expire when you close your browser, and persistent cookies, which remain on your computer or mobile device until they expire or you delete them. We use the following types of cookies on our website:</p>
+  <ol>
+    <li>Essential Cookies: These cookies are necessary for the proper functioning of our website and cannot be switched off in our systems. They are usually only set in response to actions made by you which amount to a request for services, such as setting your privacy preferences, logging in, or filling in forms. You can set your browser to block or alert you about these cookies, but some parts of the site will not then work.</li>
+    <li>Analytics Cookies: These cookies allow us to count visits and traffic sources so we can measure and improve the performance of our site. They help us to know which pages are the most and least popular and see how visitors move around the site. All information these cookies collect is aggregated and therefore anonymous. If you do not allow these cookies we will not know when you have visited our site, and will not be able to monitor its performance.</li>
+    <li>Advertising Cookies: These cookies may be set through our site by our advertising partners. They may be used by those companies to build a profile of your interests and show you relevant adverts on other sites. They do not store directly personal information, but are based on uniquely identifying your browser and internet device. If you do not allow these cookies, you will experience less targeted advertising.</li>
+  </ol>
+  <br>
+  <p>By using our website, you consent to the use of cookies in accordance with this privacy policy. You can choose to disable cookies by adjusting your browser settings, but please note that this may affect how our website functions.</p>
+  <p>We take the protection of your personal data seriously and have implemented appropriate technical and organizational measures to safeguard your personal data against unauthorized or unlawful processing and against accidental loss, destruction, or damage.</p>
+  <header class="w3-container w3-text-teal"><h3>Contact us</h3></header>
+  <p>For additional information, contact the first author of <a class="btn btn-default" href="https://doi.org/10.1007/s42991-022-00323-6" target="_blank">Lintulaakso <i>et al.</i>, 2022. <span class="fa fa-external-link"></span></a></p>
+</section>
+{% endblock %}
+{% block nav %}
+<p>
+  {% load static %} <img src="{% static 'images/logo.png' %}" alt="MammalBase logo" style="position:relative; right:-6%; bottom:0%; width:40%; border:none;">
+</p>
+<h4 class="w3-bar-item"><strong>About</strong></h4>
+<a class="w3-bar-item w3-button w3-hover-black" href="{% url 'about_history' %}">History</a>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+{% endblock %}
+{% block script %}
+{% endblock %}

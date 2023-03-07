@@ -71,6 +71,9 @@ def about_history(request):
 def index_about(request):
     return render(request, 'mb/index_about.html',)
 
+def privacy_policy(request):
+    return render(request, 'mb/privacy_policy.html',)
+
 #@ratelimit(key='ip', rate='2/m')
 def index(request):
     return render(request, 'mb/index.html',)

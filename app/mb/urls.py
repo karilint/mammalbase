@@ -82,6 +82,7 @@ urlpatterns = [
     path('par/', views.proximate_analysis_reference_list, name='proximate_analysis_reference-list'),
     path('par/<int:pk>/', views.proximate_analysis_reference_detail, name='proximate_analysis_reference-detail'),
     path('pat/', views.view_proximate_analysis_table_list, name='view-proximate_analysis-table-list'),
+    path('privacy_policy', views.privacy_policy, name='privacy_policy'),
     path('sa/', views.source_attribute_list, name='source_attribute-list'),
     path('sa/<int:pk>/', views.source_attribute_detail, name='source_attribute-detail'),
     path('sa/<int:pk>/delete/', views.source_attribute_delete.as_view(), name='source_attribute-delete'),
