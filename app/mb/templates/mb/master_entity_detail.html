@@ -1,8 +1,9 @@
 {% extends "mb/base_generic.html" %}
+{% load humanize custom_tags %}
 {% block title %}
 <title>MammalBase - Accepted taxon: {{ master_entity.name }}</title>
 {% endblock %}
-{% block content %} {% load custom_tags %}
+{% block content %}
 <!--Article header -->
 <header style="display:none">
   <h1>MammalBase - Accepted taxon: {{ master_entity.name }}</h1>
@@ -45,7 +46,7 @@
       <p class="w3-small">
       {% for x in ternary %}
       Fig.1 - Ternary plot of the proximate analysis for the {{ x.name }} diet.<br>
-      CF (Crude Fibre) {{ x.cf|floatformat:2 }}, ASH (Ash contents) {{ x.ash|floatformat:2 }}, NFE (Nitrogen-Free-Extract) {{ x.nfe|floatformat:2 }}, CP (Crude Protein) {{ x.cp|floatformat:2 }}, EE (Ether Extract) {{ x.ee|floatformat:2 }}.
+      CF (Crude Fibre) {{ x.cf|floatformat:0 }}, ASH (Ash contents) {{ x.ash|floatformat:0 }}, NFE (Nitrogen-Free-Extract) {{ x.nfe|floatformat:0 }}, CP (Crude Protein) {{ x.cp|floatformat:0 }}, EE (Ether Extract) {{ x.ee|floatformat:0 }}.
       See details for the calculations in Lintulaakso, K., Tatti, N. and Žliobaitė, I., 2022. Quantifying mammalian diets.
       <i>Mammalian Biology</i>, pp.1-15.
       <a href="https://doi.org/10.1007/s42991-022-00323-6" target="_blank">[DOI] <span class="fa fa-external-link"></span></a>
@@ -180,22 +181,22 @@
         {% if measurement.minimum == measurement.maximum %}
           <td style="text-align:center">-</td>
         {% else %}
-          <td style="text-align:right">{{ measurement.coeff_minimum.normalize }}</td>
+          <td style="text-align:right">{{ measurement.coeff_minimum.normalize|intcomma }}</td>
         {% endif %}
         {% if measurement.coeff_mean.normalize == 0 %}
           <td style="text-align:center">-</td>
         {% else %}
-          <td style="text-align:center">{{ measurement.coeff_mean.normalize }}</td>
+          <td style="text-align:center">{{ measurement.coeff_mean.normalize|intcomma }}</td>
           {% endif %}
         {% if measurement.minimum == measurement.maximum %}
           <td style="text-align:center">-</td>
         {% else %}
-          <td style="text-align:right">{{ measurement.coeff_maximum.normalize }}</td>
+          <td style="text-align:right">{{ measurement.coeff_maximum.normalize|intcomma }}</td>
         {% endif %}
         {% if measurement.std == 0 %}
           <td style="text-align:center">-</td>
         {% else %}
-          <td style="text-align:center">{{ measurement.std|floatformat:0 }}</td>
+          <td style="text-align:center">{{ measurement.std|floatformat:0|intcomma }}</td>
         {% endif %}
         <td style="text-align:left" title="{{ measurement.reference|safe }}">{{ measurement.reference|truncatechars:10|safe }}</td>
       </tr>
@@ -208,7 +209,91 @@
   <br>
   {% endif %}
   <table class="mb-list w3-table-all w3-small">
-    <caption class="w3-left-align">Table 4. List of Data Sources for {{ master_entity.name }}.</caption>
+    <caption class="w3-left-align">Table 4. List of other Measurements <sup>b.</sup> for {{ master_entity.name }}.</caption>
+    <thead>
+      <tr>
+        <th>Measurement</th>
+        <th>Unit</th>
+        <th>n Total</th>
+        <th>n Unknown</th>
+        <th>n Female</th>
+        <th>n Male</th>
+        <th>Min</th>
+        <th>Mean</th>
+        <th>Max</th>
+        <th>SD</th>
+        <th>Reference(s)</th>
+      </tr>
+    </thead>
+    <tbody>
+
+    {% for relation in master_entity.entityrelation_set.all %}
+      {% if relation.relation.name  == "Taxon Match" and relation.is_active %}
+        {% for measurement in relation.source_entity.sourcemeasurementvalue_set.all %}
+          {% if measurement.source_attribute.attributerelation_set.count == 0 %}
+            <tr>
+              <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_attribute-detail' pk=measurement.source_attribute.pk %}">{{ measurement.source_attribute.name }} <span class="fa fa-link w3-small"></span></a></td>
+              <td style="text-align:center">{{ measurement.source_unit }}</td>
+              {% if measurement.n_total == 0 %}
+                <td style="text-align:center">-</td>
+              {% else %}
+                <td style="text-align:center">{{ measurement.n_total }}</td>
+              {% endif %}
+              {% if measurement.n_unknown == 0 %}
+                <td style="text-align:center">-</td>
+              {% else %}
+                <td style="text-align:center">{{ measurement.n_unknown }}</td>
+              {% endif %}
+              {% if measurement.n_female == 0 %}
+                <td style="text-align:center">-</td>
+              {% else %}
+                <td style="text-align:center">{{ measurement.n_female }}</td>
+              {% endif %}
+              {% if measurement.n_male == 0 %}
+                <td style="text-align:center">-</td>
+              {% else %}
+                <td style="text-align:center">{{ measurement.n_male }}</td>
+              {% endif %}
+              {% if measurement.minimum == measurement.maximum %}
+                <td style="text-align:center">-</td>
+              {% else %}
+                <td style="text-align:right">{{ measurement.minimum|floatformat:0|intcomma }}</td>
+              {% endif %}
+              {% if measurement.mean == 0 %}
+                <td style="text-align:center">-</td>
+              {% else %}
+                <td style="text-align:center">{{ measurement.mean|floatformat:0|intcomma }}</td>
+              {% endif %}
+              {% if measurement.minimum == measurement.maximum %}
+                <td style="text-align:center">-</td>
+              {% else %}
+                <td style="text-align:right">{{ measurement.maximum|floatformat:0|intcomma }}</td>
+              {% endif %}
+              {% if measurement.std == 0 %}
+                <td style="text-align:center">-</td>
+              {% else %}
+                <td style="text-align:center">{{ measurement.std|floatformat:0 }}</td>
+              {% endif %}
+              <td style="text-align:left" title="{{ relation.source_entity.reference|safe }}">{{ relation.source_entity.reference|truncatechars:10|safe }}</td>
+            </tr>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+
+    </tbody>
+  </table>
+  <p class="w3-small"><sup>b.</sup> other Measurements.
+    Source Measurements which are not listed or mapped with the <a href="{% url 'master_attribute-list' %}">Standard Traits.<span class="fa fa-link w3-small"></span></a>.
+  </p>
+
+  {% if user.is_authenticated %}
+  <br>
+  {% else %}
+  <br>
+  {% endif %}
+  <table class="mb-list w3-table-all w3-small">
+    <caption class="w3-left-align">Table 5. List of Data Sources for {{ master_entity.name }}.</caption>
     <thead>
       <tr>
         <th>Taxon</th>
