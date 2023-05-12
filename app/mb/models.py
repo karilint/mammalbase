@@ -8,6 +8,7 @@ from django_userforeignkey.models.fields import UserForeignKey
 from django.core.validators import MaxValueValidator, MinValueValidator
 from simple_history.models import HistoricalRecords
 from itis.models import TaxonomicUnits
+from tdwg.models import Taxon as TdwgTaxon
 
 # For doi validation
 from django.core.exceptions import ValidationError
@@ -301,6 +302,14 @@ class MasterEntity(BaseModel):
         on_delete = models.CASCADE,
         )
     name = models.CharField(max_length=250, help_text="Enter the Name of the Master Entity")
+    taxon = models.ForeignKey(
+        TdwgTaxon,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='master_entities',
+        help_text="The associated taxon (optional)"
+    )
 
     class Meta:
         ordering = ['name']

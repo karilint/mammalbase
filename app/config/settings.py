@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     'main.apps.MainConfig',
     'imports',
     'itis',
+    'tdwg',
     'mb.apps.MbConfig',
     'utils',	# mb utils
     'debug_toolbar',
