@@ -1,8 +1,10 @@
 from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
+from tdwg.models import Taxon
 from mb import models
 from itis.models import TaxonomicUnits
 
+admin.site.register([Taxon,])
 admin.site.register([TaxonomicUnits,])
 
 # admin.site.register([Name, Reference, Location, QualifierName, StratigraphicQualifier, Qualifier, StructuredName, Relation,])
@@ -12,6 +14,7 @@ admin.site.register([TaxonomicUnits,])
 #    list_display = ['name', ]
 #    search_fields = ['name', ]
 #    history_list_display = ['name', ]
+admin.site.register(models.AttributeGroupRelation, SimpleHistoryAdmin)
 admin.site.register(models.AttributeRelation, SimpleHistoryAdmin)
 admin.site.register(models.ChoiceValue, SimpleHistoryAdmin)
 admin.site.register(models.ChoiceSetOptionRelation, SimpleHistoryAdmin)
@@ -21,6 +24,7 @@ admin.site.register(models.EntityClass, SimpleHistoryAdmin)
 admin.site.register(models.EntityRelation, SimpleHistoryAdmin)
 admin.site.register(models.FoodItem, SimpleHistoryAdmin)
 admin.site.register(models.MasterAttribute, SimpleHistoryAdmin)
+admin.site.register(models.MasterAttributeGroup, SimpleHistoryAdmin)
 admin.site.register(models.MasterChoiceSetOption, SimpleHistoryAdmin)
 admin.site.register(models.MasterEntity, SimpleHistoryAdmin)
 admin.site.register(models.MasterReference, SimpleHistoryAdmin)

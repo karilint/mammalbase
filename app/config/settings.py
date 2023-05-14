@@ -80,8 +80,9 @@ INSTALLED_APPS = [
     'main.apps.MainConfig',
     'imports',
     'itis',
-    'tdwg',
+#    'tdwg',
     'mb.apps.MbConfig',
+    'tdwg.apps.TdwgConfig',
     'utils',	# mb utils
     'debug_toolbar',
 #    'django_extensions', #for Jupyter and Scripts

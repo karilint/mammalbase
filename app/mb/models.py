@@ -223,6 +223,29 @@ class FoodItem(BaseModel):
         """
         return '%s' % (self.name)
 
+class MasterAttributeGroup(BaseModel):
+    name = models.CharField(max_length=250, help_text="Enter the Name of the Master Attribute Group")
+    remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Master Attribute Group")
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        """
+        String for representing the Model object (in Admin site etc.)
+        """
+        return '%s' % (self.name)
+
+class AttributeGroupRelation(BaseModel):
+    group = models.ForeignKey('MasterAttributeGroup', on_delete=models.CASCADE)
+    attribute = models.ForeignKey('MasterAttribute', on_delete=models.CASCADE)
+    display_order = models.PositiveIntegerField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['group__name', 'display_order']
+
+    def __str__(self):
+        return f'{self.group.name} - {self.attribute.name}'
 
 class MasterAttribute(BaseModel):
     """
@@ -242,6 +265,7 @@ class MasterAttribute(BaseModel):
     on_delete = models.CASCADE,
     )
     remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Master Attribute")
+    groups = models.ManyToManyField('MasterAttributeGroup', through='AttributeGroupRelation')
 
     class Meta:
         ordering = ['entity__name','name']
