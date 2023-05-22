@@ -30,6 +30,10 @@
       <td class="w3-threequarter">{{ source_attribute.name }}</td>
     </tr>
     <tr>
+      <th class="w3-quarter">Source Method:</th>
+      <td class="w3-threequarter">{{ source_attribute.method|default_if_none:"-" }}</td>
+    </tr>
+    <tr>
       <th class="w3-quarter">Reference:</th>
       {% if user.is_authenticated %}
         <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="{% url 'source_reference-detail' pk=source_attribute.reference.id %}">{{ source_attribute.reference }} <span class="fa fa-link w3-small"></span></a></td>

@@ -1112,51 +1112,72 @@ class ProximateAnalysisItem(BaseModel):
     """
     Model representing a ProximateAnalysisItem in MammalBase
     """
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        
+        self.proximate_analysis = models.ForeignKey(
+            'ProximateAnalysis',
+            on_delete = models.CASCADE,
+            )
+        self.forage = models.ForeignKey(
+            'FoodItem',
+            on_delete = models.CASCADE,
+            )
+        self.location = models.ForeignKey(
+            'SourceLocation',
+            on_delete=models.CASCADE,
+            blank = True,
+            null = True,
+            )
+        self.cited_reference = models.CharField(
+            blank = True,
+            null=True,
+            max_length=250, 
+            help_text="Enter the original reference, if not this study."
+        )
+        self.sample_size = models.PositiveSmallIntegerField(
+            blank = True,
+            null=True,
+            default=0,
+            help_text='Sample size'
+        )
 
-    proximate_analysis = models.ForeignKey(
-        'ProximateAnalysis',
-        on_delete = models.CASCADE,
+        #Decimal fields
+        decimal_field_kwargs = {
+            "blank" : True,
+            "null" : True,
+            "default" : 0,
+            "decimal_places" : 3,
+            "max_digits" : 7,
+            "validators" : [
+                MinValueValidator(0, message='Only numbers between 0 and 1000 are accepted.'),
+                MaxValueValidator(1000, message='Only numbers between 0 and 1000 are accepted.')
+            ]
+        }
+        dm_reported = models.DecimalField(**decimal_field_kwargs)
+        moisture_reported = models.DecimalField(**decimal_field_kwargs)
+        cp_reported = models.DecimalField(**decimal_field_kwargs)
+        ee_reported = models.DecimalField(**decimal_field_kwargs)
+        cf_reported = models.DecimalField(**decimal_field_kwargs)
+        ash_reported = models.DecimalField(**decimal_field_kwargs)
+        nfe_reported = models.DecimalField(**decimal_field_kwargs)
+        total_carbohydrates_reported = models.DecimalField(**decimal_field_kwargs)
+        cp_std = models.DecimalField(**decimal_field_kwargs)
+        ee_std = models.DecimalField(**decimal_field_kwargs)
+        cf_std = models.DecimalField(**decimal_field_kwargs)
+        ash_std = models.DecimalField(**decimal_field_kwargs)
+        nfe_std = models.DecimalField(**decimal_field_kwargs)
+        transformation = models.CharField(
+            blank = True,
+            null=True,
+            max_length=250
         )
-    forage = models.ForeignKey(
-        'FoodItem',
-        on_delete = models.CASCADE,
+        remarks = models.CharField(
+            blank = True,
+            null=True,
+            max_length=250,
+            help_text="Enter remarks."
         )
-    location = models.ForeignKey(
-        'SourceLocation',
-        on_delete=models.CASCADE,
-        blank = True,
-        null = True,
-        )
-    cited_reference = models.CharField(blank = True, null=True, max_length=250, help_text="Enter the original reference, if not this study.")
-    sample_size = models.PositiveSmallIntegerField(blank = True, null=True, default=0, help_text='Sample size')
-    dm_reported = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7,
-              validators=[MinValueValidator(0), MaxValueValidator(1000)])
-    moisture_reported = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7,
-              validators=[MinValueValidator(0), MaxValueValidator(1000)])
-    cp_reported = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7,
-              validators=[MinValueValidator(0), MaxValueValidator(1000)])
-    ee_reported = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7,
-              validators=[MinValueValidator(0), MaxValueValidator(1000)])
-    cf_reported = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7,
-              validators=[MinValueValidator(0), MaxValueValidator(1000)])
-    ash_reported = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7,
-              validators=[MinValueValidator(0), MaxValueValidator(1000)])
-    nfe_reported = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7,
-              validators=[MinValueValidator(0), MaxValueValidator(1000)])
-    total_carbohydrates_reported = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7,
-              validators=[MinValueValidator(0), MaxValueValidator(1000)])
-    cp_std = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7,
-              validators=[MinValueValidator(0), MaxValueValidator(100)])
-    ee_std = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7,
-              validators=[MinValueValidator(0), MaxValueValidator(100)])
-    cf_std = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7,
-              validators=[MinValueValidator(0), MaxValueValidator(100)])
-    ash_std = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7,
-              validators=[MinValueValidator(0), MaxValueValidator(100)])
-    nfe_std = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7,
-              validators=[MinValueValidator(0), MaxValueValidator(100)])
-    transformation = models.CharField(blank = True, null=True, max_length=250,)
-    remarks = models.CharField(blank = True, null=True, max_length=250, help_text="Enter remarks.")
 
     class Meta:
         ordering = ['proximate_analysis','forage']

@@ -124,6 +124,7 @@
     <thead>
       <tr>
         <th>Source Measurement</th>
+        <th>Source Method</th>
         <th>Standard Measurement</th>
       </tr>
     </thead>
@@ -132,15 +133,16 @@
       {% for sa in sr_measurements.all %}
       <tr>
         {% if user.is_authenticated %}
-        <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_attribute-detail' pk=sa.id %}">{{ sa }} <span class="fa fa-link w3-small"></span></a></td>
+          <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_attribute-detail' pk=sa.id %}">{{ sa }} <span class="fa fa-link w3-small"></span></a></td>
         {% else %}
-        <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ sa }} <span class="fa fa-link w3-small"></span></a></td>
+          <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ sa }} <span class="fa fa-link w3-small"></span></a></td>
         {% endif %}
+        <td class="mb-public-internal">{{ sa.method|default_if_none:"-" }}</td>
         <td>
           {% for ma in sa.attributerelation_set.all %}
-          {% if ma.is_active %}
-          {{ ma.master_attribute }};
-          {% endif %}
+            {% if ma.is_active %}
+              {{ ma.master_attribute }};
+            {% endif %}
           {% endfor %}
         </td>
       </tr>
