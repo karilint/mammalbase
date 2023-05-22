@@ -7,7 +7,7 @@
 To run all the existing unit tests, run:
 
 ```
-docker exec mammalbase_web_1 bash -c "python manage.py test"
+docker exec mammalbase-web-1 bash -c "python manage.py test"
 ```
 
 The tests may not work locally before the database privileges are set for Django. Once docker containers are running, run this command:
@@ -20,7 +20,7 @@ Enter the DB_ROOT_PASS from env-file
 Once in MySQL, run this command to grant privileges:
 
 ```
-GRANT ALL PRIVILEGES ON *.* TO 'django_tm'@'%';
+GRANT ALL PRIVILEGES ON *.* TO 'mb_dev'@'%';
 ```
 Type ```QUIT``` to exit MySQL. Tests should work now.
 
