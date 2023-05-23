@@ -19,44 +19,29 @@ class Check:
         self.id = None
 
     def check_all_ds(self, df, force=False):
-        if self.check_headers_ds(df) == False:
-            return False
-        elif self.check_author(df) == False:
-            return False
-        elif self.check_verbatimScientificName(df) == False:
-            return False
-        elif self.check_taxonRank(df) == False:
-            return False
-        elif self.check_gender(df) == False:
-            return False
-        elif self.check_verbatim_associated_taxa(df) == False:
-            return False
-        elif self.check_sequence(df) == False:
-            return False
-        elif self.check_measurementValue(df) == False:
-            return False
-        elif self.check_part(df) == False:
-            return False
-        elif self.check_references(df, force) == False:
-            return False
-        elif self.check_lengths(df) == False:
-            return False
-        return True
+        return (
+            self.check_headers_ds(df) and 
+            self.check_author(df) and 
+            self.check_verbatimScientificName(df) and
+            self.check_taxonRank(df) and
+            self.check_gender(df) and
+            self.check_verbatim_associated_taxa(df) and
+            self.check_sequence(df) and
+            self.check_measurementValue(df) and 
+            self.check_part(df) and 
+            self.check_references(df, force) and
+            self.check_lengths(df)
+        )
     
     def check_all_ets(self, df):
-        if self.check_headers_ets(df) == False:
-            return False
-        elif self.check_author(df) == False:
-            return False
-        elif self.check_verbatimScientificName(df) == False:
-            return False
-        elif self.check_taxonRank(df) == False:
-            return False
-        elif self.check_lengths(df) == False:
-           return False
-        elif self.check_min_max(df) == False:
-            return False
-        return True
+        return (
+            self.check_headers_ets(df) and
+            self.check_author(df) and
+            self.check_verbatimScientificName(df) and
+            self.check_taxonRank(df) and
+            self.check_lengths(df) and
+            self.check_min_max(df)
+        )
 
     def check_valid_author(self, df):
         counter = 1
