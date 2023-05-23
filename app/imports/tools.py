@@ -601,12 +601,33 @@ def get_choicevalue(gender):
 
 
 def get_fooditem_json(food):
-    url = 'https://resolver.globalnames.org/name_resolvers.json?data_source_ids=3&names=' + food.lower().capitalize().replace(' ', '%20')
+    url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + food.lower().capitalize().replace(' ', '%20')
     try:
         file = urllib.request.urlopen(url)
         data = file.read()
-        return json.loads(data)
     except:
+        return {}
+
+    taxon_data = json.loads(data)['itisTerms'][0]
+    if taxon_data and taxon_data['scientificName'].lower() == food.lower() and taxon_data['nameUsage'] in ['valid', 'accepted']:
+        tsn = taxon_data['tsn']
+        scientific_name = taxon_data['scientificName']
+        hierarchy = itis.getFullHierarchyFromTSN(tsn)
+        classification_path = itis.hierarchyToString(scientific_name, hierarchy, 'hierarchyList', 'taxonName')
+        classification_path_ids = itis.hierarchyToString(tsn, hierarchy, 'hierarchyList', 'tsn')
+        classification_path_ranks = itis.hierarchyToString('Species', hierarchy, 'hierarchyList', 'rankName')
+        return_data = {
+            'taxon_id': tsn,
+            'canonical_form': scientific_name,
+            'classification_path_ids': classification_path_ids,
+            'classification_path': classification_path,
+            'classification_path_ranks': classification_path_ranks,
+        }
+        result = {'data': [
+            {'results': [return_data]}
+        ]}
+        return result
+    else:
         return {}
 
 def create_fooditem(results, food_upper, part):
@@ -614,7 +635,7 @@ def create_fooditem(results, food_upper, part):
     taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
     if len(taxonomic_unit)==0:
         completename = results['data'][0]['results'][0]['canonical_form']
-        hierarchy_string = results['data'][0]['results'][0]['classification_path_ids'].replace('|', '-')
+        hierarchy_string = results['data'][0]['results'][0]['classification_path_ids']
         hierarchy = results['data'][0]['results'][0]['classification_path'].replace('|', '-')
         kingdom = hierarchy.split('-')
         kingdom_id = Kingdom.objects.filter(name=kingdom[0])[0].pk
@@ -873,7 +894,7 @@ def check_entity_realtions(source_entity):
     except:
         print('Error searching entity relation', sys.exc_info(),traceback.format_exc())
 
-def create_new_entityrelation_with_api_data(source_entity):
+"""def create_new_entityrelation_with_api_data(source_entity):
     api_result = api_query_globalnames_by_name(source_entity.name)["data"][0]
     if api_result["is_known_name"]:
         canonical_form = api_result["results"][0]["canonical_form"]
@@ -897,6 +918,21 @@ def create_new_entityrelation_with_api_data(source_entity):
                             remarks=master_entity_result[0].reference).save()
     else:
         return
+"""
+def create_new_entityrelation_with_api_data(source_entity):
+    api_result = get_fooditem_json(source_entity.name)["data"][0]
+    if api_result:
+        canonical_form = api_result["results"][0]["canonical_form"]
+        master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity.entity_id,reference_id=4)
+        EntityRelation(master_entity=master_entity_result[0],
+                        source_entity=source_entity.id,
+                        relation_id=1,
+                        data_status_id=5,
+                        relation_status_id=1,
+                        remarks=master_entity_result[0].reference).save()
+    else:
+        return
+
 
 def create_new_entity_relation(source_entity):
     try:
