@@ -5,7 +5,7 @@ from . import views
 from mb.views import (
     import_diet_set,
     import_ets,
-    import_proximate_analysis,
+    import_proximate_analysis
 )
 import debug_toolbar
 #from rest_framework.urlpatterns import format_suffix_patterns
