@@ -316,13 +316,10 @@ class Check:
         accepted = ['BARK', 'BLOOD', 'BONES', 'BUD', 'CARRION', 'EGGS', 'EXUDATES', 'FECES', 'FLOWER', 'FRUIT', 'LARVAE', 'LEAF', 'MINERAL', 'NECTAR/JUICE', 'NONE', 'POLLEN', 'ROOT', 'SEED', 'SHOOT', 'STEM', 'WHOLE']
         if 'PartOfOrganism' not in headers:
             return True
-        counter = 1
-        for value in (df.loc[:, 'PartOfOrganism']):
-            counter += 1
-            if value.lower() != 'nan':
-                if value.upper() not in accepted:
-                    messages.error(self.request, "Part is in the wrong form on the line " + str(counter) + " The correct are: bark, blood, bones, bud, carrion, eggs, exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, none, pollen, root, seed, shoot, stem, whole")
-                    return False
+        for counter, value in enumerate(df.loc[:, 'PartOfOrganism'], 1):
+            if value.lower() != 'nan' and value.upper() not in accepted:
+                messages.error(self.request, f"Part is in the wrong form on the line {str(counter)} The correct are: bark, blood, bones, bud, carrion, eggs, exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, none, pollen, root, seed, shoot, stem, whole")
+                return False
         return True
 
     def check_reference_in_db(self, reference):
