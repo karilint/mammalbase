@@ -2,6 +2,7 @@ from django.db import models
 from mb.models import ProximateAnalysisItem
 
 # Create your models here.
+"""
 class test(ProximateAnalysisItem):
     
     measurement_determined_by = models.CharField()
@@ -27,3 +28,4 @@ class test(ProximateAnalysisItem):
     #nitrogen_free_extract
     nfe_dispersion = models.DecimalField()
     nfe_measurement_method = models.CharField()
+"""
