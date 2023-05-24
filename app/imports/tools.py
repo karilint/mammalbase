@@ -1,3 +1,4 @@
+import codecs
 from doctest import master
 from multiprocessing.spawn import import_main_path
 from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
@@ -310,9 +311,9 @@ class Check:
             else:
                 messages.error(self.request, "The measurement value on the line " + str(counter) + " is not a number.")
                 return False
-#            if value <= 0:
-#                messages.error(self.request, "The measurement value on the line " + str(counter) + " needs to be bigger than zero.")
-#                return False
+            if value <= 0:
+                messages.error(self.request, "The measurement value on the line " + str(counter) + " needs to be bigger than zero.")
+                return False
 
         return True
     
@@ -607,8 +608,10 @@ def get_fooditem_json(food):
         data = file.read()
     except:
         return {}
-
-    taxon_data = json.loads(data)['itisTerms'][0]
+    try:
+        taxon_data = json.loads(data)['itisTerms'][0]
+    except UnicodeDecodeError:
+        taxon_data = json.loads(data.decode('utf-8', 'ignore'))['itisTerms'][0]
     if taxon_data and taxon_data['scientificName'].lower() == food.lower() and taxon_data['nameUsage'] in ['valid', 'accepted']:
         tsn = taxon_data['tsn']
         scientific_name = taxon_data['scientificName']
@@ -671,21 +674,18 @@ def get_fooditem(food, part):
     if len(associated_taxa) > 1:
         for x in range(len(associated_taxa)-1):
             results = get_fooditem_json(associated_taxa[x] + ' ' + associated_taxa[x+1])
-            try:
-                results['data'][0]['results']
+            if results:
+                #results['data'][0]['results']
                 rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
                 rank_id[rank] = results
-            except:
-                pass
     if len(rank_id) == 0:
         for y in range(len(associated_taxa)):
             results = get_fooditem_json(associated_taxa[y])
-        try:
-            results['data'][0]['results']
-            rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
-            rank_id[rank] = results
-        except:
-            pass
+            if results:
+                #results['data'][0]['results']
+                rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
+                rank_id[rank] = results
+
     if len(rank_id) == 0:
         if part != 'nan' and part != None:
             part = ChoiceValue.objects.filter(caption=part.upper())[0]
@@ -919,17 +919,19 @@ def check_entity_realtions(source_entity):
     else:
         return
 """
+
 def create_new_entityrelation_with_api_data(source_entity):
     api_result = get_fooditem_json(source_entity.name)["data"][0]
     if api_result:
         canonical_form = api_result["results"][0]["canonical_form"]
         master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity.entity_id,reference_id=4)
-        EntityRelation(master_entity=master_entity_result[0],
-                        source_entity=source_entity.id,
-                        relation_id=1,
-                        data_status_id=5,
-                        relation_status_id=1,
-                        remarks=master_entity_result[0].reference).save()
+        if master_entity_result:
+            EntityRelation(master_entity=master_entity_result[0],
+                            source_entity=source_entity.id,
+                            relation_id=1,
+                            data_status_id=5,
+                            relation_status_id=1,
+                            remarks=master_entity_result[0].reference).save()
     else:
         return
 
