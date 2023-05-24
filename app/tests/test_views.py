@@ -11,7 +11,7 @@ from django.test.client import RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import User
 from allauth.socialaccount.models import SocialAccount
-from mb.models import EntityClass, MasterReference, SourceAttribute, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
+from mb.models import EntityClass, MasterReference, SourceAttribute, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue, MasterEntity
 from imports.tools import Check
 import imports.tools as tools
 import tempfile, csv, os
@@ -95,7 +95,7 @@ class ImportViewTests(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 2)
         self.assertEqual('File imported successfully.' in str(messages[0]), True)
-        self.assertEqual(response.status_code, 302) 
+        self.assertEqual(response.status_code, 302)
 
     def test_import_ets_post(self):
         with open('test_post.csv', 'w') as file:
