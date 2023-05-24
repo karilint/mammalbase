@@ -1117,5 +1117,3 @@ def get_sourceattribute(name, ref, entity, method, type_value, author):
     sa = SourceAttribute(name=name, reference=ref, entity=entity, method=method, type=type_value, created_by=author)
     sa.save()
     return sa
-
-#
