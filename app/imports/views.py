@@ -47,9 +47,13 @@ def import_proximate_analysis(request):
 	if "GET" == request.method:
 		return render(request, "import/import_proximate_analysis.html")
 	try:
+		
 		file = request.FILES["csv_file"]
 		df = pd.read_csv(file, sep='\t')
+		print("here 1")
 		trim_df(df)
+		print("here 2")
+		
 		check = Check(request)
 		force = "force" in request.POST
 		if check.check_valid_author(df) == False:

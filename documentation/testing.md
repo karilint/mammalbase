@@ -32,14 +32,14 @@ Test files are located in app/tests.
 
 You can create test coverage report by first installing coverage.py to the container and then run:
 ```
-docker exec mammalbase_web_1 bash -c "coverage run --source='.' manage.py test"
+docker exec mammalbase-web-1 bash -c "coverage run --source='.' manage.py test"
 ```
 
 To see the report run:
 ```
-docker exec mammalbase_web_1 bash -c "coverage report"
+docker exec mammalbase-web-1 bash -c "coverage report"
 ```
 For html report run:
 ```
-docker exec mammalbase_web_1 bash -c "coverage html"
+docker exec mammalbase-web-1 bash -c "coverage html"
 ```
