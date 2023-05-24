@@ -50,4 +50,5 @@ jobs:
         DB_PASSWORD: password
         ALLOWED_HOSTS: 127.0.0.1
       run: |
-        python app/manage.py test tests
+        cd app
+        python manage.py test
