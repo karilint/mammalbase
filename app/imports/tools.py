@@ -1156,15 +1156,29 @@ def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
             else:
                 value = possible_nan_to_none(value)
             item_dict[proximate_analysis_item_headers[header]["name"]] = value
-    #print("Reported sum:",item_dict["dm_reported"]+item_dict["ee_reported"]+item_dict["cp_reported"]+item_dict["cf_reported"]+item_dict["ash_reported"]+item_dict["nfe_reported"])
-    #print("Dispersion sum:",item_dict["dm_dispersion"]+item_dict["ee_dispersion"]+item_dict["cp_dispersion"]+item_dict["cf_dispersion"]+item_dict["ash_dispersion"]+item_dict["nfe_dispersion"])
+    
     #Check if pa_item already exists
+    #item_dict = transform_sum(item_dict)
     pa_item_old = ProximateAnalysisItem.objects.filter(**item_dict)
     if len(pa_item_old) > 0:
         pa_item = pa_item_old[0]
     else:
         pa_item = ProximateAnalysisItem(**item_dict)
         pa_item.save()
+
+def transform_sum(items):
+    item_sum = sum([items[item] for item in items if ("reported" in item and "moisture" not in item)])
+    print(item_sum)
+    for item in items:
+        
+        if "reported" not in item or "moisture" in item:
+            continue
+        print(item, items[item])
+        items[item] /= item_sum
+        items[item] *= 100
+        print(item, items[item]) 
+    return items
+
 
 def create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, lifestage, accuracy, measured_by, remarks, cited_reference, author):
     smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_unknown=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, life_stage=lifestage, measurement_accuracy__iexact=accuracy, measured_by__iexact=measured_by, remarks__iexact=remarks, cited_reference__iexact=cited_reference)
