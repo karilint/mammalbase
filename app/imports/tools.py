@@ -48,7 +48,7 @@ class Check:
         return (
             self.check_headers_pa(df) and
             self.check_author(df) and
-            #self.check_verbatimScientificName(df) and
+            self.check_verbatimScientificName(df, False) and
             self.check_lengths(df) and
             self.check_part(df) and
             self.check_references(df, force)
@@ -91,12 +91,67 @@ class Check:
     
     def check_headers_pa(self, df):
         import_headers = list(df.columns.values)
-        accepted_headers = ['references', 'verbatimScientificName', 'PartOfOrganism', 'author']
+        required_headers = [
+            'verbatimScientificName',
+            'PartOfOrganism',
+            'author',
+            'references'
+            ]
+        optional_headers = {
+            "individualCount":int,
+            "measurementMethod":str,
+            "measurementDeterminedBy":str,
+            "verbatimLocality":str,
+            "measurementRemarks":str,
+            "verbatimEventDate":str,
+            "verbatimTraitvalue__moisture":float,
+            "dispersion__moisture":float,
+            "measurementMethod__moisture":str,
+            "verbatimTraitValue__dry_matter":float,
+            "dispersion__dry_matter":float,
+            "measurementMethod__dry_matter":str,
+            "verbatimTraitValue__ether_extract":float,
+            "dispersion__ether_extract":float,
+            "measurementMethod__ether_extract":str,
+            "verbatimTraitValue__crude_protein":float,
+            "dispersion__crude_protein":float,
+            "measurementMethod__crude_protein":str,
+            "verbatimTraitValue__crude_fibre":float,
+            "dispersion__crude_fibre":float,
+            "measurementMethod__crude_fibre":str,
+            "verbatimTraitValue_ash":float,
+            "dispersion__ash":float,
+            "measurementMethod_ash":str,
+            "verbatimTraitValue__nitrogen_free_extract":float,
+            "dispersion__nitrogen_free_extract":float,
+            "measurementMethod__nitrogen_free_extract":str,
+            "associatedReferences":str
+        }
+        type_names = {
+            int:"a number",
+            float:"a number or decimal value",
+            str:"text"
+        }
 
-        for header in accepted_headers:
+        for header in required_headers:
             if header not in import_headers:
                 messages.error(self.request, "The import file does not contain the required headers. The missing header is: " + str(header) + ".")
                 return False
+        for header in import_headers:
+            if header in optional_headers:
+                for counter, value in enumerate(df.loc[:, header], 1):
+                    if optional_headers[header] == float or optional_headers[header] == int:
+                        if isinstance(value, float):
+                            value = possible_nan_to_zero(value)
+                        else:
+                            value = value.replace(",",".")
+                    try:
+                        optional_headers[header](value)
+                    except:
+                        messages.error(self.request, f"The {header} on row {counter} is not correct type. It should be {type_names[optional_headers[header]]}.")
+                        return False
+
+                    
         return True
 
     def check_author(self, df):
@@ -119,21 +174,18 @@ class Check:
                 return False
         return True
 
-    def check_verbatimScientificName(self, df):
-        counter = 1
-        for name in df.loc[:, 'verbatimScientificName']:
-            counter += 1
+    def check_verbatimScientificName(self, df, taxon_rank_included=True):
+        for counter, name in enumerate(df.loc[:, 'verbatimScientificName'], 1):
             if name == "nan" or pd.isna(name):
                 messages.error(self.request, "Scientific name is empty at row " + str(counter) + ".")
                 return False
             if len(name) > 250:
                 messages.error(self.request, "Scientific name is too long at row " + str(counter) + ".")
                 return False
-
+        if taxon_rank_included == False:
+            return True
         df_new = df[['verbatimScientificName', 'taxonRank']]
-        counter = 1
-        for item in df_new.values:
-            counter += 1
+        for counter, item in enumerate(df_new.values, 1):
             names_list = item[0].split()
 
             if len(names_list) > 3 and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list and "spp." not in names_list and "spp" not in names_list:
@@ -1104,6 +1156,8 @@ def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
             else:
                 value = possible_nan_to_none(value)
             item_dict[proximate_analysis_item_headers[header]["name"]] = value
+    #print("Reported sum:",item_dict["dm_reported"]+item_dict["ee_reported"]+item_dict["cp_reported"]+item_dict["cf_reported"]+item_dict["ash_reported"]+item_dict["nfe_reported"])
+    #print("Dispersion sum:",item_dict["dm_dispersion"]+item_dict["ee_dispersion"]+item_dict["cp_dispersion"]+item_dict["cf_dispersion"]+item_dict["ash_dispersion"]+item_dict["nfe_dispersion"])
     #Check if pa_item already exists
     pa_item_old = ProximateAnalysisItem.objects.filter(**item_dict)
     if len(pa_item_old) > 0:
