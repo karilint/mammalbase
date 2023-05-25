@@ -1,3 +1,7 @@
 from django.shortcuts import render
+from django.http import HttpResponse
 
-# Create your views here.
+
+def export_hello_world(request):
+    print('Hello, world! Greetings from Exports!')
+    return HttpResponse('Hello, world! Greetings from Exports!')
