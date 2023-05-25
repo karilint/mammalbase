@@ -65,7 +65,12 @@
             <a href="{% url 'import_ets' %}" class="w3-bar-item w3-button">ETS</a>
           </div>
         </div>
-        <a class="w3-bar-item w3-button w3-hover-white" href="{% url 'hello' %}">Export</a>
+        <div class="w3-dropdown-hover">
+          <button class="w3-button">Export</button>
+          <div class="w3-dropdown-content w3-bar-block w3-border">
+            <a href="{% url 'hello' %}" class="w3-bar-item w3-button">Hello Export</a>
+          </div>
+        </div>
       </div>
     </div>
     <!---keeps the nav bar form being on top of conent-->
