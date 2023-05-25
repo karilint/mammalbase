@@ -3,5 +3,5 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.export_hello_world, name='hello'),
+    path('measurements', views.export_to_tsv, name='tsv'),
 ]
