@@ -120,8 +120,10 @@ def  getFullHierarchyFromTSN(tsn):
                 timeout=15)
         except ConnectionError:
             print('Network connection failed.')
+            return None
         except ReadTimeout:
             print('timeout.')
+            return None
         if r.status_code==200:
             if r.text == '':
                 return None

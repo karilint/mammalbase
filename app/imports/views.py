@@ -38,7 +38,7 @@ def import_diet_set(request):
 			return HttpResponseRedirect(reverse("import_diet_set"))
 
 	except Exception as e:
-		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
+		#logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
 		messages.error(request,"Unable to upload file. "+repr(e))
 	return HttpResponseRedirect(reverse("import_diet_set"))
 
@@ -95,7 +95,7 @@ def import_ets(request):
 			return HttpResponseRedirect(reverse("import_ets"))
 
 	except Exception as e:
-		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
+		#logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
 		messages.error(request,"Unable to upload file. "+repr(e))
 	return HttpResponseRedirect(reverse("import_ets"))
 
