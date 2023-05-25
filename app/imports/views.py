@@ -50,10 +50,7 @@ def import_proximate_analysis(request):
 		
 		file = request.FILES["csv_file"]
 		df = pd.read_csv(file, sep='\t')
-		print("here 1")
 		trim_df(df)
-		print("here 2")
-		
 		check = Check(request)
 		force = "force" in request.POST
 		if check.check_valid_author(df) == False:

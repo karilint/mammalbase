@@ -47,7 +47,7 @@ class Check:
         return (
             self.check_headers_pa(df) and
             self.check_author(df) and
-            self.check_verbatimScientificName(df) and
+            #self.check_verbatimScientificName(df) and
             self.check_lengths(df) and
             self.check_part(df) and
             self.check_references(df, force)
@@ -915,7 +915,6 @@ def create_ets(row, headers):
 def create_proximate_analysis(row, df):
     headers = list(df.columns.values)
     author = get_author(getattr(row, 'author'))
-    
     attribute_dict = {
         "reference" : get_sourcereference_citation(getattr(row, 'references'), author),
         "method" : None,
@@ -923,25 +922,21 @@ def create_proximate_analysis(row, df):
         "study_time" : None,
         "cited_reference" : None
     }
-    proximate_analysis_headers = {
-        "measurementMethod":"method",
-        "verbatimLocality":"location",
-        "verbatimEventDate":"study_time"
-    }
     if "measurementMethod" in headers:
         attribute_dict["method"] = get_sourcemethod(getattr(row, "measurementMethod"), attribute_dict["reference"], author)
     if "verbatimLocality" in headers:
-        attribute_dict["location"] = get_sourcelocation(getattr(row, "verbatimLocality"), author)
+        attribute_dict["location"] = get_sourcelocation(getattr(row, "verbatimLocality"), attribute_dict["reference"], author)
     if "verbatimeEventDate" in headers:
         attribute_dict["study_time"] = getattr(row, "verbatimEventDate")
     if "associatedReferences" in headers:
         attribute_dict["cited_reference"] = getattr(row, "associatedReferences")
+    pa = None
     pa_old = ProximateAnalysis.objects.filter(**attribute_dict)
     if len(pa_old) > 0:
         pa = pa_old[0]
     else:
         pa = ProximateAnalysis(**attribute_dict)
-    pa.save()
+        pa.save()
     create_proximate_analysis_item(row, pa, attribute_dict["location"], attribute_dict["cited_reference"], headers)
 
 
@@ -950,51 +945,132 @@ def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
     item_dict = {
         "proximate_analysis" : pa,
         "location" : location,
-        "cited_reference" : cited_reference
+        "cited_reference" : cited_reference,
+        "forage" : get_fooditem(
+            getattr(row, 'verbatimScientificName'),
+            possible_nan_to_none(getattr(row, "PartOfOrganism"))
+        ),
+        
     }
-    item_dict["forage"] = get_fooditem(
-        getattr(row, 'verbatimScientificName'),
-        possible_nan_to_none(getattr("PartOfOrganism"))
-    )
     proximate_analysis_item_headers = {
-        "measurementDeterminedBy":"measurement_determined_by",
-        "measurementRemarks":"measurement_remarks",
-        "verbatimTraitvalue__moisture":"moisture_reported",
-        "dispersion__moisture":"moisture_dispersion",
-        "measurementMethod__moisture":"moisture_measurement_method",
-        "verbatimTraitValue__dry_matter":"dm_reported",
-        "dispersion__dry_matter":"dm_dispersion",
-        "measurementMethod__dry_matter":"dm_measurement_method",
-        "verbatimTraitValue__ether_extract":"ee_reported",
-        "dispersion__ether_extract":"ee_dispersion",
-        "measurementMethod__ether_extract":"ee_measurement_method",
-        "verbatimTraitValue__crude_protein":"cp_reported",
-        "dispersion__crude_protein":"cp_dispersion",
-        "measurementMethod__crude_protein":"cp_measurement_method",
-        "verbatimTraitValue__crude_fibre":"cf_reported",
-        "dispersion__crude_fibre":"cf_dispersion",
-        "measurementMethod__crude_fibre":"",
-        "verbatimTraitValue_ash":"ash_reported",
-        "dispersion__ash":"ash_dispersion",
-        "measurementMethod_ash":"ash_measurement_method",
-        "verbatimTraitValue__nitrogen_free_extract":"nfe_reported",
-        "dispersion__nitrogen_free_extract":"nfe_dispersion",
-        "measurementMethod__nitrogen_free_extract":"nfe_measurement_method",
-        "associatedReferences":"cited_reference"
+        "individualCount":{
+            "name":"sample_size",
+            "type":int
+        },
+        "measurementDeterminedBy":{
+            "name":"measurement_determined_by",
+            "type":str
+        },
+        "measurementRemarks":{
+            "name":"measurement_remarks",
+            "type":str
+        },
+        "verbatimTraitvalue__moisture":{
+            "name":"moisture_reported",
+            "type":float
+        },
+        "dispersion__moisture":{
+            "name":"moisture_dispersion",
+            "type":float
+        },
+        "measurementMethod__moisture":{
+            "name":"moisture_measurement_method",
+            "type":str
+        },
+        "verbatimTraitValue__dry_matter":{
+            "name":"dm_reported",
+            "type":float
+        },
+        "dispersion__dry_matter":{
+            "name":"dm_dispersion",
+            "type":float
+        },
+        "measurementMethod__dry_matter":{
+            "name":"dm_measurement_method",
+            "type":str
+        },
+        "verbatimTraitValue__ether_extract":{
+            "name":"ee_reported",
+            "type":float
+        },
+        "dispersion__ether_extract":{
+            "name":"ee_dispersion",
+            "type":float
+        },
+        "measurementMethod__ether_extract":{
+            "name":"ee_measurement_method",
+            "type":str
+        },
+        "verbatimTraitValue__crude_protein":{
+            "name":"cp_reported",
+            "type":float
+        },
+        "dispersion__crude_protein":{
+            "name":"cp_dispersion",
+            "type":float
+        },
+        "measurementMethod__crude_protein":{
+            "name":"cp_measurement_method",
+            "type":str
+        },
+        "verbatimTraitValue__crude_fibre":{
+            "name":"cf_reported",
+            "type":float
+        },
+        "dispersion__crude_fibre":{
+            "name":"cf_dispersion",
+            "type":float
+        },
+        "measurementMethod__crude_fibre":{
+            "name":"cf_measurement_method",
+            "type":str
+        },
+        "verbatimTraitValue_ash":{
+            "name":"ash_reported",
+            "type":float
+        },
+        "dispersion__ash":{
+            "name":"ash_dispersion",
+            "type":float
+        },
+        "measurementMethod_ash":{
+            "name":"ash_measurement_method",
+            "type":str
+        },
+        "verbatimTraitValue__nitrogen_free_extract":{
+            "name":"nfe_reported",
+            "type":float
+        },
+        "dispersion__nitrogen_free_extract":{
+            "name":"nfe_dispersion",
+            "type":float
+        },
+        "measurementMethod__nitrogen_free_extract":{
+            "name":"nfe_measurement_method",
+            "type":str
+        },
+        "associatedReferences":{
+            "name":"cited_reference",
+            "type":str
+        }
     }
-    pa_item = ProximateAnalysisItem()
-    
     for header in proximate_analysis_item_headers.keys():
         if header in headers:
             value = getattr(row, header)
-            setattr(pa_item, proximate_analysis_item_headers[header], value)
-            item_dict[proximate_analysis_item_headers[header]] = value
-
+            if proximate_analysis_item_headers[header]["type"] != str:
+                value = possible_nan_to_zero(value)
+                if isinstance(value, str):
+                    value = proximate_analysis_item_headers[header]["type"](value.replace(",","."))
+            else:
+                value = possible_nan_to_none(value)
+            item_dict[proximate_analysis_item_headers[header]["name"]] = value
     #Check if pa_item already exists
     pa_item_old = ProximateAnalysisItem.objects.filter(**item_dict)
     if len(pa_item_old) > 0:
         pa_item = pa_item_old[0]
-    pa_item.save()
+    else:
+        pa_item = ProximateAnalysisItem(**item_dict)
+        pa_item.save()
 
 def create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, lifestage, accuracy, measured_by, remarks, cited_reference, author):
     smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_unknown=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, life_stage=lifestage, measurement_accuracy__iexact=accuracy, measured_by__iexact=measured_by, remarks__iexact=remarks, cited_reference__iexact=cited_reference)
