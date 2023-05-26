@@ -1,10 +1,7 @@
 from django.shortcuts import render
-<<<<<<< HEAD
 from . import tasks
-=======
 from django.http import StreamingHttpResponse
 from mb.models import ViewMasterTraitValue
->>>>>>> export
 
 import csv
 
@@ -18,6 +15,7 @@ class Echo:
         """Write the value by returning it, instead of storing in a buffer."""
         return value
 
+
 def export_to_tsv(request):
     """A view that streams a large TSV file."""
     measurements = ViewMasterTraitValue.objects.all()
@@ -29,4 +27,4 @@ def export_to_tsv(request):
         (writer.writerow(m) for m in msr),
         content_type="text/tsv",
         headers={"Content-Disposition": 'attachment; filename="measurements.tsv"'},
-    )  
+    )
