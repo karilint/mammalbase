@@ -1057,7 +1057,7 @@ def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
             "name":"measurement_remarks",
             "type":str
         },
-        "verbatimTraitvalue__moisture":{
+        "verbatimTraitValue__moisture":{
             "name":"moisture_reported",
             "type":float
         },
