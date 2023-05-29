@@ -45,7 +45,7 @@ jobs:
       shell: bash
     - name: Run Tests
       env:
-        DB_HOST: 127.0.0.1
+        DB_HOST: db
         DB_PORT: 3306
         DB_NAME: test_db
         DB_USER: test_user
