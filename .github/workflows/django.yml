@@ -37,7 +37,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
+      working-directory: ./app
     - name: Sleep for 30 seconds
       run: sleep 30s
       shell: bash
@@ -50,4 +50,4 @@ jobs:
         DB_PASSWORD: password
         ALLOWED_HOSTS: 127.0.0.1
       run: |
-        python ./app/manage.py test
+        python ./manage.py test
