@@ -2,7 +2,12 @@ version: '3.8'
 
 services:
   web:
-    build: ./app
+    user: "${UID}"
+    build: 
+      context: ./app
+      args:
+        UID: ${UID}
+
     ports:
       - 8000:8000
       - 3000:3000
@@ -12,6 +17,7 @@ services:
       - ./.env
     depends_on:
       - db
+    
 
   db:
     image: mariadb
