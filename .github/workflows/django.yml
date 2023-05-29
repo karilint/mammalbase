@@ -49,5 +49,6 @@ jobs:
         DB_USER: django_tm
         DB_PASSWORD: password
         ALLOWED_HOSTS: 127.0.0.1
+      working-directory: ./app
       run: |
         python manage.py test
