@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from . import tasks
-from django.http import StreamingHttpResponse
-from mb.models import ViewMasterTraitValue
+from django.http import StreamingHttpResponse, HttpResponseNotFound, FileResponse
+from django.http import HttpResponse
+from .models import ExportFile
+from .tasks import create_poc_tsv_file, hello_world_celery
 
 import csv
 
@@ -18,13 +20,17 @@ class Echo:
 
 def export_to_tsv(request):
     """A view that streams a large TSV file."""
-    measurements = ViewMasterTraitValue.objects.all()
-    pseudo_buffer = Echo()
-    writer = csv.writer(pseudo_buffer, delimiter='\t', lineterminator='\n')
-    writer.writerow(['id', 'master_id', 'master_entity_name', 'master_attribute_id', 'master_attribute_name', 'traits_references', 'assigned_values', 'n_distinct_value', 'n_value', 'n_supporting_value', 'trait_values', 'trait_selected', 'trait_references', 'value_percentage'])
-    msr = measurements.values_list('id', 'master_id', 'master_entity_name', "master_attribute_id", 'master_attribute_name', 'traits_references', 'assigned_values', 'n_distinct_value', 'n_value', 'n_supporting_value', 'trait_values', 'trait_selected', 'trait_references', 'value_percentage')
-    return StreamingHttpResponse(
-        (writer.writerow(m) for m in msr),
-        content_type="text/tsv",
-        headers={"Content-Disposition": 'attachment; filename="measurements.tsv"'},
-    )
+    create_poc_tsv_file.delay()
+    return render(request, template_name='export/export_measurements.html')
+
+
+def get_exported_file(request, file_id):
+    hello_world_celery.delay()
+    try:
+        file_model = ExportFile.objects.filter(id=file_id)[0]
+        f = file_model.file.open()
+        return FileResponse(f, as_attachment=True, filename=file_model.name)
+    except IOError:
+        return HttpResponseNotFound('<h1>File not exist</h1>')
+    except IndexError:
+        return HttpResponseNotFound('<h1>File not exist</h1>')
