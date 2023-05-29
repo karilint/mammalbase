@@ -19,14 +19,13 @@ jobs:
       mysql:
         image: mariadb
         env:
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_NAME: django_tm
-          DB_USER: django_tm
-          DB_PASSWORD: password
-          ALLOWED_HOSTS: 127.0.0.1
+          MYSQL_USER: test_user  
+          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: test_db
+          MYSQL_ROOT_PASSWORD: password
         ports:
           - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -46,12 +45,10 @@ jobs:
       shell: bash
     - name: Run Tests
       env:
-        DB_HOST: 127.0.0.1
-        DB_PORT: 3306
-        DB_NAME: django_tm
-        DB_USER: django_tm
-        DB_PASSWORD: password
-        ALLOWED_HOSTS: 127.0.0.1
+        MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
+        MYSQL_NAME: test_db
+        MYSQL_USER: test_user
+        MYSQL_PASSWORD: password
       working-directory: ./app
       run: |
         python manage.py test
