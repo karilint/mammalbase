@@ -38,6 +38,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
       working-directory: ./app
+    - name: Start mysql
+      run: |
+        sudo /etc/init.d/mysql start
     - name: Sleep for 30 seconds
       run: sleep 30s
       shell: bash
