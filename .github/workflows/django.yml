@@ -49,7 +49,7 @@ jobs:
         DB_PORT: 3306
         DB_NAME: test_db
         DB_USER: test_user
-        DB_PASSWORD: password
+        DB_PASS: password
       working-directory: ./app
       run: |
         python manage.py test
