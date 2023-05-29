@@ -894,6 +894,8 @@ def check_entity_realtions(source_entity):
     except:
         print('Error searching entity relation', sys.exc_info(),traceback.format_exc())
 
+
+#OLD FUNCTION WITH OLD (NON-WORKING) API
 """def create_new_entityrelation_with_api_data(source_entity):
     api_result = api_query_globalnames_by_name(source_entity.name)["data"][0]
     if api_result["is_known_name"]:
@@ -919,7 +921,7 @@ def check_entity_realtions(source_entity):
     else:
         return
 """
-
+#NEW FUNCTION WITH NEW API
 def create_new_entityrelation_with_api_data(source_entity):
     api_result = get_fooditem_json(source_entity.name)["data"][0]
     if api_result:

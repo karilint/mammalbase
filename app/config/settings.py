@@ -92,6 +92,9 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.orcid',
 #    'users.apps.UsersConfig',
+    'exports',
+    "django_celery_results",
+    "celery_progress",
 ]
 
 SITE_ID = 1
@@ -253,3 +256,7 @@ CACHES = {
 }
 
 SELECT2_CACHE_BACKEND = 'select2'
+
+# Celery configuration
+CELERY_BROKER_URL = get_var("CELERY_BROKER", "redis://redis:6379")
+CELERY_RESULT_BACKEND = "django-db"
