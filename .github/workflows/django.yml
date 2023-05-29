@@ -18,7 +18,7 @@ jobs:
     services:
       mysql:
         image: mariadb
-        environment:
+        env:
           MARIADB_ROOT_PASSWORD: password
           MARIADB_USER: test_user  
           MARIADB_PASSWORD: password
