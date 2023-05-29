@@ -45,10 +45,11 @@ jobs:
       shell: bash
     - name: Run Tests
       env:
-        MYSQL_PORT: ${{ job.services.mariadb.ports[3306] }}
-        MYSQL_NAME: test_db
-        MYSQL_USER: test_user
-        MYSQL_PASSWORD: password
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        DB_NAME: test_db
+        DB_USER: test_user
+        DB_PASSWORD: password
       working-directory: ./app
       run: |
         python manage.py test
