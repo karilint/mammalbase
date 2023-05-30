@@ -50,6 +50,7 @@ def save_zip_to_django_model(zip_file_path):
         django_file = File(zip_file)
         file_model = ExportFile(file=django_file)
         file_model.save()
+        zip_file.close()
         return file_model.pk
 
 
