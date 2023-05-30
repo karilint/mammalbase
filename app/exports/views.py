@@ -1,19 +1,18 @@
 from django.shortcuts import render
-from . import tasks
-from django.http import StreamingHttpResponse, HttpResponseNotFound, FileResponse
-from django.http import HttpResponse
+from django.http import HttpResponseNotFound, FileResponse
 from .models import ExportFile
 from .tasks import create_poc_tsv_file
+from django.contrib.auth.decorators import login_required
 
-import csv
 
-
+@login_required
 def export_to_tsv(request):
     """A view that streams a large TSV file."""
     create_poc_tsv_file.delay()
     return render(request, template_name='export/export_measurements.html')
 
 
+@login_required
 def get_exported_file(request, file_id):
     try:
         file_model = ExportFile.objects.filter(id=file_id)[0]
