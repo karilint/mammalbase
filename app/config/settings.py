@@ -260,3 +260,12 @@ SELECT2_CACHE_BACKEND = 'select2'
 # Celery configuration
 CELERY_BROKER_URL = get_var("CELERY_BROKER", "redis://redis:6379")
 CELERY_RESULT_BACKEND = "django-db"
+
+# SMTP configuration 
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# EMAIL_HOST =_""
+# EMAIL_PORT = 587 
+# EMAIL_USE_TLS = True 
+EMAIL_HOST_USER = get_var('EMAIL_USER') 
+# EMAIL_HOST_PASSWORD = get_var('EMAIL_PASS')
+# DEFAULT_FROM_EMAIL = ""
