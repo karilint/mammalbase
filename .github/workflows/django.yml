@@ -40,7 +40,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
       working-directory: ./app
-    
+    - name: Setup database privileges
+      run: |
+        mysql -u root -p password -h 127.0.0.1 -P 3306 "GRANT ALL PRIVILEGES ON *.* TO 'test_user'@'%';"
     - name: Run Tests
       env:
         DB_HOST: 127.0.0.1
