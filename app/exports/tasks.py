@@ -19,7 +19,7 @@ def export_zip_file(queries: [QuerySet]):
         with open(file_path, 'w') as f:
             files.append(file_path)
             writer = csv.writer(f, delimiter='\t', lineterminator='\n')
-            writer.writerows(query.values_list())
+            writer.writerows(query().values_list())
     temp_zip_file_path = zip_files(files)
     with open(temp_zip_file_path, 'rb') as zip_file:
         django_file = File(zip_file)
