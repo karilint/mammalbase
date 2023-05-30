@@ -2,32 +2,34 @@ FROM python:3.9-slim AS compile-image
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-
+ARG UID
+COPY requirements.txt .
 RUN apt-get update && \
     apt-get install -y build-essential gcc default-libmysqlclient-dev && \
-    useradd -m user
+    useradd -m -r -u ${UID} user && \
+    chown user requirements.txt 
 
 USER user
 
-COPY requirements.txt .
-RUN pip install --upgrade pip && \
-    pip install --user -r requirements.txt
+RUN pip3 install --user --upgrade pip && \
+    pip3 install --user -r requirements.txt
 
 # ---------------------------------
-
 FROM python:3.9-slim AS build-image
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ARG UID
+ARG GID
 
 WORKDIR /src/app
 
 RUN apt-get update && \
     apt-get install -y default-libmysqlclient-dev && \
-    useradd -m user && \
+    useradd -r -u ${UID} user && \
     mkdir -p /vol/web/static && \
     mkdir -p /vol/web/media && \
-    chown -R user:user /vol && \
+    chown -R user /vol && \
     chmod -R 755 /vol/web
 
 USER user
