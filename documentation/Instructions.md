@@ -15,7 +15,7 @@ Create a `.env` file in the root of the repository and write needed environment 
 
 To start the environment, you have to run this command in the root the repository. 
 ```
-UID="$(id -u)" docker-compose up -d --build
+docker-compose up -d --build
 ```
 Now if you go to [localhost:8000](localhost:8000), you should see the app running. You can also go to [localhost:8001](localhost:8001) to see or modify the created database. If the website doesn't show up, check the logs. Most likely the service just hasn't started yet. 
 
