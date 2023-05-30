@@ -6,9 +6,11 @@ import csv, zipfile, os, shutil
 from django.core.files import File
 from .models import ExportFile
 from datetime import datetime
+from django.db.models.query import QuerySet
 
 
-def export_zip_file(queries):
+@shared_task
+def export_zip_file(queries: [QuerySet]):
     files = []
     temp_directory = f'temp_{datetime.now()}'
     os.mkdir(temp_directory)
@@ -17,7 +19,7 @@ def export_zip_file(queries):
         with open(file_path, 'w') as f:
             files.append(file_path)
             writer = csv.writer(f, delimiter='\t', lineterminator='\n')
-            writer.writerows(query().values_list())
+            writer.writerows(query.values_list())
     temp_zip_file_path = zip_files(files)
     with open(temp_zip_file_path, 'rb') as zip_file:
         django_file = File(zip_file)
