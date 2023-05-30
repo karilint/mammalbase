@@ -20,7 +20,7 @@ jobs:
         image: mariadb
         env:
           MARIADB_ROOT_PASSWORD: password
-          MARIADB_USER: test_user  
+          MARIADB_USER: test_user
           MARIADB_PASSWORD: password
           MARIADB_DATABASE: test_db
           
@@ -29,23 +29,18 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
     steps:
     - uses: actions/checkout@v3
+    
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
+    
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
       working-directory: ./app
-    - name: Start mysql
-      run: |
-        sudo /etc/init.d/mysql start
-    - name: Setup database privileges
-      run: |
-        mysql -h 127.0.0.1 --port 3306 -u root -p password -e 'GRANT ALL PRIVILEGES ON *.* TO "test_user"@"%";'
-        QUIT
-      shell: bash
+    
     - name: Run Tests
       env:
         DB_HOST: 127.0.0.1
