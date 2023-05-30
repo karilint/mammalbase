@@ -19,6 +19,6 @@ def get_exported_file(request, file_id):
         f = file_model.file.open()
         return FileResponse(f, as_attachment=True)
     except IOError:
-        return HttpResponseNotFound('<h1>File not exist</h1>')
+        return HttpResponseNotFound('<h1>File does not exist</h1>')
     except IndexError:
-        return HttpResponseNotFound('<h1>File not exist</h1>')
+        return HttpResponseNotFound('<h1>File does not exist</h1>')

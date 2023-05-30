@@ -4,9 +4,11 @@ from celery import shared_task
 from mb.models import ViewMasterTraitValue
 import csv, zipfile, os, shutil
 from django.core.files import File
+from django.core.mail import send_mail
 from .models import ExportFile
 from datetime import datetime
 from django.db.models.query import QuerySet
+from config import settings
 
 
 @shared_task
@@ -28,7 +30,7 @@ def export_zip_file(queries: [QuerySet]):
         print(f'Created new file: http://localhost:8000/exports/get_file/{file_model.pk}')
     os.remove(temp_zip_file_path)
     shutil.rmtree(temp_directory)
-
+    send_email(file_model.pk, 'testi@testaaja.com')
 
 @shared_task
 def create_poc_tsv_file():
@@ -43,3 +45,20 @@ def zip_files(files):
     temp_zip.close()
     return file_name
 
+@shared_task
+def send_email(export_id, target_address):
+    ''''Sends user an email with download link to exported data'''
+    mail_subject = "Your download from Mammalbase is ready"
+    message = create_message(export_id)
+    send_mail ( 
+        subject = mail_subject,
+        message = message,
+        from_email = settings.EMAIL_HOST_USER,
+        recipient_list = [target_address], 
+    )
+
+def create_message(export_id):
+    '''
+    Creates email message and download link 
+    '''    
+    return f'You can download your exported data from http://localhost:8000/exports/get_file/{export_id}'
