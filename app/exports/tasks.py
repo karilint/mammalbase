@@ -58,9 +58,9 @@ def save_zip_to_django_model(zip_file_path):
 
 
 @shared_task
-def create_poc_tsv_file():
+def create_poc_tsv_file(email_receiver):
     export_zip_file({
-        'email_receiver': 'testi@testipaikka.com',
+        'email_receiver': email_receiver,
         'queries': [{'file_name': 'ViewMasterTraitValue.objects.all',
                      'headers': ['h1', 'h2', 'h3', 'etc...'],
                      'query_set': ViewMasterTraitValue.objects.all()},
