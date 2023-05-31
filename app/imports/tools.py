@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.db import transaction
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
+from requests_cache import CachedSession
 import itis.views as itis
 
 import pandas as pd
@@ -45,6 +46,7 @@ class Check:
         )
     
     def check_all_pa(self, df, force=False):
+        print("checking")
         return (
             self.check_headers_pa(df) and
             self.check_author(df) and
@@ -52,7 +54,7 @@ class Check:
             self.check_lengths(df) and
             self.check_part(df) and
             self.check_references(df, force) and
-            self.check_cf_missing(df) and
+            self.check_cf_invalid(df) and
             self.check_nfe(df)
         )
 
@@ -147,7 +149,6 @@ class Check:
                     if optional_headers[header]==float and isinstance(value, str):
                             value = value.replace(",",".")
                     try:
-                        print(header, value, type(value))
                         optional_headers[header](value)
                     except:
                         messages.error(self.request, f"The {header} on row {counter} is not correct type. It should be {type_names[optional_headers[header]]}.")
@@ -165,22 +166,38 @@ class Check:
         return reported_sum
 
     def check_nfe(self, df):
+        print("checking nfe")
         for row, nfe in enumerate(df.loc[:, 'verbatimTraitValue__nitrogen_free_extract']):
             if nfe=='nan':
                 reported_sum = self._check_reported_sum(df, row)
                 df.loc[row, 'verbatimTraitValue__nitrogen_free_extract'][row] = min(abs(100 - reported_sum),abs(1000 - reported_sum))
                 df.loc[row, 'measurementMethod__nitrogen_free_extract'].append("\nNot reported: calculated by difference")
+        return True
 
 
     def _check_if_plant(self, name):
         rank_id = generate_rank_id(name)
-        kingdom = rank_id['data'][0]['results'][0]['classification_path'].split('|')[0]
+        try:
+            kingdom = rank_id[max(rank_id)]['data'][0]['results'][0]['classification_path'].split('-')[0]
+        except ValueError: 
+            return None
+        print(kingdom)
         return kingdom == "Plantae"
     
-    def check_cf_missing(self, df):
+    def check_cf_invalid(self, df):
+        print("checking cf")
         df_new = df[['verbatimScientificName', 'verbatimTraitValue__crude_fibre']]
-        for item in enumerate(df_new.values, 1):
-            if item[1]=='nan' and self._check_if_plant(item[0]):
+        print(df_new.values)
+        for row, item in enumerate(df_new.values, 1):
+            print(item)
+            is_plant = self._check_if_plant(item[0])
+            if is_plant == None:
+                continue
+            if is_plant and possible_nan_to_zero(item[1])==0:
+                messages.error(self.request, f"Item of type plantae is missing required value verbatimTraitValue__crude_fibre on row {row}.")
+                return False
+            elif not is_plant and not possible_nan_to_zero(item[1])==0:
+                messages.error(self.request, f"Item on row {row} has an invalid value verbatimTraitValue__crude_fibre. Values greater than 0 are allowed only for items of type plantae.")
                 return False
         return True
 
@@ -598,11 +615,14 @@ def get_choicevalue(gender):
 
 
 def get_fooditem_json(food):
+    print("checking:", food)
     url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + food.lower().capitalize().replace(' ', '%20')
     try:
-        file = urllib.request.urlopen(url)
-        data = file.read()
-    except:
+        session = CachedSession("fooditem_cache")
+        file = session.get(url)
+        data = file.text
+    except Exception as e:
+        traceback.print_exc()
         return {}
     try:
         taxon_data = json.loads(data)['itisTerms'][0]
@@ -663,6 +683,26 @@ def generate_rank_id(food):
             associated_taxa.remove(item)
     
     rank_id = {}
+    head = 0
+    tail = 0
+    rank_id = {}
+    while True:
+        if head == tail:
+            query = associated_taxa[tail]
+            head += 1
+        else:
+            query = associated_taxa[tail] + " " +associated_taxa[head]
+            tail += 1
+        results = get_fooditem_json(query)
+        if results:
+            print("found using:", query)
+            rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
+            rank_id[rank] = results
+            break
+        if head >= len(associated_taxa):
+            break
+    return rank_id
+"""
     if len(associated_taxa) > 1:
         for x in range(len(associated_taxa)-1):
             results = get_fooditem_json(associated_taxa[x] + ' ' + associated_taxa[x+1])
@@ -676,8 +716,8 @@ def generate_rank_id(food):
             if results:
                 #results['data'][0]['results']
                 rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
-                rank_id[rank] = results
-    return rank_id
+                rank_id[rank] = results"""
+    
     
 
 def get_fooditem(food, part):
