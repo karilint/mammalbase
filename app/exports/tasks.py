@@ -49,6 +49,7 @@ def export_zip_file(kwargs):
 
 
 def write_query_to_file(query):
+    """Used by export_zip_file()"""
     file_name = query['file_name']
     headers = query['headers']
     query_set = query['query_set']
@@ -62,6 +63,7 @@ def write_query_to_file(query):
 
 
 def save_zip_to_django_model(zip_file_path):
+    """Used by export_zip_file()"""
     with open(zip_file_path, 'rb') as zip_file:
         django_file = File(zip_file)
         file_model = ExportFile(file=django_file)
