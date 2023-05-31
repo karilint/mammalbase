@@ -51,7 +51,9 @@ class Check:
             self.check_verbatimScientificName(df, False) and
             self.check_lengths(df) and
             self.check_part(df) and
-            self.check_references(df, force)
+            self.check_references(df, force) and
+            self.check_cf_missing(df) and
+            self.check_nfe(df)
         )
 
     def check_valid_author(self, df):
@@ -140,18 +142,46 @@ class Check:
         for header in import_headers:
             if header in optional_headers:
                 for counter, value in enumerate(df.loc[:, header], 1):
-                    if optional_headers[header] == float or optional_headers[header] == int:
-                        if isinstance(value, float):
+                    if optional_headers[header]!=str and (isinstance(value, float) or isinstance(value, str)):
                             value = possible_nan_to_zero(value)
-                        else:
+                    if optional_headers[header]==float and isinstance(value, str):
                             value = value.replace(",",".")
                     try:
+                        print(header, value, type(value))
                         optional_headers[header](value)
                     except:
                         messages.error(self.request, f"The {header} on row {counter} is not correct type. It should be {type_names[optional_headers[header]]}.")
                         return False
 
                     
+        return True
+    
+    def _check_reported_sum(self, df, row):
+        reported_sum = 0
+        column_headers = df.columns.values
+        for column, value in enumerate(df.loc[row]):
+            if "verbatimTraitValue" in column_headers[column]:
+                reported_sum += possible_nan_to_zero(value)
+        return reported_sum
+
+    def check_nfe(self, df):
+        for row, nfe in enumerate(df.loc[:, 'verbatimTraitValue__nitrogen_free_extract']):
+            if nfe=='nan':
+                reported_sum = self._check_reported_sum(df, row)
+                df.loc[row, 'verbatimTraitValue__nitrogen_free_extract'][row] = min(abs(100 - reported_sum),abs(1000 - reported_sum))
+                df.loc[row, 'measurementMethod__nitrogen_free_extract'].append("\nNot reported: calculated by difference")
+
+
+    def _check_if_plant(self, name):
+        rank_id = generate_rank_id(name)
+        kingdom = rank_id['data'][0]['results'][0]['classification_path'].split('|')[0]
+        return kingdom == "Plantae"
+    
+    def check_cf_missing(self, df):
+        df_new = df[['verbatimScientificName', 'verbatimTraitValue__crude_fibre']]
+        for item in enumerate(df_new.values, 1):
+            if item[1]=='nan' and self._check_if_plant(item[0]):
+                return False
         return True
 
     def check_author(self, df):
@@ -626,17 +656,13 @@ def create_fooditem(results, food_upper, part):
     food_item.save()
     return food_item
 
-
-def get_fooditem(food, part):
-    food_upper = food.upper()
-    food_item = FoodItem.objects.filter(name__iexact=food_upper)
-    if len(food_item) > 0:
-        return food_item[0]
+def generate_rank_id(food):
     associated_taxa = re.sub('\W+', ' ', food).split(' ')
-    rank_id = {}
     for item in associated_taxa:
         if len(item) < 3:
             associated_taxa.remove(item)
+    
+    rank_id = {}
     if len(associated_taxa) > 1:
         for x in range(len(associated_taxa)-1):
             results = get_fooditem_json(associated_taxa[x] + ' ' + associated_taxa[x+1])
@@ -651,6 +677,17 @@ def get_fooditem(food, part):
                 #results['data'][0]['results']
                 rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
                 rank_id[rank] = results
+    return rank_id
+    
+
+def get_fooditem(food, part):
+    food_upper = food.upper()
+    food_item = FoodItem.objects.filter(name__iexact=food_upper)
+    
+    if len(food_item) > 0:
+        return food_item[0]
+    
+    rank_id = generate_rank_id(food)
 
     if len(rank_id) == 0:
         if part != 'nan' and part != None:
@@ -1158,7 +1195,6 @@ def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
             item_dict[proximate_analysis_item_headers[header]["name"]] = value
     
     #Check if pa_item already exists
-    #item_dict = transform_sum(item_dict)
     pa_item_old = ProximateAnalysisItem.objects.filter(**item_dict)
     if len(pa_item_old) > 0:
         pa_item = pa_item_old[0]
@@ -1166,7 +1202,7 @@ def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
         pa_item = ProximateAnalysisItem(**item_dict)
         pa_item.save()
 
-def transform_sum(items):
+def generate_standard_values(items):
     item_sum = sum([items[item] for item in items if ("reported" in item and "moisture" not in item)])
     print(item_sum)
     for item in items:
