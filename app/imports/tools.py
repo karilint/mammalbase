@@ -8,6 +8,7 @@ from django.db import transaction
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
 from requests_cache import CachedSession
+from datetime import timedelta
 import itis.views as itis
 
 import pandas as pd
@@ -46,7 +47,6 @@ class Check:
         )
     
     def check_all_pa(self, df, force=False):
-        print("checking")
         return (
             self.check_headers_pa(df) and
             self.check_author(df) and
@@ -166,7 +166,6 @@ class Check:
         return reported_sum
 
     def check_nfe(self, df):
-        print("checking nfe")
         for row, nfe in enumerate(df.loc[:, 'verbatimTraitValue__nitrogen_free_extract']):
             if nfe=='nan':
                 reported_sum = self._check_reported_sum(df, row)
@@ -181,15 +180,11 @@ class Check:
             kingdom = rank_id[max(rank_id)]['data'][0]['results'][0]['classification_path'].split('-')[0]
         except ValueError: 
             return None
-        print(kingdom)
         return kingdom == "Plantae"
     
     def check_cf_invalid(self, df):
-        print("checking cf")
         df_new = df[['verbatimScientificName', 'verbatimTraitValue__crude_fibre']]
-        print(df_new.values)
         for row, item in enumerate(df_new.values, 1):
-            print(item)
             is_plant = self._check_if_plant(item[0])
             if is_plant == None:
                 continue
@@ -615,14 +610,12 @@ def get_choicevalue(gender):
 
 
 def get_fooditem_json(food):
-    print("checking:", food)
     url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + food.lower().capitalize().replace(' ', '%20')
     try:
-        session = CachedSession("fooditem_cache")
+        session = CachedSession("fooditem_cache", expire_after=timedelta(days=1))
         file = session.get(url)
         data = file.text
-    except Exception as e:
-        traceback.print_exc()
+    except:
         return {}
     try:
         taxon_data = json.loads(data)['itisTerms'][0]
@@ -695,30 +688,12 @@ def generate_rank_id(food):
             tail += 1
         results = get_fooditem_json(query)
         if results:
-            print("found using:", query)
             rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
             rank_id[rank] = results
             break
         if head >= len(associated_taxa):
             break
     return rank_id
-"""
-    if len(associated_taxa) > 1:
-        for x in range(len(associated_taxa)-1):
-            results = get_fooditem_json(associated_taxa[x] + ' ' + associated_taxa[x+1])
-            if results:
-                #results['data'][0]['results']
-                rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
-                rank_id[rank] = results
-    if len(rank_id) == 0:
-        for y in range(len(associated_taxa)):
-            results = get_fooditem_json(associated_taxa[y])
-            if results:
-                #results['data'][0]['results']
-                rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
-                rank_id[rank] = results"""
-    
-    
 
 def get_fooditem(food, part):
     food_upper = food.upper()
@@ -1235,6 +1210,7 @@ def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
             item_dict[proximate_analysis_item_headers[header]["name"]] = value
     
     #Check if pa_item already exists
+    standard_item_dict = generate_standard_values(items)
     pa_item_old = ProximateAnalysisItem.objects.filter(**item_dict)
     if len(pa_item_old) > 0:
         pa_item = pa_item_old[0]
@@ -1243,17 +1219,24 @@ def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
         pa_item.save()
 
 def generate_standard_values(items):
-    item_sum = sum([items[item] for item in items if ("reported" in item and "moisture" not in item)])
-    print(item_sum)
+    standard_items = {}
+    #Sum of reported fields excluding dry matter and moisture
+    item_sum = sum([items[item] for item in items if ("reported" in item and "dm" not in item and "moisture" not in item)])
+    multiplier = 100
+    if abs(item_sum - 100) > abs(item_sum - 1000):
+        item_sum /= 10
+    
+    if abs(100 - item_sum+item["moisture_reported"]) < abs(100 - item_sum):
+        item_sum+=item["moisture_reported"]
+    
     for item in items:
         
-        if "reported" not in item or "moisture" in item:
+        if "reported" not in item or "dm" in item or "moisture" in item:
             continue
-        print(item, items[item])
-        items[item] /= item_sum
-        items[item] *= 100
-        print(item, items[item]) 
-    return items
+        
+        standard_items[item.replace("reported","std")] = (items[item] / item_sum)*100
+
+    return standard_items
 
 
 def create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, lifestage, accuracy, measured_by, remarks, cited_reference, author):

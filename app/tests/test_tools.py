@@ -64,13 +64,25 @@ class ToolsTest(TestCase):
             writer.writerow(['1111-1111-2222-2222', 'Lagothrix flavicauda flavicauda', 'Species', 'primarily frugivorous', '1', '', 'Book'])
             writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda flavicauda',	'Species',	'leaves', '2', '',  'Book'])
             writer.writerow(['1111-1111-2222-2222',	'Lagothrix flavicauda flavicauda',	'Species',	'fruit', '4', '',   'Book'])
-        with open('test_ets', 'w') as file7:
+        with open('test_ets.csv', 'w') as file7:
             writer = csv.writer(file7)
             writer.writerow(['references', 'verbatimScientificName', 'taxonRank', 'verbatimTraitName', 'verbatimTraitUnit', 'individualCount', 'measurementValue_min', 'measurementValue_max', 'dispersion', 'statisticalMethod', 'verbatimTraitValue', 'sex', 'lifeStage', 'measurementMethod', 'measurementDeterminedBy', 'measurementAccuracy', 'measurementRemarks', 'verbatimLocality', 'author', 'associatedReferences'])
             writer.writerow(['Richard-Hansen, C., Vié, J.C., Vidal, N. and Kéravec, J., 1999. Body measurements on 40 species of mammals from French Guiana. Journal of zoology, 247(4), pp.419-428.', 'Caluromys philander', 'Species', 'body weight (Wt)', 'kg', '22', '0.24', '0.46', '0.06', 'SD', '0.33', 'unknown', '', 'Fleming, T.H., 1991. LH Emmons, & F. Feer 1990. Neotropical rainforest mammals. A field guide. University of Chicago Press, Chicago, xiv+ 281 pages. Hardback: ISBN 0-226-20716-1; Price: UK£ 35.95/US 22.95. Journal of Tropical Ecology, 7(3), pp.400-400.', '', '', '', 'Sinnamary River in French Guiana', '0000-0000-0000-000X', ''])
             writer.writerow(['Richard-Hansen, C., Vié, J.C., Vidal, N. and Kéravec, J., 1999. Body measurements on 40 species of mammals from French Guiana. Journal of zoology, 247(4), pp.419-428.', 'Didelphis albiventris', 'Species', 'body weight (Wt)', 'kg', '24', '0.44', '1.14', '0.18', 'SD', '0.77', 'unknown', '', 'Fleming, T.H., 1991. LH Emmons, & F. Feer 1990. Neotropical rainforest mammals. A field guide. University of Chicago Press, Chicago, xiv+ 281 pages. Hardback: ISBN 0-226-20716-1; Price: UK£ 35.95/US 22.95. Journal of Tropical Ecology, 7(3), pp.400-400.', '', '', '', 'Sinnamary River in French Guiana', '0000-0000-0000-000X', ''])
             writer.writerow(['Richard-Hansen, C., Vié, J.C., Vidal, N. and Kéravec, J., 1999. Body measurements on 40 species of mammals from French Guiana. Journal of zoology, 247(4), pp.419-428.', 'Caluromys philander', 'Species', 'head and body length (HB), tip of nose to inflection point of tail', 'mm', '25', '225', '385', '29', 'SD', '265', 'unknown', '', 'Fleming, T.H., 1991. LH Emmons, & F. Feer 1990. Neotropical rainforest mammals. A field guide. University of Chicago Press, Chicago, xiv+ 281 pages. Hardback: ISBN 0-226-20716-1; Price: UK£ 35.95/US 22.95. Journal of Tropical Ecology, 7(3), pp.400-400.', '', '', '', 'Sinnamary River in French Guiana', '0000-0000-0000-000X', ''])
             writer.writerow(['Richard-Hansen, C., Vié, J.C., Vidal, N. and Kéravec, J., 1999. Body measurements on 40 species of mammals from French Guiana. Journal of zoology, 247(4), pp.419-428.', 'Didelphis albiventris', 'Species', 'head and body length (HB), tip of nose to inflection point of tail', 'mm', '35', '270', '390', '33', 'SD', '334', 'unknown', '', 'Fleming, T.H., 1991. LH Emmons, & F. Feer 1990. Neotropical rainforest mammals. A field guide. University of Chicago Press, Chicago, xiv+ 281 pages. Hardback: ISBN 0-226-20716-1; Price: UK£ 35.95/US 22.95. Journal of Tropical Ecology, 7(3), pp.400-400.', '', '', '', 'Sinnamary River in French Guiana', '0000-0000-0000-000X', ''])
+        
+        with open('test_pa.csv', 'w') as file8:
+            writer = csv.writer(file8)
+            writer.writerow(['verbatimScientificName', 'PartOfOrganism', 'individualCount', 'measurementMethod', 'measurementDeterminedBy', 'verbatimLocality', 'measurementRemarks', 'verbatimEventDate', 'verbatimTraitValue__moisture', 'dispersion__moisture', 'measurementMethod__moisture', 'verbatimTraitValue__dry_matter', 'dispersion__dry_matter', 'measurementMethod__dry_matter', 'verbatimTraitValue__ether_extract', 'dispersion__ether_extract', 'measurementMethod__ether_extract', 'verbatimTraitValue__crude_protein', 'dispersion__crude_protein', 'measurementMethod__crude_protein', 'verbatimTraitValue__crude_fibre', 'dispersion__crude_fibre', 'measurementMethod__crude_fibre', 'verbatimTraitValue_ash', 'dispersion__ash', 'measurementMethod_ash', 'verbatimTraitValue__nitrogen_free_extract', 'dispersion__nitrogen_free_extract', 'measurementMethod__nitrogen_free_extract', 'author', 'associatedReferences', 'references'])
+            writer.writerow(['Grasshoppers: S. gregaria & L. migratoria manilensis', 'WHOLE', '', 'Association of the Official Analytical Chemists (AOAC), (1990)', '', 'Sample A/e biological garden Federal College of Education, Katsina State, Nigeria', 'triplicate, wings of the samples were removed before the analysis', '', '5.667', '0.577', 'An atmospheric heat drying at 105 ℃ for 4 h', '', '', '', '10.667', '0.764', 'Soxhlet extraction method', '57.33', '0.148', 'micro Kjeldahl method', '10.333', '0.289', '', '9.833', '0.764', 'direct ashing method at 600 ℃', '6.17', '0.996', '', '1111-1111-2222-222X', 'Original study', 'Suleiman, F.B., Halliru, A. and Adamu, I.T., 2023. Proximate and heavy metal analysis of grasshopper species consumed in Katsina State.'])
+            writer.writerow(['Ceratophyllum demersum, whole', 'SHOOT', '','Association of Official Analytical Chemistry (AOAC 2002; AOAC 2002b)', '', 'Köyceğiz – Dalyan Lagoon, Muğla Province, Turkey', 'triplicate', '', '', '', '', '89.57', '', 'oven drying at 105°C for 24 hours', '1.8', '', 'ether extraction method', '15.78', '', 'Kjeldahl protein unit', '18.61', '', '', '18.96', '','firing in a muffle furnace at 550°C for 4 hours	34.42', '', '', '1111-1111-2222-222X', 'Original study', 'Kiziloğlu, Ü., Yıldırım, Ö. and Çantaş, İ.B., 2023. Use of Coontail as a natural phytoremediation feed additive for common carp. Oceanological and Hydrobiological Studies, 52(1), pp.102-110.'])
+
+        with open('test_pa_invalid_headers.csv', 'w') as file9:
+            writer = csv.writer(file9)
+            writer.writerow(['PartOfOrganism', 'individualCount', 'measurementMethod', 'measurementDeterminedBy', 'verbatimLocality', 'measurementRemarks', 'verbatimEventDate', 'verbatimTraitValue__moisture', 'dispersion__moisture', 'measurementMethod__moisture', 'verbatimTraitValue__dry_matter', 'dispersion__dry_matter', 'measurementMethod__dry_matter', 'verbatimTraitValue__ether_extract', 'dispersion__ether_extract', 'measurementMethod__ether_extract', 'verbatimTraitValue__crude_protein', 'dispersion__crude_protein', 'measurementMethod__crude_protein', 'verbatimTraitValue__crude_fibre', 'dispersion__crude_fibre', 'measurementMethod__crude_fibre', 'verbatimTraitValue_ash', 'dispersion__ash', 'measurementMethod_ash', 'verbatimTraitValue__nitrogen_free_extract', 'dispersion__nitrogen_free_extract', 'measurementMethod__nitrogen_free_extract', 'author', 'associatedReferences', 'references'])
+            writer.writerow(['WHOLE', '', 'Association of the Official Analytical Chemists (AOAC), (1990)', '', 'Sample A/e biological garden Federal College of Education, Katsina State, Nigeria', 'triplicate, wings of the samples were removed before the analysis', '', '5.667', '0.577', 'An atmospheric heat drying at 105 ℃ for 4 h', '', '', '', '10.667', '0.764', 'Soxhlet extraction method', '57.33', '0.148', 'micro Kjeldahl method', '10.333', '0.289', '', '9.833', '0.764', 'direct ashing method at 600 ℃', '6.17', '0.996', '', '1111-1111-2222-222X', 'Original study', 'Suleiman, F.B., Halliru, A. and Adamu, I.T., 2023. Proximate and heavy metal analysis of grasshopper species consumed in Katsina State.'])
+            writer.writerow(['SHOOT', '','Association of Official Analytical Chemistry (AOAC 2002; AOAC 2002b)', '', 'Köyceğiz – Dalyan Lagoon, Muğla Province, Turkey', 'triplicate', '', '', '', '', '89.57', '', 'oven drying at 105°C for 24 hours', '1.8', '', 'ether extraction method', '15.78', '', 'Kjeldahl protein unit', '18.61', '', '', '18.96', '','firing in a muffle furnace at 550°C for 4 hours	34.42', '', '', '1111-1111-2222-222X', 'Original study', 'Kiziloğlu, Ü., Yıldırım, Ö. and Çantaş, İ.B., 2023. Use of Coontail as a natural phytoremediation feed additive for common carp. Oceanological and Hydrobiological Studies, 52(1), pp.102-110.'])
 
         self.file = pd.read_csv('test.csv')
         self.file_ets = pd.read_csv('test_ets')
@@ -79,6 +91,8 @@ class ToolsTest(TestCase):
         self.false_file2 = pd.read_csv('false_test2.csv')
         self.false_vsn = pd.read_csv('false_vsn.csv')
         self.false_sequence = pd.read_csv('false_sequence.csv')
+        self.file_pa = pd.read_csv('test_pa')
+        self.file_pa_invalid_headers = pd.read_csv('test_pa_invalid_headers')
         #self.reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][1], self.user)
         self.dict = {'author': ['1111-1111-2222-2222', '1111-1111-2222-2233'], 
         'verbatimScientificName':['kapistelija', 'kapistelija'], 
@@ -169,11 +183,17 @@ class ToolsTest(TestCase):
     def test_check_headers_ets(self):
         self.assertEqual(self.check.check_headers_ets(self.file_ets), True)
 
+    def test_check_headers_pa(self):
+        self.assertEqual(self.check.check_headers_pa(self.file_pa), True)
+
     def test_check_headers_ds_false(self):
         self.assertEqual(self.check.check_headers_ds(self.false_file), False)
     
     def test_check_headers_ets_false(self):
         self.assertEqual(self.check.check_headers_ets(self.file), False)
+
+    def test_check_headers_pa_false(self):
+        self.assertEqual(self.check.check_headers_pa(self.file_pa_invalid_headers), False)
 
     def test_check_author(self):
         self.assertEqual(self.check.check_author(self.file), True)
@@ -349,7 +369,7 @@ class ToolsTest(TestCase):
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tm. 2000'] })
         self.assertEqual(self.check.check_verbatimScientificName(df), False)
 
-    def test_check_sequence_scientificnames_dont_mach(self):
+    def test_check_sequence_scientificnames_dont_match(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '1111-1111-2222-2222'], 
         'verbatimScientificName':['pena', 'kapistelija'], 
         'taxonRank':['genus', 'genus'],
@@ -358,7 +378,7 @@ class ToolsTest(TestCase):
         'references':['tosi tieteellinen tutkimus tm. 2000', 'tosi tieteellinen tutkimus tm. 2000'] })
         self.assertEqual(self.check.check_sequence(df), False)
 
-    def test_check_sequence_references_dont_mach(self):
+    def test_check_sequence_references_dont_match(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-2222', '1111-1111-2222-2222'], 
         'verbatimScientificName':['kapistelija', 'kapistelija'], 
         'taxonRank':['genus', 'genus'],

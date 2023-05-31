@@ -50,24 +50,52 @@
         <td class="w3-threequarter">{{ proximate_analysis_item.sample_size|default_if_none:"-" }}</td>
       </tr>
       <tr>
+        <th class="w3-quarter">Measurement determined by:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.measurement_determined_by|default_if_none:"-" }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Measurement remarks:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.measurement_remarks|default_if_none:"-" }}</td>
+      </tr>
+      <tr>
         <th class="w3-quarter">Crude Protein (CP):</th>
         <td class="w3-threequarter">{{ proximate_analysis_item.cp_std|floatformat:2 }}</td>
+        <th class="w3-quarter">- Dispersion:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.cp_dispersion|default_if_none:"nan"|floatformat:2 }}</td>
+        <th class="w3-quarter">- Measurement method:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.cp_measurement_method }}</td>
       </tr>
       <tr>
         <th class="w3-quarter">Crude Fibre (CF):</th>
         <td class="w3-threequarter">{{ proximate_analysis_item.cf_std|floatformat:2 }}</td>
+        <th class="w3-quarter">- Dispersion:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.cf_dispersion|default_if_none:"nan"|floatformat:2 }}</td>
+        <th class="w3-quarter">- Measurement method:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.cf_measurement_method }}</td>
       </tr>
       <tr>
         <th class="w3-quarter">Ash:</th>
         <td class="w3-threequarter">{{ proximate_analysis_item.ash_std|floatformat:2 }}</td>
+        <th class="w3-quarter">- Dispersion:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.ash_dispersion|default_if_none:"nan"|floatformat:2 }}</td>
+        <th class="w3-quarter">- Measurement method:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.ash_measurement_method }}</td>
       </tr>
       <tr>
         <th class="w3-quarter">Ether Extract (EE):</th>
         <td class="w3-threequarter">{{ proximate_analysis_item.ee_std|floatformat:2 }}</td>
+        <th class="w3-quarter">- Dispersion:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.ee_dispersion|default_if_none:"nan"|floatformat:2 }}</td>
+        <th class="w3-quarter">- Measurement method:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.ee_measurement_method }}</td>
       </tr>
       <tr>
         <th class="w3-quarter">Nitrogen-Free-Extract (NFE):</th>
         <td class="w3-threequarter">{{ proximate_analysis_item.nfe_std|floatformat:2 }}</td>
+        <th class="w3-quarter">- Dispersion:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.nfe_dispersion|default_if_none:"nan"|floatformat:2 }}</td>
+        <th class="w3-quarter">- Measurement method:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.nfe_measurement_method }}</td>
       </tr>
       <tr>
         <th class="w3-quarter">Main reference:</th>
