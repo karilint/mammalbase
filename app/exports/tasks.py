@@ -10,12 +10,13 @@ from datetime import datetime
 from django.db.models.query import QuerySet
 from zipfile import ZipFile
 from config import settings
+from tempfile import mkdtemp
 
 
 @shared_task
 def export_zip_file(queries: [(str, [str], QuerySet)]):
-    temp_directory = f'temp_{datetime.now()}'
-    os.mkdir(temp_directory)
+    current_dir = os.getcwd()
+    temp_directory = mkdtemp()
     os.chdir(temp_directory)
 
     zip_file_path = f'export_{datetime.now()}.zip'
@@ -31,7 +32,7 @@ def export_zip_file(queries: [(str, [str], QuerySet)]):
 
     send_email(file_id, 'testi@testaaja.com')
 
-    os.chdir('..')
+    os.chdir(current_dir)
     shutil.rmtree(temp_directory)
 
 
