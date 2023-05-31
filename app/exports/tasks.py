@@ -14,6 +14,19 @@ from tempfile import mkdtemp
 
 @shared_task
 def export_zip_file(kwargs):
+    """
+    Exports a zip file containing tsv files resulting from given queries,
+    saves it to the db and sends the download link as an email.
+
+    Arguments:
+    kwargs -- Dictionary containing fields
+        email_receiver: str -- Email receiver
+        queries: [dict] -- List of dictionaries containing fields
+            file_name: str -- Desired name of the exported file
+            headers: [str] -- List containing headers of data columns
+            query_set: QuerySet -- QuerySet object to be executed
+    """
+
     current_dir = os.getcwd()
     temp_directory = mkdtemp()
     os.chdir(temp_directory)
