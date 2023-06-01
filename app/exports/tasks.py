@@ -14,6 +14,19 @@ from tempfile import mkdtemp
 
 @shared_task
 def export_zip_file(kwargs):
+    """
+    Exports a zip file containing tsv files resulting from given queries,
+    saves it to the db and sends the download link as an email.
+
+    Arguments:
+    kwargs -- Dictionary containing fields
+        email_receiver: str -- Email receiver
+        queries: [dict] -- List of dictionaries containing fields
+            file_name: str -- Desired name of the exported file
+            headers: [str] -- List containing headers of data columns
+            query_set: QuerySet -- QuerySet object to be executed
+    """
+
     current_dir = os.getcwd()
     temp_directory = mkdtemp()
     os.chdir(temp_directory)
@@ -36,6 +49,7 @@ def export_zip_file(kwargs):
 
 
 def write_query_to_file(query):
+    """Used by export_zip_file()"""
     file_name = query['file_name']
     headers = query['headers']
     query_set = query['query_set']
@@ -49,6 +63,7 @@ def write_query_to_file(query):
 
 
 def save_zip_to_django_model(zip_file_path):
+    """Used by export_zip_file()"""
     with open(zip_file_path, 'rb') as zip_file:
         django_file = File(zip_file)
         file_model = ExportFile(file=django_file)
