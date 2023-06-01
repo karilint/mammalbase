@@ -54,7 +54,7 @@ class Check:
             self.check_lengths(df) and
             self.check_part(df) and
             self.check_references(df, force) and
-            self.check_cf_invalid(df) and
+            self.check_cf_valid(df) and
             self.check_nfe(df)
         )
 
@@ -102,13 +102,13 @@ class Check:
             'references'
             ]
         optional_headers = {
-            "individualCount":int,
+            "individualCount":float,
             "measurementMethod":str,
             "measurementDeterminedBy":str,
             "verbatimLocality":str,
             "measurementRemarks":str,
             "verbatimEventDate":str,
-            "verbatimTraitvalue__moisture":float,
+            "verbatimTraitValue__moisture":float,
             "dispersion__moisture":float,
             "measurementMethod__moisture":str,
             "verbatimTraitValue__dry_matter":float,
@@ -141,38 +141,42 @@ class Check:
             if header not in import_headers:
                 messages.error(self.request, "The import file does not contain the required headers. The missing header is: " + str(header) + ".")
                 return False
+        
         for header in import_headers:
             if header in optional_headers:
-                for counter, value in enumerate(df.loc[:, header], 1):
-                    if optional_headers[header]!=str and (isinstance(value, float) or isinstance(value, str)):
-                            value = possible_nan_to_zero(value)
-                    if optional_headers[header]==float and isinstance(value, str):
+                for row, value in enumerate(df.loc[:, header]):
+                    if optional_headers[header]!=str:
+                        if isinstance(value, str):
                             value = value.replace(",",".")
                     try:
-                        optional_headers[header](value)
-                    except:
-                        messages.error(self.request, f"The {header} on row {counter} is not correct type. It should be {type_names[optional_headers[header]]}.")
-                        return False
-
-                    
+                        df.loc[row, header] = optional_headers[header](value)
+                    except Exception as e:
+                        traceback.print_exc()
+                        messages.error(self.request, f"The {header} on row {row+1} is not correct type. It should be {type_names[optional_headers[header]]}.")
+                        return False       
         return True
-    
-    def _check_reported_sum(self, df, row):
-        reported_sum = 0
-        column_headers = df.columns.values
-        for column, value in enumerate(df.loc[row]):
-            if "verbatimTraitValue" in column_headers[column]:
-                reported_sum += possible_nan_to_zero(value)
-        return reported_sum
+
+    def _calculate_nfe(self, row):
+        value_sum = sum([row[value] for value in row.keys() if ("verbatimTraitValue" in value and not "nitrogen_free_extract" in value)])
+        return min(
+            abs(value_sum-100),
+            abs(value_sum-1000)
+        )
 
     def check_nfe(self, df):
-        for row, nfe in enumerate(df.loc[:, 'verbatimTraitValue__nitrogen_free_extract']):
-            if nfe=='nan':
-                reported_sum = self._check_reported_sum(df, row)
-                df.loc[row, 'verbatimTraitValue__nitrogen_free_extract'][row] = min(abs(100 - reported_sum),abs(1000 - reported_sum))
-                df.loc[row, 'measurementMethod__nitrogen_free_extract'].append("\nNot reported: calculated by difference")
+        missing_nfe_message = "\nNot reported: calculated by difference"
+        headers = list(df.columns.values)
+        if 'verbatimTraitValue__nitrogen_free_extract' in headers:
+            if 'measurementMethod____nitrogen_free_extract' in headers:
+                new_mm = df["measurementMethod__nitrogen_free_extract"] + df['verbatimTraitValue__nitrogen_free_extract'].fillna("\nNot reported: calculated by difference")
+            else:
+                new_mm = df['verbatimTraitValue__nitrogen_free_extract'].fillna(missing_nfe_message)
+            df["measurementMethod__nitrogen_free_extract"] = new_mm
+            df["verbatimTraitValue__nitrogen_free_extract"].fillna(df.apply(lambda row: self._calculate_nfe(row), axis=1))
+        else:
+            df["measurementMethod__nitrogen_free_extract"] = missing_nfe_message
+            df["verbatimTraitValue__nitrogen_free_extract"] = df.apply(lambda row: self._calculate_nfe(row), axis=1)
         return True
-
 
     def _check_if_plant(self, name):
         rank_id = generate_rank_id(name)
@@ -182,17 +186,14 @@ class Check:
             return None
         return kingdom == "Plantae"
     
-    def check_cf_invalid(self, df):
-        df_new = df[['verbatimScientificName', 'verbatimTraitValue__crude_fibre']]
-        for row, item in enumerate(df_new.values, 1):
-            is_plant = self._check_if_plant(item[0])
+    def check_cf_valid(self, df):
+        headers = list(df.columns.values)
+        for row in range(df.shape[0]):
+            is_plant = self._check_if_plant(df.loc[row, "verbatimScientificName"])
             if is_plant == None:
                 continue
-            if is_plant and possible_nan_to_zero(item[1])==0:
+            if is_plant and ('verbatimTraitValue__crude_fibre' not in headers or possible_nan_to_zero(df.loc[row, 'verbatimTraitValue__crude_fibre'])==0):
                 messages.error(self.request, f"Item of type plantae is missing required value verbatimTraitValue__crude_fibre on row {row}.")
-                return False
-            elif not is_plant and not possible_nan_to_zero(item[1])==0:
-                messages.error(self.request, f"Item on row {row} has an invalid value verbatimTraitValue__crude_fibre. Values greater than 0 are allowed only for items of type plantae.")
                 return False
         return True
 
@@ -610,16 +611,19 @@ def get_choicevalue(gender):
 
 
 def get_fooditem_json(food):
-    url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + food.lower().capitalize().replace(' ', '%20')
+    query = food.lower().capitalize().replace(' ', '%20')
+    url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
     try:
         session = CachedSession("fooditem_cache", expire_after=timedelta(days=1))
         file = session.get(url)
         data = file.text
-    except:
+    except Exception:
+        traceback.print_exc()
         return {}
     try:
         taxon_data = json.loads(data)['itisTerms'][0]
     except UnicodeDecodeError:
+        traceback.print_exc()
         taxon_data = json.loads(data.decode('utf-8', 'ignore'))['itisTerms'][0]
     if taxon_data and taxon_data['scientificName'].lower() == food.lower() and taxon_data['nameUsage'] in ['valid', 'accepted']:
         tsn = taxon_data['tsn']
@@ -688,6 +692,7 @@ def generate_rank_id(food):
             tail += 1
         results = get_fooditem_json(query)
         if results:
+            print(results['data'][0]['results'][0]['taxon_id'])
             rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
             rank_id[rank] = results
             break
@@ -1203,14 +1208,11 @@ def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
             value = getattr(row, header)
             if proximate_analysis_item_headers[header]["type"] != str:
                 value = possible_nan_to_zero(value)
-                if isinstance(value, str):
-                    value = proximate_analysis_item_headers[header]["type"](value.replace(",","."))
             else:
                 value = possible_nan_to_none(value)
             item_dict[proximate_analysis_item_headers[header]["name"]] = value
-    
     #Check if pa_item already exists
-    standard_item_dict = generate_standard_values(items)
+    item_dict = generate_standard_values(item_dict)
     pa_item_old = ProximateAnalysisItem.objects.filter(**item_dict)
     if len(pa_item_old) > 0:
         pa_item = pa_item_old[0]
@@ -1219,17 +1221,16 @@ def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
         pa_item.save()
 
 def generate_standard_values(items):
-    standard_items = {}
+    standard_items = items
     #Sum of reported fields excluding dry matter and moisture
-    item_sum = sum([items[item] for item in items if ("reported" in item and "dm" not in item and "moisture" not in item)])
-    multiplier = 100
+    item_sum = sum([items[item] for item in items.keys() if ("reported" in item and "dm" not in item and "moisture" not in item)])
     if abs(item_sum - 100) > abs(item_sum - 1000):
         item_sum /= 10
     
-    if abs(100 - item_sum+item["moisture_reported"]) < abs(100 - item_sum):
-        item_sum+=item["moisture_reported"]
+    if abs(100 - item_sum+items["moisture_reported"]) < abs(100 - item_sum):
+        item_sum+=items["moisture_reported"]
     
-    for item in items:
+    for item in list(items.keys()):
         
         if "reported" not in item or "dm" in item or "moisture" in item:
             continue
