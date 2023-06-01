@@ -1,0 +1,24 @@
+{% extends 'mb/base_generic.html' %}
+
+{% block script %}
+<!-- Used for Django select2 -->
+  {{ form.media.js }}
+{% endblock %}
+
+{% block title %}
+  <title>MammalBase - Export measurements</title>
+{% endblock %}
+
+{% block content %} {% load custom_tags %}
+  <!--Article header -->
+  <header style="display:none">
+    <h1>MammalBase - Form submitted</h1>
+  </header>
+  <!--End of article header -->
+  <section class=" w3-container">
+    <header class="w3-container w3-text-teal">
+      <h3>Your export is being processed.</h3>
+    </header>
+
+  </section>
+{% endblock %}

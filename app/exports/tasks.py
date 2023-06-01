@@ -90,15 +90,15 @@ def send_email(export_id, target_address):
     ''''Sends user an email with download link to exported data'''
     mail_subject = "Your download from Mammalbase is ready"
     message = create_message(export_id)
-    send_mail ( 
+    send_mail (
         subject = mail_subject,
         message = message,
         from_email = settings.EMAIL_HOST_USER,
-        recipient_list = [target_address], 
+        recipient_list = [target_address],
     )
 
 def create_message(export_id):
     '''
-    Creates email message and download link 
+    Creates email message and download link
     '''
     return f'You can download your exported data from http://localhost:8000/exports/get_file/{export_id}'
