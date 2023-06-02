@@ -151,13 +151,12 @@ class Check:
                     try:
                         df.loc[row, header] = optional_headers[header](value)
                     except Exception as e:
-                        traceback.print_exc()
                         messages.error(self.request, f"The {header} on row {row+1} is not correct type. It should be {type_names[optional_headers[header]]}.")
                         return False       
         return True
 
     def _calculate_nfe(self, row):
-        value_sum = sum([row[value] for value in row.keys() if ("verbatimTraitValue" in value and not "nitrogen_free_extract" in value)])
+        value_sum = sum([possible_nan_to_zero(row[value]) for value in row.keys() if ("verbatimTraitValue" in value and not "nitrogen_free_extract" in value)])
         return min(
             abs(value_sum-100),
             abs(value_sum-1000)
@@ -172,10 +171,11 @@ class Check:
             else:
                 new_mm = df['verbatimTraitValue__nitrogen_free_extract'].fillna(missing_nfe_message)
             df["measurementMethod__nitrogen_free_extract"] = new_mm
-            df["verbatimTraitValue__nitrogen_free_extract"].fillna(df.apply(lambda row: self._calculate_nfe(row), axis=1))
+            df["verbatimTraitValue__nitrogen_free_extract"].fillna(df.apply(self._calculate_nfe, axis=1), inplace=True)
         else:
             df["measurementMethod__nitrogen_free_extract"] = missing_nfe_message
-            df["verbatimTraitValue__nitrogen_free_extract"] = df.apply(lambda row: self._calculate_nfe(row), axis=1)
+            df["verbatimTraitValue__nitrogen_free_extract"] = df.apply(self._calculate_nfe, axis=1)
+        
         return True
 
     def _check_if_plant(self, name):
@@ -618,12 +618,10 @@ def get_fooditem_json(food):
         file = session.get(url)
         data = file.text
     except Exception:
-        traceback.print_exc()
         return {}
     try:
         taxon_data = json.loads(data)['itisTerms'][0]
     except UnicodeDecodeError:
-        traceback.print_exc()
         taxon_data = json.loads(data.decode('utf-8', 'ignore'))['itisTerms'][0]
     if taxon_data and taxon_data['scientificName'].lower() == food.lower() and taxon_data['nameUsage'] in ['valid', 'accepted']:
         tsn = taxon_data['tsn']
@@ -692,7 +690,6 @@ def generate_rank_id(food):
             tail += 1
         results = get_fooditem_json(query)
         if results:
-            print(results['data'][0]['results'][0]['taxon_id'])
             rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
             rank_id[rank] = results
             break
