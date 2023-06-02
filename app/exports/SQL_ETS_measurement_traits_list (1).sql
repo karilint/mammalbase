@@ -44,33 +44,42 @@ SELECT
     on entity_relation.master_entity_id=master_entity.id
   join mb_sourceentity source_entity
     on source_entity.id=entity_relation.source_entity_id
+
   join `mb_entityclass` entity_class
     on((entity_class.`id` = master_entity.`entity_id`))
+
   join mb_sourcereference source_reference
     on source_reference.id=source_entity.reference_id
   join mb_masterreference master_reference
     on master_reference.id=source_reference.master_reference_id
+
   join mb_sourcemeasurementvalue source_measurement_value
     on source_measurement_value.source_entity_id=source_entity.id
+
   join mb_sourceattribute source_attribute
     on source_attribute.id=source_measurement_value.source_attribute_id
   join mb_attributerelation attribute_relation
     on attribute_relation.source_attribute_id=source_attribute.id
   join mb_masterattribute master_attribute
     on master_attribute.id=attribute_relation.master_attribute_id
+
   join mb_sourceunit source_unit
     on source_unit.id=source_measurement_value.source_unit_id
+
   join mb_unitrelation unit_relation
     on unit_relation.source_unit_id=source_measurement_value.source_unit_id
   join mb_masterunit master_unit_1
     on master_unit_1.id=unit_relation.master_unit_id
   join mb_masterunit master_unit_2
     on master_unit_2.id=master_attribute.unit_id
+
   left join mb_sourcestatistic source_statistic
     on source_statistic.id=source_measurement_value.source_statistic_id
+
   left join mb_unitconversion unit_conversion
     on unit_conversion.from_unit_id=master_unit_1.id
    and unit_conversion.to_unit_id=master_unit_2.id
+
   join `tdwg_taxon` tdwg_taxon
     on tdwg_taxon.TAXON_RANK=entity_class.name and tdwg_taxon.scientific_name=master_entity.name
 JOIN auth_user a ON a.id=source_measurement_value.created_by_id

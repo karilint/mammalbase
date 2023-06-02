@@ -1,7 +1,7 @@
 import datetime
 
 from celery import shared_task
-from mb.models import ViewMasterTraitValue
+from mb.models import ViewMasterTraitValue, MasterEntity
 import csv, zipfile, os, shutil
 from django.core.files import File
 from django.core.mail import send_mail
@@ -10,10 +10,16 @@ from datetime import datetime
 from zipfile import ZipFile
 from config import settings
 from tempfile import mkdtemp
+from django.db.models import Subquery, OuterRef, F
+
+from mb.models import MasterEntity, EntityRelation, SourceEntity, EntityClass, SourceReference, MasterReference
+from mb.models import SourceMeasurementValue, SourceAttribute, AttributeRelation, MasterAttribute, SourceUnit
+from mb.models import UnitRelation, MasterUnit, SourceStatistic, UnitConversion
+from tdwg.models import Taxon
 
 
 @shared_task
-def export_zip_file(kwargs):
+def export_zip_file(query_data):
     """
     Exports a zip file containing tsv files resulting from given queries,
     saves it to the db and sends the download link as an email.
@@ -24,6 +30,7 @@ def export_zip_file(kwargs):
         queries: [dict] -- List of dictionaries containing fields
             file_name: str -- Desired name of the exported file
             headers: [str] -- List containing headers of data columns
+            fields: [str] -- List containing desired data columns
             query_set: QuerySet -- QuerySet object to be executed
     """
 
@@ -34,7 +41,7 @@ def export_zip_file(kwargs):
     zip_file_path = f'export_{datetime.now().strftime("%Y-%m-%d_%H.%M.%S.%f")}.zip'
     temp_zip_writer = ZipFile(zip_file_path, 'w', compression=zipfile.ZIP_DEFLATED)
 
-    for query in kwargs['queries']:
+    for query in query_data['queries']:
         file_path = write_query_to_file(query)
         temp_zip_writer.write(file_path)
 
@@ -42,7 +49,7 @@ def export_zip_file(kwargs):
 
     file_id = save_zip_to_django_model(zip_file_path)
 
-    send_email(file_id, kwargs['email_receiver'])
+    send_email(file_id, query_data['email_receiver'])
 
     os.chdir(current_dir)
     shutil.rmtree(temp_directory)
@@ -53,11 +60,12 @@ def write_query_to_file(query):
     file_name = query['file_name']
     headers = query['headers']
     query_set = query['query_set']
+    fields = query['fields']
     file_path = f'{file_name}.tsv'
     f = open(file_path, 'w')
     writer = csv.writer(f, delimiter='\t', lineterminator='\n')
     writer.writerow(headers)
-    writer.writerows(query_set.values_list())
+    writer.writerows(query_set.values_list(*fields))
     f.close()
     return file_path
 
@@ -76,13 +84,95 @@ def save_zip_to_django_model(zip_file_path):
 def create_poc_tsv_file():
     export_zip_file({
         'email_receiver': 'testi@testipaikka.com',
-        'queries': [{'file_name': 'ViewMasterTraitValue.objects.all',
-                     'headers': ['h1', 'h2', 'h3', 'etc...'],
-                     'query_set': ViewMasterTraitValue.objects.all()},
-                    {'file_name': 'ExportFile.objects.all',
-                     'headers': ['h1', 'h2', 'h3', 'etc...'],
-                     'query_set': ExportFile.objects.all()}
-                    ]})
+        'queries': [
+        {
+            'file_name': 'ViewMasterTraitValue.objects.all',
+            'headers': ['h1', 'h2', 'h3', 'etc...'],
+            'query_set': ViewMasterTraitValue.objects.all()
+        },
+        {
+            'file_name': 'ExportFile.objects.all',
+             'headers': ['h1', 'h2', 'h3', 'etc...'],
+             'query_set': ExportFile.objects.all()
+        },
+        {
+            'file_name': 'MasterEntity.objects.all',
+            'headers': ['h1', 'h2', 'h3', 'etc...'],
+            'query_set': MasterEntity.objects.all()
+        },
+        ]})
+
+
+@shared_task
+def ets_export_query_set():
+
+    master_attribute = AttributeRelation.objects.filter(
+        source_attribute_id=OuterRef('source_attribute__id')
+    )
+    master_entity = EntityRelation.objects.filter(
+        source_entity_id=OuterRef('source_entity__id')
+    )
+    unit_relation = UnitRelation.objects.filter(
+        source_unit_id=OuterRef('source_unit__id')
+    )
+    unit_conversion = UnitConversion.objects.filter(
+        from_unit=OuterRef('master_unit__id')
+    )
+
+    source_measurement_values = SourceMeasurementValue.objects.annotate(
+        master_attribute__name=Subquery(
+            master_attribute.values('master_attribute__name')[:1]
+        ),
+        master_attribute__id=Subquery(
+            master_attribute.values('master_attribute__id')[:1]
+        ),
+        master_attribute__unit__id=Subquery(
+            master_attribute.values('master_attribute__unit__id')[:1]
+        ),
+        master_entity__name=Subquery(
+            master_entity.values('master_entity__name')[:1]
+        ),
+        master_entity__id=Subquery(
+            master_entity.values('master_entity__id')[:1]
+        ),
+        master_unit__id=Subquery(
+            unit_relation.values('master_unit__id')[:1]
+        )
+    ).annotate(
+        unit_conversion__coefficient=Subquery(
+            unit_conversion.filter(
+                from_unit=OuterRef('master_unit__id'),
+                to_unit=OuterRef('master_attribute_unit_id')
+            )
+        )
+    ).exclude(
+        master_attribute__name='- Checked, Unlinked -',
+        (F('minimum')*F('unit_conversion__coefficient'))+(F('maximum')*F('unit_conversion__coefficient')) == 0
+    )
+
+    fields = [
+        'master_attribute__name',
+        'gender',
+        'life_stage'
+    ]
+    headers = [
+        'traitName',
+        'gender',
+        'life_stage'
+    ]
+
+    export_zip_file({
+        'email_receiver': 'testi@testipaikka.com',
+        'queries': [
+            {
+                'file_name': 'source_measurement_values',
+                'headers': headers,
+                'fields': fields,
+                'query_set': source_measurement_values
+            }
+        ]
+    })
+
 
 
 @shared_task

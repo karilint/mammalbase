@@ -1,14 +1,14 @@
 from django.shortcuts import render
 from django.http import HttpResponseNotFound, FileResponse
 from .models import ExportFile
-from .tasks import create_poc_tsv_file
+from .tasks import create_poc_tsv_file, ets_export_query_set
 from django.contrib.auth.decorators import login_required
 
 
 @login_required
 def export_to_tsv(request):
     """A view that streams a large TSV file."""
-    create_poc_tsv_file.delay()
+    ets_export_query_set.delay()
     return render(request, template_name='export/export_measurements.html')
 
 
