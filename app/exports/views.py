@@ -1,16 +1,20 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponseNotFound, FileResponse, HttpResponseRedirect
+from django.http import HttpResponseNotFound, FileResponse
 from .models import ExportFile
 from .tasks import create_poc_tsv_file
 from django.contrib.auth.decorators import login_required
 from .forms import MeasurementsForm
+from django.core.validators import validate_email
 
 @login_required
 def export_to_tsv(request):
-    """A view that streams a large TSV file."""
+    """A view that renders an export form."""
     measurement_form = MeasurementsForm()
     if request.method == 'POST':
         user_email = request.POST['user_email']
+        checkboxes = request.POST.getlist('select_fields_to_be_exported')
+        print(f'selected checkboxed {checkboxes}')
+        #if email_validation(user_email) == True:
         create_poc_tsv_file.delay(user_email)
         return redirect('submission')
     context = {'form': measurement_form}
@@ -18,6 +22,11 @@ def export_to_tsv(request):
 
 def form_submitted(request):
     return render(request,'export/form_submitted.html')
+
+#def email_validation(email_address):
+#    if not validate_email(email_address):
+#        raise forms.ValidationError("Invalid")
+#    return True
 
 @login_required
 def get_exported_file(request, file_id):

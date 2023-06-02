@@ -2,6 +2,14 @@ from django import forms
 
 from django.core import validators
 
+DUMMY_CHOICES = [
+    ("measurements", "Measurements"),
+    ("diet_set", "Diet Set"),
+    ("proximate analysis", "Proximate Analysis"),
+    ("ets", "ETS"),
+]
+
+
 class MeasurementsForm(forms.Form):
     user_email = forms.EmailField(validators=[validators.EmailValidator(message="Invalid email address")],
         #widget=forms.widgets.TextInput(
@@ -9,3 +17,7 @@ class MeasurementsForm(forms.Form):
         #    "placeholder": "Enter your email address"
         #}
     )
+    select_fields_to_be_exported = forms.MultipleChoiceField(required=True,
+                                          widget=forms.CheckboxSelectMultiple,
+                                          choices= DUMMY_CHOICES
+                                          )

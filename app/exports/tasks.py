@@ -87,9 +87,9 @@ def create_poc_tsv_file(email_receiver):
 
 @shared_task
 def send_email(export_id, target_address):
-    ''''Sends user an email with download link to exported data'''
+    """Sends user an email with a download link to the exported data"""
     mail_subject = "Your download from Mammalbase is ready"
-    message = create_message(export_id)
+    message = create_notification_message(export_id)
     send_mail (
         subject = mail_subject,
         message = message,
@@ -97,8 +97,6 @@ def send_email(export_id, target_address):
         recipient_list = [target_address],
     )
 
-def create_message(export_id):
-    '''
-    Creates email message and download link
-    '''
-    return f'You can download your exported data from http://localhost:8000/exports/get_file/{export_id}'
+def create_notification_message(export_id):
+    """Creates a email message and download link to the exported data"""
+    return f'You can download the exported data from http://localhost:8000/exports/get_file/{export_id}'
