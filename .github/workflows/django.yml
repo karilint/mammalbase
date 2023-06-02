@@ -19,14 +19,14 @@ jobs:
       mysql:
         image: mariadb
         env:
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_NAME: django_tm
-          DB_USER: django_tm
-          DB_PASSWORD: password
-          ALLOWED_HOSTS: 127.0.0.1
+          MARIADB_ROOT_PASSWORD: password
+          MARIADB_USER: test_user  
+          MARIADB_PASSWORD: password
+          MARIADB_DATABASE: test_db
+          
         ports:
           - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -37,17 +37,22 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
-    - name: Sleep for 30 seconds
-      run: sleep 30s
+      working-directory: ./app
+    - name: Start mysql
+      run: |
+        sudo /etc/init.d/mysql start
+    - name: Setup database privileges
+      run: |
+        mysql -h 127.0.0.1 --port 3306 -u root -p password -e 'GRANT ALL PRIVILEGES ON *.* TO "test_user"@"%";'
+        QUIT
       shell: bash
     - name: Run Tests
       env:
         DB_HOST: 127.0.0.1
         DB_PORT: 3306
-        DB_NAME: django_tm
-        DB_USER: django_tm
-        DB_PASSWORD: password
-        ALLOWED_HOSTS: 127.0.0.1
+        DB_NAME: test_db
+        DB_USER: test_user
+        DB_PASS: password
+      working-directory: ./app
       run: |
-        python ./app/manage.py test
+        python manage.py test
