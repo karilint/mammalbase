@@ -1,7 +1,7 @@
 SELECT 
- concat('https://www.mammalbase.net/ma/', master_attribute.`id`,'/') AS `traitID`
-, master_entity.`name` AS `scientificName`
-, master_attribute.`name` AS `traitName`
+-- DONE concat('https://www.mammalbase.net/ma/', master_attribute.`id`,'/') AS `traitID`
+-- DONE, master_entity.`name` AS `scientificName`
+-- DONE, master_attribute.`name` AS `traitName`
 , round(source_measurement_value.`mean`*unit_conversion.coefficient,2) AS traitValue
 , master_unit_2.print_name AS traitUnit
 , source_entity.`name` AS `verbatimScientificName`
@@ -23,10 +23,10 @@ SELECT
 , master_reference.`type` AS `basisOfRecordDescription`
 , replace(replace(master_reference.`citation`,'<i>',''),'</i>','') AS `references`
 , case when entity_class.name not like '%species' then concat(entity_class.name, ' level data') else 'NA' end `measurementResolution`
-, 'NA' measurementMethod
-, 'NA' measurementDeterminedBy
-, 'NA' measurementDeterminedDate
-, 'NA' measurementRemarks
+-- DONE, 'NA' measurementMethod
+-- DONE, 'NA' measurementDeterminedBy
+-- DONE, 'NA' measurementDeterminedDate
+-- DONE, 'NA' measurementRemarks
 , case when source_measurement_value.n_total=1 then 'FALSE' else 'TRUE' end AS aggregateMeasure
 , case when source_measurement_value.n_total=0 then 'NA' else source_measurement_value.n_total end AS individualCount
 , case when source_measurement_value.std=0 then 'NA' else round(source_measurement_value.std*unit_conversion.coefficient,2) end AS dispersion
