@@ -259,6 +259,11 @@ class MasterAttribute(BaseModel):
         'EntityClass',
         on_delete = models.CASCADE,
         )
+    source_attribute = models.ManyToManyField(
+        'SourceAttribute',
+        through='AttributeRelation',
+        through_fields=('master_attribute', 'source_attribute')
+    )
     name = models.CharField(max_length=250, help_text="Enter the Name of the Master Attribute")
     unit = models.ForeignKey(
     'MasterUnit',blank=True, null=True,
@@ -325,6 +330,11 @@ class MasterEntity(BaseModel):
         'EntityClass',
         on_delete = models.CASCADE,
         )
+    source_entity = models.ManyToManyField(
+        'SourceEntity',
+        through='EntityRelation',
+        through_fields=('master_entity', 'source_entity')
+    )
     name = models.CharField(max_length=250, help_text="Enter the Name of the Master Entity")
     taxon = models.ForeignKey(
         TdwgTaxon,
@@ -445,6 +455,9 @@ class MasterUnit(BaseModel):
     """
     Model representing a MasterUnit in MammalBase
     """
+    source_unit = models.ManyToManyField(
+        'SourceUnit'
+    )
     name = models.CharField(max_length=25, help_text="Enter the name of the Master Unit")
     print_name = models.CharField(max_length=25, help_text="Enter the Print value of the name of a Master Unit")
     quantity_type = models.CharField(max_length=25, help_text="Enter the Quantity type of the Master Unit")
@@ -480,6 +493,11 @@ class SourceAttribute(BaseModel):
         'EntityClass',
         on_delete = models.CASCADE,
         )
+    master_attribute = models.ManyToManyField(
+        'MasterAttribute',
+        through='AttributeRelation',
+        through_fields=('source_attribute', 'master_attribute')
+    )
     name = models.CharField(max_length=250, help_text="Enter the Name of the Attribute")
     TYPE = (
         (0, 'Not Specified'),
@@ -579,6 +597,11 @@ class SourceEntity(BaseModel):
         'EntityClass',
         on_delete = models.CASCADE,
         )
+    master_entity = models.ManyToManyField(
+        'MasterEntity',
+        through='EntityRelation',
+        through_fields=('source_entity', 'master_entity')
+    )
     name = models.CharField(max_length=250, help_text="Enter the Name of the Source Entity")
 
     class Meta:
@@ -773,6 +796,11 @@ class SourceUnit(BaseModel):
     """
     Model representing a SourceUnit in MammalBase
     """
+    master_unit = models.ManyToManyField(
+        'MasterUnit',
+        through='UnitRelation',
+        through_fields=('source_unit', 'master_unit')
+    )
     name = models.CharField(max_length=25, help_text="Enter the name of the Source Unit")
     remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Source Unit")
 
