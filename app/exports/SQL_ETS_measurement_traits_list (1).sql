@@ -87,6 +87,6 @@ LEFT JOIN socialaccount_socialaccount orcid ON orcid.user_id=a.id
 
 
 
-where master_attribute.`name` <> '- Checked, Unlinked -'
-and (source_measurement_value.minimum*unit_conversion.coefficient)+(source_measurement_value.maximum*unit_conversion.coefficient) <> 0
- order by master_attribute.name
+-- DONE where master_attribute.`name` <> '- Checked, Unlinked -'
+-- DONE and (source_measurement_value.minimum*unit_conversion.coefficient)+(source_measurement_value.maximum*unit_conversion.coefficient) <> 0
+-- DONE  order by master_attribute.name
