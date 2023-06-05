@@ -2,42 +2,42 @@ SELECT
 -- DONE concat('https://www.mammalbase.net/ma/', master_attribute.`id`,'/') AS `traitID`
 -- DONE, master_entity.`name` AS `scientificName`
 -- DONE, master_attribute.`name` AS `traitName`
-, round(source_measurement_value.`mean`*unit_conversion.coefficient,2) AS traitValue
-, master_unit_2.print_name AS traitUnit
-, source_entity.`name` AS `verbatimScientificName`
-, source_attribute.`name` AS `verbatimTraitName`
-, round(source_measurement_value.mean,2) AS verbatimTraitValue
-, source_unit.name AS verbatimTraitUnit
-, concat('https://www.mammalbase.net/me/', master_entity.`id`,'/') AS `taxonID`
-, concat('https://www.mammalbase.net/smv/',source_measurement_value.id,'/') AS measurementID
-, 'NA' occurrenceID
-, case when entity_class.name not like '%species' then concat(entity_class.name, ' level data') else 'NA' end `warnings`
-, entity_class.name AS `taxonRank`
-, 'Animalia' AS kingdom
-, 'Chordata' AS phylum
-, 'Mammalia' AS class
-, tdwg_taxon.`order` AS `order`
-, tdwg_taxon.family AS family
-, tdwg_taxon.genus AS genus
-, 'literatureData' basisOfRecord
-, master_reference.`type` AS `basisOfRecordDescription`
-, replace(replace(master_reference.`citation`,'<i>',''),'</i>','') AS `references`
-, case when entity_class.name not like '%species' then concat(entity_class.name, ' level data') else 'NA' end `measurementResolution`
+-- DONE, round(source_measurement_value.`mean`*unit_conversion.coefficient,2) AS traitValue
+-- DONE, master_unit_2.print_name AS traitUnit
+-- DONE, source_entity.`name` AS `verbatimScientificName`
+-- DONE, source_attribute.`name` AS `verbatimTraitName`
+-- DONE, round(source_measurement_value.mean,2) AS verbatimTraitValue
+-- DONE, source_unit.name AS verbatimTraitUnit
+-- DONE, concat('https://www.mammalbase.net/me/', master_entity.`id`,'/') AS `taxonID`
+-- DONE, concat('https://www.mammalbase.net/smv/',source_measurement_value.id,'/') AS measurementID
+-- DONE, 'NA' occurrenceID
+-- DONE, case when entity_class.name not like '%species' then concat(entity_class.name, ' level data') else 'NA' end `warnings`
+-- DONE, entity_class.name AS `taxonRank`
+-- DONE, 'Animalia' AS kingdom
+-- DONE, 'Chordata' AS phylum
+-- DONE, 'Mammalia' AS class
+-- DONE, tdwg_taxon.`order` AS `order`
+-- DONE, tdwg_taxon.family AS family
+-- DONE, tdwg_taxon.genus AS genus
+-- DONE, 'literatureData' basisOfRecord
+-- DONE, master_reference.`type` AS `basisOfRecordDescription`
+-- DONE, replace(replace(master_reference.`citation`,'<i>',''),'</i>','') AS `references`
+-- DONE, case when entity_class.name not like '%species' then concat(entity_class.name, ' level data') else 'NA' end `measurementResolution`
 -- DONE, 'NA' measurementMethod
 -- DONE, 'NA' measurementDeterminedBy
 -- DONE, 'NA' measurementDeterminedDate
 -- DONE, 'NA' measurementRemarks
-, case when source_measurement_value.n_total=1 then 'FALSE' else 'TRUE' end AS aggregateMeasure
-, case when source_measurement_value.n_total=0 then 'NA' else source_measurement_value.n_total end AS individualCount
-, case when source_measurement_value.std=0 then 'NA' else round(source_measurement_value.std*unit_conversion.coefficient,2) end AS dispersion
-, case when (source_measurement_value.minimum*unit_conversion.coefficient)+(source_measurement_value.maximum*unit_conversion.coefficient) = 0 then 'NA' else round(source_measurement_value.minimum*unit_conversion.coefficient,2) end AS measurementValue_min
-, case when (source_measurement_value.minimum*unit_conversion.coefficient)+(source_measurement_value.maximum*unit_conversion.coefficient) = 0 then 'NA' else round(source_measurement_value.maximum*unit_conversion.coefficient,2) end AS measurementValue_max
-, source_measurement_value.measurement_accuracy AS measurementAccuracy
-, source_statistic.name AS statisticalMethod
+-- DONE, case when source_measurement_value.n_total=1 then 'FALSE' else 'TRUE' end AS aggregateMeasure
+-- DONE, case when source_measurement_value.n_total=0 then 'NA' else source_measurement_value.n_total end AS individualCount
+-- DONE, case when source_measurement_value.std=0 then 'NA' else round(source_measurement_value.std*unit_conversion.coefficient,2) end AS dispersion
+-- DONE, case when (source_measurement_value.minimum*unit_conversion.coefficient)+(source_measurement_value.maximum*unit_conversion.coefficient) = 0 then 'NA' else round(source_measurement_value.minimum*unit_conversion.coefficient,2) end AS measurementValue_min
+-- DONE, case when (source_measurement_value.minimum*unit_conversion.coefficient)+(source_measurement_value.maximum*unit_conversion.coefficient) = 0 then 'NA' else round(source_measurement_value.maximum*unit_conversion.coefficient,2) end AS measurementValue_max
+-- DONE, source_measurement_value.measurement_accuracy AS measurementAccuracy
+-- DONE, source_statistic.name AS statisticalMethod
 -- , case when smv.std=0 then 'NA' else case when round(smv.std,2) end AS statisticalMethod
-, ifnull(orcid.uid, 'http://orcid.org/0000-0001-9627-8821') author
-, NOW() issued
-, (select MAX(date(modified_on)) FROM mb_dietsetitem) `version`
+-- ?? NOT 100% SURE IT WORKS, ifnull(orcid.uid, 'http://orcid.org/0000-0001-9627-8821') author
+-- DONE, NOW() issued
+-- DONE, (select MAX(date(modified_on)) FROM mb_dietsetitem) `version`
 
   from mb_masterentity master_entity
   join mb_entityrelation entity_relation
