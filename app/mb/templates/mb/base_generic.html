@@ -66,6 +66,12 @@
             <a href="{% url 'import_proximate_analysis'%}" class="w3-bar-item w3-button">Proximate Analysis</a>
           </div>
         </div>
+        <div class="w3-dropdown-hover">
+          <button class="w3-button">Export</button>
+          <div class="w3-dropdown-content w3-bar-block w3-border">
+            <a href="{% url 'tsv' %}" class="w3-bar-item w3-button">Measurements</a>
+          </div>
+        </div>
       </div>
     </div>
     <!---keeps the nav bar form being on top of conent-->
@@ -79,6 +85,7 @@
         <a class="w3-bar-item w3-button w3-hover-white" >News</a>
         <a class="w3-bar-item w3-button w3-hover-white" >About</a>
         <a class="w3-bar-item w3-button w3-hover-white" >Import</a>
+        <a class="w3-bar-item w3-button w3-hover-white" >Export</a>
       </div>
     </div>
     <!-- Sidebar -->

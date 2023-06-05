@@ -124,5 +124,6 @@ urlpatterns = [
     path('tsn/<int:pk>/delete/', views.tsn_delete.as_view(), name='tsn-delete'),
     path('tsn/<int:tsn>/edit/', views.tsn_edit, name='tsn-edit'),
     path('tsn/new', views.tsn_new, name='tsn-new'),
+    path('exports/', include('exports.urls')),
 ]
 

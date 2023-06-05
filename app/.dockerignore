@@ -6,7 +6,7 @@ docker-compose*
 LICENSE
 README.md
 .vscode
-.env*
+../.env
 media/
 static/
 .venv
