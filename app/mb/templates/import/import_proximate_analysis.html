@@ -6,18 +6,18 @@
 {% endblock %}
 
 {% block title %}
-  <title>MammalBase - Import Diet Sets</title>
+  <title>MammalBase - Import Proximate Analysis Data</title>
 {% endblock %}
 
 {% block content %} {% load custom_tags %}
   <!--Article header -->
   <header style="display:none">
-    <h1>MammalBase - Import Diet Sets</h1>
+    <h1>MammalBase - Import Proximate Analysis Data</h1>
   </header>
   <!--End of article header -->
   <section class=" w3-container">
     <header class="w3-container w3-text-teal">
-      <h2>Import Diet Sets</h2>
+      <h2>Import Proximate Analysis Data</h2>
     </header>
     
     {% if user.is_authenticated %}
@@ -30,7 +30,7 @@
     </button>
   </div>
   <div id="import" class="w3-hide w3-container w3-show" style=" background-color: #f0f0f0; margin-bottom: 10px;">
-    <form action="{% url "import_diet_set" %}" method="POST" enctype="multipart/form-data" class="form-horizontal">
+    <form action="{% url "import_proximate_analysis" %}" method="POST" enctype="multipart/form-data" class="form-horizontal">
       {% csrf_token %} 
     <div class="form-group">
       <label for="name" class="col-md-3 col-sm-3 col-xs-12 control-label">File: <br> </label>
@@ -54,7 +54,7 @@
     <button onclick="showInfo('howTo')" 
     class="w3-button w3-block w3-border w3-left-align w3-border-black" 
     style="width:50%; margin-bottom:10px;"> 
-    How to import diet set data
+    How to import proximate analysis data
     </button>
   </div>
   <div id="howTo" class="w3-hide w3-container" style=" background-color: #f0f0f0; margin-bottom: 10px;">
