@@ -22,7 +22,6 @@ def import_diet_set(request):
 	try:
 		file = request.FILES["csv_file"]
 		df = pd.read_csv(file, sep='\t')
-		trim_df(df)
 		check = Check(request)
 		force = "force" in request.POST
 		if check.check_valid_author(df) == False:
@@ -50,7 +49,6 @@ def import_proximate_analysis(request):
 		
 		file = request.FILES["csv_file"]
 		df = pd.read_csv(file, sep='\t')
-		trim_df(df)
 		check = Check(request)
 		force = "force" in request.POST
 		if check.check_valid_author(df) == False:
@@ -78,7 +76,6 @@ def import_ets(request):
 	try:
 		csv_file = request.FILES["csv_file"]
 		df = pd.read_csv(csv_file, sep='\t')
-		trim_df(df)
 		check = Check(request)
 
 		if check.check_valid_author(df) == False:
