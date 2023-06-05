@@ -291,15 +291,23 @@ class Check:
             df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references', 'measurementValue']]
         else:
             df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references']]
+        optional_headers = [
+            'verbatimLocality',
+            'habitat',
+            'samplingEffort',
+            'sex',
+            'individualCount',
+            'verbatimEventDate',
+            'measurementMethod',
+            'associatedReferences'
+        ]
         counter = 0
         total = 1
         fooditems = []
         lines = 1
         compare = []
 
-        for item in df_new.values:
-           
-            lines += 1
+        for lines, item in enumerate(df_new.values,2):
             if str(item[2]).isnumeric():
                 if int(item[2]) == counter:
                     if has_measurementvalue:
@@ -326,30 +334,11 @@ class Check:
                         reference_list = [item[0], item[3]]
                         if has_measurementvalue:
                             measurementvalue_reference = item[4]
-                        if 'verbatimLocality' in df.columns.values:
-                            for vl in df.loc[(lines-2):(lines-2), 'verbatimLocality'].fillna(0):
-                                reference_list.append(vl)
-                        if 'habitat' in df.columns.values:
-                            for hab in df.loc[(lines-2):(lines-2), 'habitat'].fillna(0):
-                                reference_list.append(hab)
-                        if 'samplingEffort' in df.columns.values:
-                            for se in df.loc[(lines-2):(lines-2), 'samplingEffort'].fillna(0):
-                                reference_list.append(se)
-                        if 'sex' in df.columns.values:
-                            for sex in df.loc[(lines-2):(lines-2), 'sex'].fillna(0):
-                                reference_list.append(sex)
-                        if 'individualCount' in df.columns.values:
-                            for ic in df.loc[(lines-2):(lines-2), 'individualCount'].fillna(0):
-                                reference_list.append(ic)
-                        if 'verbatimEventDate' in df.columns.values:
-                            for ved in df.loc[(lines-2):(lines-2), 'verbatimEventDate'].fillna(0):
-                                reference_list.append(ved)
-                        if 'measurementMethod' in df.columns.values:
-                            for mm in df.loc[(lines-2):(lines-2), 'measurementMethod'].fillna(0):
-                                reference_list.append(mm)
-                        if 'associatedReferences' in df.columns.values:
-                            for ar in df.loc[(lines-2):(lines-2), 'associatedReferences'].fillna(0):
-                                reference_list.append(ar)
+
+                        for header in optional_headers:
+                            if header in df.columns.values:
+                                reference_list.extend([value for value in df.loc[(lines-2):(lines-2), header].fillna(0)])
+
                         if reference_list == compare:
                             messages.error(self.request, "False sequence number 1 on the line " + str(lines) +".")
                             return False
@@ -359,32 +348,7 @@ class Check:
                         scientific_name = item[0]
                         references = item[3]
                         fooditems = [item[1]]
-                        compare = [item[0], item[3]]
-                    
-                        if 'verbatimLocality' in df.columns.values:
-                            for vl in df.loc[(lines-2):(lines-2), 'verbatimLocality'].fillna(0):
-                                compare.append(vl)
-                        if 'habitat' in df.columns.values:
-                            for hab in df.loc[(lines-2):(lines-2), 'habitat'].fillna(0):
-                                compare.append(hab)
-                        if 'samplingEffort' in df.columns.values:
-                            for se in df.loc[(lines-2):(lines-2), 'samplingEffort'].fillna(0):
-                                compare.append(se)
-                        if 'sex' in df.columns.values:
-                            for sex in df.loc[(lines-2):(lines-2), 'sex'].fillna(0):
-                                compare.append(sex)
-                        if 'individualCount' in df.columns.values:
-                            for ic in df.loc[(lines-2):(lines-2), 'individualCount'].fillna(0):
-                                compare.append(ic)
-                        if 'verbatimEventDate' in df.columns.values:
-                            for ved in df.loc[(lines-2):(lines-2), 'verbatimEventDate'].fillna(0):
-                                compare.append(ved)
-                        if 'measurementMethod' in df.columns.values:
-                            for mm in df.loc[(lines-2):(lines-2), 'measurementMethod'].fillna(0):
-                                compare.append(mm)
-                        if 'associatedReferences' in df.columns.values:
-                            for ar in df.loc[(lines-2):(lines-2), 'associatedReferences'].fillna(0):
-                                compare.append(ar)
+                        compare = reference_list
                         continue
                 
                     else:
