@@ -3,10 +3,9 @@ from django import forms
 from django.core import validators
 
 DUMMY_CHOICES = [
-    ("measurements", "Measurements"),
-    ("diet_set", "Diet Set"),
-    ("proximate analysis", "Proximate Analysis"),
-    ("ets", "ETS"),
+    ("cranial measurements", "Cranial measurements"),
+    ("postcranial measurements", "Postcranial measurements"),
+    ("external measurements", "External measurements"),
 ]
 
 
