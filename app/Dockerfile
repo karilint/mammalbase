@@ -2,7 +2,7 @@ FROM python:3.9-slim AS compile-image
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ARG UID
+ARG UID=1000
 COPY requirements.txt .
 RUN apt-get update && \
     apt-get install -y build-essential gcc default-libmysqlclient-dev && \
@@ -19,8 +19,7 @@ FROM python:3.9-slim AS build-image
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ARG UID
-ARG GID
+ARG UID=1000
 
 WORKDIR /src/app
 
