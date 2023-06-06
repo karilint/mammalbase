@@ -22,7 +22,6 @@ def import_diet_set(request):
 	try:
 		file = request.FILES["csv_file"]
 		df = pd.read_csv(file, sep='\t')
-		trim_df(df)
 		check = Check(request)
 		force = "force" in request.POST
 		if check.check_valid_author(df) == False:
@@ -42,6 +41,34 @@ def import_diet_set(request):
 		messages.error(request,"Unable to upload file. "+repr(e))
 	return HttpResponseRedirect(reverse("import_diet_set"))
 
+@login_required # väliaikainen
+def import_proximate_analysis(request):
+	if "GET" == request.method:
+		return render(request, "import/import_proximate_analysis.html")
+	try:
+		
+		file = request.FILES["csv_file"]
+		df = pd.read_csv(file, sep='\t')
+		check = Check(request)
+		force = "force" in request.POST
+		if check.check_valid_author(df) == False:
+			return HttpResponseRedirect(reverse("import_proximate_analysis"))
+		if check.check_all_pa(df, force) != True:
+			return HttpResponseRedirect(reverse("import_proximate_analysis"))
+		else:
+			for row in df.itertuples():
+				create_proximate_analysis(row, df)
+			success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
+			messages.add_message(request, 50 ,success_message, extra_tags="import-message")
+			messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")
+			return HttpResponseRedirect(reverse("import_proximate_analysis"))
+
+	except Exception as e:
+		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
+		messages.error(request,"Unable to upload file. "+repr(e))
+	return HttpResponseRedirect(reverse("import_proximate_analysis"))
+	
+
 @login_required
 def import_ets(request):
 	if "GET" == request.method:
@@ -49,7 +76,6 @@ def import_ets(request):
 	try:
 		csv_file = request.FILES["csv_file"]
 		df = pd.read_csv(csv_file, sep='\t')
-		trim_df(df)
 		check = Check(request)
 
 		if check.check_valid_author(df) == False:

@@ -44,7 +44,7 @@ class ImportViewTests(TestCase):
             writer.writerow(['author', 'verbatimScientificName', 'taxonRank', 'verbatimAssociatedTaxa', 'sequence', 'measurementValue',  'references'])
             writer.writerow(['0000-0000-0000-000X', 'Lagothrix flavicauda Lagothrix flavicauda', 'Species', 'primarily frugivorous', '1', '', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
             writer.writerow(['0000-0000-0000-000X',	'Lagothrix flavicauda',	'animal',	'leaves', '2', '', 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
-            writer.writerow(['0000-0000-0000-000X',	'Lagothrix flavicauda',	'Species',	'fruit', '1', '46.3a','Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
+            writer.writerow(['0000-0000-0000-000X',	'Lagothrix flavicauda',	'Species',	'fruit', '1', '46.3','Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.'])
         with open('test_bad.csv', 'r') as fp:
             response = self.client.post('/import/diet_set', {'name': 'fred', 'csv_file': fp})
         messages = list(get_messages(response.wsgi_request))

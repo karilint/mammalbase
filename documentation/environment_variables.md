@@ -18,7 +18,15 @@
 - DJANGO_SUPERUSER_EMAIL is the email the django container uses to create a superuser at startup.
 - SITE_NAME is the name for the website. You can set it as "MammalBase".
 - SITE_DOMAIN is the domain for the website. In development it can be set as "localhost:8000".
-- UID is the id of the user that docker should use. Docker needs this to have the correct permissions.
+- UID is the ID of the user that Docker will try to run the application as. This is needed to give Docker the proper permissions. The user id can be found out using the following commands:
+### Linux 
+```bash
+id -u <username>
+```
+### Windows
+```bash
+whoami /user
+```
 
 ### Other variables (these don't need to be defined)
 

@@ -1,12 +1,14 @@
 import codecs
 from doctest import master
 from multiprocessing.spawn import import_main_path
-from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity
+from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity, ProximateAnalysisItem, ProximateAnalysis
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
 from django.db import transaction
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
+from requests_cache import CachedSession
+from datetime import timedelta
 import itis.views as itis
 
 import pandas as pd
@@ -20,44 +22,41 @@ class Check:
         self.id = None
 
     def check_all_ds(self, df, force=False):
-        if self.check_headers_ds(df) == False:
-            return False
-        elif self.check_author(df) == False:
-            return False
-        elif self.check_verbatimScientificName(df) == False:
-            return False
-        elif self.check_taxonRank(df) == False:
-            return False
-        elif self.check_gender(df) == False:
-            return False
-        elif self.check_verbatim_associated_taxa(df) == False:
-            return False
-        elif self.check_sequence(df) == False:
-            return False
-        elif self.check_measurementValue(df) == False:
-            return False
-        elif self.check_part(df) == False:
-            return False
-        elif self.check_references(df, force) == False:
-            return False
-        elif self.check_lengths(df) == False:
-            return False
-        return True
+        return (
+            self.check_headers_ds(df) and 
+            self.check_author(df) and 
+            self.check_verbatimScientificName(df) and
+            self.check_taxonRank(df) and
+            self.check_gender(df) and
+            self.check_verbatim_associated_taxa(df) and
+            self.check_sequence(df) and
+            self.check_measurementValue(df) and 
+            self.check_part(df) and 
+            self.check_references(df, force) and
+            self.check_lengths(df)
+        )
     
     def check_all_ets(self, df):
-        if self.check_headers_ets(df) == False:
-            return False
-        elif self.check_author(df) == False:
-            return False
-        elif self.check_verbatimScientificName(df) == False:
-            return False
-        elif self.check_taxonRank(df) == False:
-            return False
-        elif self.check_lengths(df) == False:
-           return False
-        elif self.check_min_max(df) == False:
-            return False
-        return True
+        return (
+            self.check_headers_ets(df) and
+            self.check_author(df) and
+            self.check_verbatimScientificName(df) and
+            self.check_taxonRank(df) and
+            self.check_lengths(df) and
+            self.check_min_max(df)
+        )
+    
+    def check_all_pa(self, df, force=False):
+        return (
+            self.check_headers_pa(df) and
+            self.check_author(df) and
+            self.check_verbatimScientificName(df, False) and
+            self.check_lengths(df) and
+            self.check_part(df) and
+            self.check_references(df, force) and
+            self.check_cf_valid(df) and
+            self.check_nfe(df)
+        )
 
     def check_valid_author(self, df):
         counter = 1
@@ -93,6 +92,110 @@ class Check:
                 messages.error(self.request, "The import file does not contain the required headers. The missing header is: " + str(header) + ".")
                 return False
         return True
+    
+    def check_headers_pa(self, df):
+        import_headers = list(df.columns.values)
+        required_headers = [
+            'verbatimScientificName',
+            'PartOfOrganism',
+            'author',
+            'references'
+            ]
+        optional_headers = {
+            "individualCount":float,
+            "measurementMethod":str,
+            "measurementDeterminedBy":str,
+            "verbatimLocality":str,
+            "measurementRemarks":str,
+            "verbatimEventDate":str,
+            "verbatimTraitValue__moisture":float,
+            "dispersion__moisture":float,
+            "measurementMethod__moisture":str,
+            "verbatimTraitValue__dry_matter":float,
+            "dispersion__dry_matter":float,
+            "measurementMethod__dry_matter":str,
+            "verbatimTraitValue__ether_extract":float,
+            "dispersion__ether_extract":float,
+            "measurementMethod__ether_extract":str,
+            "verbatimTraitValue__crude_protein":float,
+            "dispersion__crude_protein":float,
+            "measurementMethod__crude_protein":str,
+            "verbatimTraitValue__crude_fibre":float,
+            "dispersion__crude_fibre":float,
+            "measurementMethod__crude_fibre":str,
+            "verbatimTraitValue_ash":float,
+            "dispersion__ash":float,
+            "measurementMethod_ash":str,
+            "verbatimTraitValue__nitrogen_free_extract":float,
+            "dispersion__nitrogen_free_extract":float,
+            "measurementMethod__nitrogen_free_extract":str,
+            "associatedReferences":str
+        }
+        type_names = {
+            int:"a number",
+            float:"a number or decimal value",
+            str:"text"
+        }
+
+        for header in required_headers:
+            if header not in import_headers:
+                messages.error(self.request, "The import file does not contain the required headers. The missing header is: " + str(header) + ".")
+                return False
+        
+        for header in import_headers:
+            if header in optional_headers:
+                for row, value in enumerate(df.loc[:, header]):
+                    if optional_headers[header]!=str:
+                        if isinstance(value, str):
+                            value = value.replace(",",".")
+                    try:
+                        df.loc[row, header] = optional_headers[header](value)
+                    except Exception as e:
+                        messages.error(self.request, f"The {header} on row {row+1} is not correct type. It should be {type_names[optional_headers[header]]}.")
+                        return False       
+        return True
+
+    def _calculate_nfe(self, row):
+        value_sum = sum([possible_nan_to_zero(row[value]) for value in row.keys() if ("verbatimTraitValue" in value and not "nitrogen_free_extract" in value)])
+        return min(
+            abs(value_sum-100),
+            abs(value_sum-1000)
+        )
+
+    def check_nfe(self, df):
+        missing_nfe_message = "\nNot reported: calculated by difference"
+        headers = list(df.columns.values)
+        if 'verbatimTraitValue__nitrogen_free_extract' in headers:
+            if 'measurementMethod____nitrogen_free_extract' in headers:
+                new_mm = df["measurementMethod__nitrogen_free_extract"] + df['verbatimTraitValue__nitrogen_free_extract'].fillna("\nNot reported: calculated by difference")
+            else:
+                new_mm = df['verbatimTraitValue__nitrogen_free_extract'].fillna(missing_nfe_message)
+            df["measurementMethod__nitrogen_free_extract"] = new_mm
+            df["verbatimTraitValue__nitrogen_free_extract"].fillna(df.apply(self._calculate_nfe, axis=1), inplace=True)
+        else:
+            df["measurementMethod__nitrogen_free_extract"] = missing_nfe_message
+            df["verbatimTraitValue__nitrogen_free_extract"] = df.apply(self._calculate_nfe, axis=1)
+        
+        return True
+
+    def _check_if_plant(self, name):
+        rank_id = generate_rank_id(name)
+        try:
+            kingdom = rank_id[max(rank_id)]['data'][0]['results'][0]['classification_path'].split('-')[0]
+        except ValueError: 
+            return None
+        return kingdom == "Plantae"
+    
+    def check_cf_valid(self, df):
+        headers = list(df.columns.values)
+        for row in range(df.shape[0]):
+            is_plant = self._check_if_plant(df.loc[row, "verbatimScientificName"])
+            if is_plant == None:
+                continue
+            if is_plant and ('verbatimTraitValue__crude_fibre' not in headers or possible_nan_to_zero(df.loc[row, 'verbatimTraitValue__crude_fibre'])==0):
+                messages.error(self.request, f"Item of type plantae is missing required value verbatimTraitValue__crude_fibre on row {row}.")
+                return False
+        return True
 
     def check_author(self, df):
         numbers = []
@@ -114,21 +217,18 @@ class Check:
                 return False
         return True
 
-    def check_verbatimScientificName(self, df):
-        counter = 1
-        for name in df.loc[:, 'verbatimScientificName']:
-            counter += 1
+    def check_verbatimScientificName(self, df, taxon_rank_included=True):
+        for counter, name in enumerate(df.loc[:, 'verbatimScientificName'], 1):
             if name == "nan" or pd.isna(name):
                 messages.error(self.request, "Scientific name is empty at row " + str(counter) + ".")
                 return False
             if len(name) > 250:
                 messages.error(self.request, "Scientific name is too long at row " + str(counter) + ".")
                 return False
-
+        if taxon_rank_included == False:
+            return True
         df_new = df[['verbatimScientificName', 'taxonRank']]
-        counter = 1
-        for item in df_new.values:
-            counter += 1
+        for counter, item in enumerate(df_new.values, 1):
             names_list = item[0].split()
 
             if len(names_list) > 3 and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list and "spp." not in names_list and "spp" not in names_list:
@@ -191,15 +291,23 @@ class Check:
             df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references', 'measurementValue']]
         else:
             df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa', 'sequence', 'references']]
+        optional_headers = [
+            'verbatimLocality',
+            'habitat',
+            'samplingEffort',
+            'sex',
+            'individualCount',
+            'verbatimEventDate',
+            'measurementMethod',
+            'associatedReferences'
+        ]
         counter = 0
         total = 1
         fooditems = []
         lines = 1
         compare = []
 
-        for item in df_new.values:
-           
-            lines += 1
+        for lines, item in enumerate(df_new.values,2):
             if str(item[2]).isnumeric():
                 if int(item[2]) == counter:
                     if has_measurementvalue:
@@ -226,30 +334,11 @@ class Check:
                         reference_list = [item[0], item[3]]
                         if has_measurementvalue:
                             measurementvalue_reference = item[4]
-                        if 'verbatimLocality' in df.columns.values:
-                            for vl in df.loc[(lines-2):(lines-2), 'verbatimLocality'].fillna(0):
-                                reference_list.append(vl)
-                        if 'habitat' in df.columns.values:
-                            for hab in df.loc[(lines-2):(lines-2), 'habitat'].fillna(0):
-                                reference_list.append(hab)
-                        if 'samplingEffort' in df.columns.values:
-                            for se in df.loc[(lines-2):(lines-2), 'samplingEffort'].fillna(0):
-                                reference_list.append(se)
-                        if 'sex' in df.columns.values:
-                            for sex in df.loc[(lines-2):(lines-2), 'sex'].fillna(0):
-                                reference_list.append(sex)
-                        if 'individualCount' in df.columns.values:
-                            for ic in df.loc[(lines-2):(lines-2), 'individualCount'].fillna(0):
-                                reference_list.append(ic)
-                        if 'verbatimEventDate' in df.columns.values:
-                            for ved in df.loc[(lines-2):(lines-2), 'verbatimEventDate'].fillna(0):
-                                reference_list.append(ved)
-                        if 'measurementMethod' in df.columns.values:
-                            for mm in df.loc[(lines-2):(lines-2), 'measurementMethod'].fillna(0):
-                                reference_list.append(mm)
-                        if 'associatedReferences' in df.columns.values:
-                            for ar in df.loc[(lines-2):(lines-2), 'associatedReferences'].fillna(0):
-                                reference_list.append(ar)
+
+                        for header in optional_headers:
+                            if header in df.columns.values:
+                                reference_list.extend([value for value in df.loc[(lines-2):(lines-2), header].fillna(0)])
+
                         if reference_list == compare:
                             messages.error(self.request, "False sequence number 1 on the line " + str(lines) +".")
                             return False
@@ -259,32 +348,7 @@ class Check:
                         scientific_name = item[0]
                         references = item[3]
                         fooditems = [item[1]]
-                        compare = [item[0], item[3]]
-                    
-                        if 'verbatimLocality' in df.columns.values:
-                            for vl in df.loc[(lines-2):(lines-2), 'verbatimLocality'].fillna(0):
-                                compare.append(vl)
-                        if 'habitat' in df.columns.values:
-                            for hab in df.loc[(lines-2):(lines-2), 'habitat'].fillna(0):
-                                compare.append(hab)
-                        if 'samplingEffort' in df.columns.values:
-                            for se in df.loc[(lines-2):(lines-2), 'samplingEffort'].fillna(0):
-                                compare.append(se)
-                        if 'sex' in df.columns.values:
-                            for sex in df.loc[(lines-2):(lines-2), 'sex'].fillna(0):
-                                compare.append(sex)
-                        if 'individualCount' in df.columns.values:
-                            for ic in df.loc[(lines-2):(lines-2), 'individualCount'].fillna(0):
-                                compare.append(ic)
-                        if 'verbatimEventDate' in df.columns.values:
-                            for ved in df.loc[(lines-2):(lines-2), 'verbatimEventDate'].fillna(0):
-                                compare.append(ved)
-                        if 'measurementMethod' in df.columns.values:
-                            for mm in df.loc[(lines-2):(lines-2), 'measurementMethod'].fillna(0):
-                                compare.append(mm)
-                        if 'associatedReferences' in df.columns.values:
-                            for ar in df.loc[(lines-2):(lines-2), 'associatedReferences'].fillna(0):
-                                compare.append(ar)
+                        compare = reference_list
                         continue
                 
                     else:
@@ -322,13 +386,10 @@ class Check:
         accepted = ['BARK', 'BLOOD', 'BONES', 'BUD', 'CARRION', 'EGGS', 'EXUDATES', 'FECES', 'FLOWER', 'FRUIT', 'LARVAE', 'LEAF', 'MINERAL', 'NECTAR/JUICE', 'NONE', 'POLLEN', 'ROOT', 'SEED', 'SHOOT', 'STEM', 'WHOLE']
         if 'PartOfOrganism' not in headers:
             return True
-        counter = 1
-        for value in (df.loc[:, 'PartOfOrganism']):
-            counter += 1
-            if value.lower() != 'nan':
-                if value.upper() not in accepted:
-                    messages.error(self.request, "Part is in the wrong form on the line " + str(counter) + " The correct are: bark, blood, bones, bud, carrion, eggs, exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, none, pollen, root, seed, shoot, stem, whole")
-                    return False
+        for counter, value in enumerate(df.loc[:, 'PartOfOrganism'], 1):
+            if value.lower() != 'nan' and value.upper() not in accepted:
+                messages.error(self.request, f"Part is in the wrong form on the line {str(counter)} The correct are: bark, blood, bones, bud, carrion, eggs, exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, none, pollen, root, seed, shoot, stem, whole")
+                return False
         return True
 
     def check_reference_in_db(self, reference):
@@ -355,118 +416,30 @@ class Check:
     
     def check_lengths(self, df):
         import_headers = list(df.columns.values)
-        counter = 1
-        if "verbatimLocality" in import_headers:
-            for vl in (df.loc[:, 'verbatimLocality']):
-                counter += 1
-                if len(str(vl)) > 250:
-                    messages.error(self.request, "verbatimLocality is too long at row " + str(counter) + ".")
-                    return False
-            counter = 1
-        if "habitat" in import_headers:
-            for hab in (df.loc[:, 'habitat']):
-                counter += 1
-                if len(str(hab)) > 250:
-                    messages.error(self.request, "Habitat is too long at row " + str(counter) + ".")
-                    return False
-            counter = 1
-        if "samplingEffort" in import_headers:
-            for se in (df.loc[:, 'samplingEffort']):
-                counter += 1
-                if len(str(se)) > 250:
-                    messages.error(self.request, "Sampling effort is too long at row " + str(counter) + ".")
-                    return False
-            counter = 1
-        if "verbatimEventDate" in import_headers:
-            for ved in (df.loc[:, 'verbatimEventDate']):
-                counter += 1
-                if len(str(ved)) > 250:
-                    messages.error(self.request, "verbatimEventDate is too long at row " + str(counter) + ".")
-                    return False
-            counter = 1
-        if "measurementMethod" in import_headers:
-            for mm in (df.loc[:, 'measurementMethod']):
-                counter += 1
-                if len(str(mm)) > 500:
-                    messages.error(self.request, "Measurement method is too long at row " + str(counter) + ".")
-                    return False
-            counter = 1
-        if "associatedReferences" in import_headers:
-            for ar in (df.loc[:, 'associatedReferences']):
-                counter += 1
-                if len(str(ar)) > 500:
-                    messages.error(self.request, "Associated references line is too long at row " + str(counter) + ".")
-                    return False
-            counter = 1
-        if "verbatimTraitName" in import_headers:
-            for vtn in (df.loc[:, 'verbatimTraitName']):
-                counter += 1
-                if len(str(vtn)) > 250:
-                    messages.error(self.request, "verbatimTraitName is too long at row " + str(counter) + ".")
-                    return False
-            counter = 1
-        if "verbatimTraitValue" in import_headers:
-            for vtv in (df.loc[:, 'verbatimTraitValue']):
-                counter += 1
-                if len(str(vtv)) > 250:
-                    messages.error(self.request, "verbatimTraitValue is too long at row " + str(counter) + ".")
-                    return False
-            counter = 1
-        if "verbatimTraitUnit" in import_headers:
-            for vtu in (df.loc[:, 'verbatimTraitUnit']):
-                counter += 1
-                if len(str(vtu)) > 250:
-                    messages.error(self.request, "verbatimTraitUnit is too long at row " + str(counter) + ".")
-                    return False
-            counter = 1
-        if "measurementDeterminedBy" in import_headers:
-            for mdb in (df.loc[:, 'measurementDeterminedBy']):
-                counter += 1
-                if len(str(mdb)) > 250:
-                    messages.error(self.request, "measurementDeterminedBy is too long at row " + str(counter) + ".")
-                    return False
-            counter = 1
-        if "measurementRemarks" in import_headers:
-            for mr in (df.loc[:, 'measurementRemarks']):
-                counter += 1
-                if len(str(mr)) > 250:
-                    messages.error(self.request, "measurementRemarks is too long at row " + str(counter) + ".")
-                    return False
-            counter = 1
-        if "measurementAccuracy" in import_headers:
-            for ma in (df.loc[:, 'measurementAccuracy']):
-                counter += 1
-                if len(str(ma)) > 250:
-                    messages.error(self.request, "measurementAccuracy is too long at row " + str(counter) + ".")
-                    return False
-            counter = 1
-        if "statisticalMethod" in import_headers:
-            for sm in (df.loc[:, 'statisticalMethod']):
-                counter += 1
-                if len(str(sm)) > 250:
-                    messages.error(self.request, "Statistical method is too long at row " + str(counter) + ".")
-                    return False
-            counter = 1
-        if "lifeStage" in import_headers:
-            for ls in (df.loc[:, 'lifeStage']):
-                counter += 1
-                if len(str(ls)) > 250:
-                    messages.error(self.request, "lifeStage is too long at row " + str(counter) + ".")
-                    return False
-            counter = 1
-        if "verbatimLatitude" in import_headers:
-            for vla in (df.loc[:, 'verbatimLatitude']):
-                counter += 1
-                if len(str(vla)) > 250:
-                    messages.error(self.request, "verbatimLatitude is too long at row " + str(counter) + ".")
-                    return False
-            counter = 1
-        if "verbatimLongitude" in import_headers:
-            for vlo in (df.loc[:, 'verbatimLongitude']):
-                counter += 1
-                if len(str(vlo)) > 250:
-                    messages.error(self.request, "verbatimLongitude is too long at row " + str(counter) + ".")
-                    return False
+        all_headers = {
+           "verbatimLocality":250,
+           "habitat":250,
+           "samplingEffort":250,
+           "verbatimEventDate":250,
+           "measurementMethod":500,
+           "associatedReferences":500,
+           "verbatimTraitName":250,
+           "verbatimTraitValue":250,
+           "verbatimTraitUnit":250,
+           "measurementDeterminedBy":250,
+           "measurementRemarks":250,
+           "measurementAccuracy":250,
+           "statisticalMethod":250,
+           "lifeStage":250,
+           "verbatimLatitude":250,
+           "verbatimLongitude":250
+        }
+        for header in all_headers.keys():
+            if header in import_headers:
+                for counter, value in enumerate(df.loc[:, header], 1):
+                    if len(str(value)) > all_headers[header]:
+                        messages.error(self.request, f"{header} is too long at row {counter}.")
+                        return False
         return True
 
     def check_min_max(self, df):
@@ -602,11 +575,13 @@ def get_choicevalue(gender):
 
 
 def get_fooditem_json(food):
-    url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + food.lower().capitalize().replace(' ', '%20')
+    query = food.lower().capitalize().replace(' ', '%20')
+    url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
     try:
-        file = urllib.request.urlopen(url)
-        data = file.read()
-    except:
+        session = CachedSession("fooditem_cache", expire_after=timedelta(days=1))
+        file = session.get(url)
+        data = file.text
+    except Exception:
         return {}
     try:
         taxon_data = json.loads(data)['itisTerms'][0]
@@ -642,7 +617,7 @@ def create_fooditem(results, food_upper, part):
         hierarchy = results['data'][0]['results'][0]['classification_path'].replace('|', '-')
         kingdom = hierarchy.split('-')
         kingdom_id = Kingdom.objects.filter(name=kingdom[0])[0].pk
-        path_ranks = results['data'][0]['results'][0]['classification_path_ranks'].split('|')
+        path_ranks = results['data'][0]['results'][0]['classification_path_ranks'].replace('|', '-').split('-')
         rank = TaxonUnitTypes.objects.filter(rank_name=path_ranks[-1], kingdom_id=kingdom_id)[0].pk
         taxonomic_unit = TaxonomicUnits(tsn=tsn, kingdom_id=kingdom_id, rank_id=rank, completename=completename, hierarchy_string=hierarchy_string, hierarchy=hierarchy, common_names=None, tsn_update_date=None)
         taxonomic_unit.save()
@@ -660,31 +635,40 @@ def create_fooditem(results, food_upper, part):
     food_item.save()
     return food_item
 
+def generate_rank_id(food):
+    associated_taxa = re.sub('\W+', ' ', food).split(' ')
+    for item in associated_taxa:
+        if len(item) < 3:
+            associated_taxa.remove(item)
+    
+    rank_id = {}
+    head = 0
+    tail = 0
+    rank_id = {}
+    while True:
+        if head == tail:
+            query = associated_taxa[tail]
+            head += 1
+        else:
+            query = associated_taxa[tail] + " " +associated_taxa[head]
+            tail += 1
+        results = get_fooditem_json(query)
+        if results:
+            rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
+            rank_id[rank] = results
+            break
+        if head >= len(associated_taxa):
+            break
+    return rank_id
 
 def get_fooditem(food, part):
     food_upper = food.upper()
     food_item = FoodItem.objects.filter(name__iexact=food_upper)
+    
     if len(food_item) > 0:
         return food_item[0]
-    associated_taxa = re.sub('\W+', ' ', food).split(' ')
-    rank_id = {}
-    for item in associated_taxa:
-        if len(item) < 3:
-            associated_taxa.remove(item)
-    if len(associated_taxa) > 1:
-        for x in range(len(associated_taxa)-1):
-            results = get_fooditem_json(associated_taxa[x] + ' ' + associated_taxa[x+1])
-            if results:
-                #results['data'][0]['results']
-                rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
-                rank_id[rank] = results
-    if len(rank_id) == 0:
-        for y in range(len(associated_taxa)):
-            results = get_fooditem_json(associated_taxa[y])
-            if results:
-                #results['data'][0]['results']
-                rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
-                rank_id[rank] = results
+    
+    rank_id = generate_rank_id(food)
 
     if len(rank_id) == 0:
         if part != 'nan' and part != None:
@@ -1037,6 +1021,185 @@ def create_ets(row, headers):
             gender = None
         create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author)
         return
+
+def create_proximate_analysis(row, df):
+    headers = list(df.columns.values)
+    author = get_author(getattr(row, 'author'))
+    attribute_dict = {
+        "reference" : get_sourcereference_citation(getattr(row, 'references'), author),
+        "method" : None,
+        "location" : None,
+        "study_time" : None,
+        "cited_reference" : None
+    }
+    if "measurementMethod" in headers:
+        attribute_dict["method"] = get_sourcemethod(getattr(row, "measurementMethod"), attribute_dict["reference"], author)
+    if "verbatimLocality" in headers:
+        attribute_dict["location"] = get_sourcelocation(getattr(row, "verbatimLocality"), attribute_dict["reference"], author)
+    if "verbatimeEventDate" in headers:
+        attribute_dict["study_time"] = getattr(row, "verbatimEventDate")
+    if "associatedReferences" in headers:
+        attribute_dict["cited_reference"] = getattr(row, "associatedReferences")
+    pa = None
+    pa_old = ProximateAnalysis.objects.filter(**attribute_dict)
+    if len(pa_old) > 0:
+        pa = pa_old[0]
+    else:
+        pa = ProximateAnalysis(**attribute_dict)
+        pa.save()
+    create_proximate_analysis_item(row, pa, attribute_dict["location"], attribute_dict["cited_reference"], headers)
+
+
+def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
+    #Names of the import fields in the model.
+    item_dict = {
+        "proximate_analysis" : pa,
+        "location" : location,
+        "cited_reference" : cited_reference,
+        "forage" : get_fooditem(
+            getattr(row, 'verbatimScientificName'),
+            possible_nan_to_none(getattr(row, "PartOfOrganism"))
+        ),
+        
+    }
+    proximate_analysis_item_headers = {
+        "individualCount":{
+            "name":"sample_size",
+            "type":int
+        },
+        "measurementDeterminedBy":{
+            "name":"measurement_determined_by",
+            "type":str
+        },
+        "measurementRemarks":{
+            "name":"measurement_remarks",
+            "type":str
+        },
+        "verbatimTraitValue__moisture":{
+            "name":"moisture_reported",
+            "type":float
+        },
+        "dispersion__moisture":{
+            "name":"moisture_dispersion",
+            "type":float
+        },
+        "measurementMethod__moisture":{
+            "name":"moisture_measurement_method",
+            "type":str
+        },
+        "verbatimTraitValue__dry_matter":{
+            "name":"dm_reported",
+            "type":float
+        },
+        "dispersion__dry_matter":{
+            "name":"dm_dispersion",
+            "type":float
+        },
+        "measurementMethod__dry_matter":{
+            "name":"dm_measurement_method",
+            "type":str
+        },
+        "verbatimTraitValue__ether_extract":{
+            "name":"ee_reported",
+            "type":float
+        },
+        "dispersion__ether_extract":{
+            "name":"ee_dispersion",
+            "type":float
+        },
+        "measurementMethod__ether_extract":{
+            "name":"ee_measurement_method",
+            "type":str
+        },
+        "verbatimTraitValue__crude_protein":{
+            "name":"cp_reported",
+            "type":float
+        },
+        "dispersion__crude_protein":{
+            "name":"cp_dispersion",
+            "type":float
+        },
+        "measurementMethod__crude_protein":{
+            "name":"cp_measurement_method",
+            "type":str
+        },
+        "verbatimTraitValue__crude_fibre":{
+            "name":"cf_reported",
+            "type":float
+        },
+        "dispersion__crude_fibre":{
+            "name":"cf_dispersion",
+            "type":float
+        },
+        "measurementMethod__crude_fibre":{
+            "name":"cf_measurement_method",
+            "type":str
+        },
+        "verbatimTraitValue_ash":{
+            "name":"ash_reported",
+            "type":float
+        },
+        "dispersion__ash":{
+            "name":"ash_dispersion",
+            "type":float
+        },
+        "measurementMethod_ash":{
+            "name":"ash_measurement_method",
+            "type":str
+        },
+        "verbatimTraitValue__nitrogen_free_extract":{
+            "name":"nfe_reported",
+            "type":float
+        },
+        "dispersion__nitrogen_free_extract":{
+            "name":"nfe_dispersion",
+            "type":float
+        },
+        "measurementMethod__nitrogen_free_extract":{
+            "name":"nfe_measurement_method",
+            "type":str
+        },
+        "associatedReferences":{
+            "name":"cited_reference",
+            "type":str
+        }
+    }
+    for header in proximate_analysis_item_headers.keys():
+        if header in headers:
+            value = getattr(row, header)
+            if proximate_analysis_item_headers[header]["type"] != str:
+                value = possible_nan_to_zero(value)
+            else:
+                value = possible_nan_to_none(value)
+            item_dict[proximate_analysis_item_headers[header]["name"]] = value
+    #Check if pa_item already exists
+    item_dict = generate_standard_values(item_dict)
+    pa_item_old = ProximateAnalysisItem.objects.filter(**item_dict)
+    if len(pa_item_old) > 0:
+        pa_item = pa_item_old[0]
+    else:
+        pa_item = ProximateAnalysisItem(**item_dict)
+        pa_item.save()
+
+def generate_standard_values(items):
+    standard_items = items
+    #Sum of reported fields excluding dry matter and moisture
+    item_sum = sum([items[item] for item in items.keys() if ("reported" in item and "dm" not in item and "moisture" not in item)])
+    if abs(item_sum - 100) > abs(item_sum - 1000):
+        item_sum /= 10
+    
+    if abs(100 - item_sum+items["moisture_reported"]) < abs(100 - item_sum):
+        item_sum+=items["moisture_reported"]
+    
+    for item in list(items.keys()):
+        
+        if "reported" not in item or "dm" in item or "moisture" in item:
+            continue
+        
+        standard_items[item.replace("reported","std")] = (items[item] / item_sum)*100
+
+    return standard_items
+
 
 def create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, lifestage, accuracy, measured_by, remarks, cited_reference, author):
     smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_unknown=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, life_stage=lifestage, measurement_accuracy__iexact=accuracy, measured_by__iexact=measured_by, remarks__iexact=remarks, cited_reference__iexact=cited_reference)
