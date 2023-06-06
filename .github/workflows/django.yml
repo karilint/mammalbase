@@ -41,6 +41,7 @@ jobs:
         pip install -r requirements.txt
       working-directory: ./app
     - name: make migrations
+      working-directory: ./app
       run: | 
         python manage.py makemigrations
         python manage.py migrate
