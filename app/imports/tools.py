@@ -167,9 +167,9 @@ class Check:
         headers = list(df.columns.values)
         if 'verbatimTraitValue__nitrogen_free_extract' in headers:
             if 'measurementMethod____nitrogen_free_extract' in headers:
-                new_mm = df["measurementMethod__nitrogen_free_extract"] + df['verbatimTraitValue__nitrogen_free_extract'].fillna("\nNot reported: calculated by difference")
+                new_mm = df["measurementMethod__nitrogen_free_extract"] + df['measurementMethod__nitrogen_free_extract'].fillna("\nNot reported: calculated by difference")
             else:
-                new_mm = df['verbatimTraitValue__nitrogen_free_extract'].fillna(missing_nfe_message)
+                new_mm = df['measurementMethod__nitrogen_free_extract'].fillna(missing_nfe_message)
             df["measurementMethod__nitrogen_free_extract"] = new_mm
             df["verbatimTraitValue__nitrogen_free_extract"].fillna(df.apply(self._calculate_nfe, axis=1), inplace=True)
         else:
