@@ -9,8 +9,28 @@ from tdwg.models import Taxon
 
 
 
+query = SourceMeasurementValue.objects.annotate(
+    coefficient=Subquery(
+        UnitConversion.objects.filter(
+            from_unit_id=OuterRef('source_unit__master_unit__id'),
+            to_unit_id=OuterRef('source_attribute__master_attribute__unit')
+        ).values_list('coefficient')[:1]
+    )
+).annotate(
+    minplusmax=(F('minimum')*F('coefficient'))+(F('maximum')*F('coefficient'))
+).exclude(
+    source_attribute__master_attribute__name='- Checked, Unlinked -'
+).exclude(
+    minplusmax=0
+).exclude(
+    source_attribute__master_attribute__name__exact=''
+).exclude(
+    source_entity__master_entity__name__exact=''
+).exclude(
+    source_entity__master_entity__id__isnull=True
+)
 
-
+"""
 version = DietSetItem.objects.aggregate(
     version=Max(TruncDate('modified_on'))
 )['version']
@@ -143,7 +163,7 @@ query = SourceMeasurementValue.objects.annotate(
     )
 ).order_by(
     'source_attribute__master_attribute__name'
-).distinct()
+).distinct()"""
 
 fields = [
     ('trait_id', 'traitID'),

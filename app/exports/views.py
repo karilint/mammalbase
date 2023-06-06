@@ -15,7 +15,7 @@ def export_to_tsv(request):
         checkboxes = request.POST.getlist('select_fields_to_be_exported')
         print(f'selected checkboxed {checkboxes}')
         #if email_validation(user_email) == True:
-        create_poc_tsv_file.delay(user_email)
+        ets_export_query_set.delay(user_email)
         return redirect('submission')
     context = {'form': measurement_form}
     return render(request, 'export/export_measurements.html', context)
