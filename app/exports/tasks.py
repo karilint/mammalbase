@@ -20,6 +20,7 @@ from mb.models import SourceMeasurementValue, SourceAttribute, AttributeRelation
 from mb.models import UnitRelation, MasterUnit, SourceStatistic, UnitConversion
 from tdwg.models import Taxon
 from exports.query_sets.measurements import trait_data
+from exports.query_sets.measurements import taxon_query
 
 
 
@@ -119,6 +120,11 @@ def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
                 'file_name': 'trait_data',
                 'fields': trait_data.fields,
                 'query_set': trait_data.query
+            },
+            {
+                'file_name': 'taxon_data',
+                'fields': taxon_query.taxon_fields,
+                'query_set': taxon_query.taxon_query
             }
         ]
     )
