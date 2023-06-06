@@ -155,3 +155,5 @@ cython_debug/
 
 # response cache
 *_cache.sqlite
+
+**/migrations/*
