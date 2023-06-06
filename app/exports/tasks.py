@@ -19,9 +19,7 @@ from mb.models import MasterEntity, DietSetItem, SourceEntity, EntityClass, Sour
 from mb.models import SourceMeasurementValue, SourceAttribute, AttributeRelation, MasterAttribute, SourceUnit
 from mb.models import UnitRelation, MasterUnit, SourceStatistic, UnitConversion
 from tdwg.models import Taxon
-from exports.query_sets.measurements import trait_data
-from exports.query_sets.measurements import taxon_query
-
+from exports.query_sets.measurements import trait_data, taxon_query, MoF_query
 
 
 @shared_task
@@ -125,11 +123,14 @@ def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
                 'file_name': 'taxon_data',
                 'fields': taxon_query.taxon_fields,
                 'query_set': taxon_query.taxon_query
+            },
+            {
+                'file_name': 'MoF_data',
+                'fields': MoF_query.MoF_fields,
+                'query_set': MoF_query.MoF_query
             }
         ]
     )
-
-
 
 
 @shared_task
@@ -143,6 +144,7 @@ def send_email(export_id, target_address):
         from_email = settings.EMAIL_HOST_USER,
         recipient_list = [target_address],
     )
+
 
 def create_notification_message(export_id):
     """Creates a email message and download link to the exported data"""
