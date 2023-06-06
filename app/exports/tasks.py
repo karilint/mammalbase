@@ -162,7 +162,7 @@ def ets_export_query_set():
         ),
         warnings=Case(
             When(
-                Q(source_entity__master_entity__entity__name__iendswith='species'),
+                source_entity__master_entity__entity__name__iendswith='species',
                 then=Value('NA')
             ),
             default=Concat(
@@ -186,7 +186,7 @@ def ets_export_query_set():
         ),
         measurement_resolution=Case(
             When(
-                Q(source_entity__master_entity__entity__name__iendswith='species'),
+                source_entity__master_entity__entity__name__iendswith='species',
                 then=Value('NA')
             ),
             default=Concat(
