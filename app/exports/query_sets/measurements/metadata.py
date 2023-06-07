@@ -1,15 +1,16 @@
 from exports.query_sets.measurements.base_query import query as base_query
 from django.db.models.functions import Now, Concat, TruncYear
-from django.db.models import Value, Subquery, OuterRef, CharField
+from django.db.models import Value, Subquery, OuterRef, CharField, Case, When, Exists
 from allauth.socialaccount.models import SocialAccount
 from exports.query_sets.custom_db_functions import DateFormat
 import datetime
 from datetime import timezone, datetime, timedelta
 
-now = str(datetime.now(tz=timezone(timedelta(hours=2))))
+now = str(datetime.now(tz=timezone(timedelta(hours=2))).strftime('%Y-%m-%d %H:%M:%S +02:00'))
 now1 = str(datetime.now(tz=timezone(timedelta(hours=2))).strftime('%Y-%m-%dT%H:%M+02:00'))
 now2 = str(datetime.now(tz=timezone(timedelta(hours=2))).strftime('%d %m %Y'))
 year = str(datetime.now(tz=timezone(timedelta(hours=2))).year)
+
 
 query = base_query.annotate(
     dataset_id=Value('https://urn.fi/urn:nbn:fi:att:8dce459f-1401-4c6a-b2bb-c831bd8d3d6f'),
@@ -42,13 +43,19 @@ query = base_query.annotate(
     ),
     rights=Value('Attribution 4.0 International (CC BY 4.0)'),
     licence=Value('CC BY 4.0')
+).annotate(
+    author=Case(
+        When(orcid_uid__startswith='http',
+             then='orcid_uid'),
+        default=Value('https://orcid.org/0000-0001-9627-8821')
+    )
 ).distinct()
 
 fields = [
     ('dataset_id', 'datasetID'),
     ('dataset_name', 'datasetName'),
     ('dataset_description', 'datasetDescription'),
-    ('orcid_uid', 'author'),
+    ('author', 'author'),
     ('issued', 'issued'),
     ('version', 'version'),
     ('bibliographic_citation', 'bibliographicCitation'),
