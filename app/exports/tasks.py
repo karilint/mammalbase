@@ -19,7 +19,7 @@ from mb.models import MasterEntity, DietSetItem, SourceEntity, EntityClass, Sour
 from mb.models import SourceMeasurementValue, SourceAttribute, AttributeRelation, MasterAttribute, SourceUnit
 from mb.models import UnitRelation, MasterUnit, SourceStatistic, UnitConversion
 from tdwg.models import Taxon
-from exports.query_sets.measurements import trait_data, taxon_query, MoF_query
+from exports.query_sets.measurements import trait_data, taxon_query, MoF_query, occurrence_query
 
 
 @shared_task
@@ -128,6 +128,11 @@ def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
                 'file_name': 'MoF_data',
                 'fields': MoF_query.MoF_fields,
                 'query_set': MoF_query.MoF_query
+            },
+            {
+                'file_name': 'occurrence_data',
+                'fields': occurrence_query.occurrence_fields,
+                'query_set': occurrence_query.occurrence_query
             }
         ]
     )

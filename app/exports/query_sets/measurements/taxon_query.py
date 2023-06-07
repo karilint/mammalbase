@@ -14,7 +14,7 @@ taxon_query = base_query.annotate(
      kingdom=Value('Animalia'),
      phylum=Value('Chordata'),
      taxon_class=Value('Mammalia'),
-)
+).distinct()
 
 taxon_fields = [
     ('taxon_id','taxonID'),
