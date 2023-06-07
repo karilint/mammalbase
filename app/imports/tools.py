@@ -1052,16 +1052,28 @@ def create_proximate_analysis(row, df):
 
 def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
     #Names of the import fields in the model.
-    item_dict = {
+    pa_item_dict = {
         "proximate_analysis" : pa,
         "location" : location,
         "cited_reference" : cited_reference,
         "forage" : get_fooditem(
             getattr(row, 'verbatimScientificName'),
             possible_nan_to_none(getattr(row, "PartOfOrganism"))
-        ),
-        
+        )
     }
+    pa_item_dict = convert_empty_values_pa(row, headers, pa_item_dict)
+    #Check if pa_item already exists
+    pa_item_dict = generate_standard_values_pa(pa_item_dict)
+    pa_item_old = ProximateAnalysisItem.objects.filter(**pa_item_dict)
+    if len(pa_item_old) > 0:
+        pa_item = pa_item_old[0]
+    else:
+        pa_item = ProximateAnalysisItem(**pa_item_dict)
+        pa_item.save()
+
+def convert_empty_values_pa(row, headers, pa_item_dict):
+    pa_item_dict_new = pa_item_dict
+
     proximate_analysis_item_headers = {
         "individualCount":{
             "name":"sample_size",
@@ -1171,17 +1183,11 @@ def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
                 value = possible_nan_to_zero(value)
             else:
                 value = possible_nan_to_none(value)
-            item_dict[proximate_analysis_item_headers[header]["name"]] = value
-    #Check if pa_item already exists
-    item_dict = generate_standard_values(item_dict)
-    pa_item_old = ProximateAnalysisItem.objects.filter(**item_dict)
-    if len(pa_item_old) > 0:
-        pa_item = pa_item_old[0]
-    else:
-        pa_item = ProximateAnalysisItem(**item_dict)
-        pa_item.save()
+            pa_item_dict_new[proximate_analysis_item_headers[header]["name"]] = value
 
-def generate_standard_values(items):
+    return pa_item_dict_new
+
+def generate_standard_values_pa(items):
     standard_items = items
     #Sum of reported fields excluding dry matter and moisture
     item_sum = sum([items[item] for item in items.keys() if ("reported" in item and "dm" not in item and "moisture" not in item)])
@@ -1199,7 +1205,6 @@ def generate_standard_values(items):
         standard_items[item.replace("reported","std")] = (items[item] / item_sum)*100
 
     return standard_items
-
 
 def create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, lifestage, accuracy, measured_by, remarks, cited_reference, author):
     smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_unknown=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, life_stage=lifestage, measurement_accuracy__iexact=accuracy, measured_by__iexact=measured_by, remarks__iexact=remarks, cited_reference__iexact=cited_reference)

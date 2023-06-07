@@ -34,6 +34,7 @@ from .models import (AttributeRelation, ChoiceSetOptionRelation, DietSet
     , SourceAttribute, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceEntity
     , SourceMeasurementValue, SourceReference, TimePeriod, ViewMasterTraitValue, ViewProximateAnalysisTable)
 from imports.views import import_diet_set, import_ets, import_proximate_analysis
+from imports.tools import *
 from itis.models import TaxonomicUnits
 from itis.views import *
 # from ratelimit.decorators import ratelimit
@@ -1089,6 +1090,15 @@ def proximate_analysis_item_edit(request, pk):
         form = ProximateAnalysisItemForm(request.POST, instance=proximate_analysis_item)
         if form.is_valid():
             proximate_analysis_item = form.save(commit=False)
+            std_values = generate_standard_values_pa(form.cleaned_data)
+            #for header in std_values.keys():
+            #    if 'std' in header:
+            #        form.cleaned_data[header] = std_values[header]
+            proximate_analysis_item.cp_std = std_values['cp_std']
+            proximate_analysis_item.ee_std = std_values['ee_std']
+            proximate_analysis_item.cf_std = std_values['cf_std']
+            proximate_analysis_item.ash_std = std_values['ash_std']
+            proximate_analysis_item.nfe_std = std_values['nfe_std']
             proximate_analysis_item.save()
             return redirect('proximate_analysis_item-detail', pk=proximate_analysis_item.pk)
     else:
