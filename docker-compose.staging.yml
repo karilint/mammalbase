@@ -15,8 +15,7 @@ services:
       - ./.env
     depends_on:
       - redis
-    container_name:
-      - mammalbase_web_staging
+    container_name: mammalbase_web_staging
 
   nginx:
     build: ./nginx
