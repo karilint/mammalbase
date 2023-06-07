@@ -1,4 +1,4 @@
-import datetime
+import datetime, json
 from decimal import *
 from django.core.exceptions import PermissionDenied
 from django.db import connection, transaction
@@ -11,6 +11,7 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.http import JsonResponse
 from .filters import (DietSetFilter, FoodItemFilter
     , MasterAttributeFilter, MasterEntityFilter, MasterReferenceFilter
     , ProximateAnalysisFilter, ProximateAnalysisItemFilter
@@ -36,6 +37,7 @@ from .models import (AttributeRelation, ChoiceSetOptionRelation, DietSet
 from imports.views import import_diet_set, import_ets, import_proximate_analysis
 from itis.models import TaxonomicUnits
 from itis.views import *
+from requests_cache import CachedSession
 # from ratelimit.decorators import ratelimit
 
 import requests
@@ -1801,6 +1803,30 @@ def tsn_new(request):
     else:
         form = TaxonomicUnitsForm()
     return render(request, 'mb/tsn_edit.html', {'form': form})
+
+@login_required
+def tsn_search(request):
+    if request.method == "POST":
+        return_data = {"message":"Found no entries"}
+        query = request.POST.get("query").lower().capitalize().replace(' ', '%20')
+        url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
+        try:
+            session = CachedSession("ITIS_search", expire_after=datetime.timedelta(days=1))
+            file = session.get(url)
+            data = file.text
+        except Exception:
+            return JsonResponse({"message":"Connection to ITIS failed."}, safe=False, status=200 )
+        try:
+            data = json.loads(data)['itisTerms']
+        except UnicodeDecodeError:
+            data = json.loads(data.decode('utf-8', 'ignore'))['itisTerms']
+        
+        if data:
+            return_data["message"] = f"Found {len(data)} entries"
+            for item in enumerate(data):
+                item = item[1]
+                return_data[item["tsn"]] = item
+        return JsonResponse(return_data, safe=False, status=200 )
 
 def view_proximate_analysis_table_list(request):
     f = ViewProximateAnalysisTableFilter(request.GET, queryset=ViewProximateAnalysisTable.objects.all().select_related())

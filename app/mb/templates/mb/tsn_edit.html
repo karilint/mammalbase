@@ -27,6 +27,99 @@
           <button title="Press to Submit" type="submit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal">Submit&nbsp; <i class="fa fa-angle-right"></i><i class="fa fa-angle-right"></i></button>
         </div>
       </form>
+      
+      <table class="mb-form w3-table-all">
+        <tr>
+            <th class="w3-twoquarter">Search TSN from ITIS</th>
+            <td class="w3-twoquarter">
+                <input id="itis-search-bar" type="text" placeholder="Search...">
+            </td>
+        </tr>
+      </table>
+      <div class="mb-detail w3-bar w3-right-align">
+        <button class="w3-button w3-tiny w3-round w3-padding-small w3-teal" onclick="get_tsn()">Search&nbsp; <i class="fa fa-angle-right"></i><i class="fa fa-angle-right"></i></button>
+      </div>
+      <div class="w3-container w3-text-teal">
+        <h2 id="itis-list-header"></h2>
+      </div>
+      <table class="mb-form w3-table-all" id="itis-list">
+
+      </table>
+      
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+      <script>
+        function get_tsn(){
+          query=document.getElementById('itis-search-bar').value;
+          $.ajax({
+              url: '{% url "tsn-search" %}',
+              type: 'POST',
+              data: {
+                csrfmiddlewaretoken: "{{ csrf_token }}",
+                query:query
+              },
+              success: function (res) {
+                  console.log(res);
+                  list = document.getElementById("itis-list");
+                  list.innerHTML = "";
+                  document.getElementById("itis-list-header").innerHTML=res["message"]
+                  for (const [key, value] of Object.entries(res)) {
+                    if (key == "message") continue;
+                    row = document.createElement("tr");
+                    row.classList.add("w3-row");
+                    list.appendChild(row);
+                    
+                    name_container = document.createElement("div");
+                    name_container.classList.add("w3-half");
+                    row.appendChild(name_container);
+
+                    name_header = document.createElement("th");
+                    name_header.classList.add("w3-third");
+                    name_header.appendChild(document.createTextNode("Scientific name:"));
+                    name_container.appendChild(name_header);
+
+                    name_value = document.createElement("td");
+                    name_value.classList.add("w3-twothird");
+                    name_value.appendChild(document.createTextNode(value["scientificName"]));
+                    name_container.appendChild(name_value);
+
+                    tsn_container = document.createElement("div");
+                    tsn_container.classList.add("w3-third")
+                    row.appendChild(tsn_container);
+
+                    tsn_header = document.createElement("th");
+                    tsn_header.classList.add("w3-quarter");
+                    tsn_header.appendChild(document.createTextNode("Tsn:"));
+                    tsn_container.appendChild(tsn_header);
+
+                    tsn_link = document.createElement("a");
+                    tsn_link.classList.add("btn", "btn-default");
+                    tsn_link.href = `https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=${key}#null`;
+                    tsn_link.target="_blank";
+                    tsn_link.appendChild(document.createTextNode(key));
+                    tsn_span = document.createElement("span");
+                    tsn_span.classList.add("fa", "fa-external-link");
+                    tsn_link.appendChild(tsn_span);
+                    
+                    tsn_value = document.createElement("td");
+                    tsn_value.classList.add("w3-quarter");
+                    tsn_value.appendChild(tsn_link);
+                    tsn_container.appendChild(tsn_value);
+
+                    select_button = document.createElement("button");
+                    select_button.innerHTML="Select&nbsp;"
+                    select_button.classList.add("w3-button", "w3-tiny", "w3-round", "w3-padding-small", "w3-teal", "w3-margin", "w3-rest");
+                    select_button_i = document.createElement("i");
+                    select_button_i.classList.add("fa","fa-angle-right");
+                    select_button.appendChild(select_button_i);
+                    select_button.appendChild(select_button_i.cloneNode(true));
+                    row.appendChild(select_button);
+                    
+                  }
+                }
+          }); 
+        }
+      </script>
+
     {% else %}
       <p><a href="{% url 'login'%}?next={{request.path}}">Please login first</a></p>
     {% endif %}
