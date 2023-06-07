@@ -1091,9 +1091,6 @@ def proximate_analysis_item_edit(request, pk):
         if form.is_valid():
             proximate_analysis_item = form.save(commit=False)
             std_values = generate_standard_values_pa(form.cleaned_data)
-            #for header in std_values.keys():
-            #    if 'std' in header:
-            #        form.cleaned_data[header] = std_values[header]
             proximate_analysis_item.cp_std = std_values['cp_std']
             proximate_analysis_item.ee_std = std_values['ee_std']
             proximate_analysis_item.cf_std = std_values['cf_std']
