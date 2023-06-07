@@ -93,7 +93,7 @@ def send_email(export_id, target_address):
     send_mail (
         subject = mail_subject,
         message = message,
-        from_email = settings.EMAIL_HOST_USER,
+        from_email = None,
         recipient_list = [target_address],
     )
 
