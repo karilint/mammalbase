@@ -31,29 +31,34 @@
                 query:query
             },
             success: function (res) {
-                
+                page=0;
                 create_tsn_table(res,page*10)
-                next = document.createElement("button");
-                next.classList.add("w3-button", "w3-tiny", "w3-round", "w3-padding-small", "w3-teal", "w3-margin")
+                if (document.getElementById("previous-page-button") == null) {
+                    previous = document.createElement("button");
+                    previous.id="previous-page-button";
+                    previous.classList.add("w3-button", "w3-tiny", "w3-round", "w3-padding-small", "w3-teal", "w3-margin")
+                    previous.innerHTML="Previous page";
+                    document.getElementById("tsn-table-container").appendChild(previous);
+                }
+                    previous.onclick = function() {
+                    if ((page-1)*10>=0) {
+                        page-=1;
+                        create_tsn_table(res);
+                    }
+                }
+                if (document.getElementById("next-page-button") == null) {
+                    next = document.createElement("button");
+                    next.id="next-page-button";
+                    next.classList.add("w3-button", "w3-tiny", "w3-round", "w3-padding-small", "w3-teal", "w3-margin")
+                    next.innerHTML="Next page";
+                    document.getElementById("tsn-table-container").appendChild(next);
+                }
                 next.onclick = function() {
                     if ((page+1)*10<Object.keys(res).length) {
                         page+=1;
                         create_tsn_table(res);
                     }
                 }
-                next.innerHTML="Next page";
-                
-                previous = document.createElement("button");
-                previous.classList.add("w3-button", "w3-tiny", "w3-round", "w3-padding-small", "w3-teal", "w3-margin")
-                previous.onclick = function() {
-                    if ((page-1)*10>=0) {
-                        page-=1;
-                        create_tsn_table(res);
-                    }
-                }
-                previous.innerHTML="Previous page";
-                document.getElementById("tsn-table-container").appendChild(previous);
-                document.getElementById("tsn-table-container").appendChild(next);
             }
         }); 
     }

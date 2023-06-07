@@ -1818,7 +1818,7 @@ def tsn_search(request):
         query = request.POST.get("query").lower().capitalize().replace(' ', '%20')
         url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
         try:
-            session = CachedSession("ITIS_search", expire_after=datetime.timedelta(days=1))
+            session = CachedSession("ITIS_search_cache", expire_after=datetime.timedelta(days=1))
             file = session.get(url)
             data = file.text
         except Exception:
@@ -1828,10 +1828,11 @@ def tsn_search(request):
         except UnicodeDecodeError:
             data = json.loads(data.decode('utf-8', 'ignore'))['itisTerms']
         
-        if data:
+        if data[0] is not None:
             return_data["message"] = f"Found {len(data)} entries"
             for item in enumerate(data):
                 item = item[1]
+                print(data)
                 return_data[item["tsn"]] = item
         return JsonResponse(return_data, safe=False, status=200 )
 
