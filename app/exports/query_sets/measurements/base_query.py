@@ -163,7 +163,7 @@ query = SourceMeasurementValue.objects.annotate(
     )
 ).order_by(
     'source_attribute__master_attribute__name'
-).distinct()"""
+).distinct()
 
 fields = [
     ('trait_id', 'traitID'),
@@ -204,4 +204,5 @@ fields = [
     ('author', 'author'),
     ('issued', 'issued'),
     ('version', 'version'),
-]
+]"""
+
