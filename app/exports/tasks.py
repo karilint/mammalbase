@@ -1,25 +1,14 @@
 import datetime
-from abc import ABC
-
 from celery import shared_task
-from mb.models import ViewMasterTraitValue
 import csv, zipfile, os, shutil
 from django.core.files import File
 from django.core.mail import send_mail
 from .models import ExportFile
 from datetime import datetime
 from zipfile import ZipFile
-from config import settings
 from tempfile import mkdtemp
-from django.db.models import Subquery, OuterRef, F, Q, Value, CharField, Case, When, Func, Max, Exists
-from django.db.models.functions import Concat, Replace, Now, TruncDate
-from allauth.socialaccount.models import SocialAccount
+from exports.query_sets.measurements import trait_data
 
-from mb.models import MasterEntity, DietSetItem, SourceEntity, EntityClass, SourceReference, MasterReference
-from mb.models import SourceMeasurementValue, SourceAttribute, AttributeRelation, MasterAttribute, SourceUnit
-from mb.models import UnitRelation, MasterUnit, SourceStatistic, UnitConversion
-from tdwg.models import Taxon
-from exports.query_sets.measurements import trait_data, taxon_query, MoF_query, occurrence_query
 
 
 @shared_task
@@ -81,35 +70,9 @@ def save_zip_to_django_model(zip_file_path):
         return file_model.pk
 
 
-@shared_task
-def create_poc_tsv_file():
-    export_zip_file(
-        email_receiver='testi@testipaikka.com',
-        queries=[
-        {
-            'file_name': 'ViewMasterTraitValue.objects.all',
-            'fields': [],
-            'query_set': ViewMasterTraitValue.objects.all()
-        },
-        {
-            'file_name': 'ExportFile.objects.all',
-            'fields': [],
-            'query_set': ExportFile.objects.all()
-        },
-        {
-            'file_name': 'MasterEntity.objects.all',
-            'fields': [],
-            'query_set': MasterEntity.objects.all()
-        },
-        ])
-
 
 @shared_task
 def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
-
-    version = DietSetItem.objects.aggregate(
-        version=Max(TruncDate('modified_on'))
-    )['version']
 
     export_zip_file(
         email_receiver=user_email,
@@ -118,24 +81,11 @@ def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
                 'file_name': 'trait_data',
                 'fields': trait_data.fields,
                 'query_set': trait_data.query
-            },
-            {
-                'file_name': 'taxon_data',
-                'fields': taxon_query.taxon_fields,
-                'query_set': taxon_query.taxon_query
-            },
-            {
-                'file_name': 'MoF_data',
-                'fields': MoF_query.MoF_fields,
-                'query_set': MoF_query.MoF_query
-            },
-            {
-                'file_name': 'occurrence_data',
-                'fields': occurrence_query.occurrence_fields,
-                'query_set': occurrence_query.occurrence_query
             }
         ]
     )
+
+
 
 
 @shared_task
@@ -146,10 +96,9 @@ def send_email(export_id, target_address):
     send_mail (
         subject = mail_subject,
         message = message,
-        from_email = settings.EMAIL_HOST_USER,
+        from_email = None,
         recipient_list = [target_address],
     )
-
 
 def create_notification_message(export_id):
     """Creates a email message and download link to the exported data"""
