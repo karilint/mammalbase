@@ -1829,7 +1829,7 @@ def tsn_search(request):
             'classification_path': classification_path,
             'classification_path_ranks': classification_path_ranks,
             }
-            print(create_tsn({'data': [{'results': [return_data]}]}))
+            create_tsn({'data': [{'results': [return_data]}]})
             return JsonResponse("recieved", safe=False, status=200 )
         else:
             return_data = {"message":"Found no entries"}

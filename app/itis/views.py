@@ -10,7 +10,6 @@ from itis.models import SynonymLinks, TaxonomicUnits
 def hierarchyToString(stop_word, dict, key1, key2, stop_index=-1):
     h = []
     i=0
-    print(stop_word, dict, key1, key2)
     while dict[key1] and (stop_index==-1 or stop_index >= i):
         h.append(dict[key1][i][key2])
         if dict[key1][i][key2] == str(stop_word):

@@ -608,8 +608,8 @@ def get_fooditem_json(food):
     else:
         return {}
 
-def create_tsn(results):
-    tsn = results['data'][0]['results'][0]['taxon_id']
+def create_tsn(results, tsn):
+    
     taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
     if len(taxonomic_unit)==0:
         completename = results['data'][0]['results'][0]['canonical_form']
@@ -624,7 +624,8 @@ def create_tsn(results):
     return taxonomic_unit
 
 def create_fooditem(results, food_upper, part):
-    taxonomic_unit = create_tsn(results)
+    tsn = results['data'][0]['results'][0]['taxon_id']
+    taxonomic_unit = create_tsn(results, tsn)
 
     name = food_upper
     if part != 'nan' and part != None:
