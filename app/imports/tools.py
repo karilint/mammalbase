@@ -4,7 +4,7 @@ from multiprocessing.spawn import import_main_path
 from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity, ProximateAnalysisItem, ProximateAnalysis
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
-from django.db import transaction
+from django.db import transaction, DatabaseError
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
 from requests_cache import CachedSession
@@ -786,67 +786,69 @@ def title_matches_citation(title, source_citation):
 
 def create_masterreference(source_citation, response_data, sr, user_author):
     try:
-        if response_data['message']['total-results'] == 0:
-            return False
-        doi = None
-        uri = None
-        year = None
-        container_title = None
-        volume = None
-        issue = None
-        page = None
-        citation = None
-        type = None
-        x = response_data['message']['items'][0]
-        fields = list()
-        for field_name in x:
-            fields.append(field_name)
-        if 'title' not in fields:
-            return False
-        elif title_matches_citation(x['title'][0], source_citation) == False:
-            return False
-        title = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', x['title'][0])
-        if 'author' not in fields:
-            return False
-        authors = list()
-        for a in x['author']:
-            author = a['family'] + ", " + a['given'][0] + "."
-            authors.append(author)
-        first_author = x['author'][0]['family'] + ", " + x['author'][0]['given'][0] + "."
-        if 'DOI' in fields:
-            doi = x['DOI']
-        if 'uri' in fields:
-            uri = x['uri']
-        if 'published' in fields:
-            year = x['published']['date-parts'][0][0]
-        if 'container-title' in fields:
-            container_title = x['container-title'][0]
-        if 'volume' in fields:
-            volume = x['volume']
-        if 'issue' in fields:
-            issue = x['issue']
-        if 'page' in fields:
-            page = x['page']
-        if 'type' in fields:
-            type = x['type']
-            if type == 'journal-article':
-                citation = make_harvard_citation_journalarticle(title, doi, authors, year, container_title, volume, issue, page)
-            else:
-                citation = ""
-                for a in authors:
-                    if authors.index(a) == len(authors) - 1:
-                        citation += str(a)
-                    else:
-                        citation += str(a) + ", "
-                citation += " " + str(year) + ". " + str(title) + ". Available at: " + str(doi) + "."
+        with transaction.atomic():
+            if response_data['message']['total-results'] == 0:
+                return False
+            doi = None
+            uri = None
+            year = None
+            container_title = None
+            volume = None
+            issue = None
+            page = None
+            citation = None
+            type = None
+            x = response_data['message']['items'][0]
+            fields = list()
+            for field_name in x:
+                fields.append(field_name)
+            if 'title' not in fields:
+                return False
+            elif title_matches_citation(x['title'][0], source_citation) == False:
+                return False
+            title = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', x['title'][0])
+            if 'author' not in fields:
+                return False
+            authors = list()
+            for a in x['author']:
+                author = a['family'] + ", " + a['given'][0] + "."
+                authors.append(author)
+            first_author = x['author'][0]['family'] + ", " + x['author'][0]['given'][0] + "."
+            if 'DOI' in fields:
+                doi = x['DOI']
+            if 'uri' in fields:
+                uri = x['uri']
+            if 'published' in fields:
+                year = x['published']['date-parts'][0][0]
+            if 'container-title' in fields:
+                container_title = x['container-title'][0]
+            if 'volume' in fields:
+                volume = x['volume']
+            if 'issue' in fields:
+                issue = x['issue']
+            if 'page' in fields:
+                page = x['page']
+            if 'type' in fields:
+                type = x['type']
+                if type == 'journal-article':
+                    citation = make_harvard_citation_journalarticle(title, doi, authors, year, container_title, volume, issue, page)
+                else:
+                    citation = ""
+                    for a in authors:
+                        if authors.index(a) == len(authors) - 1:
+                            citation += str(a)
+                        else:
+                            citation += str(a) + ", "
+                    citation += " " + str(year) + ". " + str(title) + ". Available at: " + str(doi) + "."
+            
+            mr = MasterReference(type=type, doi=doi, uri=uri, first_author=first_author, year=year, title=title, container_title=container_title, volume=volume, issue=issue, page=page, citation=citation, created_by=user_author)
+            mr.save()
+            sr.master_reference = mr
+            sr.save()
+            return True
         
-        mr = MasterReference(type=type, doi=doi, uri=uri, first_author=first_author, year=year, title=title, container_title=container_title, volume=volume, issue=issue, page=page, citation=citation, created_by=user_author)
-        mr.save()
-        sr.master_reference = mr
-        sr.save()
-        return True
-        
-    except Exception as e:
+    except DatabaseError as e:
+        print('Error: ' +e)
         return False
 
 
@@ -1022,6 +1024,7 @@ def create_ets(row, headers):
         create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author)
         return
 
+@transaction.atomic
 def create_proximate_analysis(row, df):
     headers = list(df.columns.values)
     author = get_author(getattr(row, 'author'))
@@ -1049,7 +1052,7 @@ def create_proximate_analysis(row, df):
         pa.save()
     create_proximate_analysis_item(row, pa, attribute_dict["location"], attribute_dict["cited_reference"], headers)
 
-
+@transaction.atomic
 def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
     #Names of the import fields in the model.
     pa_item_dict = {
