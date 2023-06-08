@@ -786,69 +786,67 @@ def title_matches_citation(title, source_citation):
 
 def create_masterreference(source_citation, response_data, sr, user_author):
     try:
-        with transaction.atomic():
-            if response_data['message']['total-results'] == 0:
-                return False
-            doi = None
-            uri = None
-            year = None
-            container_title = None
-            volume = None
-            issue = None
-            page = None
-            citation = None
-            type = None
-            x = response_data['message']['items'][0]
-            fields = list()
-            for field_name in x:
-                fields.append(field_name)
-            if 'title' not in fields:
-                return False
-            elif title_matches_citation(x['title'][0], source_citation) == False:
-                return False
-            title = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', x['title'][0])
-            if 'author' not in fields:
-                return False
-            authors = list()
-            for a in x['author']:
-                author = a['family'] + ", " + a['given'][0] + "."
-                authors.append(author)
-            first_author = x['author'][0]['family'] + ", " + x['author'][0]['given'][0] + "."
-            if 'DOI' in fields:
-                doi = x['DOI']
-            if 'uri' in fields:
-                uri = x['uri']
-            if 'published' in fields:
-                year = x['published']['date-parts'][0][0]
-            if 'container-title' in fields:
-                container_title = x['container-title'][0]
-            if 'volume' in fields:
-                volume = x['volume']
-            if 'issue' in fields:
-                issue = x['issue']
-            if 'page' in fields:
-                page = x['page']
-            if 'type' in fields:
-                type = x['type']
-                if type == 'journal-article':
-                    citation = make_harvard_citation_journalarticle(title, doi, authors, year, container_title, volume, issue, page)
-                else:
-                    citation = ""
-                    for a in authors:
-                        if authors.index(a) == len(authors) - 1:
-                            citation += str(a)
-                        else:
-                            citation += str(a) + ", "
-                    citation += " " + str(year) + ". " + str(title) + ". Available at: " + str(doi) + "."
-            
-            mr = MasterReference(type=type, doi=doi, uri=uri, first_author=first_author, year=year, title=title, container_title=container_title, volume=volume, issue=issue, page=page, citation=citation, created_by=user_author)
-            mr.save()
-            sr.master_reference = mr
-            sr.save()
-            return True
+        if response_data['message']['total-results'] == 0:
+            return False
+        doi = None
+        uri = None
+        year = None
+        container_title = None
+        volume = None
+        issue = None
+        page = None
+        citation = None
+        type = None
+        x = response_data['message']['items'][0]
+        fields = list()
+        for field_name in x:
+            fields.append(field_name)
+        if 'title' not in fields:
+            return False
+        elif title_matches_citation(x['title'][0], source_citation) == False:
+            return False
+        title = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', x['title'][0])
+        if 'author' not in fields:
+            return False
+        authors = list()
+        for a in x['author']:
+            author = a['family'] + ", " + a['given'][0] + "."
+            authors.append(author)
+        first_author = x['author'][0]['family'] + ", " + x['author'][0]['given'][0] + "."
+        if 'DOI' in fields:
+            doi = x['DOI']
+        if 'uri' in fields:
+            uri = x['uri']
+        if 'published' in fields:
+            year = x['published']['date-parts'][0][0]
+        if 'container-title' in fields:
+            container_title = x['container-title'][0]
+        if 'volume' in fields:
+            volume = x['volume']
+        if 'issue' in fields:
+            issue = x['issue']
+        if 'page' in fields:
+            page = x['page']
+        if 'type' in fields:
+            type = x['type']
+            if type == 'journal-article':
+                citation = make_harvard_citation_journalarticle(title, doi, authors, year, container_title, volume, issue, page)
+            else:
+                citation = ""
+                for a in authors:
+                    if authors.index(a) == len(authors) - 1:
+                        citation += str(a)
+                    else:
+                        citation += str(a) + ", "
+                citation += " " + str(year) + ". " + str(title) + ". Available at: " + str(doi) + "."
         
-    except DatabaseError as e:
-        print('Error: ' +e)
+        mr = MasterReference(type=type, doi=doi, uri=uri, first_author=first_author, year=year, title=title, container_title=container_title, volume=volume, issue=issue, page=page, citation=citation, created_by=user_author)
+        mr.save()
+        sr.master_reference = mr
+        sr.save()
+        return True
+    
+    except Exception as e:
         return False
 
 
