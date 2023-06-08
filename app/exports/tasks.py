@@ -7,7 +7,7 @@ from .models import ExportFile
 from datetime import datetime
 from zipfile import ZipFile
 from tempfile import mkdtemp
-from exports.query_sets.measurements import trait_data
+from exports.query_sets.measurements import trait_data, taxon_query, occurrence_query, MoF_query, metadata
 
 
 
@@ -70,7 +70,6 @@ def save_zip_to_django_model(zip_file_path):
         return file_model.pk
 
 
-
 @shared_task
 def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
 
@@ -81,11 +80,29 @@ def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
                 'file_name': 'trait_data',
                 'fields': trait_data.fields,
                 'query_set': trait_data.query
+            },
+                        {
+                'file_name': 'metadata',
+                'fields': trait_data.fields,
+                'query_set': trait_data.query
+            },
+                        {
+                'file_name': 'MoF',
+                'fields': MoF_query.MoF_fields,
+                'query_set': MoF_query.MoF_query
+            },
+                        {
+                'file_name': 'occurrence',
+                'fields': occurrence_query.occurrence_fields,
+                'query_set': occurrence_query.occurrence_query
+            },
+                        {
+                'file_name': 'taxon',
+                'fields': taxon_query.taxon_fields,
+                'query_set': taxon_query.taxon_query
             }
         ]
     )
-
-
 
 
 @shared_task
