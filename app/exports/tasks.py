@@ -7,7 +7,7 @@ from .models import ExportFile
 from datetime import datetime
 from zipfile import ZipFile
 from tempfile import mkdtemp
-from exports.query_sets.measurements import trait_data, taxon_query, occurrence_query, MoF_query, metadata
+from exports.query_sets.measurements import trait_data, taxon_query, occurrence_query, MoF_query, metadata, traitlist_query
 
 
 
@@ -100,6 +100,11 @@ def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
                 'file_name': 'taxon',
                 'fields': taxon_query.taxon_fields,
                 'query_set': taxon_query.taxon_query
+            },
+            {
+                'file_name': 'traitlist',
+                'fields': traitlist_query.traitlist_fields,
+                'query_set': traitlist_query.traitlist_query
             }
         ]
     )
