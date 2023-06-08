@@ -608,7 +608,7 @@ def get_fooditem_json(food):
     else:
         return {}
 
-def create_fooditem(results, food_upper, part):
+def create_tsn(results):
     tsn = results['data'][0]['results'][0]['taxon_id']
     taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
     if len(taxonomic_unit)==0:
@@ -621,6 +621,10 @@ def create_fooditem(results, food_upper, part):
         rank = TaxonUnitTypes.objects.filter(rank_name=path_ranks[-1], kingdom_id=kingdom_id)[0].pk
         taxonomic_unit = TaxonomicUnits(tsn=tsn, kingdom_id=kingdom_id, rank_id=rank, completename=completename, hierarchy_string=hierarchy_string, hierarchy=hierarchy, common_names=None, tsn_update_date=None)
         taxonomic_unit.save()
+    return taxonomic_unit
+
+def create_fooditem(results, food_upper, part):
+    taxonomic_unit = create_tsn(results)
 
     name = food_upper
     if part != 'nan' and part != None:

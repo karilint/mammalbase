@@ -1,3 +1,6 @@
+<div id='loadinAnimation' style='display:none'>
+    <div>Please wait...</div>
+</div>
 <table class="mb-form w3-table-all">
     <tr>
         <th class="w3-twoquarter">Search TSN from ITIS</th>
@@ -17,7 +20,7 @@
 
     </table>
 </div>
-  
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 <script>
     var page = 0
@@ -67,13 +70,24 @@
         list.innerHTML = "";
         document.getElementById("itis-list-header").innerHTML=res["message"]
         start = page*10;
+        let header_row = create_tsn_row();
+        let name_header = create_tsn_name_header();
+        let author_header = create_tsn_author_header();
+        let tsn_header = create_tsn_value_header();
+        header_row.appendChild(name_header);
+        header_row.appendChild(author_header);
+        header_row.appendChild(tsn_header);
+        list.appendChild(header_row);
+
         for (const [key, value] of Object.entries(res).slice(start,start+10)) {
             if (key == "message") continue;
             let row = create_tsn_row();
             let name = create_tsn_name(value["scientificName"]);
+            let author = create_tsn_author(value["author"]);
             let tsn = create_tsn_value(key);
-            let select_button = create_tsn_select_button(key);
+            let select_button = create_tsn_select_button(value);
             row.appendChild(name);
+            row.appendChild(author)
             row.appendChild(tsn);
             row.appendChild(select_button);
             list.appendChild(row);
@@ -84,31 +98,38 @@
         row.classList.add("w3-row");
         return row;
     }
-    function create_tsn_name(name) {
-        let name_container = document.createElement("div");
-        name_container.classList.add("w3-half");
-
+    function create_tsn_name_header() {
         let name_header = document.createElement("th");
         name_header.classList.add("w3-third");
         name_header.appendChild(document.createTextNode("Scientific name:"));
-        name_container.appendChild(name_header);
-
-        let name_value = document.createElement("td");
-        name_value.classList.add("w3-twothird");
-        name_value.appendChild(document.createTextNode(name));
-        name_container.appendChild(name_value);
-        return name_container;
+        return name_header;
     }
-    function create_tsn_value(tsn) {
-        let tsn_container = document.createElement("div");
-        tsn_container.classList.add("w3-third")
-        
-
+    function create_tsn_name(name) {
+        let name_value = document.createElement("td");
+        name_value.classList.add("w3-third");
+        name_value.appendChild(document.createTextNode(name));
+        return name_value;
+    }
+    function create_tsn_author_header() {
+        let author_header = document.createElement("th");
+        author_header.classList.add("w3-quarter");
+        author_header.appendChild(document.createTextNode("Author:"));
+        return author_header
+    }
+    function create_tsn_author(author) {
+        if (author == null) author = "-";
+        let author_value = document.createElement("td");
+        author_value.classList.add("w3-quarter");
+        author_value.appendChild(document.createTextNode(author));
+        return author_value;
+    }
+    function create_tsn_value_header() {
         let tsn_header = document.createElement("th");
         tsn_header.classList.add("w3-quarter");
         tsn_header.appendChild(document.createTextNode("Tsn:"));
-        tsn_container.appendChild(tsn_header);
-
+        return tsn_header;
+    }
+    function create_tsn_value(tsn) {
         let tsn_link = document.createElement("a");
         tsn_link.classList.add("btn", "btn-default");
         tsn_link.href = `https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=${tsn}#null`;
@@ -121,13 +142,12 @@
         let tsn_value = document.createElement("td");
         tsn_value.classList.add("w3-quarter");
         tsn_value.appendChild(tsn_link);
-        tsn_container.appendChild(tsn_value);
-        return tsn_container;
+        return tsn_value;
     }
-    function create_tsn_select_button(tsn) {
+    function create_tsn_select_button(tsn_data) {
         let select_button = document.createElement("button");
-        select_button.innerHTML="Select&nbsp;";
-        select_button.onclick=function() {select_tsn(tsn)};
+        select_button.innerHTML="Add to database&nbsp;";
+        select_button.onclick=function() {select_tsn(tsn_data)};
         select_button.classList.add("w3-button", "w3-tiny", "w3-round", "w3-padding-small", "w3-teal", "w3-margin", "w3-rest");
         let select_button_i = document.createElement("i");
         select_button_i.classList.add("fa","fa-angle-right");
@@ -135,7 +155,22 @@
         select_button.appendChild(select_button_i.cloneNode(true));
         return select_button;
     }
-    function select_tsn(tsn) {
-        console.log(tsn)
+    function select_tsn(tsn_data) {
+        console.log(tsn_data);
+        document.getElementById("loadinAnimation").style.display="block";
+        $.ajax({
+            url: '{% url "tsn-search" %}',
+            type: 'POST',
+            data: {
+                csrfmiddlewaretoken: "{{ csrf_token }}",
+                tsn_data: JSON.stringify(tsn_data),
+                selected: true
+                
+            },
+            success: function (res) {
+                console.log(res);
+                document.getElementById("loadinAnimation").style.display="none";
+            }
+        });
     }
 </script>

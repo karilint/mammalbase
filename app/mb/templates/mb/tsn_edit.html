@@ -27,10 +27,6 @@
           <button title="Press to Submit" type="submit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal">Submit&nbsp; <i class="fa fa-angle-right"></i><i class="fa fa-angle-right"></i></button>
         </div>
       </form>
-      
-      {% include 'includes/tsn_search.html' %}
-      
-
     {% else %}
       <p><a href="{% url 'login'%}?next={{request.path}}">Please login first</a></p>
     {% endif %}
