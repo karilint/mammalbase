@@ -4,7 +4,7 @@ from multiprocessing.spawn import import_main_path
 from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity, ProximateAnalysisItem, ProximateAnalysis
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
-from django.db import transaction
+from django.db import transaction, DatabaseError
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
 from requests_cache import CachedSession
@@ -849,7 +849,7 @@ def create_masterreference(source_citation, response_data, sr, user_author):
         sr.master_reference = mr
         sr.save()
         return True
-        
+    
     except Exception as e:
         return False
 
@@ -1026,6 +1026,7 @@ def create_ets(row, headers):
         create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author)
         return
 
+@transaction.atomic
 def create_proximate_analysis(row, df):
     headers = list(df.columns.values)
     author = get_author(getattr(row, 'author'))
@@ -1053,7 +1054,7 @@ def create_proximate_analysis(row, df):
         pa.save()
     create_proximate_analysis_item(row, pa, attribute_dict["location"], attribute_dict["cited_reference"], headers)
 
-
+@transaction.atomic
 def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
     #Names of the import fields in the model.
     pa_item_dict = {
