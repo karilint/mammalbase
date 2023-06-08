@@ -1,0 +1,56 @@
+
+
+
+
+
+
+
+
+
+
+                                                             |master_entity 'MasterEntity' ->   |reference  'MasterReference'
+                                                             |                                  |entity     'EntityClass'
+                                                             |                                  |taxon      'tdwg.Taxon'
+                                                             |
+                                               EntityRelation| <- |source_entity 'SourceEntity' -> |reference   'SourceReference'
+                                                                  |                                |entity      'EntityClass'
+                                                                  |
+                                                                  |
+                                                                  |source_location   'SourceLocation'  -> ...
+                                                                  |source_statistic  'SourceStatistic' -> reference 'SourceReference'
+                                                                  |gender            'ChoiceValue'
+                                        SourceMeasurementValue -> |life_stage        'ChoiceValue'
+                                                                  |
+                                                                  |
+ UnitRelation| <--------------------------------------------------|source_unit 'SourceUnit'
+             |                                                    |
+             | master_unit 'MasterUnit'                           |
+                                                                  |
+                                                                  |
+                                            AttributeRelation| <- |source_attribute 'SourceAttribute' -> |reference  'SourceReference'
+                                                             |                                           |entity     'EntityClass'
+                                                             |                                           |method     'SourceMethod'
+                                                             |
+                                                             |master_attribute 'MasterAttribute' -> |reference  'MasterReference'
+                                                                                                    |entity     'EntityClass'
+                                                                                                    |unit       'MasterUnit'
+
+
+
+
+                                                                                  ( UnitConversion -> |from_unit  'MasterUnit' )
+                                                                                  (                   |to_unit    'MasterUnit' )
+
+
+
+
+
+
+
+
+
+
+
+
+
+

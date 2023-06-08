@@ -1,29 +1,28 @@
 import datetime
-
 from celery import shared_task
-from mb.models import ViewMasterTraitValue
 import csv, zipfile, os, shutil
 from django.core.files import File
 from django.core.mail import send_mail
 from .models import ExportFile
 from datetime import datetime
 from zipfile import ZipFile
-from config import settings
 from tempfile import mkdtemp
+from exports.query_sets.measurements import trait_data
+
 
 
 @shared_task
-def export_zip_file(kwargs):
+def export_zip_file(email_receiver=None, queries=None):
     """
     Exports a zip file containing tsv files resulting from given queries,
     saves it to the db and sends the download link as an email.
 
-    Arguments:
-    kwargs -- Dictionary containing fields
-        email_receiver: str -- Email receiver
+    Keyword arguments:
+        email_receiver: str -- Email receiver address
         queries: [dict] -- List of dictionaries containing fields
             file_name: str -- Desired name of the exported file
-            headers: [str] -- List containing headers of data columns
+            fields: [(str, str)] -- List of tuples containing desired data fields
+                                    at [0] and corresponding column name at [1]
             query_set: QuerySet -- QuerySet object to be executed
     """
 
@@ -34,30 +33,29 @@ def export_zip_file(kwargs):
     zip_file_path = f'export_{datetime.now().strftime("%Y-%m-%d_%H.%M.%S.%f")}.zip'
     temp_zip_writer = ZipFile(zip_file_path, 'w', compression=zipfile.ZIP_DEFLATED)
 
-    for query in kwargs['queries']:
-        file_path = write_query_to_file(query)
+    for query in queries:
+        file_path = write_query_to_file(**query)
         temp_zip_writer.write(file_path)
 
     temp_zip_writer.close()
 
     file_id = save_zip_to_django_model(zip_file_path)
 
-    send_email(file_id, kwargs['email_receiver'])
+    send_email(file_id, email_receiver)
 
     os.chdir(current_dir)
     shutil.rmtree(temp_directory)
 
 
-def write_query_to_file(query):
+def write_query_to_file(file_name=None, fields=None, query_set=None):
     """Used by export_zip_file()"""
-    file_name = query['file_name']
-    headers = query['headers']
-    query_set = query['query_set']
+    headers = list(map(lambda x: x[1], fields))
+    fields = list(map(lambda x: x[0], fields))
     file_path = f'{file_name}.tsv'
     f = open(file_path, 'w')
     writer = csv.writer(f, delimiter='\t', lineterminator='\n')
     writer.writerow(headers)
-    writer.writerows(query_set.values_list())
+    writer.writerows(query_set.values_list(*fields))
     f.close()
     return file_path
 
@@ -72,17 +70,22 @@ def save_zip_to_django_model(zip_file_path):
         return file_model.pk
 
 
+
 @shared_task
-def create_poc_tsv_file(email_receiver):
-    export_zip_file({
-        'email_receiver': email_receiver,
-        'queries': [{'file_name': 'ViewMasterTraitValue.objects.all',
-                     'headers': ['h1', 'h2', 'h3', 'etc...'],
-                     'query_set': ViewMasterTraitValue.objects.all()},
-                    {'file_name': 'ExportFile.objects.all',
-                     'headers': ['h1', 'h2', 'h3', 'etc...'],
-                     'query_set': ExportFile.objects.all()}
-                    ]})
+def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
+
+    export_zip_file(
+        email_receiver=user_email,
+        queries=[
+            {
+                'file_name': 'trait_data',
+                'fields': trait_data.fields,
+                'query_set': trait_data.query
+            }
+        ]
+    )
+
+
 
 
 @shared_task
