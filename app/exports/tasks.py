@@ -83,8 +83,8 @@ def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
             },
                         {
                 'file_name': 'metadata',
-                'fields': trait_data.fields,
-                'query_set': trait_data.query
+                'fields': metadata.fields,
+                'query_set': metadata.query
             },
                         {
                 'file_name': 'MoF',
