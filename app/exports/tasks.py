@@ -1,24 +1,12 @@
 import datetime
-from abc import ABC
-
 from celery import shared_task
-from mb.models import ViewMasterTraitValue
 import csv, zipfile, os, shutil
 from django.core.files import File
 from django.core.mail import send_mail
 from .models import ExportFile
 from datetime import datetime
 from zipfile import ZipFile
-from config import settings
 from tempfile import mkdtemp
-from django.db.models import Subquery, OuterRef, F, Q, Value, CharField, Case, When, Func, Max, Exists
-from django.db.models.functions import Concat, Replace, Now, TruncDate
-from allauth.socialaccount.models import SocialAccount
-
-from mb.models import MasterEntity, DietSetItem, SourceEntity, EntityClass, SourceReference, MasterReference
-from mb.models import SourceMeasurementValue, SourceAttribute, AttributeRelation, MasterAttribute, SourceUnit
-from mb.models import UnitRelation, MasterUnit, SourceStatistic, UnitConversion
-from tdwg.models import Taxon
 from exports.query_sets.measurements import trait_data
 
 
@@ -82,35 +70,9 @@ def save_zip_to_django_model(zip_file_path):
         return file_model.pk
 
 
-@shared_task
-def create_poc_tsv_file():
-    export_zip_file(
-        email_receiver='testi@testipaikka.com',
-        queries=[
-        {
-            'file_name': 'ViewMasterTraitValue.objects.all',
-            'fields': [],
-            'query_set': ViewMasterTraitValue.objects.all()
-        },
-        {
-            'file_name': 'ExportFile.objects.all',
-            'fields': [],
-            'query_set': ExportFile.objects.all()
-        },
-        {
-            'file_name': 'MasterEntity.objects.all',
-            'fields': [],
-            'query_set': MasterEntity.objects.all()
-        },
-        ])
-
 
 @shared_task
 def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
-
-    version = DietSetItem.objects.aggregate(
-        version=Max(TruncDate('modified_on'))
-    )['version']
 
     export_zip_file(
         email_receiver=user_email,

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponseNotFound, FileResponse
 from .models import ExportFile
-from .tasks import create_poc_tsv_file, ets_export_query_set
+from .tasks import ets_export_query_set
 from django.contrib.auth.decorators import login_required
 from .forms import MeasurementsForm
 from django.core.validators import validate_email
