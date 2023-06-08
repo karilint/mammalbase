@@ -2,8 +2,6 @@ from exports.query_sets.measurements.base_query import query as base_query
 from django.db.models.functions import Now, Concat, TruncYear
 from django.db.models import Value, Subquery, OuterRef, CharField, Case, When, Exists
 from allauth.socialaccount.models import SocialAccount
-from exports.query_sets.custom_db_functions import DateFormat
-import datetime
 from datetime import timezone, datetime, timedelta
 
 now = str(datetime.now(tz=timezone(timedelta(hours=2))).strftime('%Y-%m-%d %H:%M:%S +02:00'))
@@ -49,7 +47,7 @@ query = base_query.annotate(
              then='orcid_uid'),
         default=Value('https://orcid.org/0000-0001-9627-8821')
     )
-).distinct()
+).order_by('author').distinct()
 
 fields = [
     ('dataset_id', 'datasetID'),
