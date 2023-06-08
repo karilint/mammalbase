@@ -18,7 +18,7 @@ def export_to_tsv(request):
         ets_export_query_set.delay(user_email)
         return redirect('submission')
     context = {'form': measurement_form}
-    return render(request, 'export/export_measurements.html', context)
+    return render(request, 'export/export_ets.html', context)
 
 
 def form_submitted(request):
