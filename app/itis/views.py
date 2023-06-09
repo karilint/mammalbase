@@ -7,10 +7,10 @@ from itis.models import SynonymLinks, TaxonomicUnits
 
 # https://www.justintodata.com/python-api-call-to-request-data/#python-example-1-yelp-api-call
 
-def hierarchyToString(stop_word, dict, key1, key2):
+def hierarchyToString(stop_word, dict, key1, key2, stop_index=-1):
     h = []
     i=0
-    while dict[key1]:
+    while dict[key1] and (stop_index==-1 or stop_index >= i):
         h.append(dict[key1][i][key2])
         if dict[key1][i][key2] == str(stop_word):
             break
