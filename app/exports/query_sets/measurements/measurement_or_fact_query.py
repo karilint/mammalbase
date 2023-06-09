@@ -1,11 +1,10 @@
-from django.db.models import Subquery, OuterRef, F, Q, Value, CharField, Case, When, Func, Max, Exists
-from django.db.models.functions import Concat, Replace, Now, TruncDate
-
+from django.db.models import F, Value, CharField, Case, When
+from django.db.models.functions import Concat, Replace
 from exports.query_sets.measurements.base_query import query as base_query
 from exports.query_sets.custom_db_functions import Round2
 
 
-MoF_query = base_query.annotate(
+query = base_query.annotate(
     measurement_id=Concat(
         Value('https://www.mammalbase.net/smv/'),
         'id',
@@ -69,7 +68,7 @@ MoF_query = base_query.annotate(
     ),
 )
 
-MoF_fields = [
+fields = [
     ('measurement_id','measurementID'),
     ('basis_of_record', 'basisOfRecord'),
     ('source_entity__reference__master_reference__type', 'basisOfRecordDescription'),

@@ -1,10 +1,8 @@
-from django.db.models import Subquery, OuterRef, F, Q, Value, CharField, Case, When, Func, Max, Exists
-from django.db.models.functions import Concat, Replace, Now, TruncDate
-
+from django.db.models import Value
 from exports.query_sets.measurements.base_query import query as base_query
-from exports.query_sets.custom_db_functions import Round2
 
-occurrence_query = base_query.annotate(
+
+query = base_query.annotate(
     occurrence_id=Value('NA'),
     age=Value('NA'),
     morphotype=Value('NA'),
@@ -26,7 +24,7 @@ occurrence_query = base_query.annotate(
     occurrence_remarks=Value('NA')
 ).distinct()
 
-occurrence_fields = [
+fields = [
     ('occurrence_id', 'occurrenceID'),
     ('gender__caption', 'sex'),
     ('life_stage__caption', 'lifeStage'),
