@@ -1,9 +1,9 @@
-from django.db.models import Subquery, OuterRef, F, Q, Value, CharField, Case, When, Func, Max, Exists
-from django.db.models.functions import Concat, Replace, Now, TruncDate
-
+from django.db.models import Value, CharField
+from django.db.models.functions import Concat, Replace
 from exports.query_sets.measurements.base_query import query as base_query
 
-traitlist_query = base_query.annotate(
+
+query = base_query.annotate(
     identifier=Concat(
         Value('https://www.mammalbase.net/ma/'),
         'source_attribute__master_attribute__id',
@@ -23,7 +23,7 @@ traitlist_query = base_query.annotate(
     comments=Value('NA')
 )
 
-traitlist_fields = [
+fields = [
     ('identifier', 'identifier'),
     ('trait', 'trait'),
     ('source_attribute__master_attribute__attributegrouprelation__group__name', 'broaderTerm'),

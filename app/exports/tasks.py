@@ -7,7 +7,7 @@ from .models import ExportFile
 from datetime import datetime
 from zipfile import ZipFile
 from tempfile import mkdtemp
-from exports.query_sets.measurements import trait_data, taxon_query, occurrence_query, MoF_query, metadata, traitlist_query
+from exports.query_sets.measurements import taxon_query, occurrence_query, traitlist_query, measurement_or_fact_query, metadata_query, traitdata_query
 from config.settings import SITE_DOMAIN
 
 
@@ -79,33 +79,33 @@ def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
         queries=[
             {
                 'file_name': 'trait_data',
-                'fields': trait_data.fields,
-                'query_set': trait_data.query
+                'fields': traitdata_query.fields,
+                'query_set': traitdata_query.query
             },
                         {
                 'file_name': 'metadata',
-                'fields': metadata.fields,
-                'query_set': metadata.query
+                'fields': metadata_query.fields,
+                'query_set': metadata_query.query
             },
                         {
                 'file_name': 'MoF',
-                'fields': MoF_query.MoF_fields,
-                'query_set': MoF_query.MoF_query
+                'fields': measurement_or_fact_query.fields,
+                'query_set': measurement_or_fact_query.query
             },
                         {
                 'file_name': 'occurrence',
-                'fields': occurrence_query.occurrence_fields,
-                'query_set': occurrence_query.occurrence_query
+                'fields': occurrence_query.fields,
+                'query_set': occurrence_query.query
             },
                         {
                 'file_name': 'taxon',
-                'fields': taxon_query.taxon_fields,
-                'query_set': taxon_query.taxon_query
+                'fields': taxon_query.fields,
+                'query_set': taxon_query.query
             },
             {
                 'file_name': 'traitlist',
-                'fields': traitlist_query.traitlist_fields,
-                'query_set': traitlist_query.traitlist_query
+                'fields': traitlist_query.fields,
+                'query_set': traitlist_query.query
             }
         ]
     )
