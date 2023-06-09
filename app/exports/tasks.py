@@ -78,7 +78,7 @@ def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
         email_receiver=user_email,
         queries=[
             {
-                'file_name': 'trait_data',
+                'file_name': 'traitdata',
                 'fields': traitdata_query.fields,
                 'query_set': traitdata_query.query
             },
@@ -88,7 +88,7 @@ def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
                 'query_set': metadata_query.query
             },
                         {
-                'file_name': 'MoF',
+                'file_name': 'measurement_or_fact',
                 'fields': measurement_or_fact_query.fields,
                 'query_set': measurement_or_fact_query.query
             },
