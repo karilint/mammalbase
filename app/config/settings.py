@@ -261,11 +261,17 @@ SELECT2_CACHE_BACKEND = 'select2'
 CELERY_BROKER_URL = get_var("CELERY_BROKER", "redis://redis:6379")
 CELERY_RESULT_BACKEND = "django-db"
 
-# SMTP configuration 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-# EMAIL_HOST =_""
-# EMAIL_PORT = 587 
-# EMAIL_USE_TLS = True 
-EMAIL_HOST_USER = get_var('EMAIL_USER') 
-# EMAIL_HOST_PASSWORD = get_var('EMAIL_PASS')
-# DEFAULT_FROM_EMAIL = ""
+# Email configuration
+SENDGRID_API_KEY = get_var('SENDGRID_API_KEY')
+EMAIL_BACKEND = get_var(
+    'EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend'
+)
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_HOST_USER = 'apikey' # this is exactly the value 'apikey'
+EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = get_var('DEFAULT_FROM_EMAIL')
+
+# Site domain
+SITE_DOMAIN = get_var('SITE_DOMAIN', 'mammalbase.net')
