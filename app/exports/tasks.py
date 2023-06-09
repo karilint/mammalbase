@@ -9,11 +9,12 @@ from zipfile import ZipFile
 from tempfile import mkdtemp
 from exports.query_sets.measurements import taxon_query, occurrence_query, traitlist_query, measurement_or_fact_query, metadata_query, traitdata_query
 from config.settings import SITE_DOMAIN
+from django.db.models import QuerySet
 
 
 
 @shared_task
-def export_zip_file(email_receiver=None, queries=None):
+def export_zip_file(email_receiver: str, queries: [dict]):
     """
     Exports a zip file containing tsv files resulting from given queries,
     saves it to the db and sends the download link as an email.
@@ -26,6 +27,7 @@ def export_zip_file(email_receiver=None, queries=None):
                                     at [0] and corresponding column name at [1]
             query_set: QuerySet -- QuerySet object to be executed
     """
+
 
     current_dir = os.getcwd()
     temp_directory = mkdtemp()
@@ -48,7 +50,7 @@ def export_zip_file(email_receiver=None, queries=None):
     shutil.rmtree(temp_directory)
 
 
-def write_query_to_file(file_name=None, fields=None, query_set=None):
+def write_query_to_file(file_name: str, fields: [(str, str)], query_set: QuerySet):
     """Used by export_zip_file()"""
     headers = list(map(lambda x: x[1], fields))
     fields = list(map(lambda x: x[0], fields))
@@ -78,7 +80,7 @@ def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
         email_receiver=user_email,
         queries=[
             {
-                'file_name': 'trait_data',
+                'file_name': 'traitdata',
                 'fields': traitdata_query.fields,
                 'query_set': traitdata_query.query
             },
@@ -88,7 +90,7 @@ def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
                 'query_set': metadata_query.query
             },
                         {
-                'file_name': 'MoF',
+                'file_name': 'measurement_or_fact',
                 'fields': measurement_or_fact_query.fields,
                 'query_set': measurement_or_fact_query.query
             },
