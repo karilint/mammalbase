@@ -35,11 +35,23 @@
       </tr>
       <tr>
         <th class="w3-quarter">TSN:</th>
-        <td class="mb-public-internal w3-threequarter"><a title="Press for Details" href="{% url 'tsn-detail' tsn=proximate_analysis_item.forage.tsn.tsn %}">{{ proximate_analysis_item.forage.tsn }} <span class="fa fa-link w3-small"></span></a></td>
+        <td class="mb-public-internal w3-threequarter">
+          {% if proximate_analysis_item.forage.tsn %}
+            <a title="Press for Details" href="{% url 'tsn-detail' tsn=proximate_analysis_item.forage.tsn.tsn %}">{{ proximate_analysis_item.forage.tsn }} <span class="fa fa-link w3-small"></span></a>
+          {% else %}
+            Not found.
+          {% endif %}
+        </td>
       </tr>
       <tr>
         <th class="w3-quarter">TSN hierarchy:</th>
-        <td class="w3-threequarter">{{ proximate_analysis_item.forage.tsn.hierarchy }}</td>
+        <td class="w3-threequarter">
+          {% if proximate_analysis_item.forage.tsn %}
+            {{ proximate_analysis_item.forage.tsn.hierarchy }}
+          {% else %}
+            Not found.
+          {% endif %}
+          </td>
       </tr>
       <tr>
         <th class="w3-quarter">Study area:</th>

@@ -151,10 +151,14 @@ class ProximateAnalysisForm(forms.ModelForm):
 class ProximateAnalysisItemForm(forms.ModelForm):
     class Meta:
         model = ProximateAnalysisItem
-        fields = ('forage', 'location', 'sample_size', 'moisture_reported'
-            , 'dm_reported', 'cp_reported', 'cf_reported', 'ash_reported'
-            , 'ee_reported', 'nfe_reported', 'total_carbohydrates_reported'
-            , 'cited_reference',)
+        fields = ('forage', 'location', 'sample_size', 'measurement_determined_by', 'remarks'
+            , 'moisture_reported', 'moisture_dispersion', 'moisture_measurement_method'
+            , 'dm_reported', 'dm_dispersion', 'dm_measurement_method'
+            , 'cp_reported', 'cp_dispersion', 'cp_measurement_method'
+            , 'cf_reported', 'cf_dispersion', 'cf_measurement_method'
+            , 'ash_reported', 'ash_dispersion', 'ash_measurement_method'
+            , 'ee_reported', 'ee_dispersion', 'ee_measurement_method'
+            , 'nfe_reported', 'nfe_dispersion', 'nfe_measurement_method', 'total_carbohydrates_reported', 'cited_reference')
 
 class SourceChoiceSetOptionValueForm(forms.ModelForm):
 

@@ -4,7 +4,7 @@ from multiprocessing.spawn import import_main_path
 from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity, ProximateAnalysisItem, ProximateAnalysis
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
-from django.db import transaction
+from django.db import transaction, DatabaseError
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
 from requests_cache import CachedSession
@@ -167,9 +167,9 @@ class Check:
         headers = list(df.columns.values)
         if 'verbatimTraitValue__nitrogen_free_extract' in headers:
             if 'measurementMethod____nitrogen_free_extract' in headers:
-                new_mm = df["measurementMethod__nitrogen_free_extract"] + df['verbatimTraitValue__nitrogen_free_extract'].fillna("\nNot reported: calculated by difference")
+                new_mm = df["measurementMethod__nitrogen_free_extract"] + df['measurementMethod__nitrogen_free_extract'].fillna("\nNot reported: calculated by difference")
             else:
-                new_mm = df['verbatimTraitValue__nitrogen_free_extract'].fillna(missing_nfe_message)
+                new_mm = df['measurementMethod__nitrogen_free_extract'].fillna(missing_nfe_message)
             df["measurementMethod__nitrogen_free_extract"] = new_mm
             df["verbatimTraitValue__nitrogen_free_extract"].fillna(df.apply(self._calculate_nfe, axis=1), inplace=True)
         else:
@@ -608,8 +608,8 @@ def get_fooditem_json(food):
     else:
         return {}
 
-def create_fooditem(results, food_upper, part):
-    tsn = results['data'][0]['results'][0]['taxon_id']
+def create_tsn(results, tsn):
+    
     taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
     if len(taxonomic_unit)==0:
         completename = results['data'][0]['results'][0]['canonical_form']
@@ -621,6 +621,11 @@ def create_fooditem(results, food_upper, part):
         rank = TaxonUnitTypes.objects.filter(rank_name=path_ranks[-1], kingdom_id=kingdom_id)[0].pk
         taxonomic_unit = TaxonomicUnits(tsn=tsn, kingdom_id=kingdom_id, rank_id=rank, completename=completename, hierarchy_string=hierarchy_string, hierarchy=hierarchy, common_names=None, tsn_update_date=None)
         taxonomic_unit.save()
+    return taxonomic_unit
+
+def create_fooditem(results, food_upper, part):
+    tsn = results['data'][0]['results'][0]['taxon_id']
+    taxonomic_unit = create_tsn(results, tsn)
 
     name = food_upper
     if part != 'nan' and part != None:
@@ -845,7 +850,7 @@ def create_masterreference(source_citation, response_data, sr, user_author):
         sr.master_reference = mr
         sr.save()
         return True
-        
+    
     except Exception as e:
         return False
 
@@ -1022,6 +1027,7 @@ def create_ets(row, headers):
         create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author)
         return
 
+@transaction.atomic
 def create_proximate_analysis(row, df):
     headers = list(df.columns.values)
     author = get_author(getattr(row, 'author'))
@@ -1049,19 +1055,31 @@ def create_proximate_analysis(row, df):
         pa.save()
     create_proximate_analysis_item(row, pa, attribute_dict["location"], attribute_dict["cited_reference"], headers)
 
-
+@transaction.atomic
 def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
     #Names of the import fields in the model.
-    item_dict = {
+    pa_item_dict = {
         "proximate_analysis" : pa,
         "location" : location,
         "cited_reference" : cited_reference,
         "forage" : get_fooditem(
             getattr(row, 'verbatimScientificName'),
             possible_nan_to_none(getattr(row, "PartOfOrganism"))
-        ),
-        
+        )
     }
+    pa_item_dict = convert_empty_values_pa(row, headers, pa_item_dict)
+    #Check if pa_item already exists
+    pa_item_dict = generate_standard_values_pa(pa_item_dict)
+    pa_item_old = ProximateAnalysisItem.objects.filter(**pa_item_dict)
+    if len(pa_item_old) > 0:
+        pa_item = pa_item_old[0]
+    else:
+        pa_item = ProximateAnalysisItem(**pa_item_dict)
+        pa_item.save()
+
+def convert_empty_values_pa(row, headers, pa_item_dict):
+    pa_item_dict_new = pa_item_dict
+
     proximate_analysis_item_headers = {
         "individualCount":{
             "name":"sample_size",
@@ -1171,17 +1189,11 @@ def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
                 value = possible_nan_to_zero(value)
             else:
                 value = possible_nan_to_none(value)
-            item_dict[proximate_analysis_item_headers[header]["name"]] = value
-    #Check if pa_item already exists
-    item_dict = generate_standard_values(item_dict)
-    pa_item_old = ProximateAnalysisItem.objects.filter(**item_dict)
-    if len(pa_item_old) > 0:
-        pa_item = pa_item_old[0]
-    else:
-        pa_item = ProximateAnalysisItem(**item_dict)
-        pa_item.save()
+            pa_item_dict_new[proximate_analysis_item_headers[header]["name"]] = value
 
-def generate_standard_values(items):
+    return pa_item_dict_new
+
+def generate_standard_values_pa(items):
     standard_items = items
     #Sum of reported fields excluding dry matter and moisture
     item_sum = sum([items[item] for item in items.keys() if ("reported" in item and "dm" not in item and "moisture" not in item)])
@@ -1199,7 +1211,6 @@ def generate_standard_values(items):
         standard_items[item.replace("reported","std")] = (items[item] / item_sum)*100
 
     return standard_items
-
 
 def create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, lifestage, accuracy, measured_by, remarks, cited_reference, author):
     smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_unknown=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, life_stage=lifestage, measurement_accuracy__iexact=accuracy, measured_by__iexact=measured_by, remarks__iexact=remarks, cited_reference__iexact=cited_reference)
