@@ -8,6 +8,7 @@ from datetime import datetime
 from zipfile import ZipFile
 from tempfile import mkdtemp
 from exports.query_sets.measurements import trait_data, taxon_query, occurrence_query, MoF_query, metadata, traitlist_query
+from config.settings import SITE_DOMAIN
 
 
 
@@ -113,7 +114,7 @@ def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
 @shared_task
 def send_email(export_id, target_address):
     """Sends user an email with a download link to the exported data"""
-    mail_subject = "Your download from Mammalbase is ready"
+    mail_subject = "Your export from Mammalbase is ready"
     message = create_notification_message(export_id)
     send_mail (
         subject = mail_subject,
@@ -124,4 +125,12 @@ def send_email(export_id, target_address):
 
 def create_notification_message(export_id):
     """Creates a email message and download link to the exported data"""
-    return f'You can download the exported data from http://localhost:8000/exports/get_file/{export_id}'
+    return f"""
+        Hello,
+
+        The data you requested has been processed and can be accessed from https://{SITE_DOMAIN}/exports/get_file/{export_id}
+        
+        Kind regards,
+        
+        Team MammalBase
+        """

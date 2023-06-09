@@ -25,7 +25,7 @@ WORKDIR /src/app
 
 RUN apt-get update && \
     apt-get install -y default-libmysqlclient-dev && \
-    useradd -r -u ${UID} user && \
+    useradd -m -r -u ${UID} user && \
     mkdir -p /vol/web/static && \
     mkdir -p /vol/web/media && \
     chown -R user /vol && \
