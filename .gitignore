@@ -156,7 +156,6 @@ cython_debug/
 
 *.DS_Store
 .idea
-*migrations/
 
 # response cache
 *_cache.sqlite
