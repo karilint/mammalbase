@@ -1816,41 +1816,40 @@ def tsn_new(request):
 @permission_required('mb.add_tsn', raise_exception=True)
 def tsn_search(request):
     if request.method == "POST":
-        if request.POST.get("selected"):
-            tsn_data = json.loads(request.POST.get("tsn_data"))
-            hierarchy = itis.getFullHierarchyFromTSN(tsn_data["tsn"])
-            classification_path = itis.hierarchyToString(tsn_data["scientificName"], hierarchy, 'hierarchyList', 'taxonName')
-            classification_path_ids = itis.hierarchyToString(tsn_data["tsn"], hierarchy, 'hierarchyList', 'tsn', classification_path.count("-"))
-            classification_path_ranks = itis.hierarchyToString('Species', hierarchy, 'hierarchyList', 'rankName',classification_path.count("-"))
-            return_data = {
-            'taxon_id': tsn_data["tsn"],
-            'canonical_form': tsn_data["scientificName"],
-            'classification_path_ids': classification_path_ids,
-            'classification_path': classification_path,
-            'classification_path_ranks': classification_path_ranks,
-            }
-            create_tsn({'data': [{'results': [return_data]}]})
-            return JsonResponse("recieved", safe=False, status=200 )
-        else:
-            return_data = {"message":"Found no entries"}
-            query = request.POST.get("query").lower().capitalize().replace(' ', '%20')
-            url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
-            try:
-                session = CachedSession("ITIS_search_cache", expire_after=datetime.timedelta(days=1))
-                file = session.get(url)
-                data = file.text
-            except Exception:
-                return JsonResponse({"message":"Connection to ITIS failed."}, safe=False, status=200 )
-            try:
-                data = json.loads(data)['itisTerms']
-            except UnicodeDecodeError:
-                data = json.loads(data.decode('utf-8', 'ignore'))['itisTerms']
-            
-            if data[0] is not None:
-                return_data["message"] = f"Found {len(data)} entries"
-                for item in enumerate(data):
-                    item = item[1]
-                    return_data[item["tsn"]] = item
+        tsn_data = json.loads(request.POST.get("tsn_data"))
+        hierarchy = itis.getFullHierarchyFromTSN(tsn_data["tsn"])
+        classification_path = itis.hierarchyToString(tsn_data["scientificName"], hierarchy, 'hierarchyList', 'taxonName')
+        classification_path_ids = itis.hierarchyToString(tsn_data["tsn"], hierarchy, 'hierarchyList', 'tsn', classification_path.count("-"))
+        classification_path_ranks = itis.hierarchyToString('Species', hierarchy, 'hierarchyList', 'rankName',classification_path.count("-"))
+        return_data = {
+        'taxon_id': tsn_data["tsn"],
+        'canonical_form': tsn_data["scientificName"],
+        'classification_path_ids': classification_path_ids,
+        'classification_path': classification_path,
+        'classification_path_ranks': classification_path_ranks,
+        }
+        create_tsn({'data': [{'results': [return_data]}]}, tsn_data["tsn"])
+        return JsonResponse("recieved", safe=False, status=201)
+    elif request.method == "GET":
+        return_data = {"message":"Found no entries"}
+        query = request.GET.get("query").lower().capitalize().replace(' ', '%20')
+        url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
+        try:
+            session = CachedSession("ITIS_search_cache", expire_after=datetime.timedelta(days=1))
+            file = session.get(url)
+            data = file.text
+        except Exception:
+            return JsonResponse({"message":"Connection to ITIS failed."}, safe=False, status=200 )
+        try:
+            data = json.loads(data)['itisTerms']
+        except UnicodeDecodeError:
+            data = json.loads(data.decode('utf-8', 'ignore'))['itisTerms']
+        
+        if data[0] is not None:
+            return_data["message"] = f"Found {len(data)} entries"
+            for item in enumerate(data):
+                item = item[1]
+                return_data[item["tsn"]] = item
         return JsonResponse(return_data, safe=False, status=200 )
 
 def view_proximate_analysis_table_list(request):

@@ -166,7 +166,7 @@ class Check:
         missing_nfe_message = "\nNot reported: calculated by difference"
         headers = list(df.columns.values)
         if 'verbatimTraitValue__nitrogen_free_extract' in headers:
-            if 'measurementMethod____nitrogen_free_extract' in headers:
+            if 'measurementMethod__nitrogen_free_extract' in headers:
                 new_mm = df["measurementMethod__nitrogen_free_extract"] + df['measurementMethod__nitrogen_free_extract'].fillna("\nNot reported: calculated by difference")
             else:
                 new_mm = df['measurementMethod__nitrogen_free_extract'].fillna(missing_nfe_message)

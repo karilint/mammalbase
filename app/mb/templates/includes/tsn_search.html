@@ -28,9 +28,8 @@
         query=document.getElementById('itis-search-bar').value;
         $.ajax({
             url: '{% url "tsn-search" %}',
-            type: 'POST',
+            type: 'GET',
             data: {
-                csrfmiddlewaretoken: "{{ csrf_token }}",
                 query:query
             },
             success: function (res) {
@@ -163,9 +162,7 @@
             type: 'POST',
             data: {
                 csrfmiddlewaretoken: "{{ csrf_token }}",
-                tsn_data: JSON.stringify(tsn_data),
-                selected: true
-                
+                tsn_data: JSON.stringify(tsn_data)
             },
             success: function (res) {
                 console.log(res);
