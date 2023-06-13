@@ -54,6 +54,7 @@ class Check:
             self.check_lengths(df) and
             self.check_part(df) and
             self.check_references(df, force) and
+            self.check_measurementValue(df) and
             self.check_cf_valid(df) and
             self.check_nfe(df)
         )
@@ -151,7 +152,7 @@ class Check:
                     try:
                         df.loc[row, header] = optional_headers[header](value)
                     except Exception as e:
-                        messages.error(self.request, f"The {header} on row {row+1} is not correct type. It should be {type_names[optional_headers[header]]}.")
+                        messages.error(self.request, f"The {header} on row {row+1} is an incorrect type. It should be {type_names[optional_headers[header]]}.")
                         return False       
         return True
 
@@ -364,21 +365,30 @@ class Check:
 
     def check_measurementValue(self, df):
         import_headers = list(df.columns.values)
-        if "measurementValue" not in import_headers:
-            return True
-    
-        counter = 1
-        for value in (df.loc[:, 'measurementValue']):
-            counter += 1
-            if pd.isnull(value) == True or any(c.isalpha() for c in str(value)) == False:
-                pass
-            else:
-                messages.error(self.request, "The measurement value on the line " + str(counter) + " is not a number.")
-                return False
-            if value <= 0:
-                messages.error(self.request, "The measurement value on the line " + str(counter) + " needs to be bigger than zero.")
-                return False
-
+        if "measurementValue" in import_headers:
+            counter = 1
+            for value in (df.loc[:, 'measurementValue']):
+                counter += 1
+                if pd.isnull(value) == True or any(c.isalpha() for c in str(value)) == False:
+                    pass
+                else:
+                    messages.error(self.request, f"The measurement value on the line {str(counter)} is not a number.")
+                    return False
+                if value <= 0:
+                    messages.error(self.request, f"The measurement value on the line {str(counter)} needs to be bigger than zero.")
+                    return False
+        elif any('verbatimTraitValue' in header for header in import_headers):
+            measurement_headers = [hdr for hdr in import_headers if 'verbatimTraitValue' in hdr or 'dispersion' in hdr]
+            for header in measurement_headers:
+                for row, value in enumerate(df.loc[:, header], 1):
+                    if pd.isnull(value) == True or any(c.isalpha() for c in str(value)) == False:
+                        pass
+                    else:
+                        messages.error(self.request, f"The value \'{value}\' in column {header} on row {row} is not a number.")
+                        return False
+                    if value < 0:
+                        messages.error(self.request, f"The value {value} of header {header} on row {row} should not be negative.")
+                        return False
         return True
     
     def check_part(self, df):
@@ -456,7 +466,7 @@ class Check:
         
         if "measurementValue_min" not in import_headers and "measurementValue_max" not in import_headers:
             if "verbatimTraitValue" not in import_headers:
-                messages.error(self.request, "There should be headerd called 'measurementValue_min' and 'measurementValue_max' or a header called 'verbatimTraitValue'.")
+                messages.error(self.request, "There should be header called 'measurementValue_min' and 'measurementValue_max' or a header called 'verbatimTraitValue'.")
                 return False
             return True
         
