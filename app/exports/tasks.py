@@ -52,8 +52,7 @@ def export_zip_file(email_receiver: str, queries: [dict]):
 
 def write_query_to_file(file_name: str, fields: [(str, str)], query_set: QuerySet):
     """Used by export_zip_file()"""
-    headers = list(map(lambda x: x[1], fields))
-    fields = list(map(lambda x: x[0], fields))
+    fields, headers = zip(*fields)
     file_path = f'{file_name}.tsv'
     f = open(file_path, 'w')
     writer = csv.writer(f, delimiter='\t', lineterminator='\n')
