@@ -166,6 +166,14 @@
             },
             success: function (res) {
                 console.log(res);
+                if ($('#id_tsn').find("option[value='" + tsn_data["tsn"] + "']").length) {
+                    $('#id_tsn').val(tsn_data["tsn"]).trigger('change');
+                } else {
+                    let text = tsn_data["tsn"]+" - "+tsn_data["scientificName"];
+                    let newOption = new Option(text, tsn_data["tsn"], true, true);
+                    $('#id_tsn').append(newOption).trigger('change');
+                }
+                
                 document.getElementById("loadinAnimation").style.display="none";
             }
         });
