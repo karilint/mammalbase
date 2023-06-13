@@ -54,9 +54,9 @@ class Check:
             self.check_lengths(df) and
             self.check_part(df) and
             self.check_references(df, force) and
-            self.check_measurementValue(df) and
+            self.check_nfe(df) and
             self.check_cf_valid(df) and
-            self.check_nfe(df)
+            self.check_measurementValue(df)
         )
 
     def check_valid_author(self, df):
@@ -1192,13 +1192,11 @@ def convert_empty_values_pa(row, headers, pa_item_dict):
             "type":str
         }
     }
+    
     for header in proximate_analysis_item_headers.keys():
         if header in headers:
             value = getattr(row, header)
-            if proximate_analysis_item_headers[header]["type"] != str:
-                value = possible_nan_to_zero(value)
-            else:
-                value = possible_nan_to_none(value)
+            value = possible_nan_to_none(value)
             pa_item_dict_new[proximate_analysis_item_headers[header]["name"]] = value
 
     return pa_item_dict_new
@@ -1206,18 +1204,23 @@ def convert_empty_values_pa(row, headers, pa_item_dict):
 def generate_standard_values_pa(items):
     standard_items = items
     #Sum of reported fields excluding dry matter and moisture
-    item_sum = sum([items[item] for item in items.keys() if ("reported" in item and "dm" not in item and "moisture" not in item)])
+    item_sum = 0.0
+    for item in items.keys():
+        if 'reported' in item and items[item] is None:
+            items[item] = 0.0
+        if "reported" in item and "dm" not in item and "moisture" not in item:
+            item_sum += items[item]
+            
+    # item_sum = sum([items[item] for item in items.keys() if ("reported" in item and "dm" not in item and "moisture" not in item)])
     if abs(item_sum - 100) > abs(item_sum - 1000):
         item_sum /= 10
     
     if abs(100 - item_sum+items["moisture_reported"]) < abs(100 - item_sum):
-        item_sum+=items["moisture_reported"]
+        item_sum += items["moisture_reported"]
     
     for item in list(items.keys()):
-        
         if "reported" not in item or "dm" in item or "moisture" in item:
             continue
-        
         standard_items[item.replace("reported","std")] = (items[item] / item_sum)*100
 
     return standard_items
