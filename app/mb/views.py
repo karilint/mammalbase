@@ -1851,7 +1851,7 @@ def tsn_search(request):
         if data[0] is not None:
             return_data["message"] = f"Found {len(data)} entries"
             for item in enumerate(data):
-                print(item)
+
                 if item[1]['nameUsage'] not in ['valid', 'accepted']:
                     continue
                 item = item[1]
