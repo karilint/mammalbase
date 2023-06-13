@@ -19,18 +19,18 @@ query = base_query.annotate(
     relatedTerm=Value('NA'),
     factorLevels=Value('NA'),
     maxAllowedValue=Value('NA'),
-    minAllowedValue=Value("NA"),
+    minAllowedValue=Value('NA'),
     comments=Value('NA')
-)
+).order_by('trait').distinct()
 
 fields = [
     ('identifier', 'identifier'),
     ('trait', 'trait'),
-    ('source_attribute__master_attribute__attributegrouprelation__group__name', 'broaderTerm'),
+    ('source_attribute__master_attribute__groups__name', 'broaderTerm'),
     ('narrowerTerm', 'narrowerTerm'),
     ('relatedTerm', 'relatedTerm'),
     ('source_unit__master_unit__quantity_type', 'valueType'),
-    ('source_unit__master_unit__print_name', 'expectedUnit'),
+    ('source_attribute__master_attribute__unit__print_name', 'expectedUnit'),
     ('factorLevels', 'factorLevels'),
     ('maxAllowedValue', 'maxAllowedValue'),
     ('minAllowedValue', 'minAllowedValue'),
