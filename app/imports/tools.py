@@ -149,11 +149,11 @@ class Check:
                     if optional_headers[header]!=str:
                         if isinstance(value, str):
                             value = value.replace(",",".")
-                    try:
-                        df.loc[row, header] = optional_headers[header](value)
-                    except Exception as e:
-                        messages.error(self.request, f"The {header} on row {row+1} is an incorrect type. It should be {type_names[optional_headers[header]]}.")
-                        return False       
+                        try:
+                            df.loc[row, header] = optional_headers[header](value)
+                        except Exception as e:
+                            messages.error(self.request, f"The {header} on row {row+1} is an incorrect type. It should be {type_names[optional_headers[header]]}.")
+                            return False       
         return True
 
     def _calculate_nfe(self, row):
@@ -167,10 +167,10 @@ class Check:
         missing_nfe_message = "\nNot reported: calculated by difference"
         headers = list(df.columns.values)
         if 'verbatimTraitValue__nitrogen_free_extract' in headers:
-            if 'measurementMethod__nitrogen_free_extract' in headers:
-                new_mm = df["measurementMethod__nitrogen_free_extract"] + df['measurementMethod__nitrogen_free_extract'].fillna("\nNot reported: calculated by difference")
-            else:
-                new_mm = df['measurementMethod__nitrogen_free_extract'].fillna(missing_nfe_message)
+            mask = df["verbatimTraitValue__nitrogen_free_extract"].copy()
+            mask[mask.notnull()]=""
+            new_mm = df['measurementMethod__nitrogen_free_extract'].fillna(mask.fillna(missing_nfe_message))
+
             df["measurementMethod__nitrogen_free_extract"] = new_mm
             df["verbatimTraitValue__nitrogen_free_extract"].fillna(df.apply(self._calculate_nfe, axis=1), inplace=True)
         else:
