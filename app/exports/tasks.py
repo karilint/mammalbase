@@ -28,6 +28,14 @@ def export_zip_file(email_receiver: str, queries: [dict]):
             query_set: QuerySet -- QuerySet object to be executed
     """
 
+    if email_receiver == '':
+        raise ValueError(
+            'Expected argument email_receiver to contain an email address, got empty string instead'
+        )
+    if len(queries) == 0:
+        raise ValueError(
+            'Expected argument queries to contain at least one query, got empty list instead'
+        )
 
     current_dir = os.getcwd()
     temp_directory = mkdtemp()
@@ -52,6 +60,16 @@ def export_zip_file(email_receiver: str, queries: [dict]):
 
 def write_query_to_file(file_name: str, fields: [(str, str)], query_set: QuerySet):
     """Used by export_zip_file()"""
+
+    if file_name == '':
+        raise ValueError(
+            'Expected argument file_name to contain a name for export file, got empty string instead'
+        )
+    if len(fields) == 0:
+        raise ValueError(
+            'Expected query to contain at least one field, got empty list instead'
+        )
+
     fields, headers = zip(*fields)
     file_path = f'{file_name}.tsv'
     f = open(file_path, 'w')
@@ -62,7 +80,7 @@ def write_query_to_file(file_name: str, fields: [(str, str)], query_set: QuerySe
     return file_path
 
 
-def save_zip_to_django_model(zip_file_path):
+def save_zip_to_django_model(zip_file_path: str):
     """Used by export_zip_file()"""
     with open(zip_file_path, 'rb') as zip_file:
         django_file = File(zip_file)
