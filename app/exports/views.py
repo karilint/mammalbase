@@ -17,7 +17,10 @@ def export_to_tsv(request):
             checkboxes = request.POST.getlist('export_choices')
             print(f'selected checkboxes {checkboxes}')
             #if email_validation(user_email) == True:
-            ets_export_query_set.delay(user_email)
+            export_file = ExportFile(file=None)
+            export_file.save()
+            export_file_id = export_file.pk
+            ets_export_query_set.delay(user_email, export_file_id)
             return redirect('submission')
     else:
         form = MeasurementsForm()

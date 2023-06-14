@@ -9,7 +9,8 @@ import pandas as pd
 from django.test import TestCase
 from django.test.client import RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
+from django.contrib.contenttypes.models import ContentType
 from allauth.socialaccount.models import SocialAccount
 from mb.models import EntityClass, MasterReference, SourceAttribute, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue, MasterEntity
 from imports.tools import Check
@@ -118,3 +119,12 @@ class ImportViewTests(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), 'The import file does not contain the required headers. The missing header is: verbatimTraitName.')
         self.assertEqual(response.status_code, 302) 
+    
+    #def test_tsn_search_get(self):
+    #    response = self.client.get("/tsn/search?query=grasshopper")
+    #    self.assertEqual(response.status_code, 200)
+    #    message = str(response.content, encoding="utf8")
+    #    print(message)
+    #    self.assertNotEqual(message["message"], "Connection to ITIS failed.")
+    #    self.assertNotEqual(message["message"], "Found no entries")
+    #    self.assertEqual

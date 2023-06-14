@@ -10,7 +10,7 @@
     </tr>
 </table>
 <div class="mb-detail w3-bar w3-right-align">
-    <button class="w3-button w3-tiny w3-round w3-padding-small w3-teal" onclick="get_tsn()">Search&nbsp; <i class="fa fa-angle-right"></i><i class="fa fa-angle-right"></i></button>
+    <button class="w3-button w3-medium w3-round w3-padding-small w3-teal" onclick="get_tsn()">Search&nbsp; <i class="fa fa-angle-right"></i><i class="fa fa-angle-right"></i></button>
 </div>
 <div class="w3-container w3-text-teal">
     <h2 id="itis-list-header"></h2>
@@ -28,9 +28,8 @@
         query=document.getElementById('itis-search-bar').value;
         $.ajax({
             url: '{% url "tsn-search" %}',
-            type: 'POST',
+            type: 'GET',
             data: {
-                csrfmiddlewaretoken: "{{ csrf_token }}",
                 query:query
             },
             success: function (res) {
@@ -39,7 +38,7 @@
                 if (document.getElementById("previous-page-button") == null) {
                     previous = document.createElement("button");
                     previous.id="previous-page-button";
-                    previous.classList.add("w3-button", "w3-tiny", "w3-round", "w3-padding-small", "w3-teal", "w3-margin")
+                    previous.classList.add("w3-button", "w3-medium", "w3-round", "w3-padding-small", "w3-teal", "w3-margin")
                     previous.innerHTML="Previous page";
                     document.getElementById("tsn-table-container").appendChild(previous);
                 }
@@ -52,7 +51,7 @@
                 if (document.getElementById("next-page-button") == null) {
                     next = document.createElement("button");
                     next.id="next-page-button";
-                    next.classList.add("w3-button", "w3-tiny", "w3-round", "w3-padding-small", "w3-teal", "w3-margin")
+                    next.classList.add("w3-button", "w3-medium", "w3-round", "w3-padding-small", "w3-teal", "w3-margin")
                     next.innerHTML="Next page";
                     document.getElementById("tsn-table-container").appendChild(next);
                 }
@@ -148,7 +147,7 @@
         let select_button = document.createElement("button");
         select_button.innerHTML="Add to database&nbsp;";
         select_button.onclick=function() {select_tsn(tsn_data)};
-        select_button.classList.add("w3-button", "w3-tiny", "w3-round", "w3-padding-small", "w3-teal", "w3-margin", "w3-rest");
+        select_button.classList.add("w3-button", "w3-medium", "w3-round", "w3-padding-small", "w3-teal", "w3-margin", "w3-rest");
         let select_button_i = document.createElement("i");
         select_button_i.classList.add("fa","fa-angle-right");
         select_button.appendChild(select_button_i);
@@ -163,12 +162,18 @@
             type: 'POST',
             data: {
                 csrfmiddlewaretoken: "{{ csrf_token }}",
-                tsn_data: JSON.stringify(tsn_data),
-                selected: true
-                
+                tsn_data: JSON.stringify(tsn_data)
             },
             success: function (res) {
                 console.log(res);
+                if ($('#id_tsn').find("option[value='" + tsn_data["tsn"] + "']").length) {
+                    $('#id_tsn').val(tsn_data["tsn"]).trigger('change');
+                } else {
+                    let text = tsn_data["tsn"]+" - "+tsn_data["scientificName"];
+                    let newOption = new Option(text, tsn_data["tsn"], true, true);
+                    $('#id_tsn').append(newOption).trigger('change');
+                }
+                
                 document.getElementById("loadinAnimation").style.display="none";
             }
         });
