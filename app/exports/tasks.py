@@ -12,9 +12,8 @@ from config.settings import SITE_DOMAIN
 from django.db.models import QuerySet
 
 
-
 @shared_task
-def export_zip_file(email_receiver: str, queries: [dict]):
+def export_zip_file(email_receiver: str, queries: [dict], export_file_id):
     """
     Exports a zip file containing tsv files resulting from given queries,
     saves it to the db and sends the download link as an email.
@@ -26,8 +25,17 @@ def export_zip_file(email_receiver: str, queries: [dict]):
             fields: [(str, str)] -- List of tuples containing desired data fields
                                     at [0] and corresponding column name at [1]
             query_set: QuerySet -- QuerySet object to be executed
+        export_file_id: -- id pointing to ExportFile instance where exported zip will be stored
     """
 
+    if email_receiver == '':
+        raise ValueError(
+            'Expected argument email_receiver to contain an email address, got empty string instead'
+        )
+    if len(queries) == 0:
+        raise ValueError(
+            'Expected argument queries to contain at least one query, got empty list instead'
+        )
 
     current_dir = os.getcwd()
     temp_directory = mkdtemp()
@@ -37,14 +45,19 @@ def export_zip_file(email_receiver: str, queries: [dict]):
     temp_zip_writer = ZipFile(zip_file_path, 'w', compression=zipfile.ZIP_DEFLATED)
 
     for query in queries:
-        file_path = write_query_to_file(**query)
+        try:
+            file_path = write_query_to_file(**query)
+        except (ValueError, TypeError):
+            os.chdir(current_dir)
+            shutil.rmtree(temp_directory)
+            raise
         temp_zip_writer.write(file_path)
 
     temp_zip_writer.close()
 
-    file_id = save_zip_to_django_model(zip_file_path)
+    save_zip_to_django_model(zip_file_path, export_file_id)
 
-    send_email(file_id, email_receiver)
+    send_email(export_file_id, email_receiver)
 
     os.chdir(current_dir)
     shutil.rmtree(temp_directory)
@@ -52,8 +65,17 @@ def export_zip_file(email_receiver: str, queries: [dict]):
 
 def write_query_to_file(file_name: str, fields: [(str, str)], query_set: QuerySet):
     """Used by export_zip_file()"""
-    headers = list(map(lambda x: x[1], fields))
-    fields = list(map(lambda x: x[0], fields))
+
+    if file_name == '':
+        raise ValueError(
+            'Expected argument file_name to contain a name for export file, got empty string instead'
+        )
+    if len(fields) == 0:
+        raise ValueError(
+            'Expected query to contain at least one field, got empty list instead'
+        )
+
+    fields, headers = zip(*fields)
     file_path = f'{file_name}.tsv'
     f = open(file_path, 'w')
     writer = csv.writer(f, delimiter='\t', lineterminator='\n')
@@ -63,18 +85,18 @@ def write_query_to_file(file_name: str, fields: [(str, str)], query_set: QuerySe
     return file_path
 
 
-def save_zip_to_django_model(zip_file_path):
+def save_zip_to_django_model(zip_file_path: str, model_id):
     """Used by export_zip_file()"""
     with open(zip_file_path, 'rb') as zip_file:
-        django_file = File(zip_file)
-        file_model = ExportFile(file=django_file)
-        file_model.save()
+        print(f'model_id = {model_id}')
+        export_file = ExportFile.objects.get(pk=model_id)
+        export_file.file = File(zip_file)
+        export_file.save()
         zip_file.close()
-        return file_model.pk
 
 
 @shared_task
-def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
+def ets_export_query_set(user_email: str, export_file_id):
 
     export_zip_file(
         email_receiver=user_email,
@@ -109,7 +131,8 @@ def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
                 'fields': traitlist_query.fields,
                 'query_set': traitlist_query.query
             }
-        ]
+        ],
+        export_file_id=export_file_id
     )
 
 

@@ -20,7 +20,7 @@ services:
     
 
   db:
-    image: mariadb
+    image: mariadb:10.9.6
     ports:
       - 3306
     environment:
