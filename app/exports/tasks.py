@@ -96,7 +96,7 @@ def save_zip_to_django_model(zip_file_path: str, model_id):
 
 
 @shared_task
-def ets_export_query_set(user_email: str, export_file_id):
+def ets_export_query_set(user_email: str, export_file_id, data_admin: bool):
 
     export_zip_file(
         email_receiver=user_email,
