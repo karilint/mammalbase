@@ -1,6 +1,6 @@
 from django import forms
-
 from django.core import validators
+
 
 BROADERTERMS_CHOICES = [
     ("standard measurements", "Standard measurements"),
@@ -15,7 +15,10 @@ class MeasurementsForm(forms.Form):
         #    "placeholder": "Enter your email address"
         #}
     )
-    select_type_of_data_to_be_exported = forms.MultipleChoiceField(required=True,
-                                          widget=forms.CheckboxSelectMultiple,
-                                          choices= BROADERTERMS_CHOICES
-                                          )
+
+    export_choices = forms.MultipleChoiceField(
+            required=True,
+            widget=forms.CheckboxSelectMultiple,
+            choices=BROADERTERMS_CHOICES,
+            label="Select type of data to be exported"
+    )

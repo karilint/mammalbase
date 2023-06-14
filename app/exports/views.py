@@ -6,18 +6,22 @@ from django.contrib.auth.decorators import login_required
 from .forms import MeasurementsForm
 from django.core.validators import validate_email
 
+
 @login_required
 def export_to_tsv(request):
     """A view that renders an export form."""
-    measurement_form = MeasurementsForm()
     if request.method == 'POST':
-        user_email = request.POST['user_email']
-        checkboxes = request.POST.getlist('select_fields_to_be_exported')
-        print(f'selected checkboxed {checkboxes}')
-        #if email_validation(user_email) == True:
-        ets_export_query_set.delay(user_email)
-        return redirect('submission')
-    context = {'form': measurement_form}
+        form = MeasurementsForm(request.POST)
+        if form.is_valid():
+            user_email = request.POST['user_email']
+            checkboxes = request.POST.getlist('export_choices')
+            print(f'selected checkboxes {checkboxes}')
+            #if email_validation(user_email) == True:
+            ets_export_query_set.delay(user_email)
+            return redirect('submission')
+    else:
+        form = MeasurementsForm()
+    context = {'form': form}
     return render(request, 'export/export_ets.html', context)
 
 
