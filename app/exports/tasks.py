@@ -154,7 +154,7 @@ def send_email(export_id, target_address):
     )
 
 def create_notification_message(export_id):
-    """Creates a email message and download link to the exported data"""
+    """Creates an email message and download link to the exported data"""
     return f"""
         Hello,
 
