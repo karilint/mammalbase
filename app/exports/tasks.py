@@ -45,7 +45,12 @@ def export_zip_file(email_receiver: str, queries: [dict]):
     temp_zip_writer = ZipFile(zip_file_path, 'w', compression=zipfile.ZIP_DEFLATED)
 
     for query in queries:
-        file_path = write_query_to_file(**query)
+        try:
+            file_path = write_query_to_file(**query)
+        except (ValueError, TypeError):
+            os.chdir(current_dir)
+            shutil.rmtree(temp_directory)
+            raise
         temp_zip_writer.write(file_path)
 
     temp_zip_writer.close()
