@@ -22,8 +22,8 @@
         {% csrf_token %}
         {% include 'includes/w3c-form.html' with form=form %}
         <div class="mb-detail w3-bar w3-right-align">
-          <a title="Press to Go Back" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" onclick="backFunction()"><span class="fa fa-arrow-left"></span></a>
-          <button title="Press to Submit" type="submit" class="w3-button w3-tiny w3-round w3-padding-small w3-teal">Submit&nbsp; <i class="fa fa-angle-right"></i><i class="fa fa-angle-right"></i></button>
+          <a title="Press to Go Back" class="w3-button w3-medium w3-round w3-padding-small w3-teal" onclick="backFunction()"><span class="fa fa-arrow-left"></span></a>
+          <button title="Press to Submit" type="submit" class="w3-button w3-medium w3-round w3-padding-small w3-teal">Submit&nbsp; <i class="fa fa-angle-right"></i><i class="fa fa-angle-right"></i></button>
         </div>
       </form>
     {% else %}
