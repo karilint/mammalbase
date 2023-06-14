@@ -17,6 +17,7 @@ services:
       - ./.env
     depends_on:
       - db
+      - redis
     
 
   db:
@@ -62,6 +63,26 @@ services:
       - --filter
       - python
       - celery -A config --workdir=. worker -l INFO --concurrency=1
+  
+  celery-beat:
+    user: "${UID}"
+    build:
+      context: ./app
+      args:
+        UID: ${UID}
+    volumes:
+      - ./app:/src/app
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+      - redis
+    container_name: mammalbase_celery_beat
+    command:
+      - watchfiles
+      - --filter
+      - python
+      - celery -A config --workdir=. beat -l INFO
 
   redis:
     image: redis:alpine

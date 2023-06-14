@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 import os
 import json
-
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -260,7 +260,15 @@ SELECT2_CACHE_BACKEND = 'select2'
 # Celery configuration
 CELERY_BROKER_URL = get_var("CELERY_BROKER", "redis://redis:6379")
 CELERY_RESULT_BACKEND = "django-db"
-
+CELERY_BEAT_SCHEDULE = {
+    "update-db-once-a-month" : {
+        "task": "mb.tasks.update_db_from_itis",
+        "schedule": timedelta(days=30),
+        "args":(),
+        "options": {
+        }
+    }
+}
 # Email configuration
 SENDGRID_API_KEY = get_var('SENDGRID_API_KEY')
 EMAIL_BACKEND = get_var(

@@ -1819,6 +1819,8 @@ def tsn_search(request):
     
         tsn_data = json.loads(request.POST.get("tsn_data"))
         hierarchy = itis.getFullHierarchyFromTSN(tsn_data["tsn"])
+        if hierarchy is None:
+            return JsonResponse("timeout", safe=False, status=500)
         classification_path = itis.hierarchyToString(tsn_data["scientificName"], hierarchy, 'hierarchyList', 'taxonName')
         classification_path_ids = itis.hierarchyToString(tsn_data["tsn"], hierarchy, 'hierarchyList', 'tsn', classification_path.count("-"))
         classification_path_ranks = itis.hierarchyToString('Species', hierarchy, 'hierarchyList', 'rankName',classification_path.count("-"))

@@ -18,87 +18,56 @@ def hierarchyToString(stop_word, dict, key1, key2, stop_index=-1):
     hierarchy_string = '-'.join(h)
     return hierarchy_string
 
-def  GetCommonNamesfromTSN(tsn):
-    base_url = 'https://www.itis.gov/ITISWebService/jsonservice/'
+def itis_api_call(function, params, timeout):
+    search_api_url = 'https://www.itis.gov/ITISWebService/jsonservice/' + function
+    try:
+        response = requests.get(search_api_url, params=params, timeout=timeout)
+    except ConnectionError:
+        print('Network connection failed.')
+        return None
+    except ReadTimeout:
+        print('timeout.')
+        return None
+    if response.status_code==200:
+        return response.json()
+    else:
+        return None
+
+def GetCommonNamesfromTSN(tsn):
     function = 'getCommonNamesFromTSN'
-    search_api_url = base_url+function
     params = {'tsn': tsn}
     return_header = 'commonNames'
     return_value = 'commonName'
-    list = []
-    return_string = ''
-
+    
     if int(tsn) > 0:
-        response = requests.get(search_api_url, params=params, timeout=15)
-        if response.status_code==200:
-            data_dict = response.json()
-            try:
-                if str(data_dict[return_header][0]) != 'None':
-                    j=0
-                    while j < len(data_dict[return_header]):
-                        list.append(data_dict[return_header][j][return_value])
-                        j += 1
-                    return_string = ', '.join(list)
-                return return_string
+        data_dict = itis_api_call(function, params, 15)
+        if data_dict is not None:
+            return_string = ""
+            if str(data_dict[return_header][0]) != 'None':
+                list = []
+                for i in range(0, len(data_dict[return_header])):
+                    list.append(data_dict[return_header][i][return_value])
+                return_string = ', '.join(list)
+            return return_string
  
-            except Exception as ex:
-                print(ex)
-                return ''
         else:
             return ''
 
-def  GetITISdatafromTSN(tsn, function):
-    base_url = 'https://www.itis.gov/ITISWebService/jsonservice/'
+def GetITISdatafromTSN(tsn, function):
     function = function
-    search_api_url = base_url+function
     params = {'tsn': tsn}
 
-    try:
-        r = requests.get(search_api_url, params=params, timeout=5)
-    except ConnectionError as e:
-        print(e)
-        r = None
-    except ReadTimeout as e:
-        print(e)
-        r = None
+    data_dict = itis_api_call(function, params, 5)
 
-    try:
-        try:
-            r = requests.get(search_api_url, params=params, timeout=5)
-        except ConnectionError:
-            r = None
-        except ReadTimeout:
-            r = None
-
-        if not r or r.status_code != 200:
-            r = requests.get(search_api_url, params=params, timeout=15)
-            if r.status_code != 200:
-                return None
-    except (ConnectionError, ReadTimeout):
-        r = None
-
-    if r is None:
-        data_dict = [None]
-    else: 
-        data_dict = r.json()
     return data_dict
 
 # returns dict_keys(['acceptedNames', 'class', 'tsn'])
-def  GetAcceptedNamesfromTSN(tsn):
-    base_url = 'https://www.itis.gov/ITISWebService/jsonservice/'
+def GetAcceptedNamesfromTSN(tsn):
     function = 'getAcceptedNamesFromTSN'
-    search_api_url = base_url+function
     params = {'tsn': tsn}
-    return_header = 'acceptedNames'
-    return_value = 'acceptedName'
-    list = []
-    return_string = ''
 
     if int(tsn) > 0:
-        response = requests.get(search_api_url, params=params, timeout=15)
-        if response.status_code==200:
-            data_dict = response.json()
-            return data_dict
+        return itis_api_call(function, params, 15)
 
 '''
 returns dict_keys(['acceptedNameList', 'class', 'commentList', 'commonNameList', 'completenessRating', 
@@ -106,89 +75,36 @@ returns dict_keys(['acceptedNameList', 'class', 'commentList', 'commonNameList',
     'hierarchyUp', 'jurisdictionalOriginList', 'kingdom','otherSourceList', 'parentTSN', 'publicationList', 
     'scientificName', 'synonymList', 'taxRank', 'taxonAuthor', 'tsn', 'unacceptReason', 'usage']
 '''
-def  getFullHierarchyFromTSN(tsn):
-    base_url = 'https://www.itis.gov/ITISWebService/jsonservice/'
+def getFullHierarchyFromTSN(tsn):
     function = 'getFullHierarchyFromTSN'
-    search_api_url = base_url+function
     params = {'tsn': tsn}
 
     if int(tsn) > 0:
-        try:
-            r = requests.get(
-                search_api_url, 
-                params=params, 
-                timeout=15)
-        except ConnectionError:
-            print('Network connection failed.')
-            return None
-        except ReadTimeout:
-            print('timeout.')
-            return None
-        if r.status_code==200:
-            if r.text == '':
-                return None
-            else:
-                data_dict = r.json()
-                return data_dict
-        else:
-            return None
+        return itis_api_call(function, params, 15)
     else:
         return None
 
-def  getFullRecordFromTSN(tsn):
-    base_url = 'https://www.itis.gov/ITISWebService/jsonservice/'
+def getFullRecordFromTSN(tsn):
     function = 'getFullRecordFromTSN'
-    search_api_url = base_url+function
     params = {'tsn': tsn}
 
     if int(tsn) > 0:
-        try:
-            r = requests.get(
-                search_api_url, 
-                params=params, 
-                timeout=15)
-        except ConnectionError:
-            print('Network connection failed.')
-        except ReadTimeout:
-            print('timeout.')
-        if r.status_code==200:
-            if r.text == '':
-                return None
-            else:
-                data_dict = r.json()
-                return data_dict
-        else:
-            return None
+        return itis_api_call(function, params, 15)
     else:
         return None
 
 # returns dict_keys(['class', 'kingdomId', 'kingdomName', 'rankId', 'rankName', 'tsn'])
-def  getTaxonomicRankNameFromTSN(tsn):
-    base_url = 'https://www.itis.gov/ITISWebService/jsonservice/'
+def getTaxonomicRankNameFromTSN(tsn):
     function = 'getTaxonomicRankNameFromTSN'
-    search_api_url = base_url+function
     params = {'tsn': tsn}
 
     if int(tsn) > 0:
-        try:
-            response = requests.get(
-                search_api_url, 
-                params=params, 
-                timeout=15)
-        except ConnectionError:
-            print('Network connection failed.')
-        except ReadTimeout:
-            print('timeout.')
-        if response.status_code==200:
-            data_dict = response.json()
-            return data_dict
-        else:
-            return None
+        return itis_api_call(function, params, 15)
     else:
         return None
 
 # returns dict_keys(['class', 'kingdomId', 'kingdomName', 'rankId', 'rankName', 'tsn'])
-def  updateTSN(tsn):
+def updateTSN(tsn):
     tsn_key = tsn
     tu = get_object_or_404(TaxonomicUnits, tsn=tsn_key)
     print(tu)
@@ -251,6 +167,9 @@ def  updateTSN(tsn):
         tu.hierarchy = hierarchy
         tu.tsn_update_date = timezone.now()
         tu.save()
+        return True
+    else:
+        return False
 
 '''
         `completename` VARCHAR(200) NOT NULL,
