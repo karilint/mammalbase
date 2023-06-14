@@ -1,4 +1,5 @@
 import codecs
+import numpy
 from doctest import master
 from multiprocessing.spawn import import_main_path
 from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity, ProximateAnalysisItem, ProximateAnalysis
@@ -170,7 +171,7 @@ class Check:
             mask = df["verbatimTraitValue__nitrogen_free_extract"].copy()
             mask[mask.notnull()]=""
             new_mm = df['measurementMethod__nitrogen_free_extract'].fillna(mask.fillna(missing_nfe_message))
-
+            new_mm.replace(r'^$', numpy.nan, regex=True, inplace=True)
             df["measurementMethod__nitrogen_free_extract"] = new_mm
             df["verbatimTraitValue__nitrogen_free_extract"].fillna(df.apply(self._calculate_nfe, axis=1), inplace=True)
         else:
