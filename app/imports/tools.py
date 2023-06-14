@@ -589,7 +589,7 @@ def get_fooditem_json(food):
     query = food.lower().capitalize().replace(' ', '%20')
     url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
     try:
-        session = CachedSession("fooditem_cache", expire_after=timedelta(days=1))
+        session = CachedSession("itis_cache", expire_after=timedelta(days=30), stale_if_error=True)
         file = session.get(url)
         data = file.text
     except Exception:

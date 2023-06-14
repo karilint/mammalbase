@@ -3,7 +3,9 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404, render
 import requests
 from requests.exceptions import ConnectionError, ReadTimeout
+from requests_cache import CachedSession
 from itis.models import SynonymLinks, TaxonomicUnits
+from datetime import timedelta
 
 # https://www.justintodata.com/python-api-call-to-request-data/#python-example-1-yelp-api-call
 
@@ -20,8 +22,9 @@ def hierarchyToString(stop_word, dict, key1, key2, stop_index=-1):
 
 def itis_api_call(function, params, timeout):
     search_api_url = 'https://www.itis.gov/ITISWebService/jsonservice/' + function
+    session = CachedSession("itis_cache", expire_after=timedelta(days=30), stale_if_error=True)
     try:
-        response = requests.get(search_api_url, params=params, timeout=timeout)
+        response = session.get(search_api_url, params=params, timeout=timeout)
     except ConnectionError:
         print('Network connection failed.')
         return None
@@ -105,39 +108,43 @@ def getTaxonomicRankNameFromTSN(tsn):
 
 # returns dict_keys(['class', 'kingdomId', 'kingdomName', 'rankId', 'rankName', 'tsn'])
 def updateTSN(tsn):
-    tsn_key = tsn
-    tu = get_object_or_404(TaxonomicUnits, tsn=tsn_key)
-    print(tu)
-    r = getFullRecordFromTSN(tsn_key)
-    if r is not None:
-        tu.kingdom_id = r['taxRank']['kingdomId']
-        print(tu.kingdom_id)
-        tu.rank_id = r['taxRank']['rankId']
-        print(tu.rank_id)
-        tu.completename = r['scientificName']['combinedName']
-        tsn_name = tu.completename
-        print(tu.completename)
-        print(r['acceptedNameList']['acceptedNames'][0] is not None)
-        if r['acceptedNameList']['acceptedNames'][0] is not None:
-            sl_qs = SynonymLinks.objects.all().filter(tsn = tsn_key)
-            print(len(sl_qs))
+    taxonomic_unit = get_object_or_404(TaxonomicUnits, tsn=tsn)
+    #print(taxonomic_unit)
+    itis_data = getFullRecordFromTSN(tsn)
+    full_hierarchy = getFullHierarchyFromTSN(tsn)
+    
+    if itis_data is not None and full_hierarchy is not None:
+        taxonomic_unit.kingdom_id = itis_data['taxRank']['kingdomId']
+        #print(taxonomic_unit.kingdom_id)
+        taxonomic_unit.rank_id = itis_data['taxRank']['rankId']
+        #print(taxonomic_unit.rank_id)
+        taxonomic_unit.completename = itis_data['scientificName']['combinedName']
+        tsn_name = taxonomic_unit.completename
+        #print(taxonomic_unit.completename)
+        #print(itis_data['acceptedNameList']['acceptedNames'][0] is not None)
+        if itis_data['acceptedNameList']['acceptedNames'][0] is not None:
+            sl_qs = SynonymLinks.objects.all().filter(tsn = tsn)
+            #print(len(sl_qs))
             if len(sl_qs) == 0:
                 sl = SynonymLinks()
-                sl.tsn = tu
+                sl.tsn = taxonomic_unit
             else:
                 sl = sl_qs[0]
-#            sl.tsn_accepted_id = r['acceptedNameList']['acceptedNames'][0]['acceptedTsn']
-            tsn_key = r['acceptedNameList']['acceptedNames'][0]['acceptedTsn']
-            sl.tsn_accepted_name = r['acceptedNameList']['acceptedNames'][0]['acceptedName']
+#            sl.tsn_accepted_id = itis_data['acceptedNameList']['acceptedNames'][0]['acceptedTsn']
+            tsn = itis_data['acceptedNameList']['acceptedNames'][0]['acceptedTsn']
+            full_hierarchy = getFullHierarchyFromTSN(tsn)
+            if full_hierarchy is None:
+                return False
+            sl.tsn_accepted_name = itis_data['acceptedNameList']['acceptedNames'][0]['acceptedName']
             tsn_name = sl.tsn_accepted_name
 #            print(sl.tsn_accepted_id)
-            print(sl.tsn_accepted_name)
+            #print(sl.tsn_accepted_name)
 
-            tu_accepted_qs = TaxonomicUnits.objects.all().filter(tsn = tsn_key)
-            print(len(tu_accepted_qs))
+            tu_accepted_qs = TaxonomicUnits.objects.all().filter(tsn = tsn)
+            #print(len(tu_accepted_qs))
             if len(tu_accepted_qs) == 0:
                 tu_accepted = TaxonomicUnits()
-                tu_accepted.tsn = tsn_key
+                tu_accepted.tsn = tsn
                 tu_accepted.kingdom_id = 0
                 tu_accepted.rank_id = 0
                 tu_accepted.completename = tsn_name
@@ -148,25 +155,22 @@ def updateTSN(tsn):
             sl.tsn_accepted = tu_accepted
             sl.save()
 
-        tu.common_names = ''
-        if r['commonNameList']['commonNames'][0] is not None:
+        taxonomic_unit.common_names = ''
+        if itis_data['commonNameList']['commonNames'][0] is not None:
             list = []
-            j=0
-            while j < len(r['commonNameList']['commonNames']):
-                list.append(r['commonNameList']['commonNames'][j]['commonName'])
-                j += 1
-            tu.common_names = ', '.join(list)
-            print(tu.common_names)
-
-        h = getFullHierarchyFromTSN(tsn_key)
-        hierarchy_string = hierarchyToString(tsn_key, h, 'hierarchyList', 'tsn')
-        print(hierarchy_string)
-        tu.hierarchy_string = hierarchy_string
-        hierarchy = hierarchyToString(tsn_name, h, 'hierarchyList', 'taxonName')
-        print(hierarchy)
-        tu.hierarchy = hierarchy
-        tu.tsn_update_date = timezone.now()
-        tu.save()
+            for i in range(0, len(itis_data['commonNameList']['commonNames'])):
+                list.append(itis_data['commonNameList']['commonNames'][i]['commonName'])
+            taxonomic_unit.common_names = ', '.join(list)
+            #print(taxonomic_unit.common_names)
+        
+        hierarchy_string = hierarchyToString(tsn, full_hierarchy, 'hierarchyList', 'tsn')
+        #print(hierarchy_string)
+        taxonomic_unit.hierarchy_string = hierarchy_string
+        hierarchy = hierarchyToString(tsn_name, full_hierarchy, 'hierarchyList', 'taxonName')
+        #print(hierarchy)
+        taxonomic_unit.hierarchy = hierarchy
+        taxonomic_unit.tsn_update_date = timezone.now()
+        taxonomic_unit.save()
         return True
     else:
         return False
