@@ -12,9 +12,8 @@ from config.settings import SITE_DOMAIN
 from django.db.models import QuerySet
 
 
-
 @shared_task
-def export_zip_file(email_receiver: str, queries: [dict]):
+def export_zip_file(email_receiver: str, queries: [dict], export_file_id):
     """
     Exports a zip file containing tsv files resulting from given queries,
     saves it to the db and sends the download link as an email.
@@ -26,6 +25,7 @@ def export_zip_file(email_receiver: str, queries: [dict]):
             fields: [(str, str)] -- List of tuples containing desired data fields
                                     at [0] and corresponding column name at [1]
             query_set: QuerySet -- QuerySet object to be executed
+        export_file_id: -- id pointing to ExportFile instance where exported zip will be stored
     """
 
     if email_receiver == '':
@@ -55,9 +55,9 @@ def export_zip_file(email_receiver: str, queries: [dict]):
 
     temp_zip_writer.close()
 
-    file_id = save_zip_to_django_model(zip_file_path)
+    save_zip_to_django_model(zip_file_path, export_file_id)
 
-    send_email(file_id, email_receiver)
+    send_email(export_file_id, email_receiver)
 
     os.chdir(current_dir)
     shutil.rmtree(temp_directory)
@@ -85,18 +85,18 @@ def write_query_to_file(file_name: str, fields: [(str, str)], query_set: QuerySe
     return file_path
 
 
-def save_zip_to_django_model(zip_file_path: str):
+def save_zip_to_django_model(zip_file_path: str, model_id):
     """Used by export_zip_file()"""
     with open(zip_file_path, 'rb') as zip_file:
-        django_file = File(zip_file)
-        file_model = ExportFile(file=django_file)
-        file_model.save()
+        print(f'model_id = {model_id}')
+        export_file = ExportFile.objects.get(pk=model_id)
+        export_file.file = File(zip_file)
+        export_file.save()
         zip_file.close()
-        return file_model.pk
 
 
 @shared_task
-def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
+def ets_export_query_set(user_email: str, export_file_id):
 
     export_zip_file(
         email_receiver=user_email,
@@ -131,7 +131,8 @@ def ets_export_query_set(user_email='testi.testaaja@testimaailma.fi'):
                 'fields': traitlist_query.fields,
                 'query_set': traitlist_query.query
             }
-        ]
+        ],
+        export_file_id=export_file_id
     )
 
 

@@ -2,6 +2,7 @@ from django.test import TestCase
 
 import mb.models
 from exports.tasks import export_zip_file
+from exports.models import ExportFile
 
 
 class ExportZipFileTestCase(TestCase):
@@ -25,7 +26,8 @@ class ExportZipFileTestCase(TestCase):
                 'file_name': self.file_name,
                 'fields': list(zip(self.fields, self.headers)),
                 'query_set': self.query
-            }]
+            }],
+            'export_file_id': 0
         }
 
     def test_export_zip_file_fails_on_empty_email(self):
