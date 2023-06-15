@@ -14,11 +14,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 
 @shared_task
-<<<<<<< HEAD
-def export_zip_file(email_receiver: str, queries: [dict], export_file_id: int):
-=======
 def export_zip_file(email_receiver: str, queries: list[dict], export_file_id):
->>>>>>> export_query
     """
     Exports a zip file containing tsv files resulting from given queries,
     saves it to the db and sends the download link as an email.
