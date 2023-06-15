@@ -15,16 +15,11 @@ def export_to_tsv(request):
         if form.is_valid():
             user_email = request.POST['user_email']
             checkboxes = request.POST.getlist('export_choices')
-            print(f'selected checkboxes {checkboxes}')
-            #if email_validation(user_email) == True:
             export_file = ExportFile(file=None)
             export_file.save()
             export_file_id = export_file.pk
-            data_admin = is_user_data_admin_or_contributor(request)
-            ets_export_query_set.delay(user_email, export_file_id, data_admin)
-            print(f'---- request.user.id {request.user.id} ----')
-            # if email_validation(user_email) == True:
-            # ets_export_query_set.delay(user_email)
+            is_admin_or_contributor = is_user_data_admin_or_contributor(request)
+            ets_export_query_set.delay(user_email, export_file_id, is_admin_or_contributor, checkboxes)
             return redirect('submission')
     else:
         form = MeasurementsForm()
@@ -44,10 +39,6 @@ def is_user_data_admin_or_contributor(request):
 def form_submitted(request):
     return render(request,'export/form_submitted.html')
 
-#def email_validation(email_address):
-#    if not validate_email(email_address):
-#        raise forms.ValidationError("Invalid")
-#    return True
 
 @login_required
 def get_exported_file(request, file_id):
