@@ -35,7 +35,7 @@ def update_db_from_itis():
         else:
             skipped_units+=1
             print(f"{bcolors.WARNING}{taxonomic_unit} has NOT been updated! {round(timestamp,2)}{bcolors.ENDC}")
-        print( f"{round((float(iteration)/len(tsn_objects))*100,2)}%\tEstimated time left: {estimated_time}", end='\r')
+        print( f"{round((float(iteration)/len(tsn_objects))*100,2)}%\tEstimated time left: {estimated_time} seconds", end='\r')
     print(f"{len(tsn_objects) - skipped_units} out of {len(tsn_objects)} taxonomic units have been updated in the database. Spent time: {round(time.time()-db_start_time,2)}")
         
 
