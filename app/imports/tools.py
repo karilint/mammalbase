@@ -2,7 +2,7 @@ import numpy
 from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity, ProximateAnalysisItem, ProximateAnalysis
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
-from django.db import transaction
+from django.db import transaction, DatabaseError
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
 from requests_cache import CachedSession
@@ -850,13 +850,13 @@ def create_masterreference(source_citation, response_data, sr, user_author):
                     else:
                         citation += str(a) + ", "
                 citation += " " + str(year) + ". " + str(title) + ". Available at: " + str(doi) + "."
-        
         mr = MasterReference(type=type, doi=doi, uri=uri, first_author=first_author, year=year, title=title, container_title=container_title, volume=volume, issue=issue, page=page, citation=citation, created_by=user_author)
         mr.save()
         sr.master_reference = mr
         sr.save()
         return True
-    
+    except DatabaseError as db_err:
+        raise db_err
     except Exception as e:
         return False
 
