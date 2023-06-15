@@ -61,7 +61,21 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    command: --interval 30
+    command: --interval 30 --cleanup
+
+  celery:
+    image: palaeontologyhelsinki/mammalbase_staging
+    restart: unless-stopped
+    build: ./app
+    volumes:
+      - static:/vol/web
+      - ./app/logs:/src/app/logs
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+    container_name: mammalbase_celery_staging
+    command: celery -A config --workdir=. worker -l INFO --concurrency=1
 
   redis:
     image: redis

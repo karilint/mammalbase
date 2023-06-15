@@ -1,11 +1,8 @@
-import codecs
 import numpy
-from doctest import master
-from multiprocessing.spawn import import_main_path
 from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity, ProximateAnalysisItem, ProximateAnalysis
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
-from django.db import transaction, DatabaseError
+from django.db import transaction
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
 from requests_cache import CachedSession
@@ -14,7 +11,7 @@ from decimal import Decimal
 import itis.views as itis
 
 import pandas as pd
-import re, json, urllib.request, requests, sys, traceback
+import re, json, requests, sys, traceback
 
 class Check:
     def __init__(self, request):
@@ -577,7 +574,7 @@ def get_fooditem_json(food):
     query = food.lower().capitalize().replace(' ', '%20')
     url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
     try:
-        session = CachedSession("fooditem_cache", expire_after=timedelta(days=1))
+        session = CachedSession("itis_cache", expire_after=timedelta(days=30), stale_if_error=True)
         file = session.get(url)
         data = file.text
     except Exception:
@@ -640,7 +637,7 @@ def create_fooditem(results, food_upper, part):
     return food_item
 
 def generate_rank_id(food):
-    associated_taxa = re.sub('\W+', ' ', food).split(' ')
+    associated_taxa = re.sub(r'\W+', ' ', food).split(' ')
     for item in associated_taxa:
         if len(item) < 3:
             associated_taxa.remove(item)

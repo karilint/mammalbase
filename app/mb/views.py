@@ -1819,6 +1819,8 @@ def tsn_search(request):
     
         tsn_data = json.loads(request.POST.get("tsn_data"))
         hierarchy = itis.getFullHierarchyFromTSN(tsn_data["tsn"])
+        if hierarchy is None:
+            return JsonResponse("timeout", safe=False, status=500)
         classification_path = itis.hierarchyToString(tsn_data["scientificName"], hierarchy, 'hierarchyList', 'taxonName')
         classification_path_ids = itis.hierarchyToString(tsn_data["tsn"], hierarchy, 'hierarchyList', 'tsn', classification_path.count("-"))
         classification_path_ranks = itis.hierarchyToString('Species', hierarchy, 'hierarchyList', 'rankName',classification_path.count("-"))
@@ -1838,7 +1840,7 @@ def tsn_search(request):
         query = request.GET.get("query").lower().capitalize().replace(' ', '%20')
         url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
         try:
-            session = CachedSession("ITIS_search_cache", expire_after=datetime.timedelta(days=1))
+            session = CachedSession("itis_cache", expire_after=datetime.timedelta(days=1))
             file = session.get(url)
             data = file.text
         except Exception:
