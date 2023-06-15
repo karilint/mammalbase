@@ -77,20 +77,6 @@ services:
     container_name: mammalbase_celery_staging
     command: celery -A config --workdir=. worker -l INFO --concurrency=1
 
-  celery-beat:
-    image: palaeontologyhelsinki/mammalbase_staging
-    restart: unless-stopped
-    build: ./app
-    volumes:
-      - static:/vol/web
-      - ./app/logs:/src/app/logs
-    env_file:
-      - ./.env
-    depends_on:
-      - redis
-    container_name: mammalbase_celery_beat_staging
-    command: celery -A config --workdir=. beat -l info -S django
-
   redis:
     image: redis
     restart: always
