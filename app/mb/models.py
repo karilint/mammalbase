@@ -433,7 +433,7 @@ class MasterReference(BaseModel):
     volume = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(4000)], blank=True, null=True,)
     issue = models.CharField(max_length=5, help_text="Enter the Issue of the Standard Reference", blank=True, null=True,)
     page = models.CharField(max_length=50, help_text="Enter the Page(s) of the Standard Reference", blank=True, null=True,)
-    citation = models.CharField(max_length=400, help_text="Enter the Citation of the Standard Reference")
+    citation = models.CharField(max_length=500, help_text="Enter the Citation of the Standard Reference")
 #    link = models.URLField(max_length=200, help_text="Enter a valid URL for the Source Reference", blank=True, null=True,)
 
     class Meta:
