@@ -7,10 +7,11 @@ from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
 from requests_cache import CachedSession
 from datetime import timedelta
+from decimal import Decimal
 import itis.views as itis
 
 import pandas as pd
-import re, json, requests, sys, traceback, decimal
+import re, json, requests, sys, traceback
 
 class Check:
     def __init__(self, request):
@@ -136,7 +137,7 @@ class Check:
 
         for header in required_headers:
             if header not in import_headers:
-                messages.error(self.request, "The import file does not contain the required headers. The missing header is: " + str(header) + ".")
+                messages.error(self.request, f"The import file does not contain the required headers. The missing header is: {str(header)}.")
                 return False
         
         for header in import_headers:
@@ -149,7 +150,7 @@ class Check:
                             df.loc[row, header] = optional_headers[header](value)
                         except Exception as e:
                             messages.error(self.request, f"The {header} on row {row+1} is an incorrect type. It should be {type_names[optional_headers[header]]}.")
-                            return False       
+                            return False
         return True
 
     def _calculate_nfe(self, row):
@@ -195,50 +196,44 @@ class Check:
         return True
 
     def check_author(self, df):
-        numbers = []
-        counter = 1
-        for author in (df.loc[:, 'author']):
-            counter += 1
+        for row, author in enumerate(df.loc[:, 'author'], 1):
             if len(str(author)) != 19:
-                messages.error(self.request, "The author on the line number " + str(counter) + " is not in the correct form.")
+                messages.error(self.request, f"The author \'{author}\' on row {row} is not in the correct form.")
                 return False
             if "X" in author:
                 author = author.replace("X", "")
-            numbers.append(author.replace("-", ""))
-    
-        counter = 1
-        for number in numbers:
-            counter += 1
-            if not number.isdigit():
-                messages.error(self.request, "The author on the line number " + str(counter) + " is not in the correct form.")
+            if "-" in author:
+                author = author.replace("-", "")
+            if not author.isdigit():
+                messages.error(self.request, f"The author \'{author}\' on row {row} is not in the correct form.")
                 return False
         return True
 
     def check_verbatimScientificName(self, df, taxon_rank_included=True):
-        for counter, name in enumerate(df.loc[:, 'verbatimScientificName'], 1):
+        for row, name in enumerate(df.loc[:, 'verbatimScientificName'], 1):
             if name == "nan" or pd.isna(name):
-                messages.error(self.request, "Scientific name is empty at row " + str(counter) + ".")
+                messages.error(self.request, f"Scientific name \'{name}\' is empty at row {row}.")
                 return False
             if len(name) > 250:
-                messages.error(self.request, "Scientific name is too long at row " + str(counter) + ".")
+                messages.error(self.request, f"Scientific name \'{name[:10]}...\' is too long at row {row}.")
                 return False
         if taxon_rank_included == False:
             return True
         df_new = df[['verbatimScientificName', 'taxonRank']]
-        for counter, item in enumerate(df_new.values, 1):
+        for row, item in enumerate(df_new.values, 1):
             names_list = item[0].split()
 
             if len(names_list) > 3 and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list and "spp." not in names_list and "spp" not in names_list:
-                messages.error(self.request, "Scientific name '" + str(item[0]) + "' is not in the correct format on the line " + str(counter) + ".")
+                messages.error(self.request, f"Scientific name \'{str(item[0])}\' is not in the correct format on row {row}.")
                 return False
             if len(names_list) == 3 and item[1] not in ['Subspecies', 'subspecies'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list and "aff." not in names_list and "aff" not in names_list and "spp." not in names_list and "spp" not in names_list:
-                messages.error(self.request, "Scientific name '" + str(item[0]) + "' is not in the correct format or taxonomic rank '" + str(item[1]) + "' should be 'Subspecies' on the line " + str(counter) + ".")
+                messages.error(self.request, f"Scientific name \'{str(item[0])}\' is not in the correct format or taxonomic rank \'{str(item[1])}\' should be 'Subspecies' on row {row}.")
                 return False
             if len(names_list) == 2 and item[1] not in ['Species', 'species'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list and "aff." not in names_list and "aff" not in names_list and "spp." not in names_list and "spp" not in names_list:
-                messages.error(self.request, "Scientific name '" + str(item[0]) + "' is not in the correct format or taxonomic rank '" + str(item[1]) + "' should be 'Species' on the line " + str(counter) + ".")
+                messages.error(self.request, f"Scientific name \'{str(item[0])}\' is not in the correct format or taxonomic rank \'{str(item[1])}\' should be 'Species' on row {row}.")
                 return False
             if len(names_list) == 1 and item[1] not in ['Genus', 'genus'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list and "aff." not in names_list and "aff" not in names_list and "spp." not in names_list and "spp" not in names_list:
-                messages.error(self.request, "Scientific name '" + str(item[0]) + "' is not in the correct format or taxonomic rank '" + str(item[1]) + "' should be 'Genus' on the line " + str(counter) + ".")
+                messages.error(self.request, f"Scientific name \'{str(item[0])}\' is not in the correct format or taxonomic rank \'{str(item[1])}\' should be 'Genus' on row {row}.")
                 return False
         return True
 
@@ -362,16 +357,14 @@ class Check:
     def check_measurementValue(self, df):
         import_headers = list(df.columns.values)
         if "measurementValue" in import_headers:
-            counter = 1
-            for value in (df.loc[:, 'measurementValue']):
-                counter += 1
+            for row, value in enumerate(df.loc[:, 'measurementValue'], 1):
                 if pd.isnull(value) == True or any(c.isalpha() for c in str(value)) == False:
                     pass
                 else:
-                    messages.error(self.request, f"The measurement value on the line {str(counter)} is not a number.")
+                    messages.error(self.request, f"The measurement value on row {row} is not a number.")
                     return False
                 if value <= 0:
-                    messages.error(self.request, f"The measurement value on the line {str(counter)} needs to be bigger than zero.")
+                    messages.error(self.request, f"The measurement value on row {row} needs to be bigger than zero.")
                     return False
         elif any('verbatimTraitValue' in header for header in import_headers):
             measurement_headers = [hdr for hdr in import_headers if 'verbatimTraitValue' in hdr or 'dispersion' in hdr]
@@ -380,10 +373,10 @@ class Check:
                     if pd.isnull(value) == True or any(c.isalpha() for c in str(value)) == False:
                         pass
                     else:
-                        messages.error(self.request, f"The value \'{value}\' in column {header} on row {row} is not a number.")
+                        messages.error(self.request, f"The {header} \'{value}\' on row {row} is not a number.")
                         return False
                     if value < 0:
-                        messages.error(self.request, f"The value {value} of header {header} on row {row} should not be negative.")
+                        messages.error(self.request, f"The {header} \'{value}\' on row {row} should not be negative.")
                         return False
         return True
     
@@ -392,9 +385,9 @@ class Check:
         accepted = ['BARK', 'BLOOD', 'BONES', 'BUD', 'CARRION', 'EGGS', 'EXUDATES', 'FECES', 'FLOWER', 'FRUIT', 'LARVAE', 'LEAF', 'MINERAL', 'NECTAR/JUICE', 'NONE', 'POLLEN', 'ROOT', 'SEED', 'SHOOT', 'STEM', 'WHOLE']
         if 'PartOfOrganism' not in headers:
             return True
-        for counter, value in enumerate(df.loc[:, 'PartOfOrganism'], 1):
+        for row, value in enumerate(df.loc[:, 'PartOfOrganism'], 1):
             if value.lower() != 'nan' and value.upper() not in accepted:
-                messages.error(self.request, f"Part is in the wrong form on the line {str(counter)} The correct are: bark, blood, bones, bud, carrion, eggs, exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, none, pollen, root, seed, shoot, stem, whole")
+                messages.error(self.request, f"Part is invalid on row {row}. The accepted part names are: bark, blood, bones, bud, carrion, eggs, exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, none, pollen, root, seed, shoot, stem, whole")
                 return False
         return True
 
@@ -402,22 +395,19 @@ class Check:
         return len(SourceReference.objects.filter(citation__iexact=reference)) == 0
 
     def check_references(self, df, force:bool):
-        counter = 1
-        for ref in (df.loc[:, 'references']):
+        for row, ref in enumerate(df.loc[:, 'references'], 1):
             if not force:
                 if not self.check_reference_in_db(ref):
-                    messages.error(self.request, "Reference in line "+ str(counter) +" already in database. Are you sure you want to import this file? If you are sure use force upload.")
+                    messages.error(self.request, f"Reference on row {row} already in database. Are you sure you want to import this file? If you are sure use force upload.")
                     return False
 
             if len(ref) < 10 or len(ref) > 500:
-                messages.error(self.request, "Reference is too short or too long on the line " + str(counter) + ".")
+                messages.error(self.request, f"Reference is too short or too long on row {row}.")
                 return False
             match = re.match(r'.*([1-2][0-9]{3})', ref)
-            counter += 1
             if match is None:
-                messages.error(self.request, "Reference does not have a year number on the line " + str(counter) + ".")
+                messages.error(self.request, f"Reference does not have a year number on row {row}.")
                 return False
-
         return True
     
     def check_lengths(self, df):
@@ -442,9 +432,9 @@ class Check:
         }
         for header in all_headers.keys():
             if header in import_headers:
-                for counter, value in enumerate(df.loc[:, header], 1):
+                for row, value in enumerate(df.loc[:, header], 1):
                     if len(str(value)) > all_headers[header]:
-                        messages.error(self.request, f"{header} is too long at row {counter}.")
+                        messages.error(self.request, f"{header} is too long on row {row}.")
                         return False
         return True
 
@@ -1074,8 +1064,8 @@ def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
         )
     }
     pa_item_dict = convert_empty_values_pa(row, headers, pa_item_dict)
-    #Check if pa_item already exists
     pa_item_dict = generate_standard_values_pa(pa_item_dict)
+    #Check if pa_item already exists
     pa_item_old = ProximateAnalysisItem.objects.filter(**pa_item_dict)
     if len(pa_item_old) > 0:
         pa_item = pa_item_old[0]
@@ -1200,24 +1190,24 @@ def convert_empty_values_pa(row, headers, pa_item_dict):
 def generate_standard_values_pa(items):
     standard_items = items
     #Sum of reported fields excluding dry matter and moisture
-    item_sum = decimal.Decimal(0.0)
+    item_sum = Decimal(0.0)
     for item in items.keys():
         if 'reported' in item and items[item] is None:
-            items[item] = 0.0
+            items[item] = Decimal(0.0)
         if "reported" in item and "dm" not in item and "moisture" not in item:
-            item_sum += items[item]
-            
+            item_sum += Decimal(items[item])
+
     # item_sum = sum([items[item] for item in items.keys() if ("reported" in item and "dm" not in item and "moisture" not in item)])
-    if abs(item_sum - 100) > abs(item_sum - 1000):
-        item_sum /= 10
+    if abs(item_sum - Decimal(100)) > abs(item_sum - Decimal(1000)):
+        item_sum /= Decimal(10)
     
-    if abs(100 - item_sum+items["moisture_reported"]) < abs(100 - item_sum):
-        item_sum += items["moisture_reported"]
+    if abs(100 - item_sum + Decimal(items["moisture_reported"])) < abs(100 - item_sum):
+        item_sum += Decimal(items["moisture_reported"])
     
     for item in list(items.keys()):
         if "reported" not in item or "dm" in item or "moisture" in item:
             continue
-        standard_items[item.replace("reported","std")] = (items[item] / item_sum)*100
+        standard_items[item.replace("reported","std")] = (Decimal(items[item]) / item_sum) * Decimal(100)
 
     return standard_items
 
