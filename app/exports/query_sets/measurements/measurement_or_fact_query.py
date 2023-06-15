@@ -77,7 +77,7 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         )
 
     else:
-        query = base_query.annotate(
+        query = base.annotate(
             measurement_id=Concat(
                 Value('https://www.mammalbase.net/smv/'),
                 'id',
