@@ -3,8 +3,8 @@ from django.core import validators
 
 
 BROADERTERMS_CHOICES = [
-    ("standard measurements", "Standard measurements"),
-    ("cranial measurements", "Cranial measurements"),
+    ("Standard measurements", "Standard measurements"),
+    ("Cranial measurements", "Cranial measurements"),
 ]
 
 
