@@ -6,19 +6,39 @@ from django.contrib.auth.decorators import login_required
 from .forms import MeasurementsForm
 from django.core.validators import validate_email
 
+
 @login_required
 def export_to_tsv(request):
     """A view that renders an export form."""
-    measurement_form = MeasurementsForm()
     if request.method == 'POST':
-        user_email = request.POST['user_email']
-        checkboxes = request.POST.getlist('select_fields_to_be_exported')
-        print(f'selected checkboxed {checkboxes}')
-        #if email_validation(user_email) == True:
-        ets_export_query_set.delay(user_email)
-        return redirect('submission')
-    context = {'form': measurement_form}
+        form = MeasurementsForm(request.POST)
+        if form.is_valid():
+            user_email = request.POST['user_email']
+            checkboxes = request.POST.getlist('export_choices')
+            print(f'selected checkboxes {checkboxes}')
+            #if email_validation(user_email) == True:
+            export_file = ExportFile(file=None)
+            export_file.save()
+            export_file_id = export_file.pk
+            data_admin = is_user_data_admin_or_contributor(request)
+            ets_export_query_set.delay(user_email, export_file_id, data_admin)
+            print(f'---- request.user.id {request.user.id} ----')
+            # if email_validation(user_email) == True:
+            # ets_export_query_set.delay(user_email)
+            return redirect('submission')
+    else:
+        form = MeasurementsForm()
+    context = {'form': form}
     return render(request, 'export/export_ets.html', context)
+
+
+def is_user_data_admin_or_contributor(request):
+    groups = request.user.groups.all()
+    for group in groups:
+        print(f"group id type: {group.id}")
+        if group.id in [1, 2]:
+            return True
+    return False
 
 
 def form_submitted(request):
