@@ -13,9 +13,7 @@ from datetime import timedelta
 import itis.views as itis
 
 import pandas as pd
-import re, json, urllib.request, requests, sys, traceback
-
-import sys, traceback
+import re, json, urllib.request, requests, sys, traceback, decimal
 
 class Check:
     def __init__(self, request):
@@ -1205,7 +1203,7 @@ def convert_empty_values_pa(row, headers, pa_item_dict):
 def generate_standard_values_pa(items):
     standard_items = items
     #Sum of reported fields excluding dry matter and moisture
-    item_sum = 0.0
+    item_sum = decimal.Decimal(0.0)
     for item in items.keys():
         if 'reported' in item and items[item] is None:
             items[item] = 0.0
