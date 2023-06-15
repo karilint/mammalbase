@@ -89,7 +89,7 @@ services:
     depends_on:
       - redis
     container_name: mammalbase_celery_beat_staging
-    command: celery -A config --workdir=. beat -l INFO
+    command: celery -A config --workdir=. beat -l info -S django
 
   redis:
     image: redis
