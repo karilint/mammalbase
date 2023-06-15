@@ -10,10 +10,11 @@ from tempfile import mkdtemp
 from exports.query_sets.measurements import taxon_query, occurrence_query, traitlist_query, measurement_or_fact_query, metadata_query, traitdata_query
 from config.settings import SITE_DOMAIN
 from django.db.models import QuerySet
+from django.core.exceptions import ObjectDoesNotExist
 
 
 @shared_task
-def export_zip_file(email_receiver: str, queries: [dict], export_file_id):
+def export_zip_file(email_receiver: str, queries: list, export_file_id):
     """
     Exports a zip file containing tsv files resulting from given queries,
     saves it to the db and sends the download link as an email.
@@ -55,7 +56,12 @@ def export_zip_file(email_receiver: str, queries: [dict], export_file_id):
 
     temp_zip_writer.close()
 
-    save_zip_to_django_model(zip_file_path, export_file_id)
+    try:
+        save_zip_to_django_model(zip_file_path, export_file_id)
+    except ObjectDoesNotExist:
+        os.chdir(current_dir)
+        shutil.rmtree(temp_directory)
+        raise
 
     send_email(export_file_id, email_receiver)
 
@@ -63,7 +69,7 @@ def export_zip_file(email_receiver: str, queries: [dict], export_file_id):
     shutil.rmtree(temp_directory)
 
 
-def write_query_to_file(file_name: str, fields: [(str, str)], query_set: QuerySet):
+def write_query_to_file(file_name: str, fields: list, query_set: QuerySet):
     """Used by export_zip_file()"""
 
     if file_name == '':
@@ -85,10 +91,9 @@ def write_query_to_file(file_name: str, fields: [(str, str)], query_set: QuerySe
     return file_path
 
 
-def save_zip_to_django_model(zip_file_path: str, model_id):
+def save_zip_to_django_model(zip_file_path: str, model_id: int):
     """Used by export_zip_file()"""
     with open(zip_file_path, 'rb') as zip_file:
-        print(f'model_id = {model_id}')
         export_file = ExportFile.objects.get(pk=model_id)
         export_file.file = File(zip_file)
         export_file.save()
@@ -96,42 +101,54 @@ def save_zip_to_django_model(zip_file_path: str, model_id):
 
 
 @shared_task
-def ets_export_query_set(user_email: str, export_file_id):
+def ets_export_query_set(user_email: str, export_file_id, data_admin: bool):
+
+    queries=[
+        {
+            'file_name': 'traitdata',
+            'fields': traitdata_query.fields,
+            'query_set': traitdata_query.query
+        },
+        {
+            'file_name': 'metadata',
+            'fields': metadata_query.fields,
+            'query_set': metadata_query.query
+        },
+        {
+            'file_name': 'occurrence',
+            'fields': occurrence_query.fields,
+            'query_set': occurrence_query.query
+        },
+        {
+            'file_name': 'taxon',
+            'fields': taxon_query.fields,
+            'query_set': taxon_query.query
+        },
+        {
+            'file_name': 'traitlist',
+            'fields': traitlist_query.fields,
+            'query_set': traitlist_query.query
+        }
+    ]
+
+    if data_admin:
+        queries.append({
+            'file_name': 'measurement_or_fact',
+            'fields': measurement_or_fact_query.fields,
+            'query_set': measurement_or_fact_query.query_admin
+        }
+        )
+    else:
+        queries.append({
+            'file_name': 'measurement_or_fact',
+            'fields': measurement_or_fact_query.fields,
+            'query_set': measurement_or_fact_query.query_user
+        }
+        )
 
     export_zip_file(
         email_receiver=user_email,
-        queries=[
-            {
-                'file_name': 'traitdata',
-                'fields': traitdata_query.fields,
-                'query_set': traitdata_query.query
-            },
-                        {
-                'file_name': 'metadata',
-                'fields': metadata_query.fields,
-                'query_set': metadata_query.query
-            },
-                        {
-                'file_name': 'measurement_or_fact',
-                'fields': measurement_or_fact_query.fields,
-                'query_set': measurement_or_fact_query.query
-            },
-                        {
-                'file_name': 'occurrence',
-                'fields': occurrence_query.fields,
-                'query_set': occurrence_query.query
-            },
-                        {
-                'file_name': 'taxon',
-                'fields': taxon_query.fields,
-                'query_set': taxon_query.query
-            },
-            {
-                'file_name': 'traitlist',
-                'fields': traitlist_query.fields,
-                'query_set': traitlist_query.query
-            }
-        ],
+        queries=queries,
         export_file_id=export_file_id
     )
 
@@ -149,13 +166,13 @@ def send_email(export_id, target_address):
     )
 
 def create_notification_message(export_id):
-    """Creates a email message and download link to the exported data"""
+    """Creates an email message and download link to the exported data"""
     return f"""
         Hello,
 
         The data you requested has been processed and can be accessed from https://{SITE_DOMAIN}/exports/get_file/{export_id}
-        
+
         Kind regards,
-        
+
         Team MammalBase
         """

@@ -13,16 +13,18 @@ from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from allauth.socialaccount.models import SocialAccount
 from mb.models import EntityClass, MasterReference, SourceAttribute, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue, MasterEntity
+from itis.models import Kingdom, TaxonUnitTypes
 from imports.tools import Check
 import imports.tools as tools
 import tempfile, csv, os
 import pandas as pd
+import json
 
 
 class ImportViewTests(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(username='Testi')
+        self.user = User.objects.create_superuser(username='Testi')
         self.client.force_login(self.user)
         self.accountuser = SocialAccount.objects.create(uid='1111-1111-2222-222X', user_id=self.user.pk)
         self.reference1 = SourceReference.objects.create(citation='Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
@@ -120,11 +122,41 @@ class ImportViewTests(TestCase):
         self.assertEqual(str(messages[0]), 'The import file does not contain the required headers. The missing header is: verbatimTraitName.')
         self.assertEqual(response.status_code, 302) 
     
-    #def test_tsn_search_get(self):
-    #    response = self.client.get("/tsn/search?query=grasshopper")
-    #    self.assertEqual(response.status_code, 200)
-    #    message = str(response.content, encoding="utf8")
-    #    print(message)
-    #    self.assertNotEqual(message["message"], "Connection to ITIS failed.")
-    #    self.assertNotEqual(message["message"], "Found no entries")
-    #    self.assertEqual
+    def test_tsn_search_get(self):
+        response = self.client.get("/tsn/search?query=grasshopper")
+        self.assertEqual(response.status_code, 200)
+        message = json.loads(str(response.content, encoding="utf8"))
+        self.assertNotEqual(message["message"], "Connection to ITIS failed.")
+        self.assertNotEqual(message["message"], "Found no entries")
+        self.assertTrue("Found" in message["message"] and "entries" in message["message"])
+    
+    def test_tsn_search_get_validity_check(self):
+        response = self.client.get("/tsn/search?query=rodent")
+        message = json.loads(str(response.content, encoding="utf8"))
+        for key, value in message.items():
+            if key == "message":
+                continue
+            self.assertTrue(value["nameUsage"] in ["valid", "accepted"])
+    
+    def test_tsn_search_post(self):
+        kingdom_id = Kingdom.objects.create(name="Animalia").pk
+        rank_id = TaxonUnitTypes.objects.create(rank_name="Species", rank_id=10, dir_parent_rank_id=10, req_parent_rank_id=10, kingdom_id=kingdom_id).pk
+        test_data = {
+            'author': '(Coues, 1874)',
+            'class': 'gov.usgs.itis.itis_service.data.SvcItisTerm',
+            'commonNames': ['Southern Grasshopper Mouse'],
+            'nameUsage': 'valid',
+            'scientificName': 'Onychomys torridus',
+            'tsn': '180383'
+        }
+        response = self.client.post("/tsn/search", {'tsn_data':json.dumps(test_data)})
+        self.assertEqual(response.status_code, 201)
+        queryset = TaxonomicUnits.objects.filter(tsn="180383")
+        self.assertTrue(len(queryset)==1)
+        object = queryset[0]
+        self.assertEqual(object.tsn, 180383)
+        self.assertEqual(object.kingdom_id, kingdom_id)
+        self.assertEqual(object.rank_id, rank_id)
+        self.assertEqual(object.completename, test_data["scientificName"])
+        self.assertTrue("180383" in object.hierarchy_string)
+        self.assertTrue("Onychomys torridus" in object.hierarchy)

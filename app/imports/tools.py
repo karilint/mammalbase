@@ -1,10 +1,8 @@
-import codecs
-from doctest import master
-from multiprocessing.spawn import import_main_path
+import numpy
 from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity, ProximateAnalysisItem, ProximateAnalysis
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from django.contrib import messages
-from django.db import transaction, DatabaseError
+from django.db import transaction
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import User
 from requests_cache import CachedSession
@@ -12,9 +10,7 @@ from datetime import timedelta
 import itis.views as itis
 
 import pandas as pd
-import re, json, urllib.request, requests, sys, traceback
-
-import sys, traceback
+import re, json, requests, sys, traceback, decimal
 
 class Check:
     def __init__(self, request):
@@ -54,9 +50,9 @@ class Check:
             self.check_lengths(df) and
             self.check_part(df) and
             self.check_references(df, force) and
-            self.check_measurementValue(df) and
+            self.check_nfe(df) and
             self.check_cf_valid(df) and
-            self.check_nfe(df)
+            self.check_measurementValue(df)
         )
 
     def check_valid_author(self, df):
@@ -149,11 +145,11 @@ class Check:
                     if optional_headers[header]!=str:
                         if isinstance(value, str):
                             value = value.replace(",",".")
-                    try:
-                        df.loc[row, header] = optional_headers[header](value)
-                    except Exception as e:
-                        messages.error(self.request, f"The {header} on row {row+1} is an incorrect type. It should be {type_names[optional_headers[header]]}.")
-                        return False       
+                        try:
+                            df.loc[row, header] = optional_headers[header](value)
+                        except Exception as e:
+                            messages.error(self.request, f"The {header} on row {row+1} is an incorrect type. It should be {type_names[optional_headers[header]]}.")
+                            return False       
         return True
 
     def _calculate_nfe(self, row):
@@ -167,10 +163,10 @@ class Check:
         missing_nfe_message = "\nNot reported: calculated by difference"
         headers = list(df.columns.values)
         if 'verbatimTraitValue__nitrogen_free_extract' in headers:
-            if 'measurementMethod__nitrogen_free_extract' in headers:
-                new_mm = df["measurementMethod__nitrogen_free_extract"] + df['measurementMethod__nitrogen_free_extract'].fillna("\nNot reported: calculated by difference")
-            else:
-                new_mm = df['measurementMethod__nitrogen_free_extract'].fillna(missing_nfe_message)
+            mask = df["verbatimTraitValue__nitrogen_free_extract"].copy()
+            mask[mask.notnull()]=""
+            new_mm = df['measurementMethod__nitrogen_free_extract'].fillna(mask.fillna(missing_nfe_message))
+            new_mm.replace(r'^$', numpy.nan, regex=True, inplace=True)
             df["measurementMethod__nitrogen_free_extract"] = new_mm
             df["verbatimTraitValue__nitrogen_free_extract"].fillna(df.apply(self._calculate_nfe, axis=1), inplace=True)
         else:
@@ -588,7 +584,7 @@ def get_fooditem_json(food):
     query = food.lower().capitalize().replace(' ', '%20')
     url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
     try:
-        session = CachedSession("fooditem_cache", expire_after=timedelta(days=1))
+        session = CachedSession("itis_cache", expire_after=timedelta(days=30), stale_if_error=True)
         file = session.get(url)
         data = file.text
     except Exception:
@@ -651,7 +647,7 @@ def create_fooditem(results, food_upper, part):
     return food_item
 
 def generate_rank_id(food):
-    associated_taxa = re.sub('\W+', ' ', food).split(' ')
+    associated_taxa = re.sub(r'\W+', ' ', food).split(' ')
     for item in associated_taxa:
         if len(item) < 3:
             associated_taxa.remove(item)
@@ -1192,13 +1188,11 @@ def convert_empty_values_pa(row, headers, pa_item_dict):
             "type":str
         }
     }
+    
     for header in proximate_analysis_item_headers.keys():
         if header in headers:
             value = getattr(row, header)
-            if proximate_analysis_item_headers[header]["type"] != str:
-                value = possible_nan_to_zero(value)
-            else:
-                value = possible_nan_to_none(value)
+            value = possible_nan_to_none(value)
             pa_item_dict_new[proximate_analysis_item_headers[header]["name"]] = value
 
     return pa_item_dict_new
@@ -1206,18 +1200,23 @@ def convert_empty_values_pa(row, headers, pa_item_dict):
 def generate_standard_values_pa(items):
     standard_items = items
     #Sum of reported fields excluding dry matter and moisture
-    item_sum = sum([items[item] for item in items.keys() if ("reported" in item and "dm" not in item and "moisture" not in item)])
+    item_sum = decimal.Decimal(0.0)
+    for item in items.keys():
+        if 'reported' in item and items[item] is None:
+            items[item] = 0.0
+        if "reported" in item and "dm" not in item and "moisture" not in item:
+            item_sum += items[item]
+            
+    # item_sum = sum([items[item] for item in items.keys() if ("reported" in item and "dm" not in item and "moisture" not in item)])
     if abs(item_sum - 100) > abs(item_sum - 1000):
         item_sum /= 10
     
     if abs(100 - item_sum+items["moisture_reported"]) < abs(100 - item_sum):
-        item_sum+=items["moisture_reported"]
+        item_sum += items["moisture_reported"]
     
     for item in list(items.keys()):
-        
         if "reported" not in item or "dm" in item or "moisture" in item:
             continue
-        
         standard_items[item.replace("reported","std")] = (items[item] / item_sum)*100
 
     return standard_items
