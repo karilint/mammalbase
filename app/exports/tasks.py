@@ -7,7 +7,7 @@ from .models import ExportFile
 from datetime import datetime
 from zipfile import ZipFile
 from tempfile import mkdtemp
-#from exports.query_sets.measurements import taxon_query, occurrence_query, measurement_or_fact_query, metadata_query #traitdata_query, traitlist_query 
+#from exports.query_sets.measurements import taxon_query, occurrence_query, measurement_or_fact_query, metadata_query #traitdata_query, traitlist_query
 from config.settings import SITE_DOMAIN
 from django.db.models import QuerySet
 
@@ -106,7 +106,7 @@ def ets_export_query_set(user_email: str, export_file_id, is_admin_or_contributo
     def create_traitlist_queries(measurement_choices, queries):
         for measurement in measurement_choices:
             query_set, fields = traitlist_query([measurement])
-            file_name = f'traitlist_{measurement.split()[0]}'
+            file_name = f'traitlist_{measurement.split()[0].lower()}'
             queries.append({
                 'file_name': file_name,
                 'fields': fields,
