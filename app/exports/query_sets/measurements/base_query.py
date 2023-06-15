@@ -4,12 +4,12 @@ from mb.models import UnitConversion
 
 
 def base_query(measurement_choices):
-    test_list = [Q(source_attribute__master_attribute__attributegrouprelation__group__name=value) for value in measurement_choices]
-    test_filter = Q()
-    for q in test_list:
-        test_filter |= q
+    query_filter_list = [Q(source_attribute__master_attribute__attributegrouprelation__group__name=value) for value in measurement_choices]
+    measurement_choice_filter = Q()
+    for query_filter in query_filter_list:
+        measurement_choice_filter |= query_filter
 
-    query = SourceMeasurementValue.objects.annotate(
+    query_filter = SourceMeasurementValue.objects.annotate(
         coefficient=Subquery(
             UnitConversion.objects.filter(
                 from_unit_id=OuterRef('source_unit__master_unit__id'),
@@ -24,6 +24,7 @@ def base_query(measurement_choices):
         | Q(source_attribute__master_attribute__name__exact='')
         | Q(source_entity__master_entity__name__exact='')
         | Q(source_entity__master_entity__id__isnull=True)
-    ).filter(test_filter)
+    ).filter(measurement_choice_filter)
 
-    return query
+    return query_filter
+
