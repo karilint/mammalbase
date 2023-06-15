@@ -15,7 +15,7 @@ def taxon_query(measurement_choices):
         kingdom=Value('Animalia'),
         phylum=Value('Chordata'),
         taxon_class=Value('Mammalia'),
-    ).distinct()
+    ).order_by('taxon_id').distinct()
 
     fields = [
         ('taxon_id','taxonID'),
