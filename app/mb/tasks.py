@@ -20,6 +20,10 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 @shared_task
+def hello_mammals():
+    print("Hello, fellow mammalians! Greetings from the Celery Beat department of the one and only Mammalbase Inc.")
+
+@shared_task
 def update_db_from_itis():
     print("Starting automatic database update.")
     tsn_objects = TaxonomicUnits.objects.all()
