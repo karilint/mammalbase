@@ -18,7 +18,7 @@ class MeasurementsForm(forms.Form):
 
     export_choices = forms.MultipleChoiceField(
             required=True,
-            widget=forms.CheckboxSelectMultiple,
+            widget=forms.CheckboxSelectMultiple(attrs={'class': 'export_checkboxes'}),
             choices=BROADERTERMS_CHOICES,
             label="Select type of data to be exported"
     )
