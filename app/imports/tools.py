@@ -1192,16 +1192,14 @@ def generate_standard_values_pa(items):
     #Sum of reported fields excluding dry matter and moisture
     item_sum = Decimal(0.0)
     for item in items.keys():
-        if 'reported' in item and items[item] is None:
-            items[item] = Decimal(0.0)
-        if "reported" in item and "dm" not in item and "moisture" not in item:
+        if "reported" in item and "dm" not in item and "moisture" not in item and items[item] != None:
             item_sum += Decimal(items[item])
 
     # item_sum = sum([items[item] for item in items.keys() if ("reported" in item and "dm" not in item and "moisture" not in item)])
     if abs(item_sum - Decimal(100)) > abs(item_sum - Decimal(1000)):
         item_sum /= Decimal(10)
     
-    if abs(100 - item_sum + Decimal(items["moisture_reported"])) < abs(100 - item_sum):
+    if items["moisture_reported"] != None and abs(100 - item_sum + Decimal(items["moisture_reported"])) < abs(100 - item_sum):
         item_sum += Decimal(items["moisture_reported"])
     
     for item in list(items.keys()):
