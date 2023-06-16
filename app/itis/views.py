@@ -20,11 +20,11 @@ def hierarchyToString(stop_word, dict, key1, key2, stop_index=-1):
     hierarchy_string = '-'.join(h)
     return hierarchy_string
 
-def itis_api_call(function, params, timeout):
+def itis_api_call(function, params, timeout, refresh):
     search_api_url = 'https://www.itis.gov/ITISWebService/jsonservice/' + function
     session = CachedSession("itis_cache", expire_after=timedelta(days=30), stale_if_error=True)
     try:
-        response = session.get(search_api_url, params=params, timeout=timeout)
+        response = session.get(search_api_url, params=params, timeout=timeout, refresh=refresh)
     except ConnectionError:
         print('Network connection failed.')
         return None
@@ -36,14 +36,14 @@ def itis_api_call(function, params, timeout):
     else:
         return None
 
-def GetCommonNamesfromTSN(tsn):
+def GetCommonNamesfromTSN(tsn, refresh=False):
     function = 'getCommonNamesFromTSN'
     params = {'tsn': tsn}
     return_header = 'commonNames'
     return_value = 'commonName'
     
     if int(tsn) > 0:
-        data_dict = itis_api_call(function, params, 15)
+        data_dict = itis_api_call(function, params, 15, refresh=refresh)
         if data_dict is not None:
             return_string = ""
             if str(data_dict[return_header][0]) != 'None':
@@ -56,21 +56,21 @@ def GetCommonNamesfromTSN(tsn):
         else:
             return ''
 
-def GetITISdatafromTSN(tsn, function):
+def GetITISdatafromTSN(tsn, function, refresh=False):
     function = function
     params = {'tsn': tsn}
 
-    data_dict = itis_api_call(function, params, 5)
+    data_dict = itis_api_call(function, params, 5, refresh=refresh)
 
     return data_dict
 
 # returns dict_keys(['acceptedNames', 'class', 'tsn'])
-def GetAcceptedNamesfromTSN(tsn):
+def GetAcceptedNamesfromTSN(tsn, refresh=False):
     function = 'getAcceptedNamesFromTSN'
     params = {'tsn': tsn}
 
     if int(tsn) > 0:
-        return itis_api_call(function, params, 15)
+        return itis_api_call(function, params, 15, refresh=refresh)
 
 '''
 returns dict_keys(['acceptedNameList', 'class', 'commentList', 'commonNameList', 'completenessRating', 
@@ -78,31 +78,31 @@ returns dict_keys(['acceptedNameList', 'class', 'commentList', 'commonNameList',
     'hierarchyUp', 'jurisdictionalOriginList', 'kingdom','otherSourceList', 'parentTSN', 'publicationList', 
     'scientificName', 'synonymList', 'taxRank', 'taxonAuthor', 'tsn', 'unacceptReason', 'usage']
 '''
-def getFullHierarchyFromTSN(tsn):
+def getFullHierarchyFromTSN(tsn, refresh=False):
     function = 'getFullHierarchyFromTSN'
     params = {'tsn': tsn}
 
     if int(tsn) > 0:
-        return itis_api_call(function, params, 15)
+        return itis_api_call(function, params, 15, refresh=refresh)
     else:
         return None
 
-def getFullRecordFromTSN(tsn):
+def getFullRecordFromTSN(tsn, refresh=False):
     function = 'getFullRecordFromTSN'
     params = {'tsn': tsn}
 
     if int(tsn) > 0:
-        return itis_api_call(function, params, 15)
+        return itis_api_call(function, params, 15, refresh=refresh)
     else:
         return None
 
 # returns dict_keys(['class', 'kingdomId', 'kingdomName', 'rankId', 'rankName', 'tsn'])
-def getTaxonomicRankNameFromTSN(tsn):
+def getTaxonomicRankNameFromTSN(tsn, refresh=False):
     function = 'getTaxonomicRankNameFromTSN'
     params = {'tsn': tsn}
 
     if int(tsn) > 0:
-        return itis_api_call(function, params, 15)
+        return itis_api_call(function, params, 15, refresh=refresh)
     else:
         return None
 
@@ -110,8 +110,8 @@ def getTaxonomicRankNameFromTSN(tsn):
 def updateTSN(tsn):
     taxonomic_unit = get_object_or_404(TaxonomicUnits, tsn=tsn)
     #print(taxonomic_unit)
-    itis_data = getFullRecordFromTSN(tsn)
-    full_hierarchy = getFullHierarchyFromTSN(tsn)
+    itis_data = getFullRecordFromTSN(tsn, refresh=True)
+    full_hierarchy = getFullHierarchyFromTSN(tsn, refresh=True)
     
     if itis_data is not None and full_hierarchy is not None:
         taxonomic_unit.kingdom_id = itis_data['taxRank']['kingdomId']
