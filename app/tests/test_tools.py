@@ -88,6 +88,12 @@ class ToolsTest(TestCase):
             writer.writerow(['SHOOT', '','Association of Official Analytical Chemistry (AOAC 2002; AOAC 2002b)', '', 'Köyceğiz – Dalyan Lagoon, Muğla Province, Turkey', 'triplicate', '', '', '', '', '89.57', '', 'oven drying at 105°C for 24 hours', '1.8', '', 'ether extraction method', '15.78', '', 'Kjeldahl protein unit', '18.61', '', '', '18.96', '','firing in a muffle furnace at 550°C for 4 hours	34.42', '', '', '1111-1111-2222-222X', 'Original study', 'Kiziloğlu, Ü., Yıldırım, Ö. and Çantaş, İ.B., 2023. Use of Coontail as a natural phytoremediation feed additive for common carp. Oceanological and Hydrobiological Studies, 52(1), pp.102-110.'])
             #writer.writerow(['LEAF', '', 'AOAC (1995) Official Methods of Analysis', 'Savanah Agricultural Research Institute (SARI) laboratory in Nyankpala, Tamale', 'Tamale Municipality, Ghana', 'triplicate', '', '50.24', '0.15', 'air-oven dry method', '49.75', '0.15', 'the difference of the sum of all the proximate compositions from 100%', '3.56', '0.09', 'Soxhlet extraction method using ether as the extraction solvent', '11.01', '0.34', 'micro-Kjeldahl method', '', '', '', '4.81', '0.09', 'muffle furnace maintained at 550 – 600˚C within four hours', '30.36', '0.34', '100% - (Fat% + moisture% + ash% + protein%)', '1111-1111-2222-222X', 'Original study', 'George, D., Ziblim, I.A. and Selasi, D., 2023. Proximate Composition of Leaves of the African Rosewood (Pterocarpus erinaceus). Open Journal of Applied Sciences, 13(2), pp.189-197.'])
             writer.writerow(['FLOWER', '', 'Association of Official Analytical Chemist (AOAC, 1990)', '', 'Ajayi Crowder Memorial Secondary School Bariga, Saint Finberrs Secondary School compound and along same road to Akoka Primary School, Lagos', 'duplicates', '' '12.21', '0.15', '', '5 g sample in an oven at 105 °C for 3 h', '', '', '', '19.5', '1.06', 'petroleum ether extraction in a Soxhlet apparatus, 3 g of sample was extracted for 6 h', '7.2', '0.71', 'Kjeldahl method of 1883', '16.14', '0.15', 'enzymatic gravimetric method used for dietary fibre evaluation (Tecator Fibertec E System Foss Tecator, Sweden', '6.5', '0.35', '4 g in a muffle furnace at 600 °C for 6 h', '38.66', '0.41', 'subtracting the sum of the percent values of moisture, protein, ash, crude fibre, and fat from 100', '1111-1111-2222-222X', 'Original study', 'Adeonipekun, P.A., Adeniyi, T.A., Chidinma, O.Q. and Omolayo, R.O., 2023. Proximate, phytochemical, and antimicrobial evaluation of flowers of Mangifera indica L., stamens of Terminalia catappa L., and anther of Delonix regia (Bojer ex Hook.) Raf. South African Journal of Botany, 155, pp.223-229.'])
+        with open('test_pa_false_measurement_value.csv', 'w') as file10:
+            writer = csv.writer(file10)
+            writer.writerow(['verbatimScientificName', 'PartOfOrganism', 'individualCount', 'measurementMethod', 'measurementDeterminedBy', 'verbatimLocality', 'measurementRemarks', 'verbatimEventDate', 'verbatimTraitValue__moisture', 'dispersion__moisture', 'measurementMethod__moisture', 'verbatimTraitValue__dry_matter', 'dispersion__dry_matter', 'measurementMethod__dry_matter', 'verbatimTraitValue__ether_extract', 'dispersion__ether_extract', 'measurementMethod__ether_extract', 'verbatimTraitValue__crude_protein', 'dispersion__crude_protein', 'measurementMethod__crude_protein', 'verbatimTraitValue__crude_fibre', 'dispersion__crude_fibre', 'measurementMethod__crude_fibre', 'verbatimTraitValue_ash', 'dispersion__ash', 'measurementMethod_ash', 'verbatimTraitValue__nitrogen_free_extract', 'dispersion__nitrogen_free_extract', 'measurementMethod__nitrogen_free_extract', 'author', 'associatedReferences', 'references'])
+            writer.writerow(['Grasshoppers: S. gregaria & L. migratoria manilensis', 'WHOLE', '', 'Association of the Official Analytical Chemists (AOAC), (1990)', '', 'Sample A/e biological garden Federal College of Education, Katsina State, Nigeria', 'triplicate, wings of the samples were removed before the analysis', '', '5.667', '0.577', 'An atmospheric heat drying at 105 ℃ for 4 h', '', '', '', '10.667', '0.764', 'Soxhlet extraction method', '57.33', '0.148', 'micro Kjeldahl method', '10.333', '0.289', '', '9.833', '0.764', 'direct ashing method at 600 ℃', '6.17', '0.996', '', '1111-1111-2222-222X', 'Original study', 'Suleiman, F.B., Halliru, A. and Adamu, I.T., 2023. Proximate and heavy metal analysis of grasshopper species consumed in Katsina State.'])
+            writer.writerow(['Ceratophyllum demersum, whole', 'SHOOT', '','Association of Official Analytical Chemistry (AOAC 2002; AOAC 2002b)', '', 'Köyceğiz – Dalyan Lagoon, Muğla Province, Turkey', 'triplicate', '', '', '', '', '89.57', '', 'oven drying at 105°C for 24 hours', '-1', '', 'ether extraction method', '15.78', '', 'Kjeldahl protein unit', '18.61', '', '', '18.96', '','firing in a muffle furnace at 550°C for 4 hours', '34.42', '', '', '1111-1111-2222-222X', 'Original study', 'Kiziloğlu, Ü., Yıldırım, Ö. and Çantaş, İ.B., 2023. Use of Coontail as a natural phytoremediation feed additive for common carp. Oceanological and Hydrobiological Studies, 52(1), pp.102-110.'])
+            writer.writerow(['Mangifera indica, floral parts', 'FLOWER', '', 'Association of Official Analytical Chemist (AOAC, 1990)', '', 'Ajayi Crowder Memorial Secondary School Bariga, Saint Finberrs Secondary School compound and along same road to Akoka Primary School, Lagos', 'duplicates', '' '12.21', '0.15', '', '5 g sample in an oven at 105 °C for 3 h', '', '', '', '19.5', '1.06', 'petroleum ether extraction in a Soxhlet apparatus, 3 g of sample was extracted for 6 h', '7.2', '0.71', 'Kjeldahl method of 1883', '16.14', '0.15', 'enzymatic gravimetric method used for dietary fibre evaluation (Tecator Fibertec E System Foss Tecator, Sweden', '6.5', '0.35', '4 g in a muffle furnace at 600 °C for 6 h', '38.66', '0.41', 'subtracting the sum of the percent values of moisture, protein, ash, crude fibre, and fat from 100', '1111-1111-2222-222X', 'Original study', 'Adeonipekun, P.A., Adeniyi, T.A., Chidinma, O.Q. and Omolayo, R.O., 2023. Proximate, phytochemical, and antimicrobial evaluation of flowers of Mangifera indica L., stamens of Terminalia catappa L., and anther of Delonix regia (Bojer ex Hook.) Raf. South African Journal of Botany, 155, pp.223-229.'])
 
         self.file = pd.read_csv('test.csv')
         self.file_ets = pd.read_csv('test_ets.csv')
@@ -98,6 +104,7 @@ class ToolsTest(TestCase):
         self.false_sequence = pd.read_csv('false_sequence.csv')
         self.file_pa = pd.read_csv('test_pa.csv')
         self.file_pa_invalid_headers = pd.read_csv('test_pa_invalid_headers.csv')
+        self.file_pa_false_measurement_value = pd.read_csv('test_pa_false_measurement_value.csv')
         #self.reference = tools.get_sourcereference_citation(self.file.loc[:, 'references'][1], self.user)
         self.dict = {'author': ['1111-1111-2222-2222', '1111-1111-2222-2233'], 
         'verbatimScientificName':['kapistelija', 'kapistelija'], 
@@ -272,11 +279,17 @@ class ToolsTest(TestCase):
     def test_check_false_measumerementValue_according_to_sequence(self):
         self.assertEqual(self.check.check_sequence(self.false_measurement_value), False)
     
-    def test_check_measurmentValue(self):
+    def test_ds_check_measurmentValue(self):
         self.assertEqual(self.check.check_measurementValue(self.file), True)
     
-    def test_false_check_measurementValue(self):
+    def test_ds_false_check_measurementValue(self):
         self.assertEqual(self.check.check_measurementValue(self.false_file), False)
+    
+    def test_pa_check_measurementValue(self):
+        self.assertTrue(self.check.check_measurementValue(self.file_pa))
+
+    def test_pa_false_check_measurementValue(self):
+        self.assertFalse(self.check.check_measurementValue(self.file_pa_false_measurement_value))
     
     def test_false_check_references(self):
         self.assertEqual(self.check.check_references(self.false_file2, True), False)
@@ -519,12 +532,11 @@ class ToolsTest(TestCase):
         self.assertEqual(self.check.check_all_pa(self.pa_df, True), False)
         self.pa_df.loc['0', 'references'] = 'Suleiman, F.B., Halliru, A. and Adamu, I.T., 2023. Proximate and heavy metal analysis of grasshopper species consumed in Katsina State.'
 
-    """
     def test_pa_check_cf_valid(self):
-        self.pa_df.loc['1', 'verbatimTraitValue__crude_fibre'] = 'nan'
-        self.assertEqual(self.check.check_cf_valid(self.pa_df), False)
-        self.pa_df.loc['1', 'verbatimTraitValue__crude_fibre'] = '18.61'
-    """
+        df = self.pa_df.copy()
+        self.assertTrue(self.check.check_cf_valid(df))
+        df.at[1, 'verbatimTraitValue__crude_fibre'] = np.nan
+        self.assertFalse(self.check.check_cf_valid(df))
 
     def test_check_min_max(self):
         df = pd.DataFrame.from_dict({'measurementValue_min':['2'],
@@ -888,7 +900,7 @@ class ToolsTest(TestCase):
         self.assertEqual(smv.n_total, 0)
     
     def test_check_nfe(self):
-        df = pd.DataFrame.from_dict(
+        df_missing_nfe_headers = pd.DataFrame.from_dict(
             {
                 'verbatimScientificName': ['Grasshoppers: S. gregaria & L. migratoria manilensis','Ceratophyllum demersum, whole','Mangifera indica, floral parts'],
                 'PartOfOrganism':['WHOLE','SHOOT','FLOWER'],
@@ -916,17 +928,73 @@ class ToolsTest(TestCase):
                 'verbatimTraitValue_ash':[9.833,18.96,6.5],
                 'dispersion__ash':[0.764,np.nan,0.35],
                 'measurementMethod_ash':['direct ashing method at 600 ℃','firing in a muffle furnace at 550°C for 4 hours','4 g in a muffle furnace at 600 °C for 6 h'],
-                'verbatimTraitValue__nitrogen_free_extract':[6.17,np.nan,38.66],
-                'dispersion__nitrogen_free_extract':[0.996,np.nan,0.41],
-                'measurementMethod__nitrogen_free_extract':[np.nan,np.nan,'subtracting the sum of the percent values of moisture, protein, ash, crude fibre, and fat from 100'],
                 'author':['1111-1111-2222-222X','1111-1111-2222-222X','1111-1111-2222-222X'],
                 'associatedReferences':['Original study','Original study','Original study',],
                 'references':['Suleiman, F.B., Halliru, A. and Adamu, I.T., 2023. Proximate and heavy metal analysis of grasshopper species consumed in Katsina State.','Kiziloğlu, Ü., Yıldırım, Ö. and Çantaş, İ.B., 2023. Use of Coontail as a natural phytoremediation feed additive for common carp. Oceanological and Hydrobiological Studies, 52(1), pp.102-110.','Adeonipekun, P.A., Adeniyi, T.A., Chidinma, O.Q. and Omolayo, R.O., 2023. Proximate, phytochemical, and antimicrobial evaluation of flowers of Mangifera indica L., stamens of Terminalia catappa L., and anther of Delonix regia (Bojer ex Hook.) Raf. South African Journal of Botany, 155, pp.223-229.']
 
             }
         )
+        df = df_missing_nfe_headers.copy()
+        df['verbatimTraitValue__nitrogen_free_extract'] = [6.17, np.nan, 38.45]
+        df['measurementMethod__nitrogen_free_extract'] = [np.nan, np.nan, 'subtracting the sum of the percent values of moisture, protein, ash, crude fibre, and fat from 100']
+        df['dispersion__nitrogen_free_extract'] = [np.nan, np.nan, np.nan]
         df_template = df.copy()
+        
         df_template.at[1, 'verbatimTraitValue__nitrogen_free_extract'] = 44.85
         df_template.at[1, 'measurementMethod__nitrogen_free_extract'] = "\nNot reported: calculated by difference"
         self.assertTrue(self.check.check_nfe(df))
-        self.assertEqual(df.to_string(), df_template.to_string())
+        self.assertTrue(df.to_string(), df_template.to_string())
+        self.assertTrue(self.check.check_nfe(df_missing_nfe_headers))
+        df_missing_nfe_headers.sort_index(axis=1, inplace=True)
+        df_template.sort_index(axis=1, inplace=True)
+        df_template['measurementMethod__nitrogen_free_extract'] = "\nNot reported: calculated by difference"
+        self.assertEqual(df_missing_nfe_headers.to_string(), df_template.to_string())
+        
+
+    def test_convert_empty_values_pa(self):
+        df = self.pa_df.copy()
+        df.loc[:] = np.nan
+        pa_item_dict = {
+            "proximate_analysis" : None,
+            "location" : None,
+            "cited_reference" : None,
+            "forage" : None
+        }
+        headers = list(df.columns.values)
+        template_headers = [
+            "proximate_analysis",
+            "location",
+            "cited_reference",
+            "forage",
+            "sample_size",
+            "measurement_determined_by",
+            "measurement_remarks",
+            "moisture_reported",
+            "moisture_dispersion",
+            "moisture_measurement_method",
+            "dm_reported",
+            "dm_dispersion",
+            "dm_measurement_method",
+            "ee_reported",
+            "ee_dispersion",
+            "ee_measurement_method",
+            "cp_reported",
+            "cp_dispersion",
+            "cp_measurement_method",
+            "cf_reported",
+            "cf_dispersion",
+            "cf_measurement_method",
+            "ash_reported",
+            "ash_dispersion",
+            "ash_measurement_method",
+            "nfe_reported",
+            "nfe_dispersion",
+            "nfe_measurement_method",
+            "cited_reference"
+        ]
+        for row in df.itertuples():
+            new_item_dict = tools.convert_empty_values_pa(row=row, headers=headers, pa_item_dict=pa_item_dict)
+            self.assertEqual(template_headers.sort(), list(new_item_dict.keys()).sort())
+            self.assertTrue('nan' not in new_item_dict.values() and np.nan not in new_item_dict.values())
+            for item in new_item_dict.values():
+                self.assertTrue(item == None)

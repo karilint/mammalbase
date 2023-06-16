@@ -34,7 +34,7 @@ def import_diet_set(request):
 		messages.error(request,"Unable to upload file. "+repr(e))
 	return HttpResponseRedirect(reverse("import_diet_set"))
 
-@login_required # temporary
+@login_required
 def import_proximate_analysis(request):
 	if request.method == "GET":
 		return render(request, "import/import_proximate_analysis.html")

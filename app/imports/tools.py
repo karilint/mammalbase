@@ -173,6 +173,7 @@ class Check:
         else:
             df["measurementMethod__nitrogen_free_extract"] = missing_nfe_message
             df["verbatimTraitValue__nitrogen_free_extract"] = df.apply(self._calculate_nfe, axis=1)
+            df["dispersion__nitrogen_free_extract"] = numpy.nan
         
         return True
 
