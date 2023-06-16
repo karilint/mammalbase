@@ -10,6 +10,7 @@ from imports.tools import Check
 import imports.tools as tools
 import tempfile, csv, os
 import pandas as pd
+import numpy as np
 
 class ToolsTest(TestCase):
     def setUp(self):
@@ -870,7 +871,7 @@ class ToolsTest(TestCase):
 
     def test_create_ets_minimum_headers(self):
         df = pd.DataFrame.from_dict({'author': ['1111-1111-2222-222X'], 
-            'references':['Tester, T., TesterToo, T., Testing, testing'], 
+            'references':['Tester, T., TesterToo, T., Testing, testing'],
             'taxonRank':['Species'],
             'verbatimScientificName':['Lagothrix flavicauda'],
             'verbatimTraitName':['TestName'],
@@ -885,3 +886,47 @@ class ToolsTest(TestCase):
         smv = SourceMeasurementValue.objects.get(source_attribute=sa)
         self.assertEqual(smv.source_entity.name, 'Lagothrix flavicauda')
         self.assertEqual(smv.n_total, 0)
+    
+    def test_check_nfe(self):
+        df = pd.DataFrame.from_dict(
+            {
+                'verbatimScientificName': ['Grasshoppers: S. gregaria & L. migratoria manilensis','Ceratophyllum demersum, whole','Mangifera indica, floral parts'],
+                'PartOfOrganism':['WHOLE','SHOOT','FLOWER'],
+                'individualCount':[np.nan,np.nan,np.nan],
+                'measurementMethod':['Association of the Official Analytical Chemists (AOAC), (1990)','Association of Official Analytical Chemistry (AOAC 2002; AOAC 2002b)','Association of Official Analytical Chemist (AOAC, 1990)'],
+                'measurementDeterminedBy':[np.nan,np.nan,np.nan],
+                'verbatimLocality':['Sample A/e biological garden Federal College of Education, Katsina State, Nigeria','Köyceğiz – Dalyan Lagoon, Muğla Province, Turkey','Ajayi Crowder Memorial Secondary School Bariga, Saint Finberrs Secondary School compound and along same road to Akoka Primary School, Lagos'],
+                'measurementRemarks':['triplicate, wings of the samples were removed before the analysis','triplicate','duplicates'],
+                'verbatimEventDate':[np.nan,np.nan,np.nan],
+                'verbatimTraitValue__moisture':[5.667,np.nan,12.21],
+                'dispersion__moisture':[0.577,np.nan,0.15],
+                'measurementMethod__moisture':['An atmospheric heat drying at 105 ℃ for 4 h',np.nan,'5 g sample in an oven at 105 °C for 3 h'],
+                'verbatimTraitValue__dry_matter':[np.nan,np.nan,np.nan,],
+                'dispersion__dry_matter':[np.nan,np.nan,np.nan],
+                'measurementMethod__dry_matter':[np.nan,'oven drying at 105°C for 24 hours',np.nan],
+                'verbatimTraitValue__ether_extract':[10.667,1.8,19.5],
+                'dispersion__ether_extract':[0.764,np.nan, 1.06],
+                'measurementMethod__ether_extract':['Soxhlet extraction method','ether extraction method', 'petroleum ether extraction in a Soxhlet apparatus, 3 g of sample was extracted for 6 h'],
+                'verbatimTraitValue__crude_protein':[57.33,15.78,7.2],
+                'dispersion__crude_protein':[0.148,np.nan,0.71],
+                'measurementMethod__crude_protein':['micro Kjeldahl method','Kjeldahl protein unit','Kjeldahl method of 1883'],
+                'verbatimTraitValue__crude_fibre':[10.333,18.61,16.14],
+                'dispersion__crude_fibre':[0.289,np.nan,0.15],
+                'measurementMethod__crude_fibre':[np.nan,np.nan,'enzymatic gravimetric method used for dietary fibre evaluation (Tecator Fibertec E System Foss Tecator, Sweden'],
+                'verbatimTraitValue_ash':[9.833,18.96,6.5],
+                'dispersion__ash':[0.764,np.nan,0.35],
+                'measurementMethod_ash':['direct ashing method at 600 ℃','firing in a muffle furnace at 550°C for 4 hours','4 g in a muffle furnace at 600 °C for 6 h'],
+                'verbatimTraitValue__nitrogen_free_extract':[6.17,np.nan,38.66],
+                'dispersion__nitrogen_free_extract':[0.996,np.nan,0.41],
+                'measurementMethod__nitrogen_free_extract':[np.nan,np.nan,'subtracting the sum of the percent values of moisture, protein, ash, crude fibre, and fat from 100'],
+                'author':['1111-1111-2222-222X','1111-1111-2222-222X','1111-1111-2222-222X'],
+                'associatedReferences':['Original study','Original study','Original study',],
+                'references':['Suleiman, F.B., Halliru, A. and Adamu, I.T., 2023. Proximate and heavy metal analysis of grasshopper species consumed in Katsina State.','Kiziloğlu, Ü., Yıldırım, Ö. and Çantaş, İ.B., 2023. Use of Coontail as a natural phytoremediation feed additive for common carp. Oceanological and Hydrobiological Studies, 52(1), pp.102-110.','Adeonipekun, P.A., Adeniyi, T.A., Chidinma, O.Q. and Omolayo, R.O., 2023. Proximate, phytochemical, and antimicrobial evaluation of flowers of Mangifera indica L., stamens of Terminalia catappa L., and anther of Delonix regia (Bojer ex Hook.) Raf. South African Journal of Botany, 155, pp.223-229.']
+
+            }
+        )
+        df_template = df.copy()
+        df_template.at[1, 'verbatimTraitValue__nitrogen_free_extract'] = 44.85
+        df_template.at[1, 'measurementMethod__nitrogen_free_extract'] = "\nNot reported: calculated by difference"
+        self.assertTrue(self.check.check_nfe(df))
+        self.assertEqual(df.to_string(), df_template.to_string())
