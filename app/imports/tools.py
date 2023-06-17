@@ -3,6 +3,7 @@ import json
 import sys
 import traceback
 from datetime import timedelta
+from decimal import Decimal
 
 import requests
 
@@ -11,6 +12,7 @@ import numpy
 
 from django.contrib import messages
 from django.db import transaction
+from django.db import DatabaseError
 from django.contrib.auth.models import User
 from allauth.socialaccount.models import SocialAccount
 from requests_cache import CachedSession
@@ -439,7 +441,7 @@ class Check:
            "verbatimLatitude":250,
            "verbatimLongitude":250
         }
-        for header, max_length in all_headers.items():
+        for header in all_headers.keys():
             if header in import_headers:
                 for row, value in enumerate(df.loc[:, header], 1):
                     if len(str(value)) > all_headers[header]:
@@ -1196,11 +1198,11 @@ def convert_empty_values_pa(row, headers, pa_item_dict):
         }
     }
     
-    for header, item in proximate_analysis_item_headers.keys():
+    for header in proximate_analysis_item_headers.keys():
         if header in headers:
             value = getattr(row, header)
             value = possible_nan_to_none(value)
-            pa_item_dict_new[item["name"]] = value
+            pa_item_dict_new[proximate_analysis_item_headers[header]["name"]] = value
 
     return pa_item_dict_new
 
@@ -1211,8 +1213,7 @@ def generate_standard_values_pa(items):
     for item in items.keys():
         if "reported" in item and "dm" not in item and "moisture" not in item and items[item] is not None:
             item_sum += Decimal(items[item])
-
-    # item_sum = sum([items[item] for item in items.keys() if ("reported" in item and "dm" not in item and "moisture" not in item)])
+    
     if abs(item_sum - Decimal(100)) > abs(item_sum - Decimal(1000)):
         item_sum /= Decimal(10)
 
@@ -1222,7 +1223,10 @@ def generate_standard_values_pa(items):
     for item in list(items.keys()):
         if "reported" not in item or "dm" in item or "moisture" in item:
             continue
-        standard_items[item.replace("reported","std")] = (Decimal(items[item]) / item_sum) * Decimal(100)
+        elif items[item] is None:
+            standard_items[item.replace("reported","std")] = None
+        else:
+            standard_items[item.replace("reported","std")] = (Decimal(items[item]) / item_sum) * Decimal(100)
 
     return standard_items
 
