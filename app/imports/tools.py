@@ -1,17 +1,29 @@
-import numpy
-from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue, SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation, MasterEntity, ProximateAnalysisItem, ProximateAnalysis
-from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
-from django.contrib import messages
-from django.db import transaction, DatabaseError
-from allauth.socialaccount.models import SocialAccount
-from django.contrib.auth.models import User
-from requests_cache import CachedSession
+import re
+import json
+import sys
+import traceback
 from datetime import timedelta
 from decimal import Decimal
-import itis.views as itis
+
+import requests
 
 import pandas as pd
-import re, json, requests, sys, traceback
+import numpy
+
+from django.contrib import messages
+from django.db import transaction
+from django.db import DatabaseError
+from django.contrib.auth.models import User
+from allauth.socialaccount.models import SocialAccount
+from requests_cache import CachedSession
+
+from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue
+from mb.models import SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod
+from mb.models import SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation
+from mb.models import MasterEntity, ProximateAnalysisItem, ProximateAnalysis
+from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
+import itis.views as itis
+
 
 class Check:
     def __init__(self, request):
@@ -64,7 +76,7 @@ class Check:
                 messages.error(self.request, "The author is empty at row " +  str(counter) + ".")
                 return False
             data = SocialAccount.objects.all().filter(uid=author)
-            if data.exists() == False:
+            if not data.exists():
                 self.id = None
                 messages.error(self.request, "The author " + str(author) + " is not a valid ORCID ID at row " +  str(counter) + ".")
                 return False
@@ -148,7 +160,7 @@ class Check:
                             value = value.replace(",",".")
                         try:
                             df.loc[row, header] = optional_headers[header](value)
-                        except Exception as e:
+                        except ValueError:
                             messages.error(self.request, f"The {header} on row {row+1} is an incorrect type. It should be {type_names[optional_headers[header]]}.")
                             return False
         return True
@@ -173,6 +185,7 @@ class Check:
         else:
             df["measurementMethod__nitrogen_free_extract"] = missing_nfe_message
             df["verbatimTraitValue__nitrogen_free_extract"] = df.apply(self._calculate_nfe, axis=1)
+            df["dispersion__nitrogen_free_extract"] = numpy.nan
         
         return True
 
@@ -188,7 +201,7 @@ class Check:
         headers = list(df.columns.values)
         for row in range(df.shape[0]):
             is_plant = self._check_if_plant(df.loc[row, "verbatimScientificName"])
-            if is_plant == None:
+            if is_plant is None:
                 continue
             if is_plant and ('verbatimTraitValue__crude_fibre' not in headers or possible_nan_to_zero(df.loc[row, 'verbatimTraitValue__crude_fibre'])==0):
                 messages.error(self.request, f"Item of type plantae is missing required value verbatimTraitValue__crude_fibre on row {row}.")
@@ -217,22 +230,22 @@ class Check:
             if len(name) > 250:
                 messages.error(self.request, f"Scientific name \'{name[:10]}...\' is too long at row {row}.")
                 return False
-        if taxon_rank_included == False:
+        if not taxon_rank_included:
             return True
         df_new = df[['verbatimScientificName', 'taxonRank']]
         for row, item in enumerate(df_new.values, 1):
             names_list = item[0].split()
 
-            if len(names_list) > 3 and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list and "spp." not in names_list and "spp" not in names_list:
+            if len(names_list) > 3 and not any(x in {"sp.", "sp", "cf.", "cf", "indet.", "indet", "aff.", "aff", "spp.", "spp"} for x in names_list):
                 messages.error(self.request, f"Scientific name \'{str(item[0])}\' is not in the correct format on row {row}.")
                 return False
-            if len(names_list) == 3 and item[1] not in ['Subspecies', 'subspecies'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list and "aff." not in names_list and "aff" not in names_list and "spp." not in names_list and "spp" not in names_list:
+            if len(names_list) == 3 and item[1] not in {'Subspecies', 'subspecies'} and not any(x in {"sp.", "sp", "cf.", "cf", "indet.", "indet", "aff.", "aff", "spp.", "spp"} for x in names_list):
                 messages.error(self.request, f"Scientific name \'{str(item[0])}\' is not in the correct format or taxonomic rank \'{str(item[1])}\' should be 'Subspecies' on row {row}.")
                 return False
-            if len(names_list) == 2 and item[1] not in ['Species', 'species'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list and "aff." not in names_list and "aff" not in names_list and "spp." not in names_list and "spp" not in names_list:
+            if len(names_list) == 2 and item[1] not in {'Species', 'species'} and not any(x in {"sp.", "sp", "cf.", "cf", "indet.", "indet", "aff.", "aff", "spp.", "spp"} for x in names_list):
                 messages.error(self.request, f"Scientific name \'{str(item[0])}\' is not in the correct format or taxonomic rank \'{str(item[1])}\' should be 'Species' on row {row}.")
                 return False
-            if len(names_list) == 1 and item[1] not in ['Genus', 'genus'] and "sp." not in names_list and "sp" not in names_list and "cf." not in names_list and "cf" not in names_list and "indet." not in names_list and "indet" not in names_list and "aff." not in names_list and "aff" not in names_list and "aff." not in names_list and "aff" not in names_list and "spp." not in names_list and "spp" not in names_list:
+            if len(names_list) == 1 and item[1] not in {'Genus', 'genus'} and not any(x in {"sp.", "sp", "cf.", "cf", "indet.", "indet", "aff.", "aff", "spp.", "spp"} for x in names_list):
                 messages.error(self.request, f"Scientific name \'{str(item[0])}\' is not in the correct format or taxonomic rank \'{str(item[1])}\' should be 'Genus' on row {row}.")
                 return False
         return True
@@ -258,7 +271,7 @@ class Check:
                     if int(value) != 22 and int(value)!= 23:
                         messages.error(self.request, 'Gender is not in the correct format on the line '+str(counter)+' it should be 22 for male or 23 for female')
                         return False
-                except:
+                except ValueError:
                         messages.error(self.request, 'Gender is not in the correct format on the line '+str(counter)+' it should be 22 for male or 23 for female')
                         return False
         return True
@@ -296,7 +309,6 @@ class Check:
         counter = 0
         total = 1
         fooditems = []
-        lines = 1
         compare = []
 
         for lines, item in enumerate(df_new.values,2):
@@ -321,34 +333,33 @@ class Check:
                     counter += 1
                     total += int(item[2])
 
+                elif int(item[2]) == 1:
+                    reference_list = [item[0], item[3]]
+                    if has_measurementvalue:
+                        measurementvalue_reference = item[4]
+
+                    for header in optional_headers:
+                        if header in df.columns.values:
+                            reference_list.extend(list(df.loc[lines - 2:lines - 2, header].fillna(0)))
+
+                    if reference_list == compare:
+                        messages.error(self.request, "False sequence number 1 on the line " + str(lines) +".")
+                        return False
+
+                    total = 1
+                    counter = 2
+                    scientific_name = item[0]
+                    references = item[3]
+                    fooditems = [item[1]]
+                    compare = reference_list
+                    continue
+
                 else:
-                    if int(item[2]) == 1:
-                        reference_list = [item[0], item[3]]
-                        if has_measurementvalue:
-                            measurementvalue_reference = item[4]
-
-                        for header in optional_headers:
-                            if header in df.columns.values:
-                                reference_list.extend([value for value in df.loc[(lines-2):(lines-2), header].fillna(0)])
-
-                        if reference_list == compare:
-                            messages.error(self.request, "False sequence number 1 on the line " + str(lines) +".")
-                            return False
-                    
-                        total = 1
-                        counter = 2
-                        scientific_name = item[0]
-                        references = item[3]
-                        fooditems = [item[1]]
-                        compare = reference_list
-                        continue
-                
-                    else:
-                        sum = (counter*(counter+1))/2
-                        counter -= 1
-                        if counter != -1 and sum != total:
-                            messages.error(self.request, "Check the sequence numbering on the line " + str(lines) + ".")
-                            return False                
+                    counter_sum = (counter*(counter+1))/2
+                    counter -= 1
+                    if counter != -1 and counter_sum != total:
+                        messages.error(self.request, "Check the sequence numbering on the line " + str(lines) + ".")
+                        return False
             else:
                 messages.error(self.request, "Sequence number on the line " + str(lines) + " is not numeric.")
                 return False
@@ -370,7 +381,7 @@ class Check:
             measurement_headers = [hdr for hdr in import_headers if 'verbatimTraitValue' in hdr or 'dispersion' in hdr]
             for header in measurement_headers:
                 for row, value in enumerate(df.loc[:, header], 1):
-                    if pd.isnull(value) == True or any(c.isalpha() for c in str(value)) == False:
+                    if pd.isnull(value) or not any(c.isalpha() for c in str(value)):
                         pass
                     else:
                         messages.error(self.request, f"The {header} \'{value}\' on row {row} is not a number.")
@@ -471,21 +482,19 @@ class Check:
                     if float(value[0]) > float(value[2]):
                         messages.error(self.request, "Mean measurement value should be larger than minimum measurement value at row " + str(counter) + ".")
                         return False
-                elif value[2][0].isalpha() == True or value[2][-1].isalpha() == True:
+                elif value[2][0].isalpha() or value[2][-1].isalpha():
                     if value[1] == 'nan' or pd.isnull(value[1]):
                         continue
-                    elif value[2] == "nan" or pd.isnull(value[2]):
+                    if value[2] == "nan" or pd.isnull(value[2]):
                         continue
-                    else:
-                        messages.error(self.request, "Mean value should be numeric at row " + str(counter) + ".")
-                        return False
-                else:
-                    if float(value[1]) < float(value[2]):
-                        messages.error(self.request, "Mean measurement value should be smaller than maximum measurement value at row " + str(counter) + ".")
-                        return False
-                    if float(value[0]) > float(value[2]):
-                        messages.error(self.request, "Mean measurement value should be larger than minimum measurement value at row " + str(counter) + ".")
-                        return False
+                    messages.error(self.request, "Mean value should be numeric at row " + str(counter) + ".")
+                    return False
+                elif float(value[1]) < float(value[2]):
+                    messages.error(self.request, "Mean measurement value should be smaller than maximum measurement value at row " + str(counter) + ".")
+                    return False
+                elif float(value[0]) > float(value[2]):
+                    messages.error(self.request, "Mean measurement value should be larger than minimum measurement value at row " + str(counter) + ".")
+                    return False
         else:
             counter = 1
             df_new = df[['measurementValue_min', 'measurementValue_max']]
@@ -496,8 +505,8 @@ class Check:
                     return False
         return True
         
-def get_author(id):
-    author = User.objects.filter(socialaccount__uid=id)[0]
+def get_author(social_id):
+    author = User.objects.filter(socialaccount__uid=social_id)[0]
     return author
 
 def get_sourcereference_citation(reference, author):
@@ -528,44 +537,44 @@ def get_sourceentity(vs_name, reference, entity, author):
     return new_sourceentity
 
 def get_timeperiod(sampling, ref, author):
-    if sampling != sampling or sampling == 'nan':
+    if sampling == 'nan':
         return None
-    else:
-        tp_all = TimePeriod.objects.filter(reference=ref, name__iexact=sampling)
-        if len(tp_all) > 0:
-            return tp_all[0]
-        else:
-            new_timeperiod = TimePeriod(reference=ref, name=sampling, created_by=author)
-            new_timeperiod.save()
-            return new_timeperiod
+
+    tp_all = TimePeriod.objects.filter(reference=ref, name__iexact=sampling)
+    if len(tp_all) > 0:
+        return tp_all[0]
+
+    new_timeperiod = TimePeriod(reference=ref, name=sampling, created_by=author)
+    new_timeperiod.save()
+    return new_timeperiod
 
 def get_sourcemethod(method, ref, author):
-    if method != method or method == 'nan':
+    if method == 'nan':
         return None
     sr_old = SourceMethod.objects.filter(reference=ref, name__iexact=method)
     if len(sr_old) > 0:
         return sr_old[0]
-    else:
-        new_sourcemethod = SourceMethod(reference=ref, name=method, created_by=author)
-        new_sourcemethod.save()
-        return new_sourcemethod
+
+    new_sourcemethod = SourceMethod(reference=ref, name=method, created_by=author)
+    new_sourcemethod.save()
+    return new_sourcemethod
 
 def get_sourcelocation(location, ref, author):
-    if location != location or location == 'nan':
+    if location == 'nan':
         return None
     sl_old = SourceLocation.objects.filter(name__iexact=location, reference=ref)
     if len(sl_old) > 0:
         return sl_old[0]
-    else:
-        new_sourcelocation = SourceLocation(reference=ref, name=location, created_by=author)
-        new_sourcelocation.save()
-        return new_sourcelocation
+
+    new_sourcelocation = SourceLocation(reference=ref, name=location, created_by=author)
+    new_sourcelocation.save()
+    return new_sourcelocation
 
 def get_choicevalue(gender):
-    if gender != gender or gender == 'nan':
+    if gender == 'nan':
         return None
     if gender != '22' or gender != '23':
-        return
+        return None
     choicevalue = ChoiceValue.objects.filter(pk=gender)
     return choicevalue[0]
 
@@ -577,13 +586,13 @@ def get_fooditem_json(food):
         session = CachedSession("itis_cache", expire_after=timedelta(days=30), stale_if_error=True)
         file = session.get(url)
         data = file.text
-    except Exception:
+    except (ConnectionError, UnicodeError):
         return {}
     try:
         taxon_data = json.loads(data)['itisTerms'][0]
     except UnicodeDecodeError:
         taxon_data = json.loads(data.decode('utf-8', 'ignore'))['itisTerms'][0]
-    if taxon_data and taxon_data['scientificName'].lower() == food.lower() and taxon_data['nameUsage'] in ['valid', 'accepted']:
+    if taxon_data and taxon_data['scientificName'].lower() == food.lower() and taxon_data['nameUsage'] in {'valid', 'accepted'}:
         tsn = taxon_data['tsn']
         scientific_name = taxon_data['scientificName']
         hierarchy = itis.getFullHierarchyFromTSN(tsn)
@@ -601,8 +610,7 @@ def get_fooditem_json(food):
             {'results': [return_data]}
         ]}
         return result
-    else:
-        return {}
+    return {}
 
 def create_tsn(results, tsn):
     
@@ -624,7 +632,7 @@ def create_fooditem(results, food_upper, part):
     taxonomic_unit = create_tsn(results, tsn)
 
     name = food_upper
-    if part != 'nan' and part != None:
+    if part not in {'nan', None}:
         part = ChoiceValue.objects.filter(caption=part)[0]
     else:
         part = None
@@ -672,7 +680,7 @@ def get_fooditem(food, part):
     rank_id = generate_rank_id(food)
 
     if len(rank_id) == 0:
-        if part != 'nan' and part != None:
+        if part not in {'nan', None}:
             part = ChoiceValue.objects.filter(caption=part.upper())[0]
         else:
             part = None
@@ -728,11 +736,33 @@ def create_dietset(row, df):
     else:
         study_time = None
         
-    ds_old = DietSet.objects.filter(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time, created_by=author)
+    ds_old = DietSet.objects.filter(
+        reference=reference,
+        taxon=taxon,
+        location=location,
+        gender=gender,
+        sample_size=sample_size,
+        cited_reference=cited_reference,
+        time_period=time_period,
+        method=method,
+        study_time=study_time,
+        created_by=author
+    )
     if len(ds_old) > 0:
         ds = ds_old[0]
     else:
-        ds = DietSet(reference=reference, taxon=taxon, location=location, gender=gender, sample_size=sample_size, cited_reference=cited_reference, time_period=time_period, method=method, study_time=study_time, created_by=author)
+        ds = DietSet(
+            reference=reference,
+            taxon=taxon,
+            location=location,
+            gender=gender,
+            sample_size=sample_size,
+            cited_reference=cited_reference,
+            time_period=time_period,
+            method=method,
+            study_time=study_time,
+            created_by=author
+        )
         ds.save()
 
     create_dietsetitem(row, ds, headers)
@@ -768,18 +798,19 @@ def get_referencedata_from_crossref(citation): # pragma: no cover
     c = citation.replace(" ", "%20")
     url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=kari.lintulaakso@helsinki.fi&rows=2'
     try:
-        x = requests.get(url)
+        x = requests.get(url, timeout=300)
         y = x.json()
         return y
     except requests.exceptions.RequestException as e:
         print('Error: ', e)
+        return None
 
 def title_matches_citation(title, source_citation):
-	# https://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string
+    # https://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string
     title_without_html = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', title)
-    title_without_space = re.sub('\s+', '', title_without_html)
+    title_without_space = re.sub(r'\s+', '', title_without_html)
     source_citation_without_html = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', source_citation)
-    source_citation_without_space = re.sub('\s+', '', source_citation_without_html)
+    source_citation_without_space = re.sub(r'\s+', '', source_citation_without_html)
 
     if title_without_space.lower() not in source_citation_without_space.lower():
         return False
@@ -797,19 +828,19 @@ def create_masterreference(source_citation, response_data, sr, user_author):
         issue = None
         page = None
         citation = None
-        type = None
+        ref_type = None
         x = response_data['message']['items'][0]
-        fields = list()
+        fields = []
         for field_name in x:
             fields.append(field_name)
         if 'title' not in fields:
             return False
-        elif title_matches_citation(x['title'][0], source_citation) == False:
+        if not title_matches_citation(x['title'][0], source_citation):
             return False
         title = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', x['title'][0])
         if 'author' not in fields:
             return False
-        authors = list()
+        authors = []
         for a in x['author']:
             author = a['family'] + ", " + a['given'][0] + "."
             authors.append(author)
@@ -829,8 +860,8 @@ def create_masterreference(source_citation, response_data, sr, user_author):
         if 'page' in fields:
             page = x['page']
         if 'type' in fields:
-            type = x['type']
-            if type == 'journal-article':
+            ref_type = x['type']
+            if ref_type == 'journal-article':
                 citation = make_harvard_citation_journalarticle(title, doi, authors, year, container_title, volume, issue, page)
             else:
                 citation = ""
@@ -840,7 +871,21 @@ def create_masterreference(source_citation, response_data, sr, user_author):
                     else:
                         citation += str(a) + ", "
                 citation += " " + str(year) + ". " + str(title) + ". Available at: " + str(doi) + "."
-        mr = MasterReference(type=type, doi=doi, uri=uri, first_author=first_author, year=year, title=title, container_title=container_title, volume=volume, issue=issue, page=page, citation=citation, created_by=user_author)
+
+        mr = MasterReference(
+            type=ref_type,
+            doi=doi,
+            uri=uri,
+            first_author=first_author,
+            year=year,
+            title=title,
+            container_title=container_title,
+            volume=volume,
+            issue=issue,
+            page=page,
+            citation=citation,
+            created_by=user_author
+        )
         mr.save()
         sr.master_reference = mr
         sr.save()
@@ -865,7 +910,7 @@ def make_harvard_citation_journalarticle(title, d, authors, year, container_titl
 def api_query_globalnames_by_name(name):
     trimmed_name = name.replace(" ", "%20")
     url = "https://resolver.globalnames.org/name_resolvers.json?names="+trimmed_name.capitalize()+"&data_source_ids=174"
-    result = requests.get(url)
+    result = requests.get(url, timeout=300)
     return result.json()
 
 def check_entity_realtions(source_entity):
@@ -880,33 +925,6 @@ def check_entity_realtions(source_entity):
         print('Error searching entity relation', sys.exc_info(),traceback.format_exc())
 
 
-#OLD FUNCTION WITH OLD (NON-WORKING) API
-"""def create_new_entityrelation_with_api_data(source_entity):
-    api_result = api_query_globalnames_by_name(source_entity.name)["data"][0]
-    if api_result["is_known_name"]:
-        canonical_form = api_result["results"][0]["canonical_form"]
-        master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity.entity_id,reference_id=4)
-        EntityRelation(master_entity=master_entity_result[0],
-                        source_entity=source_entity.id,
-                        relation_id=1,
-                        data_status_id=5,
-                        relation_status_id=1,
-                        remarks=master_entity_result[0].reference).save()
-
-    elif api_result["results"][0]['score']>=0.75 and api_result["results"][0]['edit_distance'] <= 2:
-        canonical_form = api_result["results"][0]["canonical_form"]
-        master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity.entity_id,reference_id=4)
-        if len(master_entity_result) > 0:
-            EntityRelation(master_entity=master_entity_result[0],
-                            source_entity=source_entity.id,
-                            relation_id=1,
-                            data_status_id=5,
-                            relation_status_id=1,
-                            remarks=master_entity_result[0].reference).save()
-    else:
-        return
-"""
-#NEW FUNCTION WITH NEW API
 def create_new_entityrelation_with_api_data(source_entity):
     api_result = get_fooditem_json(source_entity.name)["data"][0]
     if api_result:
@@ -1020,7 +1038,8 @@ def create_ets(row, headers):
             gender = get_choicevalue_ets(getattr(row, 'sex'), 'Gender', author)
         else:
             gender = None
-        create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author)
+        create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic,
+                                      unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author)
         return
 
 @transaction.atomic
@@ -1192,57 +1211,133 @@ def generate_standard_values_pa(items):
     #Sum of reported fields excluding dry matter and moisture
     item_sum = Decimal(0.0)
     for item in items.keys():
-        if "reported" in item and "dm" not in item and "moisture" not in item and items[item] != None:
+        if "reported" in item and "dm" not in item and "moisture" not in item and items[item] is not None:
             item_sum += Decimal(items[item])
-
-    # item_sum = sum([items[item] for item in items.keys() if ("reported" in item and "dm" not in item and "moisture" not in item)])
+    
     if abs(item_sum - Decimal(100)) > abs(item_sum - Decimal(1000)):
         item_sum /= Decimal(10)
-    
-    if items["moisture_reported"] != None and abs(100 - item_sum + Decimal(items["moisture_reported"])) < abs(100 - item_sum):
+
+    if items["moisture_reported"] is not None and abs(100 - item_sum + Decimal(items["moisture_reported"])) < abs(100 - item_sum):
         item_sum += Decimal(items["moisture_reported"])
     
     for item in list(items.keys()):
         if "reported" not in item or "dm" in item or "moisture" in item:
             continue
-        standard_items[item.replace("reported","std")] = (Decimal(items[item]) / item_sum) * Decimal(100)
+        elif items[item] is None:
+            standard_items[item.replace("reported","std")] = None
+        else:
+            standard_items[item.replace("reported","std")] = (Decimal(items[item]) / item_sum) * Decimal(100)
 
     return standard_items
 
-def create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, lifestage, accuracy, measured_by, remarks, cited_reference, author):
-    smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_unknown=count, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, life_stage=lifestage, measurement_accuracy__iexact=accuracy, measured_by__iexact=measured_by, remarks__iexact=remarks, cited_reference__iexact=cited_reference)
+def create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value,
+                                            statistic, unit, lifestage, accuracy, measured_by, remarks,
+                                            cited_reference, author):
+    smv_old = SourceMeasurementValue.objects.filter(
+        source_entity=taxon,
+        source_attribute=attribute,
+        source_location=locality,
+        n_total=count, n_unknown=count,
+        minimum=mes_min, maximum=mes_max,
+        std=std, mean=vt_value,
+        source_statistic=statistic,
+        source_unit=unit,
+        life_stage=lifestage,
+        measurement_accuracy__iexact=accuracy,
+        measured_by__iexact=measured_by,
+        remarks__iexact=remarks,
+        cited_reference__iexact=cited_reference
+    )
     if len(smv_old) > 0:
         return
-    sm_value = SourceMeasurementValue(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_unknown=count, minimum=mes_min, maximum=mes_max, std=std,  mean=vt_value, source_statistic=statistic, source_unit=unit, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+    sm_value = SourceMeasurementValue(
+        source_entity=taxon,
+        source_attribute=attribute,
+        source_location=locality,
+        n_total=count, n_unknown=count,
+        minimum=mes_min, maximum=mes_max,
+        std=std,  mean=vt_value,
+        source_statistic=statistic,
+        source_unit=unit,
+        life_stage=lifestage,
+        measurement_accuracy=accuracy,
+        measured_by=measured_by,
+        remarks=remarks,
+        cited_reference=cited_reference,
+        created_by=author
+    )
     sm_value.save()
 
-def create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, gender, lifestage, accuracy, measured_by, remarks, cited_reference, author):
+def create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit,
+                                  gender, lifestage, accuracy, measured_by, remarks, cited_reference, author):
     n_female = 0
     n_male = 0
     n_unknown = 0
     if isinstance(gender, type(None)):
-        create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit, lifestage, accuracy, measured_by, remarks, cited_reference, author)
+        create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value,
+                                                statistic, unit, lifestage, accuracy, measured_by, remarks,
+                                                cited_reference, author)
         return 
-    elif gender.caption.lower() == 'female':
+    if gender.caption.lower() == 'female':
         n_female = count
     elif gender.caption.lower() == 'male':
         n_male = count
     else:
         n_unknown = count     
-    smv_old = SourceMeasurementValue.objects.filter(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_female=n_female, n_male=n_male, n_unknown=n_unknown, minimum=mes_min, maximum=mes_max, std=std, mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy__iexact=accuracy, measured_by__iexact=measured_by, remarks__iexact=remarks, cited_reference__iexact=cited_reference)
+    smv_old = SourceMeasurementValue.objects.filter(
+        source_entity=taxon,
+        source_attribute=attribute,
+        source_location=locality,
+        n_total=count,
+        n_female=n_female,
+        n_male=n_male,
+        n_unknown=n_unknown,
+        minimum=mes_min,
+        maximum=mes_max,
+        std=std,
+        mean=vt_value,
+        source_statistic=statistic,
+        source_unit=unit,
+        gender=gender,
+        life_stage=lifestage,
+        measurement_accuracy__iexact=accuracy,
+        measured_by__iexact=measured_by,
+        remarks__iexact=remarks,
+        cited_reference__iexact=cited_reference
+    )
     if len(smv_old) > 0:
         return
-    sm_value = SourceMeasurementValue(source_entity=taxon, source_attribute=attribute, source_location=locality, n_total=count, n_female=n_female, n_male=n_male, n_unknown=n_unknown, minimum=mes_min, maximum=mes_max, std=std,  mean=vt_value, source_statistic=statistic, source_unit=unit, gender=gender, life_stage=lifestage, measurement_accuracy=accuracy, measured_by=measured_by, remarks=remarks, cited_reference=cited_reference, created_by=author)
+    sm_value = SourceMeasurementValue(
+        source_entity=taxon,
+        source_attribute=attribute,
+        source_location=locality,
+        n_total=count,
+        n_female=n_female,
+        n_male=n_male,
+        n_unknown=n_unknown,
+        minimum=mes_min,
+        maximum=mes_max,
+        std=std,
+        mean=vt_value,
+        source_statistic=statistic,
+        source_unit=unit,
+        gender=gender,
+        life_stage=lifestage,
+        measurement_accuracy=accuracy,
+        measured_by=measured_by, remarks=remarks,
+        cited_reference=cited_reference,
+        created_by=author
+    )
     sm_value.save()
     return
 
-def get_choicevalue_ets(choice, set, author):
+def get_choicevalue_ets(choice, choice_set, author):
     if choice != choice or choice == 'nan':
         return None
-    choiceset = ChoiceValue.objects.filter(caption__iexact=choice, choice_set__iexact=set)
-    if len(choiceset) > 0:
-        return choiceset[0]
-    cv = ChoiceValue.objects.create(caption=choice, choice_set=set, created_by=author)
+    choiceset_obj = ChoiceValue.objects.filter(caption__iexact=choice, choice_set__iexact=choice_set)
+    if len(choiceset_obj) > 0:
+        return choiceset_obj[0]
+    cv = ChoiceValue.objects.create(caption=choice, choice_set=choice_set, created_by=author)
     return cv
 
 def get_sourceunit(unit, author):
@@ -1256,10 +1351,14 @@ def get_sourceunit(unit, author):
     return su
 
 def get_sourcechoicesetoptionvalue(entity, sourcechoiceoption, author):
-    scov_old = SourceChoiceSetOptionValue.objects.filter(source_entity=entity, source_choiceset_option=sourcechoiceoption)
+    scov_old = SourceChoiceSetOptionValue.objects.filter(
+        source_entity=entity, source_choiceset_option=sourcechoiceoption
+    )
     if len(scov_old) > 0:
         return scov_old[0]
-    scov = SourceChoiceSetOptionValue(source_entity=entity, source_choiceset_option=sourcechoiceoption, created_by=author)
+    scov = SourceChoiceSetOptionValue(
+        source_entity=entity, source_choiceset_option=sourcechoiceoption, created_by=author
+    )
     scov.save()
     return scov
 
@@ -1284,7 +1383,9 @@ def get_sourcestatistic(statistic, ref, author):
     return ss
 
 def get_sourceattribute(name, ref, entity, method, type_value, author):
-    sa_old = SourceAttribute.objects.filter(name__iexact=name, reference=ref, entity=entity, method=method, type=type_value)
+    sa_old = SourceAttribute.objects.filter(
+        name__iexact=name, reference=ref, entity=entity, method=method, type=type_value
+    )
     if len(sa_old) > 0:
         return sa_old[0]
     sa = SourceAttribute(name=name, reference=ref, entity=entity, method=method, type=type_value, created_by=author)
