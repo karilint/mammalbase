@@ -77,6 +77,21 @@ services:
     container_name: mammalbase_celery_staging
     command: celery -A config --workdir=. worker -l INFO --concurrency=1
 
+  celery-beat:
+    image: palaeontologyhelsinki/mammalbase_staging
+    user: "1000:1000"
+    restart: unless-stopped
+    build: ./app
+    volumes:
+      - static:/vol/web
+      - ./app/logs:/src/app/logs
+    env_file:
+      - ./.env
+    depends_on:
+      - redis
+    container_name: mammalbase_celery_beat_staging
+    command: celery -A config beat -l INFO -s /vol/web/static/celerybeat-schedule
+
   redis:
     image: redis
     restart: always
