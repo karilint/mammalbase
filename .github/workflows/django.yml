@@ -53,6 +53,8 @@ jobs:
         DB_NAME: test_db
         DB_USER: test_user
         DB_PASS: password
+      volumes:
+        - /vol/web
       working-directory: ./app
       run: |
         python manage.py test
