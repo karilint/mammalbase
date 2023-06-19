@@ -47,7 +47,7 @@ def export_zip_file(email_receiver: str, queries: list, export_file_id):
     temp_directory = mkdtemp()
     os.chdir(temp_directory)
 
-    zip_file_path = f'export_{datetime.now().strftime("%Y-%m-%d_%H.%M.%S.%f")}.zip'
+    zip_file_path = f'MammalBase_export_{datetime.now().strftime("%Y-%m-%d_%H.%M.%S.%f")}.zip'
     temp_zip_writer = ZipFile(zip_file_path, 'w', compression=zipfile.ZIP_DEFLATED)
 
     for query in queries:
