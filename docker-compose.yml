@@ -13,6 +13,7 @@ services:
       - 3000:3000
     volumes:
       - ./app:/src/app
+      - static:/vol/web
     env_file:
       - ./.env
     depends_on:
@@ -92,3 +93,4 @@ services:
 
 volumes:
   db: null
+  static: null
