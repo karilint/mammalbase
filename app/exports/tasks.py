@@ -103,10 +103,11 @@ def save_zip_to_django_model(zip_file_path: str, model_id):
 @shared_task
 def ets_export_query_set(user_email: str, export_file_id, is_admin_or_contributor: bool, measurement_choices):
     """Creates ETS-QuerySets."""
-    def create_traitlist_queries(measurement_choices, queries):
+
+    def create_measurement_or_fact_queries(measurement_choices, queries):
         for measurement in measurement_choices:
-            query_set, fields = traitlist_query([measurement])
-            file_name = f'traitlist_{measurement.split()[0].lower()}'
+            query_set, fields = measurement_or_fact_query([measurement], is_admin_or_contributor)
+            file_name = f'measurement_or_fact_{measurement.split()[0].lower()}'
             queries.append({
                 'file_name': file_name,
                 'fields': fields,
@@ -114,7 +115,8 @@ def ets_export_query_set(user_email: str, export_file_id, is_admin_or_contributo
             })
 
     queries = []
-    create_traitlist_queries(measurement_choices, queries)
+    create_measurement_or_fact_queries(measurement_choices, queries)
+
     query, fields = traitdata_query(measurement_choices)
     queries.append({
             'file_name': 'traitdata',
@@ -139,9 +141,9 @@ def ets_export_query_set(user_email: str, export_file_id, is_admin_or_contributo
             'fields': fields,
             'query_set': query
     })
-    query, fields = measurement_or_fact_query(measurement_choices, is_admin_or_contributor)
+    query, fields = traitlist_query(measurement_choices)
     queries.append({
-            'file_name': 'measurement_or_fact',
+            'file_name': 'traitlist',
             'fields': fields,
             'query_set': query
     })
