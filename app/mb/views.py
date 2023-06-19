@@ -1840,7 +1840,7 @@ def tsn_search(request):
         query = request.GET.get("query").lower().capitalize().replace(' ', '%20')
         url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
         try:
-            session = CachedSession("/vol/web/staticitis_cache", expire_after=datetime.timedelta(days=1))
+            session = CachedSession("/vol/web/static/itis_cache", expire_after=datetime.timedelta(days=1))
             file = session.get(url)
             data = file.text
         except Exception:
