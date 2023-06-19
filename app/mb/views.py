@@ -39,6 +39,7 @@ from imports.tools import *
 from itis.models import TaxonomicUnits
 from itis.views import *
 from requests_cache import CachedSession
+from config.settings import ITIS_CACHE
 # from ratelimit.decorators import ratelimit
 
 import requests
@@ -61,7 +62,7 @@ def server_error(request):
 
 def not_found(request):
     return render(request, 'errors/404.html')
-    
+
 def permission_denied(request):
     return render(request, 'errors/403.html')
 
@@ -123,7 +124,7 @@ def save_new_ordering(request):
     else:
         return redirect('diet_set-list')
 
-def user_is_data_admin_or_contributor(user, data):
+def user_is_data_admin_or_contributor(user, data=None):
     if user.groups.filter(name='data_admin').exists():
         return True
 
@@ -1802,7 +1803,7 @@ def tsn_list(request):
 @permission_required('mb.add_tsn', raise_exception=True)
 def tsn_new(request):
     if request.method == "POST":
-        
+
         form = TaxonomicUnitsForm(request.POST)
         if form.is_valid():
             tsn = form.save(commit=False)
@@ -1816,7 +1817,7 @@ def tsn_new(request):
 @permission_required('mb.add_tsn', raise_exception=True)
 def tsn_search(request):
     if request.method == "POST":
-    
+
         tsn_data = json.loads(request.POST.get("tsn_data"))
         hierarchy = itis.getFullHierarchyFromTSN(tsn_data["tsn"])
         if hierarchy is None:
@@ -1834,13 +1835,13 @@ def tsn_search(request):
 
         create_tsn({'data': [{'results': [return_data]}]}, tsn_data["tsn"])
         return JsonResponse("recieved", safe=False, status=201)
- 
+
     elif request.method == "GET":
         return_data = {"message":"Found no entries"}
         query = request.GET.get("query").lower().capitalize().replace(' ', '%20')
         url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
         try:
-            session = CachedSession("/vol/web/static/itis_cache", expire_after=datetime.timedelta(days=1))
+            session = CachedSession(ITIS_CACHE, expire_after=datetime.timedelta(days=1))
             file = session.get(url)
             data = file.text
         except Exception:
@@ -1849,7 +1850,7 @@ def tsn_search(request):
             data = json.loads(data)['itisTerms']
         except UnicodeDecodeError:
             data = json.loads(data.decode('utf-8', 'ignore'))['itisTerms']
-        
+
         if data[0] is not None:
             return_data["message"] = f"Found {len(data)} entries"
             for item in enumerate(data):

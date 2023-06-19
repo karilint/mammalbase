@@ -284,3 +284,4 @@ DEFAULT_FROM_EMAIL = get_var('DEFAULT_FROM_EMAIL')
 
 # Site domain
 SITE_DOMAIN = get_var('SITE_DOMAIN', 'mammalbase.net')
+ITIS_CACHE = get_var("ITIS_CACHE", "/vol/web/static/itis_cache")
