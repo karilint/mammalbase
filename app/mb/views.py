@@ -39,6 +39,7 @@ from imports.tools import *
 from itis.models import TaxonomicUnits
 from itis.views import *
 from requests_cache import CachedSession
+from config.settings import ITIS_CACHE
 # from ratelimit.decorators import ratelimit
 
 import requests
@@ -1840,7 +1841,7 @@ def tsn_search(request):
         query = request.GET.get("query").lower().capitalize().replace(' ', '%20')
         url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
         try:
-            session = CachedSession("/vol/web/static/itis_cache", expire_after=datetime.timedelta(days=1))
+            session = CachedSession(ITIS_CACHE, expire_after=datetime.timedelta(days=1))
             file = session.get(url)
             data = file.text
         except Exception:
