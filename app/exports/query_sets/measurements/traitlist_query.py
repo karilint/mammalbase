@@ -24,7 +24,10 @@ def traitlist_query(measurement_choices):
         maxAllowedValue=Value('NA'),
         minAllowedValue=Value('NA'),
         comments=Value('NA')
-    ).order_by('trait').distinct()
+    ).order_by(
+        'source_attribute__master_attribute__groups__name',
+        'source_attribute__master_attribute__attributegrouprelation__display_order'
+    ).distinct()
 
     fields = [
         ('identifier', 'identifier'),
