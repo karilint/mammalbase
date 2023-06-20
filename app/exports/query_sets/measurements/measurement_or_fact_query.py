@@ -50,12 +50,19 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
                 Value(' level data')
             )
         ),
-        measurement_method=Value('NA'),
+        measurement_method=Case(
+            When(
+                source_attribute__method__name__exact=None,
+                then=Value('NA')
+            ),
+            default='source_attribute__method__name',
+            output_field=CharField()
+        ),
         measurement_determinedBy=Value('NA'),
         measurement_determinedDate=Value('NA'),
         measurement_remarks=Case(
             When(
-                remarks__iexact=None,
+                remarks__exact=None,
                 then=Value('NA')
             ),
             default='remarks',
