@@ -99,8 +99,13 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         measurement_value_max=Round2(
             F('maximum') * F('coefficient')
         ),
+        occurrence_id=Case(
+            When(occurrence_id__endswith='-0-0-0',then=Value('NA')
+            ),
+            default='occurrence_id',
+            output_field=CharField()
+            ),
     )
-
     fields = [
         ('measurement_id','measurementID'),
         ('basis_of_record', 'basisOfRecord'),
@@ -118,6 +123,7 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         ('measurement_value_max', 'measurementValue_max'),
         ('measurement_accuracy', 'measurementAccuracy'),
         ('source_statistic__name', 'statisticalMethod'),
+        ('occurrence_id', 'occurrenceID')
     ]
 
     return query, fields
