@@ -783,6 +783,16 @@ class ToolsTest(TestCase):
         results = tools.get_fooditem_json('VOIKUKKA')
         self.assertRaises(KeyError, lambda: results['data'][0]['results'])
     
+    def test_invalid_get_fooditem_json(self):
+        results = tools.get_fooditem_json('GALIPEA OFFICINALIS')
+        self.assertEqual(results['data'][0]['results'][0]['taxonomic_status'], 'not accepted')
+        results = tools.get_fooditem_json('OXYA JAPONICA')
+        self.assertEqual(results['data'][0]['results'][0]['taxonomic_status'], 'invalid')
+    
+    def test_get_accepted_tsn(self):
+        results = tools.get_accepted_tsn(102221)
+        self.assertEqual(results['data'][0]['results'][0]['taxon_id'], '650544')
+    
     def test_create_fooditem(self):
         test_results = {'data':{0:{'results': {0:
                         {'canonical_form': 'Taraxacum officinale',
