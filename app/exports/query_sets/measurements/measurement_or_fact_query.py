@@ -53,7 +53,14 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         measurement_method=Value('NA'),
         measurement_determinedBy=Value('NA'),
         measurement_determinedDate=Value('NA'),
-        measurement_remarks=Value('NA'),
+        measurement_remarks=Case(
+            When(
+                remarks__iexact=None,
+                then=Value('NA')
+            ),
+            default='remarks',
+            output_field=CharField()
+        ),
         aggregate_measure=Case(
             When(
                 n_total=1,
