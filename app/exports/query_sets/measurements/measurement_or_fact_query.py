@@ -8,8 +8,9 @@ from exports.query_sets.measurements.base_query import base_query
 def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
     base = base_query(measurement_choices)
 
-    now = str(datetime.now(tz=timezone(timedelta(hours=2))).strftime('%Y-%m-%d %H:%M:%S +02:00'))
-    now2 = str(datetime.now(tz=timezone(timedelta(hours=2))).strftime('%d %m %Y'))
+    now = datetime.now(tz=timezone(timedelta(hours=2)))
+    now_format_1 = now.strftime('%Y-%m-%d %H:%M:%S +02:00')
+    now_format_2 = now.strftime('%d %m %Y')
 
     if is_admin_or_contributor:
         references = Replace(
@@ -24,9 +25,9 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
     else:
         references = Concat(
                     Value('The MammalBase community '),
-                    Value(now),
+                    Value(now_format_1),
                     Value(' , Data version '),
-                    Value(now2),
+                    Value(now_format_2),
                     Value(' at https://mammalbase.org/me/'),
                     output_field=CharField()
                 )
