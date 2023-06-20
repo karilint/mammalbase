@@ -789,7 +789,8 @@ class ToolsTest(TestCase):
                         'classification_path': 'Plantae|Viridiplantae|Streptophyta|Embryophyta|Tracheophyta|Spermatophytina|Magnoliopsida|Asteranae|Asterales|Asteraceae|Taraxacum|Taraxacum officinale',
                         'classification_path_ranks': 'Kingdom|Subkingdom|Infrakingdom|Superdivision|Division|Subdivision|Class|Superorder|Order|Family|Genus|Species',
                         'classification_path_ids': 	'202422|954898|846494|954900|846496|846504|18063|846535|35419|35420|36199|36213',
-                        'taxon_id':'36213'}}}}}
+                        'taxon_id':'36213',
+                        'taxonomic_status':'accepted'}}}}}
         kingdom = Kingdom(pk = 3, name = 'Plantae')
         kingdom.save()
         rank = TaxonUnitTypes(rank_id = 220, rank_name = 'Species', kingdom_id = 3, dir_parent_rank_id = 190,req_parent_rank_id = 180)
