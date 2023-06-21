@@ -1,11 +1,18 @@
-from django.db.models import Value
+from django.db.models import Value, Q
 from exports.query_sets.measurements.base_query import base_query
 
 
 def occurrence_query(measurement_choices):
     base = base_query(measurement_choices)
 
-    query = base.annotate(
+    non_active = (
+          Q(gender__is_active=False)
+        | Q(life_stage__is_active=False)
+        | Q(source_location__is_active=False)
+        | Q(source_statistic__is_active=False)
+    )
+
+    query = base.exclude(non_active).annotate(
         occurrence_id=Value('NA'),
         age=Value('NA'),
         morphotype=Value('NA'),

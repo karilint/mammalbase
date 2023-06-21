@@ -1,5 +1,5 @@
 from django.db.models.functions import Concat
-from django.db.models import CharField, Value, F, Case, When
+from django.db.models import CharField, Value, F, Case, When, Q
 from ..custom_db_functions import Round2
 from exports.query_sets.measurements.base_query import base_query
 
@@ -7,7 +7,11 @@ from exports.query_sets.measurements.base_query import base_query
 def traitdata_query(measurement_choices):
     base = base_query(measurement_choices)
 
-    query = base.annotate(
+    non_active = (
+            Q(source_attribute__master_attribute__unit__is_active=False)
+    )
+
+    query = base.exclude(non_active).annotate(
         trait_id=Concat(
             Value('https://www.mammalbase.net/ma/'),
             'source_attribute__master_attribute__id',

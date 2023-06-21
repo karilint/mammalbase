@@ -4,6 +4,16 @@ from mb.models import UnitConversion
 
 
 def base_query(measurement_choices):
+    non_active = (
+              Q(source_attribute__master_attribute__groups__is_active=False)
+            | Q(source_attribute__is_active=False)
+            | Q(source_attribute__master_attribute__is_active=False)
+            | Q(source_entity__is_active=False)
+            | Q(source_entity__master_entity__is_active=False)
+            | Q(source_unit__is_active=False)
+            | Q(source_unit__master_unit__is_active=False)
+    )
+
     query_filter_list = [Q(source_attribute__master_attribute__attributegrouprelation__group__name=value) for value in measurement_choices]
     measurement_choice_filter = Q()
     for query_filter in query_filter_list:
@@ -18,7 +28,7 @@ def base_query(measurement_choices):
         )
     ).annotate(
         minplusmax=(F('minimum')*F('coefficient'))+(F('maximum')*F('coefficient'))
-    ).exclude(
+    ).exclude(non_active).exclude(
         Q(source_attribute__master_attribute__name='- Checked, Unlinked -')
         | Q(minplusmax=0)
         | Q(source_attribute__master_attribute__name__exact='')
@@ -27,4 +37,3 @@ def base_query(measurement_choices):
     ).filter(measurement_choice_filter)
 
     return query_filter
-

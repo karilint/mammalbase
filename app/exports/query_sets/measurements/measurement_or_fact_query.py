@@ -1,4 +1,4 @@
-from django.db.models import F, Value, CharField, Case, When, Subquery, Min
+from django.db.models import F, Value, CharField, Case, When, Subquery, Min, Q
 from django.db.models.functions import Concat, Replace
 from exports.query_sets.custom_db_functions import Round2
 from datetime import timezone, datetime, timedelta
@@ -7,6 +7,13 @@ from exports.query_sets.measurements.base_query import base_query
 
 def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
     base = base_query(measurement_choices)
+
+    non_active = (
+          Q(source_entity__master_entity__entity__is_active=False)
+        | Q(source_entity__reference__is_active=False)
+        | Q(source_entity__reference__master_reference__is_active=False)
+        | Q(source_statistic__is_active=False)
+    )
 
     now = str(datetime.now(tz=timezone(timedelta(hours=2))).strftime('%Y-%m-%d %H:%M:%S +02:00'))
     now2 = str(datetime.now(tz=timezone(timedelta(hours=2))).strftime('%d %m %Y'))
@@ -31,7 +38,7 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
                     output_field=CharField()
                 )
 
-    query = base.annotate(
+    query = base.exclude(non_active).annotate(
         measurement_id=Concat(
             Value('https://www.mammalbase.net/smv/'),
             'id',
