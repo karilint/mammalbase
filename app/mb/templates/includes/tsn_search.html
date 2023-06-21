@@ -56,7 +56,9 @@
                     else if (document.getElementById("previous-page-button") != null) {
                         document.getElementById("previous-page-button").remove()
                         document.getElementById("next-page-button").remove()
-                        document.getElementById("page_counter").remove()
+                        document.getElementById("first-page-button").remove()
+                        document.getElementById("last-page-button").remove()
+                        document.getElementById("page-counter").remove()
                     }
                     
                 }
@@ -66,16 +68,43 @@
             if (document.getElementById("page-counter") == null) {
                 counter = document.createElement("span");
                 counter.id = "page-counter"
-                
             } else {
                 counter = document.getElementById("page-counter")
             }
-            counter.innerHTML = "Page "+(page+1)+" of "+(Object.entries(res).length/10);
+            
+            if (document.getElementById("first-page-button") == null) {
+                first = document.createElement("button");
+                first.id="first-page-button";
+                first.classList.add("w3-button", "w3-medium", "w3-round", "w3-padding-small", "w3-teal", "w3-margin")
+                
+                let button_i = document.createElement("i");
+                button_i.classList.add("fa","fa-angle-left");
+                first.appendChild(button_i);
+                first.appendChild(button_i.cloneNode(true));
+                first.appendChild(document.createTextNode(" "))
+                first.appendChild(button_i.cloneNode(true));
+                first.appendChild(button_i.cloneNode(true));
+                
+                document.getElementById("tsn-table-container").appendChild(first);
+                first.onclick = function() {
+                    page=0;
+                    counter.innerHTML = "Page "+(page+1)+" of "+(Object.entries(res).length/10);
+                    create_tsn_table();
+                    
+                }
+            }
+
             if (document.getElementById("previous-page-button") == null) {
                 previous = document.createElement("button");
                 previous.id="previous-page-button";
-                previous.classList.add("w3-button", "w3-medium", "w3-round", "w3-padding-small", "w3-teal", "w3-margin")
-                previous.innerHTML="Previous page";
+                previous.classList.add("w3-button", "w3-medium", "w3-round", "w3-padding-small", "w3-teal", "w3-margin");
+                
+                let button_i = document.createElement("i");
+                button_i.classList.add("fa","fa-angle-left");
+                previous.appendChild(button_i);
+                previous.appendChild(button_i.cloneNode(true));
+                
+               
                 document.getElementById("tsn-table-container").appendChild(previous);
                 previous.onclick = function() {
                     if ((page-1)*10>=0) {
@@ -86,13 +115,22 @@
                 }
             }
             
-            document.getElementById("tsn-table-container").appendChild(counter);
+            
+            if (!document.getElementById("tsn-table-container").contains(counter)) {
+                document.getElementById("tsn-table-container").appendChild(counter);
+            }
+            counter.innerHTML = "Page "+(page+1)+" of "+(Object.entries(res).length/10);
             
             if (document.getElementById("next-page-button") == null) {
                 next = document.createElement("button");
                 next.id="next-page-button";
                 next.classList.add("w3-button", "w3-medium", "w3-round", "w3-padding-small", "w3-teal", "w3-margin")
-                next.innerHTML="Next page";
+                
+                let button_i = document.createElement("i");
+                button_i.classList.add("fa","fa-angle-right");
+                next.appendChild(button_i);
+                next.appendChild(button_i.cloneNode(true));
+
                 document.getElementById("tsn-table-container").appendChild(next);
                 next.onclick = function() {
                     if ((page+1)*10<Object.keys(res).length) {
@@ -100,6 +138,27 @@
                         counter.innerHTML = "Page "+(page+1)+" of "+(Object.entries(res).length/10);
                         create_tsn_table();
                     }
+                }
+            }
+            if (document.getElementById("last-page-button") == null) {
+                first = document.createElement("button");
+                first.id="last-page-button";
+                first.classList.add("w3-button", "w3-medium", "w3-round", "w3-padding-small", "w3-teal", "w3-margin")
+                
+                let button_i = document.createElement("i");
+                button_i.classList.add("fa","fa-angle-right");
+                first.appendChild(button_i);
+                first.appendChild(button_i.cloneNode(true));
+                first.appendChild(document.createTextNode(" "))
+                first.appendChild(button_i.cloneNode(true));
+                first.appendChild(button_i.cloneNode(true));
+                
+                document.getElementById("tsn-table-container").appendChild(first);
+                first.onclick = function() {
+                    page=(Object.entries(res).length/10) - 1;
+                    counter.innerHTML = "Page "+(page+1)+" of "+(Object.entries(res).length/10);
+                    create_tsn_table();
+                    
                 }
             }
             
