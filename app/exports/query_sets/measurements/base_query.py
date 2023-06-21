@@ -15,7 +15,7 @@ def base_query(measurement_choices):
             | Q(source_unit__master_unit__is_active=False)
     )
 
-    query_filter_list = [Q(source_attribute__master_attribute__attributegrouprelation__group__name=value) for value in measurement_choices]
+    query_filter_list = [Q(source_attribute__master_attribute__groups__name=value) for value in measurement_choices]
     measurement_choice_filter = Q()
     for query_filter in query_filter_list:
         measurement_choice_filter |= query_filter
