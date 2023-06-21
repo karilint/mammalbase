@@ -2,11 +2,11 @@ version: '3.8'
 
 services:
   web:
-    user: "${UID}"
+    user: "${UID:-1000}"
     build: 
       context: ./app
       args:
-        UID: ${UID}
+        UID: ${UID:-1000}
 
     ports:
       - 8000:8000
@@ -45,11 +45,11 @@ services:
       - UPLOAD_LIMIT=${PMA_UPLOAD_LIMIT}
 
   celery:
-    user: "${UID}"
+    user: "${UID:-1000}"
     build:
       context: ./app
       args:
-        UID: ${UID}
+        UID: ${UID:-1000}
     volumes:
       - ./app:/src/app
     env_file:
@@ -65,11 +65,11 @@ services:
       - celery -A config --workdir=. worker -l INFO --concurrency=1
   
   celery-beat:
-    user: "${UID}"
+    user: "${UID:-1000}"
     build:
       context: ./app
       args:
-        UID: ${UID}
+        UID: ${UID:-1000}
     volumes:
       - ./app:/src/app
     env_file:

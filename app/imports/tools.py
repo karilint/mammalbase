@@ -578,42 +578,67 @@ def get_choicevalue(gender):
     choicevalue = ChoiceValue.objects.filter(pk=gender)
     return choicevalue[0]
 
+def get_accepted_tsn(tsn):
+    response = itis.GetAcceptedNamesfromTSN(tsn)
+    accepted_tsn = response["acceptedNames"][0]["acceptedTsn"]
+    hierarchy = itis.getFullHierarchyFromTSN(accepted_tsn)
+    scientific_name = response["acceptedNames"][0]["acceptedName"]
+    classification_path = itis.hierarchyToString(scientific_name, hierarchy, 'hierarchyList', 'taxonName')
+    classification_path_ids = itis.hierarchyToString(accepted_tsn, hierarchy, 'hierarchyList', 'tsn')
+    classification_path_ranks = itis.hierarchyToString('Species', hierarchy, 'hierarchyList', 'rankName')
+    return_data = {
+        'taxon_id': accepted_tsn,
+        'canonical_form': scientific_name,
+        'classification_path_ids': classification_path_ids,
+        'classification_path': classification_path,
+        'classification_path_ranks': classification_path_ranks
+    }
+    return {'data': [{'results': [return_data]}]}
+
 
 def get_fooditem_json(food):
     query = food.lower().capitalize().replace(' ', '%20')
     url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
     try:
-        session = CachedSession("itis_cache", expire_after=timedelta(days=30), stale_if_error=True)
-        file = session.get(url)
+        session = CachedSession("/vol/web/static/itis_cache", expire_after=timedelta(days=30), stale_if_error=True)
+        file = session.get(url, timeout=15)
         data = file.text
     except (ConnectionError, UnicodeError):
-        return {}
+        return {'data': [{}]}
     try:
         taxon_data = json.loads(data)['itisTerms'][0]
     except UnicodeDecodeError:
         taxon_data = json.loads(data.decode('utf-8', 'ignore'))['itisTerms'][0]
-    if taxon_data and taxon_data['scientificName'].lower() == food.lower() and taxon_data['nameUsage'] in {'valid', 'accepted'}:
+    return_data = {}
+    if taxon_data and taxon_data['scientificName'].lower() == food.lower():
         tsn = taxon_data['tsn']
         scientific_name = taxon_data['scientificName']
-        hierarchy = itis.getFullHierarchyFromTSN(tsn)
-        classification_path = itis.hierarchyToString(scientific_name, hierarchy, 'hierarchyList', 'taxonName')
-        classification_path_ids = itis.hierarchyToString(tsn, hierarchy, 'hierarchyList', 'tsn')
-        classification_path_ranks = itis.hierarchyToString('Species', hierarchy, 'hierarchyList', 'rankName')
+        hierarchy = None
+        classification_path = None
+        classification_path_ids = None
+        classification_path_ranks = None
+        if taxon_data['nameUsage'] in {'valid', 'accepted'}:
+            hierarchy = itis.getFullHierarchyFromTSN(tsn)
+            classification_path = itis.hierarchyToString(scientific_name, hierarchy, 'hierarchyList', 'taxonName')
+            classification_path_ids = itis.hierarchyToString(tsn, hierarchy, 'hierarchyList', 'tsn')
+            classification_path_ranks = itis.hierarchyToString('Species', hierarchy, 'hierarchyList', 'rankName')
+
         return_data = {
             'taxon_id': tsn,
             'canonical_form': scientific_name,
             'classification_path_ids': classification_path_ids,
             'classification_path': classification_path,
             'classification_path_ranks': classification_path_ranks,
+            'taxonomic_status':taxon_data['nameUsage']
         }
-        result = {'data': [
-            {'results': [return_data]}
-        ]}
-        return result
-    return {}
+    else:
+        return {'data': [{}]}
+    result = {'data': [
+        {'results': [return_data]}
+    ]}
+    return result
 
 def create_tsn(results, tsn):
-    
     taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
     if len(taxonomic_unit)==0:
         completename = results['data'][0]['results'][0]['canonical_form']
@@ -628,16 +653,23 @@ def create_tsn(results, tsn):
     return taxonomic_unit
 
 def create_fooditem(results, food_upper, part):
-    tsn = results['data'][0]['results'][0]['taxon_id']
+    tsn = int(results['data'][0]['results'][0]['taxon_id'])
     taxonomic_unit = create_tsn(results, tsn)
-
+    if results['data'][0]['results'][0]['taxonomic_status'] in ("invalid", "not accepted"):
+        accepted_results = get_accepted_tsn(tsn)
+        accepted_taxonomic_unit = create_tsn(accepted_results, int(accepted_results['data'][0]['results'][0]['taxon_id']))
+        sl_qs = itis.SynonymLinks.objects.all().filter(tsn = tsn)
+        if len(sl_qs) == 0:
+            sl = itis.SynonymLinks(tsn = taxonomic_unit, tsn_accepted = accepted_taxonomic_unit, tsn_accepted_name = accepted_taxonomic_unit.completename)
+        else:
+            sl = sl_qs[0]
+    
     name = food_upper
     if part not in {'nan', None}:
         part = ChoiceValue.objects.filter(caption=part)[0]
     else:
         part = None
-    taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
-    food_item = FoodItem(name=name, part=part, tsn=taxonomic_unit[0], pa_tsn=taxonomic_unit[0], is_cultivar=0)
+    food_item = FoodItem(name=name, part=part, tsn=taxonomic_unit, pa_tsn=taxonomic_unit, is_cultivar=0)
     food_item_exists = FoodItem.objects.filter(name__iexact=name)
     if len(food_item_exists) > 0:
         return food_item_exists[0]
@@ -653,7 +685,6 @@ def generate_rank_id(food):
     rank_id = {}
     head = 0
     tail = 0
-    rank_id = {}
     while True:
         if head == tail:
             query = associated_taxa[tail]
@@ -662,7 +693,7 @@ def generate_rank_id(food):
             query = associated_taxa[tail] + " " +associated_taxa[head]
             tail += 1
         results = get_fooditem_json(query)
-        if results:
+        if len(results['data'][0]) > 0:
             rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
             rank_id[rank] = results
             break
