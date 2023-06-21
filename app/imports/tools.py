@@ -1208,23 +1208,32 @@ def convert_empty_values_pa(row, headers, pa_item_dict):
 
 def generate_standard_values_pa(items):
     standard_items = items
-    #Sum of reported fields excluding dry matter and moisture
+    # Sum of reported values excluding dry matter and moisture
     item_sum = Decimal(0.0)
     for item in items.keys():
         if "reported" in item and "dm" not in item and "moisture" not in item and items[item] is not None:
             item_sum += Decimal(items[item])
     
+    # If reported values sum to 1000 instead of 100 then divide sum by 10
+    sum_to_thousand = False
     if abs(item_sum - Decimal(100)) > abs(item_sum - Decimal(1000)):
+        sum_to_thousand = True
         item_sum /= Decimal(10)
 
+    # If the sum of reported values is closer to 100 when moisture is included then add moisture to the sum
     if items["moisture_reported"] is not None and abs(100 - item_sum + Decimal(items["moisture_reported"])) < abs(100 - item_sum):
-        item_sum += Decimal(items["moisture_reported"])
+        if sum_to_thousand:
+            item_sum += Decimal(items["moisture_reported"])/Decimal(10)
+        else:
+            item_sum += Decimal(items["moisture_reported"])
     
     for item in list(items.keys()):
         if "reported" not in item or "dm" in item or "moisture" in item:
             continue
         elif items[item] is None:
             standard_items[item.replace("reported","std")] = None
+        elif sum_to_thousand:
+            standard_items[item.replace("reported","std")] = ((Decimal(items[item]) / 10) / item_sum) * Decimal(100)
         else:
             standard_items[item.replace("reported","std")] = (Decimal(items[item]) / item_sum) * Decimal(100)
 

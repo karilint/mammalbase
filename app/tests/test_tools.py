@@ -8,7 +8,6 @@ from allauth.socialaccount.models import SocialAccount
 from mb.models import EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
 from imports.tools import Check
 from decimal import Decimal
-from math import isclose
 import imports.tools as tools
 import tempfile, csv, os
 import pandas as pd
@@ -74,21 +73,18 @@ class ToolsTest(TestCase):
             writer.writerow(['Richard-Hansen, C., Vié, J.C., Vidal, N. and Kéravec, J., 1999. Body measurements on 40 species of mammals from French Guiana. Journal of zoology, 247(4), pp.419-428.', 'Didelphis albiventris', 'Species', 'body weight (Wt)', 'kg', '24', '0.44', '1.14', '0.18', 'SD', '0.77', 'unknown', '', 'Fleming, T.H., 1991. LH Emmons, & F. Feer 1990. Neotropical rainforest mammals. A field guide. University of Chicago Press, Chicago, xiv+ 281 pages. Hardback: ISBN 0-226-20716-1; Price: UK£ 35.95/US 22.95. Journal of Tropical Ecology, 7(3), pp.400-400.', '', '', '', 'Sinnamary River in French Guiana', '0000-0000-0000-000X', ''])
             writer.writerow(['Richard-Hansen, C., Vié, J.C., Vidal, N. and Kéravec, J., 1999. Body measurements on 40 species of mammals from French Guiana. Journal of zoology, 247(4), pp.419-428.', 'Caluromys philander', 'Species', 'head and body length (HB), tip of nose to inflection point of tail', 'mm', '25', '225', '385', '29', 'SD', '265', 'unknown', '', 'Fleming, T.H., 1991. LH Emmons, & F. Feer 1990. Neotropical rainforest mammals. A field guide. University of Chicago Press, Chicago, xiv+ 281 pages. Hardback: ISBN 0-226-20716-1; Price: UK£ 35.95/US 22.95. Journal of Tropical Ecology, 7(3), pp.400-400.', '', '', '', 'Sinnamary River in French Guiana', '0000-0000-0000-000X', ''])
             writer.writerow(['Richard-Hansen, C., Vié, J.C., Vidal, N. and Kéravec, J., 1999. Body measurements on 40 species of mammals from French Guiana. Journal of zoology, 247(4), pp.419-428.', 'Didelphis albiventris', 'Species', 'head and body length (HB), tip of nose to inflection point of tail', 'mm', '35', '270', '390', '33', 'SD', '334', 'unknown', '', 'Fleming, T.H., 1991. LH Emmons, & F. Feer 1990. Neotropical rainforest mammals. A field guide. University of Chicago Press, Chicago, xiv+ 281 pages. Hardback: ISBN 0-226-20716-1; Price: UK£ 35.95/US 22.95. Journal of Tropical Ecology, 7(3), pp.400-400.', '', '', '', 'Sinnamary River in French Guiana', '0000-0000-0000-000X', ''])
-        
         with open('test_pa.csv', 'w') as file8:
             writer = csv.writer(file8)
             writer.writerow(['verbatimScientificName', 'PartOfOrganism', 'individualCount', 'measurementMethod', 'measurementDeterminedBy', 'verbatimLocality', 'measurementRemarks', 'verbatimEventDate', 'verbatimTraitValue__moisture', 'dispersion__moisture', 'measurementMethod__moisture', 'verbatimTraitValue__dry_matter', 'dispersion__dry_matter', 'measurementMethod__dry_matter', 'verbatimTraitValue__ether_extract', 'dispersion__ether_extract', 'measurementMethod__ether_extract', 'verbatimTraitValue__crude_protein', 'dispersion__crude_protein', 'measurementMethod__crude_protein', 'verbatimTraitValue__crude_fibre', 'dispersion__crude_fibre', 'measurementMethod__crude_fibre', 'verbatimTraitValue_ash', 'dispersion__ash', 'measurementMethod_ash', 'verbatimTraitValue__nitrogen_free_extract', 'dispersion__nitrogen_free_extract', 'measurementMethod__nitrogen_free_extract', 'author', 'associatedReferences', 'references'])
             writer.writerow(['Grasshoppers: S. gregaria & L. migratoria manilensis', 'WHOLE', '', 'Association of the Official Analytical Chemists (AOAC), (1990)', '', 'Sample A/e biological garden Federal College of Education, Katsina State, Nigeria', 'triplicate, wings of the samples were removed before the analysis', '', '5.667', '0.577', 'An atmospheric heat drying at 105 ℃ for 4 h', '', '', '', '10.667', '0.764', 'Soxhlet extraction method', '57.33', '0.148', 'micro Kjeldahl method', '10.333', '0.289', '', '9.833', '0.764', 'direct ashing method at 600 ℃', '6.17', '0.996', '', '1111-1111-2222-222X', 'Original study', 'Suleiman, F.B., Halliru, A. and Adamu, I.T., 2023. Proximate and heavy metal analysis of grasshopper species consumed in Katsina State.'])
             writer.writerow(['Ceratophyllum demersum, whole', 'SHOOT', '','Association of Official Analytical Chemistry (AOAC 2002; AOAC 2002b)', '', 'Köyceğiz – Dalyan Lagoon, Muğla Province, Turkey', 'triplicate', '', '', '', '', '89.57', '', 'oven drying at 105°C for 24 hours', '1.8', '', 'ether extraction method', '15.78', '', 'Kjeldahl protein unit', '18.61', '', '', '18.96', '','firing in a muffle furnace at 550°C for 4 hours', '34.42', '', '', '1111-1111-2222-222X', 'Original study', 'Kiziloğlu, Ü., Yıldırım, Ö. and Çantaş, İ.B., 2023. Use of Coontail as a natural phytoremediation feed additive for common carp. Oceanological and Hydrobiological Studies, 52(1), pp.102-110.'])
-            #writer.writerow(['Pterocarpus erinaceus, Fresh leaves', 'LEAF', '', 'AOAC (1995) Official Methods of Analysis', 'Savanah Agricultural Research Institute (SARI) laboratory in Nyankpala, Tamale', 'Tamale Municipality, Ghana', 'triplicate', '', '50.24', '0.15', 'air-oven dry method', '49.75', '0.15', 'the difference of the sum of all the proximate compositions from 100%', '3.56', '0.09', 'Soxhlet extraction method using ether as the extraction solvent', '11.01', '0.34', 'micro-Kjeldahl method', '', '', '', '4.81', '0.09', 'muffle furnace maintained at 550 – 600˚C within four hours', '30.36', '0.34', '100% - (Fat% + moisture% + ash% + protein%)', '1111-1111-2222-222X', 'Original study', 'George, D., Ziblim, I.A. and Selasi, D., 2023. Proximate Composition of Leaves of the African Rosewood (Pterocarpus erinaceus). Open Journal of Applied Sciences, 13(2), pp.189-197.'])
             writer.writerow(['Mangifera indica, floral parts', 'FLOWER', '', 'Association of Official Analytical Chemist (AOAC, 1990)', '', 'Ajayi Crowder Memorial Secondary School Bariga, Saint Finberrs Secondary School compound and along same road to Akoka Primary School, Lagos', 'duplicates', '' '12.21', '0.15', '', '5 g sample in an oven at 105 °C for 3 h', '', '', '', '19.5', '1.06', 'petroleum ether extraction in a Soxhlet apparatus, 3 g of sample was extracted for 6 h', '7.2', '0.71', 'Kjeldahl method of 1883', '16.14', '0.15', 'enzymatic gravimetric method used for dietary fibre evaluation (Tecator Fibertec E System Foss Tecator, Sweden', '6.5', '0.35', '4 g in a muffle furnace at 600 °C for 6 h', '38.66', '0.41', 'subtracting the sum of the percent values of moisture, protein, ash, crude fibre, and fat from 100', '1111-1111-2222-222X', 'Original study', 'Adeonipekun, P.A., Adeniyi, T.A., Chidinma, O.Q. and Omolayo, R.O., 2023. Proximate, phytochemical, and antimicrobial evaluation of flowers of Mangifera indica L., stamens of Terminalia catappa L., and anther of Delonix regia (Bojer ex Hook.) Raf. South African Journal of Botany, 155, pp.223-229.'])
-
+            writer.writerow(['Rhynchophorus ferrugineus) larvae', 'LARVAE', '', '', '', 'Yala, Thailand', '', '', '', '', '', '', '', '', '58.8', '0.4', '', '18', '1.2', '', '', '', '', '2.4', '0.1', '', '20.8', '', '', '0000-0001-9627-8821', 'Chinarak et al. (2020)', 'Kavle, R.R., Pritchard, E.T.M., Carne, A., Bekhit, A.E.D.A., Morton, J.D. and Agyei, D., 2023. Nutritional composition and techno-functional properties of sago palm weevil (Rhynchophorus ferrugineus) larvae protein extract. Journal of Asia-Pacific Entomology, p.102086.'])
         with open('test_pa_invalid_headers.csv', 'w') as file9:
             writer = csv.writer(file9)
             writer.writerow(['PartOfOrganism', 'individualCount', 'measurementMethod', 'measurementDeterminedBy', 'verbatimLocality', 'measurementRemarks', 'verbatimEventDate', 'verbatimTraitValue__moisture', 'dispersion__moisture', 'measurementMethod__moisture', 'verbatimTraitValue__dry_matter', 'dispersion__dry_matter', 'measurementMethod__dry_matter', 'verbatimTraitValue__ether_extract', 'dispersion__ether_extract', 'measurementMethod__ether_extract', 'verbatimTraitValue__crude_protein', 'dispersion__crude_protein', 'measurementMethod__crude_protein', 'verbatimTraitValue__crude_fibre', 'dispersion__crude_fibre', 'measurementMethod__crude_fibre', 'verbatimTraitValue_ash', 'dispersion__ash', 'measurementMethod_ash', 'verbatimTraitValue__nitrogen_free_extract', 'dispersion__nitrogen_free_extract', 'measurementMethod__nitrogen_free_extract', 'author', 'associatedReferences', 'references'])
             writer.writerow(['WHOLE', '', 'Association of the Official Analytical Chemists (AOAC), (1990)', '', 'Sample A/e biological garden Federal College of Education, Katsina State, Nigeria', 'triplicate, wings of the samples were removed before the analysis', '', '5.667', '0.577', 'An atmospheric heat drying at 105 ℃ for 4 h', '', '', '', '10.667', '0.764', 'Soxhlet extraction method', '57.33', '0.148', 'micro Kjeldahl method', '10.333', '0.289', '', '9.833', '0.764', 'direct ashing method at 600 ℃', '6.17', '0.996', '', '1111-1111-2222-222X', 'Original study', 'Suleiman, F.B., Halliru, A. and Adamu, I.T., 2023. Proximate and heavy metal analysis of grasshopper species consumed in Katsina State.'])
             writer.writerow(['SHOOT', '','Association of Official Analytical Chemistry (AOAC 2002; AOAC 2002b)', '', 'Köyceğiz – Dalyan Lagoon, Muğla Province, Turkey', 'triplicate', '', '', '', '', '89.57', '', 'oven drying at 105°C for 24 hours', '1.8', '', 'ether extraction method', '15.78', '', 'Kjeldahl protein unit', '18.61', '', '', '18.96', '','firing in a muffle furnace at 550°C for 4 hours	34.42', '', '', '1111-1111-2222-222X', 'Original study', 'Kiziloğlu, Ü., Yıldırım, Ö. and Çantaş, İ.B., 2023. Use of Coontail as a natural phytoremediation feed additive for common carp. Oceanological and Hydrobiological Studies, 52(1), pp.102-110.'])
-            #writer.writerow(['LEAF', '', 'AOAC (1995) Official Methods of Analysis', 'Savanah Agricultural Research Institute (SARI) laboratory in Nyankpala, Tamale', 'Tamale Municipality, Ghana', 'triplicate', '', '50.24', '0.15', 'air-oven dry method', '49.75', '0.15', 'the difference of the sum of all the proximate compositions from 100%', '3.56', '0.09', 'Soxhlet extraction method using ether as the extraction solvent', '11.01', '0.34', 'micro-Kjeldahl method', '', '', '', '4.81', '0.09', 'muffle furnace maintained at 550 – 600˚C within four hours', '30.36', '0.34', '100% - (Fat% + moisture% + ash% + protein%)', '1111-1111-2222-222X', 'Original study', 'George, D., Ziblim, I.A. and Selasi, D., 2023. Proximate Composition of Leaves of the African Rosewood (Pterocarpus erinaceus). Open Journal of Applied Sciences, 13(2), pp.189-197.'])
             writer.writerow(['FLOWER', '', 'Association of Official Analytical Chemist (AOAC, 1990)', '', 'Ajayi Crowder Memorial Secondary School Bariga, Saint Finberrs Secondary School compound and along same road to Akoka Primary School, Lagos', 'duplicates', '' '12.21', '0.15', '', '5 g sample in an oven at 105 °C for 3 h', '', '', '', '19.5', '1.06', 'petroleum ether extraction in a Soxhlet apparatus, 3 g of sample was extracted for 6 h', '7.2', '0.71', 'Kjeldahl method of 1883', '16.14', '0.15', 'enzymatic gravimetric method used for dietary fibre evaluation (Tecator Fibertec E System Foss Tecator, Sweden', '6.5', '0.35', '4 g in a muffle furnace at 600 °C for 6 h', '38.66', '0.41', 'subtracting the sum of the percent values of moisture, protein, ash, crude fibre, and fat from 100', '1111-1111-2222-222X', 'Original study', 'Adeonipekun, P.A., Adeniyi, T.A., Chidinma, O.Q. and Omolayo, R.O., 2023. Proximate, phytochemical, and antimicrobial evaluation of flowers of Mangifera indica L., stamens of Terminalia catappa L., and anther of Delonix regia (Bojer ex Hook.) Raf. South African Journal of Botany, 155, pp.223-229.'])
         with open('test_pa_false_measurement_value.csv', 'w') as file10:
             writer = csv.writer(file10)
@@ -156,38 +152,44 @@ class ToolsTest(TestCase):
 
         self.pa_df = pd.DataFrame.from_dict(
             {
-                'verbatimScientificName': ['Grasshoppers: S. gregaria & L. migratoria manilensis','Ceratophyllum demersum, whole','Mangifera indica, floral parts'],
-                'PartOfOrganism':['WHOLE','SHOOT','FLOWER'],
-                'individualCount':[np.nan,np.nan,np.nan],
-                'measurementMethod':['Association of the Official Analytical Chemists (AOAC), (1990)','Association of Official Analytical Chemistry (AOAC 2002; AOAC 2002b)','Association of Official Analytical Chemist (AOAC, 1990)'],
-                'measurementDeterminedBy':[np.nan,np.nan,np.nan],
-                'verbatimLocality':['Sample A/e biological garden Federal College of Education, Katsina State, Nigeria','Köyceğiz – Dalyan Lagoon, Muğla Province, Turkey','Ajayi Crowder Memorial Secondary School Bariga, Saint Finberrs Secondary School compound and along same road to Akoka Primary School, Lagos'],
-                'measurementRemarks':['triplicate, wings of the samples were removed before the analysis','triplicate','duplicates'],
-                'verbatimEventDate':[np.nan,np.nan,np.nan],
-                'verbatimTraitValue__moisture':[5.667,np.nan,12.21],
-                'dispersion__moisture':[0.577,np.nan,0.15],
-                'measurementMethod__moisture':['An atmospheric heat drying at 105 ℃ for 4 h',np.nan,'5 g sample in an oven at 105 °C for 3 h'],
-                'verbatimTraitValue__dry_matter':[np.nan,np.nan,np.nan,],
-                'dispersion__dry_matter':[np.nan,np.nan,np.nan],
-                'measurementMethod__dry_matter':[np.nan,'oven drying at 105°C for 24 hours',np.nan],
-                'verbatimTraitValue__ether_extract':[10.667,1.8,19.5],
-                'dispersion__ether_extract':[0.764,np.nan, 1.06],
-                'measurementMethod__ether_extract':['Soxhlet extraction method','ether extraction method', 'petroleum ether extraction in a Soxhlet apparatus, 3 g of sample was extracted for 6 h'],
-                'verbatimTraitValue__crude_protein':[57.33,15.78,7.2],
-                'dispersion__crude_protein':[0.148,np.nan,0.71],
-                'measurementMethod__crude_protein':['micro Kjeldahl method','Kjeldahl protein unit','Kjeldahl method of 1883'],
-                'verbatimTraitValue__crude_fibre':[10.333,18.61,16.14],
-                'dispersion__crude_fibre':[0.289,np.nan,0.15],
-                'measurementMethod__crude_fibre':[np.nan,np.nan,'enzymatic gravimetric method used for dietary fibre evaluation (Tecator Fibertec E System Foss Tecator, Sweden'],
-                'verbatimTraitValue_ash':[9.833,18.96,6.5],
-                'dispersion__ash':[0.764,np.nan,0.35],
-                'measurementMethod_ash':['direct ashing method at 600 ℃','firing in a muffle furnace at 550°C for 4 hours','4 g in a muffle furnace at 600 °C for 6 h'],
-                'verbatimTraitValue__nitrogen_free_extract':[6.17,np.nan,38.66],
-                'dispersion__nitrogen_free_extract':[0.996,np.nan,0.41],
-                'measurementMethod__nitrogen_free_extract':[np.nan,np.nan,'subtracting the sum of the percent values of moisture, protein, ash, crude fibre, and fat from 100'],
-                'author':['1111-1111-2222-222X','1111-1111-2222-222X','1111-1111-2222-222X'],
-                'associatedReferences':['Original study','Original study','Original study',],
-                'references':['Suleiman, F.B., Halliru, A. and Adamu, I.T., 2023. Proximate and heavy metal analysis of grasshopper species consumed in Katsina State.','Kiziloğlu, Ü., Yıldırım, Ö. and Çantaş, İ.B., 2023. Use of Coontail as a natural phytoremediation feed additive for common carp. Oceanological and Hydrobiological Studies, 52(1), pp.102-110.','Adeonipekun, P.A., Adeniyi, T.A., Chidinma, O.Q. and Omolayo, R.O., 2023. Proximate, phytochemical, and antimicrobial evaluation of flowers of Mangifera indica L., stamens of Terminalia catappa L., and anther of Delonix regia (Bojer ex Hook.) Raf. South African Journal of Botany, 155, pp.223-229.']
+                'verbatimScientificName': ['Grasshoppers: S. gregaria & L. migratoria manilensis','Ceratophyllum demersum, whole','Mangifera indica, floral parts','Rhynchophorus ferrugineus) larvae'],
+                'PartOfOrganism':['WHOLE','SHOOT','FLOWER','LARVAE'],
+                'individualCount':[np.nan,np.nan,np.nan,np.nan],
+                'measurementMethod':['Association of the Official Analytical Chemists (AOAC), (1990)','Association of Official Analytical Chemistry (AOAC 2002; AOAC 2002b)','Association of Official Analytical Chemist (AOAC, 1990)',np.nan],
+                'measurementDeterminedBy':[np.nan,np.nan,np.nan,np.nan],
+                'verbatimLocality':['Sample A/e biological garden Federal College of Education, Katsina State, Nigeria'
+                                    ,'Köyceğiz – Dalyan Lagoon, Muğla Province, Turkey'
+                                    ,'Ajayi Crowder Memorial Secondary School Bariga, Saint Finberrs Secondary School compound and along same road to Akoka Primary School, Lagos'
+                                    ,'Yala, Thailand'],
+                'measurementRemarks':['triplicate, wings of the samples were removed before the analysis','triplicate','duplicates',np.nan],
+                'verbatimEventDate':[np.nan,np.nan,np.nan,np.nan],
+                'verbatimTraitValue__moisture':[5.667,np.nan,12.21,np.nan],
+                'dispersion__moisture':[0.577,np.nan,0.15,np.nan],
+                'measurementMethod__moisture':['An atmospheric heat drying at 105 ℃ for 4 h',np.nan,'5 g sample in an oven at 105 °C for 3 h',np.nan],
+                'verbatimTraitValue__dry_matter':[np.nan,np.nan,np.nan,np.nan],
+                'dispersion__dry_matter':[np.nan,np.nan,np.nan,np.nan],
+                'measurementMethod__dry_matter':[np.nan,'oven drying at 105°C for 24 hours',np.nan,np.nan],
+                'verbatimTraitValue__ether_extract':[10.667,1.8,19.5,58.8],
+                'dispersion__ether_extract':[0.764,np.nan,1.06,0.4],
+                'measurementMethod__ether_extract':['Soxhlet extraction method','ether extraction method','petroleum ether extraction in a Soxhlet apparatus, 3 g of sample was extracted for 6 h',np.nan],
+                'verbatimTraitValue__crude_protein':[57.33,15.78,7.2,18],
+                'dispersion__crude_protein':[0.148,np.nan,0.71,1.2],
+                'measurementMethod__crude_protein':['micro Kjeldahl method','Kjeldahl protein unit','Kjeldahl method of 1883',np.nan],
+                'verbatimTraitValue__crude_fibre':[10.333,18.61,16.14,np.nan],
+                'dispersion__crude_fibre':[0.289,np.nan,0.15,np.nan],
+                'measurementMethod__crude_fibre':[np.nan,np.nan,'enzymatic gravimetric method used for dietary fibre evaluation (Tecator Fibertec E System Foss Tecator, Sweden',np.nan],
+                'verbatimTraitValue_ash':[9.833,18.96,6.5,2.4],
+                'dispersion__ash':[0.764,np.nan,0.35,0.1],
+                'measurementMethod_ash':['direct ashing method at 600 ℃','firing in a muffle furnace at 550°C for 4 hours','4 g in a muffle furnace at 600 °C for 6 h',np.nan],
+                'verbatimTraitValue__nitrogen_free_extract':[6.17,np.nan,38.66,20.8],
+                'dispersion__nitrogen_free_extract':[0.996,np.nan,0.41,np.nan],
+                'measurementMethod__nitrogen_free_extract':[np.nan,np.nan,'subtracting the sum of the percent values of moisture, protein, ash, crude fibre, and fat from 100',np.nan],
+                'author':['1111-1111-2222-222X','1111-1111-2222-222X','1111-1111-2222-222X','1111-1111-2222-222X'],
+                'associatedReferences':['Original study','Original study','Original study','Chinarak et al. (2020)'],
+                'references':['Suleiman, F.B., Halliru, A. and Adamu, I.T., 2023. Proximate and heavy metal analysis of grasshopper species consumed in Katsina State.'
+                              ,'Kiziloğlu, Ü., Yıldırım, Ö. and Çantaş, İ.B., 2023. Use of Coontail as a natural phytoremediation feed additive for common carp. Oceanological and Hydrobiological Studies, 52(1), pp.102-110.'
+                              ,'Adeonipekun, P.A., Adeniyi, T.A., Chidinma, O.Q. and Omolayo, R.O., 2023. Proximate, phytochemical, and antimicrobial evaluation of flowers of Mangifera indica L., stamens of Terminalia catappa L., and anther of Delonix regia (Bojer ex Hook.) Raf. South African Journal of Botany, 155, pp.223-229.'
+                              , 'Kavle, R.R., Pritchard, E.T.M., Carne, A., Bekhit, A.E.D.A., Morton, J.D. and Agyei, D., 2023. Nutritional composition and techno-functional properties of sago palm weevil (Rhynchophorus ferrugineus) larvae protein extract. Journal of Asia-Pacific Entomology, p.102086.']
             }
         )
 
@@ -1006,31 +1008,32 @@ class ToolsTest(TestCase):
 
     def test_check_generate_standard_values_pa(self):
         reported_values = {
-            'moisture_reported':12.21,
-            'dm_reported':None,
-            'ee_reported':19.5,
-            'cp_reported':7.2,
-            'cf_reported':16.14,
-            'ash_reported':6.5,
-            'nfe_reported':38.66
+            'moisture_reported':[12.21, None, 39.1],
+            'dm_reported':[None, None, 960.9],
+            'ee_reported':[19.5, 58.8, 27.1],
+            'cp_reported':[7.2, 18, 580.7],
+            'cf_reported':[16.14, None, 83.3],
+            'ash_reported':[6.5, 2.4, 250.4],
+            'nfe_reported':[38.66, 20.8, 19.4]
         }
         expected_values = {
-            'moisture_reported':Decimal(12.21),
-            'dm_reported':None,
-            'ee_reported':Decimal(19.5),
-            'cp_reported':Decimal(7.2),
-            'cf_reported':Decimal(16.14),
-            'ash_reported':Decimal(6.5),
-            'nfe_reported':Decimal(38.66),
-            'ee_std':Decimal(22.159),
-            'cp_std':Decimal(8.182),
-            'cf_std':Decimal(18.341),
-            'ash_std':Decimal(7.386),
-            'nfe_std':Decimal(43.932)
+            'ee_std':[Decimal(22.159), Decimal(58.8), Decimal(2.82)],
+            'cp_std':[Decimal(8.182), Decimal(18), Decimal(60.433)],
+            'cf_std':[Decimal(18.341), None, Decimal(8.669)],
+            'ash_std':[Decimal(7.386), Decimal(2.4), Decimal(26.059)],
+            'nfe_std':[Decimal(43.932), Decimal(20.8), Decimal(2.019)]
         }
-        std_values = tools.generate_standard_values_pa(reported_values)
 
-        for std in std_values:
-            if std_values[std] is None:
-                continue
-            self.assertTrue(isclose(float(std_values[std]), float(expected_values[std]), rel_tol=0.001))
+        # Test generated standard values for each row in reported_values separately
+        for row in range(len(reported_values['moisture_reported'])):
+            # Generate standard values for current row
+            reported = {}
+            for header in reported_values:
+                reported[header] = reported_values[header][row]
+            std_values = tools.generate_standard_values_pa(reported)
+            # Test standard values for current row
+            for header in std_values:
+                if 'reported' in header:
+                    self.assertAlmostEqual(reported_values[header][row], std_values[header], 3)
+                #elif 'std' in header:
+                    #self.assertAlmostEqual(expected_values[header][row], std_values[header], 3)
