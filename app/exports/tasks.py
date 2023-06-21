@@ -7,7 +7,6 @@ from .models import ExportFile
 from datetime import datetime
 from zipfile import ZipFile
 from tempfile import mkdtemp
-#from exports.query_sets.measurements import taxon_query, occurrence_query, measurement_or_fact_query, metadata_query #traitdata_query, traitlist_query
 from config.settings import SITE_DOMAIN
 from django.db.models import QuerySet
 from django.core.exceptions import ObjectDoesNotExist
@@ -163,7 +162,7 @@ def ets_export_query_set(user_email: str, export_file_id, is_admin_or_contributo
 @shared_task
 def send_email(export_id, target_address):
     """Sends user an email with a download link to the exported data"""
-    mail_subject = "Your export from Mammalbase is ready"
+    mail_subject = "Your export from MammalBase is ready"
     message = create_notification_message(export_id)
     send_mail (
         subject = mail_subject,

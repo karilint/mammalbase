@@ -1,4 +1,4 @@
-from django.db.models import F, Value, CharField, Case, When, Subquery, Min
+from django.db.models import F, Value, CharField, Case, When, Subquery, Min, Q
 from django.db.models.functions import Concat, Replace
 from exports.query_sets.custom_db_functions import Round2
 from datetime import timezone, datetime, timedelta
@@ -8,8 +8,16 @@ from exports.query_sets.measurements.base_query import base_query
 def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
     base = base_query(measurement_choices)
 
-    now = str(datetime.now(tz=timezone(timedelta(hours=2))).strftime('%Y-%m-%d %H:%M:%S +02:00'))
-    now2 = str(datetime.now(tz=timezone(timedelta(hours=2))).strftime('%d %m %Y'))
+    non_active = (
+          Q(source_entity__master_entity__entity__is_active=False)
+        | Q(source_entity__reference__is_active=False)
+        | Q(source_entity__reference__master_reference__is_active=False)
+        | Q(source_statistic__is_active=False)
+    )
+
+    now = datetime.now(tz=timezone(timedelta(hours=2)))
+    now_format_1 = now.strftime('%Y-%m-%d %H:%M:%S +02:00')
+    now_format_2 = now.strftime('%d %m %Y')
 
     if is_admin_or_contributor:
         references = Replace(
@@ -24,14 +32,14 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
     else:
         references = Concat(
                     Value('The MammalBase community '),
-                    Value(now),
+                    Value(now_format_1),
                     Value(' , Data version '),
-                    Value(now2),
+                    Value(now_format_2),
                     Value(' at https://mammalbase.org/me/'),
                     output_field=CharField()
                 )
 
-    query = base.annotate(
+    query = base.exclude(non_active).annotate(
         measurement_id=Concat(
             Value('https://www.mammalbase.net/smv/'),
             'id',
@@ -50,10 +58,24 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
                 Value(' level data')
             )
         ),
-        measurement_method=Value('NA'),
+        measurement_method=Case(
+            When(
+                source_attribute__method__name__exact=None,
+                then=Value('NA')
+            ),
+            default='source_attribute__method__name',
+            output_field=CharField()
+        ),
         measurement_determinedBy=Value('NA'),
         measurement_determinedDate=Value('NA'),
-        measurement_remarks=Value('NA'),
+        measurement_remarks=Case(
+            When(
+                remarks__exact=None,
+                then=Value('NA')
+            ),
+            default='remarks',
+            output_field=CharField()
+        ),
         aggregate_measure=Case(
             When(
                 n_total=1,
@@ -85,8 +107,23 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         measurement_value_max=Round2(
             F('maximum') * F('coefficient')
         ),
+        measurement_acc=Case(When(measurement_accuracy__iexact=None,
+            then=Value('NA')),
+            default='measurement_accuracy',
+            output_field=CharField()
+            ),
+        statistical_method=Case(When(source_statistic__name__iexact=None,
+            then=Value('NA')),
+            default='source_statistic__name',
+            output_field=CharField()
+            ),
+        occurrence_id=Case(
+            When(occurrence_id__endswith='-0-0-0',then=Value('NA')
+            ),
+            default='occurrence_id',
+            output_field=CharField()
+            ),
     )
-
     fields = [
         ('measurement_id','measurementID'),
         ('basis_of_record', 'basisOfRecord'),
@@ -102,8 +139,9 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         ('dispersion', 'dispersion'),
         ('measurement_value_min', 'measurementValue_min'),
         ('measurement_value_max', 'measurementValue_max'),
-        ('measurement_accuracy', 'measurementAccuracy'),
-        ('source_statistic__name', 'statisticalMethod'),
+        ('measurement_acc', 'measurementAccuracy'),
+        ('statistical_method', 'statisticalMethod'),
+        ('occurrence_id', 'occurrenceID')
     ]
 
     return query, fields
