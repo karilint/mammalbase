@@ -650,6 +650,8 @@ def create_tsn(results, tsn):
         rank = TaxonUnitTypes.objects.filter(rank_name=path_ranks[-1], kingdom_id=kingdom_id)[0].pk
         taxonomic_unit = TaxonomicUnits(tsn=tsn, kingdom_id=kingdom_id, rank_id=rank, completename=completename, hierarchy_string=hierarchy_string, hierarchy=hierarchy, common_names=None, tsn_update_date=None)
         taxonomic_unit.save()
+    else:
+        taxonomic_unit = taxonomic_unit[0]
     return taxonomic_unit
 
 def create_fooditem(results, food_upper, part):
