@@ -28,7 +28,6 @@ def base_query(measurement_choices):
             ).values_list('coefficient')[:1]
         )
     ).annotate(
-    ).exclude(non_active).exclude(
         minplusmax=(F('minimum')*F('coefficient'))+(F('maximum')*F('coefficient')),
         occurrence_id=Concat(
         Case(When(source_entity__id__iexact=None, then=Value('0')),
@@ -47,7 +46,7 @@ def base_query(measurement_choices):
             default='life_stage__id',
             output_field=CharField())
         )
-    ).exclude(
+    ).exclude(non_active).exclude(
         Q(source_attribute__master_attribute__name='- Checked, Unlinked -')
         | Q(minplusmax=0)
         | Q(source_attribute__master_attribute__name__exact='')
