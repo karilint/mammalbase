@@ -53,6 +53,8 @@ def base_query(measurement_choices):
         | Q(source_attribute__master_attribute__name__exact='')
         | Q(source_entity__master_entity__name__exact='')
         | Q(source_entity__master_entity__id__isnull=True)
+        | Q(source_attribute__reference__status=1)
+        | Q(source_attribute__reference__status=3)
     ).filter(measurement_choice_filter)
 
     return query_filter

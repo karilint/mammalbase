@@ -107,6 +107,16 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         measurement_value_max=Round2(
             F('maximum') * F('coefficient')
         ),
+        measurement_acc=Case(When(measurement_accuracy__iexact=None,
+            then=Value('NA')),
+            default='measurement_accuracy',
+            output_field=CharField()
+            ),
+        statistical_method=Case(When(source_statistic__name__iexact=None,
+            then=Value('NA')),
+            default='source_statistic__name',
+            output_field=CharField()
+            ),
         occurrence_id=Case(
             When(occurrence_id__endswith='-0-0-0',then=Value('NA')
             ),
@@ -129,8 +139,8 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         ('dispersion', 'dispersion'),
         ('measurement_value_min', 'measurementValue_min'),
         ('measurement_value_max', 'measurementValue_max'),
-        ('measurement_accuracy', 'measurementAccuracy'),
-        ('source_statistic__name', 'statisticalMethod'),
+        ('measurement_acc', 'measurementAccuracy'),
+        ('statistical_method', 'statisticalMethod'),
         ('occurrence_id', 'occurrenceID')
     ]
 
