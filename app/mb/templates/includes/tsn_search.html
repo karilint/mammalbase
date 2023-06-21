@@ -56,38 +56,53 @@
                     else if (document.getElementById("previous-page-button") != null) {
                         document.getElementById("previous-page-button").remove()
                         document.getElementById("next-page-button").remove()
+                        document.getElementById("page_counter").remove()
                     }
                     
                 }
             }); 
         }
         function create_page_buttons() {
+            if (document.getElementById("page-counter") == null) {
+                counter = document.createElement("span");
+                counter.id = "page-counter"
+                
+            } else {
+                counter = document.getElementById("page-counter")
+            }
+            counter.innerHTML = "Page "+(page+1)+" of "+(Object.entries(res).length/10);
             if (document.getElementById("previous-page-button") == null) {
                 previous = document.createElement("button");
                 previous.id="previous-page-button";
                 previous.classList.add("w3-button", "w3-medium", "w3-round", "w3-padding-small", "w3-teal", "w3-margin")
                 previous.innerHTML="Previous page";
                 document.getElementById("tsn-table-container").appendChild(previous);
-            }
-            previous.onclick = function() {
-                if ((page-1)*10>=0) {
-                    page-=1;
-                    create_tsn_table();
+                previous.onclick = function() {
+                    if ((page-1)*10>=0) {
+                        page-=1;
+                        counter.innerHTML = "Page "+(page+1)+" of "+(Object.entries(res).length/10);
+                        create_tsn_table();
+                    }
                 }
             }
+            
+            document.getElementById("tsn-table-container").appendChild(counter);
+            
             if (document.getElementById("next-page-button") == null) {
                 next = document.createElement("button");
                 next.id="next-page-button";
                 next.classList.add("w3-button", "w3-medium", "w3-round", "w3-padding-small", "w3-teal", "w3-margin")
                 next.innerHTML="Next page";
                 document.getElementById("tsn-table-container").appendChild(next);
-            }
-            next.onclick = function() {
-                if ((page+1)*10<Object.keys(res).length) {
-                    page+=1;
-                    create_tsn_table();
+                next.onclick = function() {
+                    if ((page+1)*10<Object.keys(res).length) {
+                        page+=1;
+                        counter.innerHTML = "Page "+(page+1)+" of "+(Object.entries(res).length/10);
+                        create_tsn_table();
+                    }
                 }
             }
+            
         }
         function create_tsn_table() {
             let list = document.getElementById("itis-list");
@@ -176,7 +191,7 @@
         function create_button_header() {
             let button_header = document.createElement("th");
             button_header.classList.add("w3-quarter");
-            button_header.appendChild(document.createTextNode("-"));
+            button_header.appendChild(document.createTextNode(""));
             return button_header;
         }
         function create_tsn_select_button(tsn_data) {
