@@ -1046,5 +1046,5 @@ class ToolsTest(TestCase):
             for header in std_values:
                 if 'reported' in header:
                     self.assertAlmostEqual(reported_values[header][row], std_values[header], 3)
-                #elif 'std' in header:
-                    #self.assertAlmostEqual(expected_values[header][row], std_values[header], 3)
+                elif 'std' in header:
+                    self.assertAlmostEqual(expected_values[header][row], std_values[header], 3)
