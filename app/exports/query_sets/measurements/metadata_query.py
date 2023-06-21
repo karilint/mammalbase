@@ -1,6 +1,6 @@
 #from exports.query_sets.measurements.base_query import query as base_query
 from django.db.models.functions import Now, Concat, TruncYear
-from django.db.models import Value, Subquery, OuterRef, CharField, Case, When, Exists
+from django.db.models import Value, Subquery, OuterRef, CharField, Case, When, Exists, Q
 from allauth.socialaccount.models import SocialAccount
 from datetime import timezone, datetime, timedelta
 
@@ -14,8 +14,11 @@ def metadata_query(measurement_choices):
     now_format_2 = now.strftime('%Y-%m-%dT%H:%M+02:00')
     now_format_3 = now.strftime('%d %m %Y')
 
+    non_active = (
+        Q(created_by__is_active=False)
+    )
 
-    query = base.annotate(
+    query = base.exclude(non_active).annotate(
         dataset_id=Value('https://urn.fi/urn:nbn:fi:att:8dce459f-1401-4c6a-b2bb-c831bd8d3d6f'),
         dataset_name=Value('MammalBase — Dataset 03: Trait Data in Ecological Trait-data Standard (ETS) format'),
         dataset_description=Value(
