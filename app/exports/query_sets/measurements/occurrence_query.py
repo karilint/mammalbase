@@ -13,26 +13,25 @@ def occurrence_query(measurement_choices):
     )
 
     query = base.exclude(non_active).annotate(
-        occurrence_id=Value('NA'),
         age=Value('NA'),
         morphotype=Value('NA'),
         event_id=Value('NA'),
         preparations=Value('NA'),
-        sampling_protocol=Value('NA'), 
+        sampling_protocol=Value('NA'),
         year = Value('NA'),
         month=Value('NA'),
         day=Value('NA'),
         event_date=Value('NA'),
         location_id=Value('NA'),
         habitat=Value('NA'),
-        decimal_longitude=Value('NA'), 
+        decimal_longitude=Value('NA'),
         decimal_latitude=Value('NA'),
         elevation=Value('NA'),
         geodetic_datum=Value('NA'),
         country=Value('NA'),
-        country_code=Value('NA'), 
+        country_code=Value('NA'),
         occurrence_remarks=Value('NA')
-    ).distinct()
+    ).distinct().exclude(occurrence_id__endswith='-0-0-0')
 
     fields = [
         ('occurrence_id', 'occurrenceID'),

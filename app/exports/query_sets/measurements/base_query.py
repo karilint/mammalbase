@@ -1,4 +1,5 @@
-from django.db.models import Subquery, OuterRef, F, Q
+from django.db.models import Subquery, OuterRef, F, Q, Case, When, CharField, Value
+from django.db.models.functions import Concat
 from mb.models import SourceMeasurementValue
 from mb.models import UnitConversion
 
@@ -27,8 +28,26 @@ def base_query(measurement_choices):
             ).values_list('coefficient')[:1]
         )
     ).annotate(
-        minplusmax=(F('minimum')*F('coefficient'))+(F('maximum')*F('coefficient'))
     ).exclude(non_active).exclude(
+        minplusmax=(F('minimum')*F('coefficient'))+(F('maximum')*F('coefficient')),
+        occurrence_id=Concat(
+        Case(When(source_entity__id__iexact=None, then=Value('0')),
+            default='source_entity__id',
+            output_field=CharField()),
+            Value('-'),
+            Case(When(source_location__id__iexact=None, then=Value('0')),
+            default='source_location__id',
+            output_field=CharField()),
+            Value('-'),
+            Case(When(gender__id__iexact=None, then=Value('0')),
+            default='gender__id',
+            output_field=CharField()),
+            Value('-'),
+            Case(When(life_stage__id__iexact=None, then=Value('0')),
+            default='life_stage__id',
+            output_field=CharField())
+        )
+    ).exclude(
         Q(source_attribute__master_attribute__name='- Checked, Unlinked -')
         | Q(minplusmax=0)
         | Q(source_attribute__master_attribute__name__exact='')

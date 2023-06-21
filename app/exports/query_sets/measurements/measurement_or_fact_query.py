@@ -15,8 +15,9 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         | Q(source_statistic__is_active=False)
     )
 
-    now = str(datetime.now(tz=timezone(timedelta(hours=2))).strftime('%Y-%m-%d %H:%M:%S +02:00'))
-    now2 = str(datetime.now(tz=timezone(timedelta(hours=2))).strftime('%d %m %Y'))
+    now = datetime.now(tz=timezone(timedelta(hours=2)))
+    now_format_1 = now.strftime('%Y-%m-%d %H:%M:%S +02:00')
+    now_format_2 = now.strftime('%d %m %Y')
 
     if is_admin_or_contributor:
         references = Replace(
@@ -31,9 +32,9 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
     else:
         references = Concat(
                     Value('The MammalBase community '),
-                    Value(now),
+                    Value(now_format_1),
                     Value(' , Data version '),
-                    Value(now2),
+                    Value(now_format_2),
                     Value(' at https://mammalbase.org/me/'),
                     output_field=CharField()
                 )
@@ -57,10 +58,24 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
                 Value(' level data')
             )
         ),
-        measurement_method=Value('NA'),
+        measurement_method=Case(
+            When(
+                source_attribute__method__name__exact=None,
+                then=Value('NA')
+            ),
+            default='source_attribute__method__name',
+            output_field=CharField()
+        ),
         measurement_determinedBy=Value('NA'),
         measurement_determinedDate=Value('NA'),
-        measurement_remarks=Value('NA'),
+        measurement_remarks=Case(
+            When(
+                remarks__exact=None,
+                then=Value('NA')
+            ),
+            default='remarks',
+            output_field=CharField()
+        ),
         aggregate_measure=Case(
             When(
                 n_total=1,
@@ -92,8 +107,13 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         measurement_value_max=Round2(
             F('maximum') * F('coefficient')
         ),
+        occurrence_id=Case(
+            When(occurrence_id__endswith='-0-0-0',then=Value('NA')
+            ),
+            default='occurrence_id',
+            output_field=CharField()
+            ),
     )
-
     fields = [
         ('measurement_id','measurementID'),
         ('basis_of_record', 'basisOfRecord'),
@@ -111,6 +131,7 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         ('measurement_value_max', 'measurementValue_max'),
         ('measurement_accuracy', 'measurementAccuracy'),
         ('source_statistic__name', 'statisticalMethod'),
+        ('occurrence_id', 'occurrenceID')
     ]
 
     return query, fields
