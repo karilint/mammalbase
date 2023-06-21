@@ -105,6 +105,11 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
             default='measurement_accuracy',
             output_field=CharField()
             ),
+        statistical_method=Case(When(source_statistic__name__iexact=None,
+            then=Value('NA')),
+            default='source_statistic__name',
+            output_field=CharField()
+            ),
         occurrence_id=Case(
             When(occurrence_id__endswith='-0-0-0',then=Value('NA')
             ),
@@ -128,7 +133,7 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         ('measurement_value_min', 'measurementValue_min'),
         ('measurement_value_max', 'measurementValue_max'),
         ('measurement_acc', 'measurementAccuracy'),
-        ('source_statistic__name', 'statisticalMethod'),
+        ('statistical_method', 'statisticalMethod'),
         ('occurrence_id', 'occurrenceID')
     ]
 
