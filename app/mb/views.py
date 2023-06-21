@@ -488,7 +488,13 @@ class food_item_delete(UserPassesTestMixin, DeleteView):
 
 def food_item_detail(request, pk):
     food_item = get_object_or_404(FoodItem, pk=pk, is_active=1)
+    sl = None
     if food_item.tsn is not None:
+        sl = SynonymLinks.objects.filter(tsn=food_item.tsn)
+        if len(sl) == 0:
+            sl = None
+        else:
+            sl = sl[0]
         if food_item.tsn.hierarchy_string:
             tsn_hierarchy = food_item.tsn.hierarchy_string.split("-")
         else:
@@ -512,7 +518,10 @@ def food_item_detail(request, pk):
         proximate_analysis=pa.all()[0]
     else:
         proximate_analysis=pa.none()
-    return render(request, 'mb/food_item_detail.html', {'proximate_analysis': proximate_analysis, 'food_item': food_item, })
+    
+    
+
+    return render(request, 'mb/food_item_detail.html', {'proximate_analysis': proximate_analysis, 'food_item': food_item, 'synonym_link': sl})
 
 @login_required
 @permission_required('mb.edit_food_item', raise_exception=True)
