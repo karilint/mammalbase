@@ -41,6 +41,11 @@ def traitlist_query(measurement_choices):
             default='source_attribute__master_attribute__remarks',
             output_field=CharField()
             ),
+        traitDescription=Case(When(source_attribute__master_attribute__description__iexact=None,then=Value('NA')
+            ),
+            default='source_attribute__master_attribute__description',
+            output_field=CharField()
+            ),
     ).order_by(
         'source_attribute__master_attribute__groups__name',
         'source_attribute__master_attribute__attributegrouprelation__display_order'
@@ -57,7 +62,7 @@ def traitlist_query(measurement_choices):
         ('factorLevels', 'factorLevels'),
         ('maxAllowedValue', 'maxAllowedValue'),
         ('minAllowedValue', 'minAllowedValue'),
-        ('source_attribute__master_attribute__description', 'traitDescription'),
+        ('traitDescription', 'traitDescription'),
         ('comments', 'comments'),
         ('source_attribute__master_attribute__reference__citation', 'source')
     ]
