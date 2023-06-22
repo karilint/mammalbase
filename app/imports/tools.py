@@ -1264,6 +1264,9 @@ def generate_standard_values_pa(items):
         elif abs(Decimal(100) - (item_sum + Decimal(items["moisture_reported"]))) < abs(Decimal(100) - item_sum):
             item_sum += Decimal(items["moisture_reported"])
             remarks_text = "Moisture+CP+EE+CF+NFE+ASH = 100"
+    elif items["dm_reported"] is not None:
+        if abs(item_sum - Decimal(items["dm_reported"])) < Decimal(0.001):
+            remarks_text = "CP+EE+CF+NFE+ASH = DM"
     
     for item in list(items.keys()):
         if "reported" not in item or "dm" in item or "moisture" in item:
