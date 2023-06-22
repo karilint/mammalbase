@@ -1,4 +1,4 @@
-from django.db.models import Value, CharField, Q
+from django.db.models import Value, CharField, Q, Case, When
 from django.db.models.functions import Concat, Replace
 from exports.query_sets.measurements.base_query import base_query
 
@@ -26,9 +26,21 @@ def traitlist_query(measurement_choices):
         narrowerTerm=Value('NA'),
         relatedTerm=Value('NA'),
         factorLevels=Value('NA'),
-        maxAllowedValue=Value('NA'),
-        minAllowedValue=Value('NA'),
-        comments=Value('NA')
+        maxAllowedValue=Case(When(source_attribute__master_attribute__max_allowed_value__iexact=None,then=Value('NA')
+            ),
+            default='source_attribute__master_attribute__max_allowed_value',
+            output_field=CharField()
+            ),
+        minAllowedValue=Case(When(source_attribute__master_attribute__min_allowed_value__iexact=None,then=Value('NA')
+            ),
+            default='source_attribute__master_attribute__min_allowed_value',
+            output_field=CharField()
+            ),
+        comments=Case(When(source_attribute__master_attribute__remarks__iexact=None,then=Value('NA')
+            ),
+            default='source_attribute__master_attribute__remarks',
+            output_field=CharField()
+            ),
     ).order_by(
         'source_attribute__master_attribute__groups__name',
         'source_attribute__master_attribute__attributegrouprelation__display_order'
@@ -40,7 +52,7 @@ def traitlist_query(measurement_choices):
         ('source_attribute__master_attribute__groups__name', 'broaderTerm'),
         ('narrowerTerm', 'narrowerTerm'),
         ('relatedTerm', 'relatedTerm'),
-        ('source_unit__master_unit__quantity_type', 'valueType'),
+        ('source_attribute__master_attribute__value_type', 'valueType'),
         ('source_attribute__master_attribute__unit__print_name', 'expectedUnit'),
         ('factorLevels', 'factorLevels'),
         ('maxAllowedValue', 'maxAllowedValue'),
