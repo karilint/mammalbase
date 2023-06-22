@@ -251,6 +251,16 @@ class MasterAttribute(BaseModel):
     """
     Model representing a MasterAttribute in MammalBase
     """
+    # valueType choices from ETS: https://github.com/greenelab/scihub/issues/7
+    TYPE = [
+        ('numeric', 'numeric'),
+        ('integer', 'integer'),
+        ('categorical', 'categorical'),
+        ('ordinal', 'ordinal'),
+        ('logical', 'logical'),
+        ('character', 'character'),
+    ]
+
     reference = models.ForeignKey(
         'MasterReference',
         on_delete = models.CASCADE,
@@ -269,8 +279,16 @@ class MasterAttribute(BaseModel):
     'MasterUnit',blank=True, null=True,
     on_delete = models.CASCADE,
     )
+
+    min_allowed_value = models.CharField(blank=True, null=True, max_length=25, help_text="Enter minimum value for the Master Attribute")
+    max_allowed_value = models.CharField(blank=True, null=True, max_length=25, help_text="Enter maximum value for the Master Attribute")
+    description = models.TextField(blank=True, null=True, max_length=500, help_text="Enter description for the Master Attribute")
     remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Master Attribute")
     groups = models.ManyToManyField('MasterAttributeGroup', through='AttributeGroupRelation')
+
+    value_type = models.CharField(max_length=25, choices=TYPE, default='character', help_text='Select the valueType of the MasterAttribute')
+
+
 
     class Meta:
         ordering = ['entity__name','name']
@@ -703,8 +721,8 @@ class SourceMeasurementValue(BaseModel):
     # unit is no longer in use - to be deleted
     cited_reference = models.CharField(
         blank=True,
-        null=True, 
-        max_length=1000, 
+        null=True,
+        max_length=1000,
         help_text="Enter the original reference, if not this study. If original, enter 'Original study'.")
     unit = models.CharField(
         null=True,
@@ -1019,8 +1037,8 @@ class DietSet(BaseModel):
     sample_size = models.PositiveSmallIntegerField(default=0, help_text='Sample Size')
     cited_reference = models.CharField(
         blank=True,
-        null=True, 
-        max_length=250, 
+        null=True,
+        max_length=250,
         help_text="Enter the original reference, if not this study. If original, enter 'Original study'.")
     time_period = models.ForeignKey(
         'TimePeriod',
@@ -1038,8 +1056,8 @@ class DietSet(BaseModel):
         )
     study_time = models.CharField(
         blank=True,
-        null=True, 
-        max_length=250, 
+        null=True,
+        max_length=250,
         help_text="Enter the time when this study was performed.")
 
     class Meta:
@@ -1216,7 +1234,7 @@ class ProximateAnalysisItem(BaseModel):
         validators=[MinValueValidator(0), MaxValueValidator(1000)]
     )
     nfe_reported = models.DecimalField(
-        blank = True, 
+        blank = True,
         null=True,
         default=0,
         decimal_places=3,
@@ -1282,7 +1300,7 @@ class ProximateAnalysisItem(BaseModel):
         max_length=250,
         help_text="Enter remarks."
     )
-    
+
     #new fields below
     measurement_determined_by = models.CharField(
         blank = True,
@@ -1326,7 +1344,7 @@ class ProximateAnalysisItem(BaseModel):
     ee_dispersion = models.DecimalField(
         blank = True,
         null=True,
-        default=0, 
+        default=0,
         decimal_places=3,
         max_digits=7,
         validators=[MinValueValidator(0), MaxValueValidator(1000)])
