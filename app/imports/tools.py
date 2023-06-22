@@ -1257,11 +1257,11 @@ def generate_standard_values_pa(items):
         item_sum /= Decimal(10)
 
     # If the sum of reported values is closer to 100 when moisture is included then add moisture to the sum
-    if items["moisture_reported"] is not None and abs(Decimal(100) - (item_sum + Decimal(items["moisture_reported"]))) < abs(Decimal(100) - item_sum):
-        if sum_to_thousand:
-            item_sum += Decimal(items["moisture_reported"])/Decimal(10)
+    if items["moisture_reported"] is not None:
+        if sum_to_thousand and abs(Decimal(100) - (item_sum + (Decimal(items["moisture_reported"]) / Decimal(10)))) < abs(Decimal(100) - item_sum):
+            item_sum += Decimal(items["moisture_reported"]) / Decimal(10)
             remarks_text = "Moisture+CP+EE+CF+NFE+ASH = 1000"
-        else:
+        elif abs(Decimal(100) - (item_sum + Decimal(items["moisture_reported"]))) < abs(Decimal(100) - item_sum):
             item_sum += Decimal(items["moisture_reported"])
             remarks_text = "Moisture+CP+EE+CF+NFE+ASH = 100"
     
