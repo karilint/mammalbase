@@ -23,6 +23,7 @@ from mb.models import SourceReference, SourceStatistic, SourceUnit, TimePeriod, 
 from mb.models import MasterEntity, ProximateAnalysisItem, ProximateAnalysis
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 import itis.views as itis
+from config.settings import ITIS_CACHE
 
 
 class Check:
@@ -600,8 +601,8 @@ def get_fooditem_json(food):
     query = food.lower().capitalize().replace(' ', '%20')
     url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
     try:
-        session = CachedSession("/vol/web/static/itis_cache", expire_after=timedelta(days=30), stale_if_error=True)
-        file = session.get(url, timeout=15)
+        session = CachedSession(ITIS_CACHE, expire_after=timedelta(days=30), stale_if_error=True)
+        file = session.get(url)
         data = file.text
     except (ConnectionError, UnicodeError):
         return {'data': [{}]}

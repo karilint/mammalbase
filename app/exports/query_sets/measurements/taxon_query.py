@@ -1,11 +1,16 @@
-from django.db.models import Value, CharField
+from django.db.models import Value, CharField, Q
 from django.db.models.functions import Concat
 from exports.query_sets.measurements.base_query import base_query
+
 
 def taxon_query(measurement_choices):
     base = base_query(measurement_choices)
 
-    query = base.annotate(
+    non_active = (
+            Q(source_entity__master_entity__entity__is_active=False)
+    )
+
+    query = base.exclude(non_active).annotate(
             taxon_id=Concat(
             Value('https://www.mammalbase.net/me/'),
             'source_entity__master_entity__id',
@@ -15,7 +20,7 @@ def taxon_query(measurement_choices):
         kingdom=Value('Animalia'),
         phylum=Value('Chordata'),
         taxon_class=Value('Mammalia'),
-    ).order_by('taxon_id').distinct()
+    ).order_by('source_entity__master_entity__taxon__sort_order').distinct()
 
     fields = [
         ('taxon_id','taxonID'),

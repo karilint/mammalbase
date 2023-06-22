@@ -37,6 +37,12 @@
       <th class="w3-quarter">TSN Complete name:</th>
       <td class="mb-public-internal w3-threequarter"><a title="Press for Details" href="{% url 'tsn-detail' tsn=food_item.tsn.tsn|default:0 %}">{{ food_item.tsn.completename }} <span class="fa fa-link w3-small"></span></a></td>
     </tr>
+    {% if synonym_link %}
+    <tr>
+      <th class="w3-quarter">TSN Accepted name:</th>
+      <td class="mb-public-internal w3-threequarter"><a title="Press for Details" href="{% url 'tsn-detail' tsn=food_item.tsn.tsn|default:0 %}">{{ synonym_link.tsn_accepted_name }} <span class="fa fa-link w3-small"></span></a></td>
+    </tr>
+    {% endif %}
     <tr>
       <th class="w3-quarter">Accepted hierarchy:</th>
       <td class="mb-public-internal w3-threequarter">{{ food_item.tsn.hierarchy }}</td>

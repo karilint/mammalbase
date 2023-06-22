@@ -1,4 +1,4 @@
-from django.db.models import Value, CharField
+from django.db.models import Value, CharField, Q
 from django.db.models.functions import Concat, Replace
 from exports.query_sets.measurements.base_query import base_query
 
@@ -6,7 +6,12 @@ from exports.query_sets.measurements.base_query import base_query
 def traitlist_query(measurement_choices):
     base = base_query(measurement_choices)
 
-    query = base.annotate(
+    non_active = (
+              Q(source_attribute__master_attribute__unit__is_active=False)
+            | Q(source_attribute__master_attribute__reference__is_active=False)
+    )
+
+    query = base.exclude(non_active).annotate(
         identifier=Concat(
             Value('https://www.mammalbase.net/ma/'),
             'source_attribute__master_attribute__id',
@@ -24,7 +29,10 @@ def traitlist_query(measurement_choices):
         maxAllowedValue=Value('NA'),
         minAllowedValue=Value('NA'),
         comments=Value('NA')
-    ).order_by('trait').distinct()
+    ).order_by(
+        'source_attribute__master_attribute__groups__name',
+        'source_attribute__master_attribute__attributegrouprelation__display_order'
+    ).distinct()
 
     fields = [
         ('identifier', 'identifier'),

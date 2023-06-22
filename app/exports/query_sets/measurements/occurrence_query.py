@@ -1,36 +1,51 @@
-from django.db.models import Value
+from django.db.models import Value, Case, When, CharField, Q
 from exports.query_sets.measurements.base_query import base_query
 
 
 def occurrence_query(measurement_choices):
     base = base_query(measurement_choices)
 
-    query = base.annotate(
-        occurrence_id=Value('NA'),
+    non_active = (
+          Q(gender__is_active=False)
+        | Q(life_stage__is_active=False)
+        | Q(source_location__is_active=False)
+        | Q(source_statistic__is_active=False)
+    )
+
+    query = base.exclude(non_active).annotate(
+        sex=Case(When(gender__caption__iexact=None, then=Value('NA')),
+            default='gender__caption',
+            output_field=CharField()),
+        life_stg=Case(When(life_stage__caption__iexact=None, then=Value('NA')),
+            default='life_stage__caption',
+            output_field=CharField()),
         age=Value('NA'),
         morphotype=Value('NA'),
         event_id=Value('NA'),
         preparations=Value('NA'),
-        sampling_protocol=Value('NA'), 
+        sampling_protocol=Value('NA'),
         year = Value('NA'),
         month=Value('NA'),
         day=Value('NA'),
         event_date=Value('NA'),
         location_id=Value('NA'),
         habitat=Value('NA'),
-        decimal_longitude=Value('NA'), 
+        decimal_longitude=Value('NA'),
         decimal_latitude=Value('NA'),
         elevation=Value('NA'),
         geodetic_datum=Value('NA'),
+        verbatim_locality=Case(When(source_location__name__iexact=None, then=Value('NA')),
+            default='source_location__name',
+            output_field=CharField()),
         country=Value('NA'),
-        country_code=Value('NA'), 
+        country_code=Value('NA'),
         occurrence_remarks=Value('NA')
-    ).distinct()
+    ).distinct().exclude(occurrence_id__endswith='-0-0-0')
 
     fields = [
         ('occurrence_id', 'occurrenceID'),
-        ('gender__caption', 'sex'),
-        ('life_stage__caption', 'lifeStage'),
+        ('sex', 'sex'),
+        ('life_stg', 'lifeStage'),
         ('age', 'age'),
         ('morphotype', 'morphotype'),
         ('event_id', 'eventID'),
@@ -46,7 +61,7 @@ def occurrence_query(measurement_choices):
         ('decimal_latitude', 'decimalLatitude'),
         ('elevation', 'elevation'),
         ('geodetic_datum', 'geodeticDatum'),
-        ('source_location__name', 'verbatimLocality'),
+        ('verbatim_locality', 'verbatimLocality'),
         ('country', 'country'),
         ('country_code', 'countryCode'),
         ('occurrence_remarks', 'occurrenceRemarks'),

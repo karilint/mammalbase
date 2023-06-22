@@ -6,7 +6,7 @@ from requests.exceptions import ConnectionError, ReadTimeout
 from requests_cache import CachedSession
 from itis.models import SynonymLinks, TaxonomicUnits
 from datetime import timedelta
-
+from config.settings import ITIS_CACHE
 # https://www.justintodata.com/python-api-call-to-request-data/#python-example-1-yelp-api-call
 
 def hierarchyToString(stop_word, dict, key1, key2, stop_index=-1):
@@ -22,7 +22,7 @@ def hierarchyToString(stop_word, dict, key1, key2, stop_index=-1):
 
 def itis_api_call(function, params, timeout, refresh):
     search_api_url = 'https://www.itis.gov/ITISWebService/jsonservice/' + function
-    session = CachedSession("/vol/web/static/itis_cache", expire_after=timedelta(days=30), stale_if_error=True)
+    session = CachedSession(ITIS_CACHE, expire_after=timedelta(days=30), stale_if_error=True)
     try:
         response = session.get(search_api_url, params=params, timeout=timeout, refresh=refresh)
     except ConnectionError:

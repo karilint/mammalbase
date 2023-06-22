@@ -10,3 +10,6 @@ MammalBase is a database of recent mammals. The main focus of this database is t
 
 ## Testing
 [Testing Guide](documentation/testing.md)
+
+## Using Celery to run tasks in the background
+[Instructions](documentation/celery.md)

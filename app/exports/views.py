@@ -4,7 +4,7 @@ from .models import ExportFile
 from .tasks import ets_export_query_set
 from django.contrib.auth.decorators import login_required
 from .forms import MeasurementsForm
-from django.core.validators import validate_email
+from mb.views import user_is_data_admin_or_contributor
 
 
 @login_required
@@ -18,22 +18,13 @@ def export_to_tsv(request):
             export_file = ExportFile(file=None)
             export_file.save()
             export_file_id = export_file.pk
-            is_admin_or_contributor = is_user_data_admin_or_contributor(request)
+            is_admin_or_contributor = user_is_data_admin_or_contributor(request.user)
             ets_export_query_set.delay(user_email, export_file_id, is_admin_or_contributor, checkboxes)
             return redirect('submission')
     else:
         form = MeasurementsForm()
     context = {'form': form}
     return render(request, 'export/export_ets.html', context)
-
-
-def is_user_data_admin_or_contributor(request):
-    groups = request.user.groups.all()
-    for group in groups:
-        print(f"group id type: {group.id}")
-        if group.id in [1, 2]:
-            return True
-    return False
 
 
 def form_submitted(request):
