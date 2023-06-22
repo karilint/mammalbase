@@ -3,6 +3,15 @@
         .tsn-td {
             height: 100px;
         }
+        .tsn-header:not(.tsn-header-up):not(.tsn-header-down):before {
+            content:"  "
+        }
+        .tsn-header-down:before {
+            content: "▾ "
+        }
+        .tsn-header-up:before {
+            content: "▴ "
+        }
     </style>
 </head>
 
@@ -49,10 +58,12 @@
                     query:query
                 },
                 success: function (response) {
-                    res = response
+                    res = Object.keys(response).map(key => {
+                        return response[key];
+                    });
                     page=0;
                     create_tsn_table()
-                    if (Object.entries(res).length > 10) create_page_buttons();
+                    if (res.length > 10) create_page_buttons();
                     else if (document.getElementById("previous-page-button") != null) {
                         document.getElementById("previous-page-button").remove()
                         document.getElementById("next-page-button").remove()
@@ -88,7 +99,7 @@
                 document.getElementById("tsn-table-container").appendChild(first);
                 first.onclick = function() {
                     page=0;
-                    counter.innerHTML = "Page "+(page+1)+" of "+(Object.entries(res).length/10);
+                    counter.innerHTML = "Page "+(page+1)+" of "+(res.length/10);
                     create_tsn_table();
                     
                 }
@@ -109,7 +120,7 @@
                 previous.onclick = function() {
                     if ((page-1)*10>=0) {
                         page-=1;
-                        counter.innerHTML = "Page "+(page+1)+" of "+(Object.entries(res).length/10);
+                        counter.innerHTML = "Page "+(page+1)+" of "+(res.length/10);
                         create_tsn_table();
                     }
                 }
@@ -119,7 +130,7 @@
             if (!document.getElementById("tsn-table-container").contains(counter)) {
                 document.getElementById("tsn-table-container").appendChild(counter);
             }
-            counter.innerHTML = "Page "+(page+1)+" of "+(Object.entries(res).length/10);
+            counter.innerHTML = "Page "+(page+1)+" of "+(res.length/10);
             
             if (document.getElementById("next-page-button") == null) {
                 next = document.createElement("button");
@@ -133,9 +144,9 @@
 
                 document.getElementById("tsn-table-container").appendChild(next);
                 next.onclick = function() {
-                    if ((page+1)*10<Object.keys(res).length) {
+                    if ((page+1)*10<res.length) {
                         page+=1;
-                        counter.innerHTML = "Page "+(page+1)+" of "+(Object.entries(res).length/10);
+                        counter.innerHTML = "Page "+(page+1)+" of "+(res.length/10);
                         create_tsn_table();
                     }
                 }
@@ -155,8 +166,8 @@
                 
                 document.getElementById("tsn-table-container").appendChild(first);
                 first.onclick = function() {
-                    page=(Object.entries(res).length/10) - 1;
-                    counter.innerHTML = "Page "+(page+1)+" of "+(Object.entries(res).length/10);
+                    page=(res.length/10) - 1;
+                    counter.innerHTML = "Page "+(page+1)+" of "+(res.length/10);
                     create_tsn_table();
                     
                 }
@@ -165,44 +176,80 @@
         }
         function create_tsn_table() {
             let list = document.getElementById("itis-list");
-            list.innerHTML = "";
-            document.getElementById("itis-list-header").innerHTML=res["message"]
+            let head = "placeholder"
+            let body = "placeholder";
+            $('#tsn-tbody').empty();
+            document.getElementById("itis-list-header").innerHTML=res.slice(-1);
             start = page*10;
-            let header_row = create_tsn_row();
-            let name_header = create_tsn_name_header();
-            let author_header = create_tsn_author_header();
-            let tsn_header = create_tsn_value_header();
-            let button_header = create_button_header();
-            header_row.appendChild(name_header);
-            header_row.appendChild(author_header);
-            header_row.appendChild(tsn_header);
-            header_row.appendChild(button_header);
-            list.appendChild(header_row);
-
-            for (const [key, value] of Object.entries(res).slice(start,start+10)) {
-                if (key == "message") continue;
+            if (list.getElementsByTagName("thead").length==0) {
+                let headers = []
+                head = document.createElement("thead");
+                let header_row = create_tsn_row();
+                head.appendChild(header_row);
+                headers.push(create_tsn_header("Scientific name:"));
+                headers[0].classList.add("tsn-header-down")
+                headers.push(create_tsn_header("Author:"));
+                headers.push(create_tsn_header("Tsn:"));
+                headers.push(create_tsn_header());
+                headers.forEach(function (header, index) {
+                    header_row.appendChild(header);
+                    if (header.textContent === "") return;
+                    header.addEventListener('click', function () {
+                        let up = document.getElementsByClassName("tsn-header-up")[0];
+                        let down = document.getElementsByClassName("tsn-header-down")[0];
+                        if (up!=null) up.classList.remove("tsn-header-up");
+                        if (down!=null) down.classList.remove("tsn-header-down");
+                        
+                        if (header != down) {
+                            header.classList.add("tsn-header-down");
+                            sort_by_header(index, 1);
+                        } else {
+                            header.classList.add("tsn-header-up");
+                            sort_by_header(index, -1);
+                        }
+                        
+                    })
+                    
+                })
+                list.appendChild(head);
+                body = document.createElement("tbody");
+                body.id = "tsn-tbody";
+                console.log(body.id)
+                head.id = "tsn-thead";
+                list.appendChild(body);
+            } else {
+                head = document.getElementById("tsn-thead");
+                body = document.getElementById("tsn-tbody");
+            }
+            
+            
+            
+            res.slice(start,start+10).forEach(function (value) {
+                if (typeof value === 'string') return;
+                
                 let row = create_tsn_row();
+                body.appendChild(row);
                 let name = create_tsn_name(value["scientificName"]);
                 let author = create_tsn_author(value["author"]);
-                let tsn = create_tsn_value(key);
+                let tsn = create_tsn_value(value["tsn"]);
                 let select_button = create_tsn_select_button(value);
                 row.appendChild(name);
                 row.appendChild(author)
                 row.appendChild(tsn);
                 row.appendChild(select_button);
-                list.appendChild(row);
-            }
+                
+            })
         }
         function create_tsn_row() {
             let row = document.createElement("tr");
             row.classList.add("w3-row");
             return row;
         }
-        function create_tsn_name_header() {
-            let name_header = document.createElement("th");
-            name_header.classList.add("w3-quarter");
-            name_header.appendChild(document.createTextNode("Scientific name:"));
-            return name_header;
+        function create_tsn_header(text="") {
+            let author_header = document.createElement("th");
+            author_header.classList.add("w3-quarter", "tsn-header");
+            author_header.appendChild(document.createTextNode(text));
+            return author_header
         }
         function create_tsn_name(name) {
             let name_value = document.createElement("td");
@@ -211,12 +258,7 @@
             name_value.appendChild(document.createTextNode(name));
             return name_value;
         }
-        function create_tsn_author_header() {
-            let author_header = document.createElement("th");
-            author_header.classList.add("w3-quarter");
-            author_header.appendChild(document.createTextNode("Author:"));
-            return author_header
-        }
+        
         function create_tsn_author(author) {
             if (author == null) author = "-";
             let author_value = document.createElement("td");
@@ -224,12 +266,6 @@
             author_value.classList.add("tsn-td")
             author_value.appendChild(document.createTextNode(author));
             return author_value;
-        }
-        function create_tsn_value_header() {
-            let tsn_header = document.createElement("th");
-            tsn_header.classList.add("w3-quarter");
-            tsn_header.appendChild(document.createTextNode("Tsn:"));
-            return tsn_header;
         }
         function create_tsn_value(tsn) {
             let tsn_link = document.createElement("a");
@@ -246,12 +282,6 @@
             tsn_value.classList.add("tsn-td")
             tsn_value.appendChild(tsn_link);
             return tsn_value;
-        }
-        function create_button_header() {
-            let button_header = document.createElement("th");
-            button_header.classList.add("w3-quarter");
-            button_header.appendChild(document.createTextNode(""));
-            return button_header;
         }
         function create_tsn_select_button(tsn_data) {
             let select_button = document.createElement("button");
@@ -287,6 +317,24 @@
                     document.getElementById("loadinAnimation").style.display="none";
                 }
             });
+        }
+        function sort_by_header(index, direction) {
+            res.sort(
+                function (first, second) {
+                    
+                    header_key = ["scientificName", "author", "tsn"];
+                    first = first[header_key[index]];
+                    second = second[header_key[index]];
+                    if (first === second) return 0;
+                    if (first === undefined) return 1
+                    if (second === undefined) return -1
+                    if (first < second || (first != null && second === null)) return direction*-1;
+                    
+                    if (first > second|| (first === null && second != null)) return direction*1;
+
+                }
+            );
+            create_tsn_table();
         }
     </script>
 </body>

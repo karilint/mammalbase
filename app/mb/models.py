@@ -270,6 +270,7 @@ class MasterAttribute(BaseModel):
     on_delete = models.CASCADE,
     )
     remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Master Attribute")
+    # Add description-field 
     groups = models.ManyToManyField('MasterAttributeGroup', through='AttributeGroupRelation')
 
     class Meta:
