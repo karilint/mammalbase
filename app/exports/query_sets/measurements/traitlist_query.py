@@ -45,7 +45,7 @@ def traitlist_query(measurement_choices):
         ('factorLevels', 'factorLevels'),
         ('maxAllowedValue', 'maxAllowedValue'),
         ('minAllowedValue', 'minAllowedValue'),
-        ('source_attribute__master_attribute__remarks', 'traitDescription'),
+        ('source_attribute__master_attribute__description', 'traitDescription'),
         ('comments', 'comments'),
         ('source_attribute__master_attribute__reference__citation', 'source')
     ]

@@ -64,7 +64,7 @@ class FoodItemForm(forms.ModelForm):
 class MasterAttributeForm(forms.ModelForm):
     class Meta:
         model = MasterAttribute
-        fields = ('name', 'unit', 'remarks', 'reference',)
+        fields = ('name', 'unit', 'description', 'reference',)
         widgets = {'reference': ReferenceWidget, }
 
 class MasterAttributeChoicesetOptionForm(forms.ModelForm):
