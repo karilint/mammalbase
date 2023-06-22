@@ -251,7 +251,7 @@ class MasterAttribute(BaseModel):
     """
     Model representing a MasterAttribute in MammalBase
     """
-    # valueType choices from ETS: https://github.com/greenelab/scihub/issues/7
+    # valueType choices from ETS: https://ecologicaltraitdata.github.io/ETS/
     TYPE = [
         ('numeric', 'numeric'),
         ('integer', 'integer'),
