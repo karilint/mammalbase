@@ -117,13 +117,7 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
             default='source_statistic__name',
             output_field=CharField()
             ),
-        occurrence_id=Case(
-            When(occurrence_id__endswith='-0-0-0',then=Value('NA')
-            ),
-            default='occurrence_id',
-            output_field=CharField()
-            ),
-    )
+        )
     fields = [
         ('measurement_id','measurementID'),
         ('basis_of_record', 'basisOfRecord'),
@@ -140,8 +134,7 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         ('measurement_value_min', 'measurementValue_min'),
         ('measurement_value_max', 'measurementValue_max'),
         ('measurement_acc', 'measurementAccuracy'),
-        ('statistical_method', 'statisticalMethod'),
-        ('occurrence_id', 'occurrenceID')
+        ('statistical_method', 'statisticalMethod')
     ]
 
     return query, fields

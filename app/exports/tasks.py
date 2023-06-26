@@ -8,7 +8,7 @@ from datetime import datetime
 from zipfile import ZipFile
 from tempfile import mkdtemp
 from config.settings import SITE_DOMAIN
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Case, Value, When
 from django.core.exceptions import ObjectDoesNotExist
 
 from exports.query_sets.measurements.traitlist_query import traitlist_query
@@ -90,9 +90,21 @@ def write_query_to_file(file_name: str, fields: list, query_set: QuerySet):
     f = open(file_path, 'w')
     writer = csv.writer(f, delimiter='\t', lineterminator='\n')
     writer.writerow(headers)
-    writer.writerows(query_set.values_list(*fields))
+    writer.writerows(replace_na(list(query_set.values_list(*fields))))
     f.close()
     return file_path
+
+
+def replace_na(values_list):
+    for i, row in enumerate(values_list):
+        new_row = []
+        for item in row:
+            if str(item) == '':
+                new_row.append('NA')
+            else:
+                new_row.append(item)
+        values_list[i] = tuple(new_row)
+    return values_list
 
 
 def save_zip_to_django_model(zip_file_path: str, model_id: int):
