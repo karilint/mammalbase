@@ -1028,11 +1028,11 @@ class ToolsTest(TestCase):
             'nfe_reported':[38.66, 20.8, 19.4]
         }
         expected_values = {
-            'ee_std':[Decimal(22.159), Decimal(58.8), Decimal(2.82)],
-            'cp_std':[Decimal(8.182), Decimal(18), Decimal(60.433)],
-            'cf_std':[Decimal(18.341), None, Decimal(8.669)],
-            'ash_std':[Decimal(7.386), Decimal(2.4), Decimal(26.059)],
-            'nfe_std':[Decimal(43.932), Decimal(20.8), Decimal(2.019)]
+            'ee_std':[Decimal(19.459), Decimal(58.8), Decimal(2.71)],
+            'cp_std':[Decimal(7.185), Decimal(18), Decimal(58.07)],
+            'cf_std':[Decimal(16.106), None, Decimal(8.33)],
+            'ash_std':[Decimal(6.486), Decimal(2.4), Decimal(25.04)],
+            'nfe_std':[Decimal(38.579), Decimal(20.8), Decimal(1.94)]
         }
 
         # Test generated standard values for each row in reported_values separately

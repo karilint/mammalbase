@@ -71,11 +71,15 @@
       </tr>
       <!--Crude protein-->
       <tr>
-        <th rowspan="4" style="vertical-align: middle">Crude Protein (CP)</th>
+        <th rowspan="5" style="vertical-align: middle">Crude Protein (CP)</th>
       </tr>
       <tr>
         <th class="w3-quarter">Standard value:</th>
         <td class="w3-threequarter">{{ proximate_analysis_item.cp_std|floatformat:2 }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Reported value:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.cp_reported|floatformat:2 }}</td>
       </tr>
       <tr>
         <th class="w3-quarter">Dispersion:</th>
@@ -85,14 +89,38 @@
         <th class="w3-quarter">Measurement method:</th>
         <td class="w3-threequarter">{{ proximate_analysis_item.cp_measurement_method|default_if_none:"-" }}</td>
       </tr>
+      <!--Ether extract-->
+      <tr>
+        <th rowspan="5" style="vertical-align: middle">Ether Extract (EE)</th>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Standard value:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.ee_std|floatformat:2 }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Reported value:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.ee_reported|floatformat:2 }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Dispersion:</th>
+        <td class="w3-threequarter">{% if proximate_analysis_item.ee_dispersion is None %}-{% else %} {{proximate_analysis_item.ee_dispersion|floatformat:2 }}{% endif %}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Measurement method:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.ee_measurement_method|default_if_none:"-" }}</td>
+      </tr>
       <!--Crude fiber-->
       <tr>
-        <th rowspan="4" style="vertical-align: middle">Crude Fibre (CF)</th>
+        <th rowspan="5" style="vertical-align: middle">Crude Fibre (CF)</th>
       </tr>
       <tr>
         <th class="w3-quarter">Standard value:</th>
         <td class="w3-threequarter">{{ proximate_analysis_item.cf_std|floatformat:2 }}</td>
-      </tr>  
+      </tr>
+      <tr>
+        <th class="w3-quarter">Reported value:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.cf_reported|floatformat:2 }}</td>
+      </tr>
       <tr>
         <th class="w3-quarter">Dispersion:</th>
         <td class="w3-threequarter">{% if proximate_analysis_item.cf_dispersion is None %}-{% else %} {{proximate_analysis_item.cf_dispersion|floatformat:2 }}{% endif %}</td> 
@@ -103,41 +131,35 @@
       </tr>
       <!--Ash-->
       <tr>
-        <th rowspan="4" style="vertical-align: middle">Ash</th>
+        <th rowspan="5" style="vertical-align: middle">Ash</th>
       </tr>
       <tr>
         <th class="w3-quarter">Standard value:</th>
         <td class="w3-threequarter">{{ proximate_analysis_item.ash_std|floatformat:2 }}</td>
       </tr>
+      <tr>
+        <th class="w3-quarter">Reported value:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.ash_reported|floatformat:2 }}</td>
+      </tr>
+      <tr>
         <th class="w3-quarter">Dispersion:</th>
         <td class="w3-threequarter">{% if proximate_analysis_item.ash_dispersion is None %}-{% else %} {{proximate_analysis_item.ash_dispersion|floatformat:2 }}{% endif %}</td>
+      </tr>
       <tr>
         <th class="w3-quarter">Measurement method:</th>
         <td class="w3-threequarter">{{ proximate_analysis_item.ash_measurement_method|default_if_none:"-" }}</td>
       </tr>
-      <!--Ether extract-->
-      <tr>
-        <th rowspan="4" style="vertical-align: middle">Ether Extract (EE)</th>
-      </tr>
-      <tr>
-        <th class="w3-quarter">Standard value:</th>
-        <td class="w3-threequarter">{{ proximate_analysis_item.ee_std|floatformat:2 }}</td>
-      </tr>
-      <tr>
-        <th class="w3-quarter">Dispersion:</th>
-        <td class="w3-threequarter">{% if proximate_analysis_item.ee_dispersion is None %}-{% else %} {{proximate_analysis_item.ee_dispersion|floatformat:2 }}{% endif %}</td>
-      </tr>
-      <tr>
-        <th class="w3-quarter">Measurement method:</th>
-        <td class="w3-threequarter">{{ proximate_analysis_item.ee_measurement_method|default_if_none:"-" }}</td>
-      </tr>
       <!--Nitrogen free extract-->
       <tr>
-        <th rowspan="4" style="vertical-align: middle">Nitrogen-Free-Extract (NFE)</th>
+        <th rowspan="5" style="vertical-align: middle">Nitrogen-Free-Extract (NFE)</th>
       </tr>
       <tr>
         <th class="w3-quarter">Standard value:</th>
         <td class="w3-threequarter">{{ proximate_analysis_item.nfe_std|floatformat:2 }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Reported value:</th>
+        <td class="w3-threequarter">{{ proximate_analysis_item.nfe_reported|floatformat:2 }}</td>
       </tr>
       <tr>
         <th class="w3-quarter">Dispersion:</th>
