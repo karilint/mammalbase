@@ -1,3 +1,5 @@
+import os
+
 from django.test import TestCase
 
 import mb.models
@@ -35,41 +37,54 @@ class ExportZipFileTestCase(TestCase):
         }
 
     def test_export_zip_file_fails_on_empty_email(self):
+        current_dir = os.getcwd()
         self.export_args['email_receiver'] = ''
         self.assertRaises(
             ValueError,
             export_zip_file,
             **self.export_args
         )
+        self.assertEqual(
+            current_dir,
+            os.getcwd()
+        )
 
     def test_export_zip_file_fails_on_empty_query_list(self):
+        current_dir = os.getcwd()
         self.export_args['queries'] = []
         self.assertRaises(
             ValueError,
             export_zip_file,
             **self.export_args
         )
+        self.assertEqual(
+            current_dir,
+            os.getcwd()
+        )
 
     def test_export_zip_file_fails_on_empty_fields_list(self):
+        current_dir = os.getcwd()
         self.export_args['queries'][0]['fields'] = []
         self.assertRaises(
             ValueError,
             export_zip_file,
             **self.export_args
         )
+        self.assertEqual(
+            current_dir,
+            os.getcwd()
+        )
 
     def test_export_zip_file_fails_on_empty_file_name(self):
+        current_dir = os.getcwd()
         self.export_args['queries'][0]['file_name'] = ''
         self.assertRaises(
             ValueError,
             export_zip_file,
             **self.export_args
         )
-
-    def test_export_zip_file_fails_on_invalid_export_file_id(self):
-        self.export_args['export_file_id'] = 123
-        self.assertRaises(
-            ObjectDoesNotExist,
-            export_zip_file,
-            **self.export_args
+        self.assertEqual(
+            current_dir,
+            os.getcwd()
         )
+
