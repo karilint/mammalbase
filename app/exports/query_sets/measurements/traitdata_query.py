@@ -36,7 +36,12 @@ def traitdata_query(measurement_choices):
             Value('/'),
             output_field=CharField()
         ),
-        #occurrence_id=Value('NA'),
+        occurrence_id=Case(
+            When(occurrence_id__endswith='-0-0-0',then=Value('NA')
+            ),
+            default='occurrence_id',
+            output_field=CharField()
+            ),
         warnings=Case(
             When(
                 source_entity__master_entity__entity__name__iendswith='species',
@@ -63,7 +68,7 @@ def traitdata_query(measurement_choices):
         ('source_unit__name', 'verbatimTraitUnit'),
         ('taxon_id', 'taxonID'),
         ('measurement_id', 'measurementID'),
-        #('occurrence_id', 'occurrenceID'),
+        ('occurrence_id', 'occurrenceID'),
         ('warnings', 'warnings'),
     ]
 
