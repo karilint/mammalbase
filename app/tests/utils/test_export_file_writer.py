@@ -1,4 +1,4 @@
-class ExportFileWriter:
+class TestExportFileWriter:
 
     def __init__(self):
         self.files = []
@@ -12,5 +12,8 @@ class ExportFileWriter:
         pass
 
 
-    def write_rows(self, file_path, *rows):
-        self.files.append((file_path, rows))
+    def write_rows(self, file_path, headers, rows):
+        file_content = [headers]
+        for row in rows:
+            file_content.append(row)
+        self.files.append((file_path, file_content))

@@ -27,9 +27,10 @@ class ExportFileWriter:
         temp_zip_writer.close()
 
 
-    def write_rows(self, file_path, *rows):
+    def write_rows(self, file_path, headers, rows):
         f = open(file_path, 'w')
         writer = csv.writer(f, delimiter='\t', lineterminator='\n')
+        writer.writerow(headers)
         writer.writerows(rows)
         f.close()
 
