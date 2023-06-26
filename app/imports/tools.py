@@ -579,6 +579,20 @@ def get_choicevalue(gender):
     choicevalue = ChoiceValue.objects.filter(pk=gender)
     return choicevalue[0]
 
+def create_return_data(tsn, scientific_name):
+    hierarchy = itis.getFullHierarchyFromTSN(tsn)
+    classification_path = itis.hierarchyToString(scientific_name, hierarchy, 'hierarchyList', 'taxonName')
+    classification_path_ids = itis.hierarchyToString(tsn, hierarchy, 'hierarchyList', 'tsn')
+    classification_path_ranks = itis.hierarchyToString('Species', hierarchy, 'hierarchyList', 'rankName')
+    return_data = {
+        'taxon_id': tsn,
+        'canonical_form': scientific_name,
+        'classification_path_ids': classification_path_ids,
+        'classification_path': classification_path,
+        'classification_path_ranks': classification_path_ranks
+    }
+    return {'data': [{'results': [return_data]}]}
+
 def get_accepted_tsn(tsn):
     response = itis.GetAcceptedNamesfromTSN(tsn)
     accepted_tsn = response["acceptedNames"][0]["acceptedTsn"]
@@ -1116,12 +1130,13 @@ def create_proximate_analysis_item(row, pa, location, cited_reference, headers):
             possible_nan_to_none(getattr(row, "PartOfOrganism"))
         )
     }
-    pa_item_dict = convert_empty_values_pa(row, headers, pa_item_dict)
-    pa_item_dict = generate_standard_values_pa(pa_item_dict)
+    
     #Check if pa_item already exists
     pa_item_old = ProximateAnalysisItem.objects.filter(**pa_item_dict)
+    pa_item_dict = convert_empty_values_pa(row, headers, pa_item_dict)
+    pa_item_dict = generate_standard_values_pa(pa_item_dict)
     if len(pa_item_old) > 0:
-        pa_item = pa_item_old[0]
+        pa_item_old.update(**pa_item_dict)
     else:
         pa_item = ProximateAnalysisItem(**pa_item_dict)
         pa_item.save()
