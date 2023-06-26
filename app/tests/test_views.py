@@ -130,14 +130,6 @@ class ImportViewTests(TestCase):
         self.assertNotEqual(message["message"], "Found no entries")
         self.assertTrue("Found" in message["message"] and "entries" in message["message"])
     
-    def test_tsn_search_get_validity_check(self):
-        response = self.client.get("/tsn/search?query=rodent")
-        message = json.loads(str(response.content, encoding="utf8"))
-        for key, value in message.items():
-            if key == "message":
-                continue
-            self.assertTrue(value["nameUsage"] in ["valid", "accepted"])
-    
     def test_tsn_search_post(self):
         kingdom_id = Kingdom.objects.create(name="Animalia").pk
         rank_id = TaxonUnitTypes.objects.create(rank_name="Species", rank_id=10, dir_parent_rank_id=10, req_parent_rank_id=10, kingdom_id=kingdom_id).pk

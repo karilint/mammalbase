@@ -1763,13 +1763,13 @@ def tsn_update(request, tsn):
 def tsn_detail(request, tsn):
     taxonomic_unit = get_object_or_404(TaxonomicUnits, tsn=tsn)
     tsn_hierarchy = taxonomic_unit.hierarchy_string.split("-")
-    i=len(tsn_hierarchy)-1
-    found=False
-    while(i>=0 and found is False):
+    pa = None
+    for i in reversed(range(len(tsn_hierarchy))):
+        if tsn_hierarchy[i] == "":
+            break
         pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i])
         if len(pa)>=1:
             break
-        i=i-1
     return render(request, 'mb/tsn_detail.html', {'pa': pa, 'tsn': taxonomic_unit},)
 
 @login_required
@@ -1828,21 +1828,10 @@ def tsn_search(request):
     if request.method == "POST":
 
         tsn_data = json.loads(request.POST.get("tsn_data"))
-        hierarchy = itis.getFullHierarchyFromTSN(tsn_data["tsn"])
-        if hierarchy is None:
-            return JsonResponse("timeout", safe=False, status=500)
-        classification_path = itis.hierarchyToString(tsn_data["scientificName"], hierarchy, 'hierarchyList', 'taxonName')
-        classification_path_ids = itis.hierarchyToString(tsn_data["tsn"], hierarchy, 'hierarchyList', 'tsn', classification_path.count("-"))
-        classification_path_ranks = itis.hierarchyToString('Species', hierarchy, 'hierarchyList', 'rankName',classification_path.count("-"))
-        return_data = {
-            'taxon_id': tsn_data["tsn"],
-            'canonical_form': tsn_data["scientificName"],
-            'classification_path_ids': classification_path_ids,
-            'classification_path': classification_path,
-            'classification_path_ranks': classification_path_ranks,
-        }
 
-        create_tsn({'data': [{'results': [return_data]}]}, tsn_data["tsn"])
+        return_data = create_return_data(tsn_data["tsn"], tsn_data["scientificName"], status=tsn_data["nameUsage"])
+
+        create_tsn(return_data, tsn_data["tsn"])
         return JsonResponse("recieved", safe=False, status=201)
 
     elif request.method == "GET":
@@ -1863,9 +1852,6 @@ def tsn_search(request):
         if data[0] is not None:
             return_data["message"] = f"Found {len(data)} entries"
             for item in enumerate(data):
-
-                if item[1]['nameUsage'] not in ['valid', 'accepted']:
-                    continue
                 item = item[1]
                 return_data[item["tsn"]] = item
         return JsonResponse(return_data, safe=False, status=200 )
