@@ -69,7 +69,7 @@ def export_zip_file(email_receiver: str, queries: list, export_file_id, file_wri
     shutil.rmtree(temp_directory)
 
 
-def write_query_to_file(file_writer: ExportFileWriter, file_name: str, fields: list, query_set: QuerySet):
+def write_query_to_file(file_writer, file_name: str, fields: list, query_set: QuerySet):
     """Used by export_zip_file()"""
     if file_name == '':
         raise ValueError(
