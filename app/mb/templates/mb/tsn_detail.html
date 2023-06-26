@@ -77,7 +77,6 @@
             {% endif %}
           </tbody>
         </table>
-        {% if pa.all.count > 0 %}
         {% if user.is_authenticated %}
         <br>
         {% else %}
@@ -101,6 +100,7 @@
             </tr>
           </thead>
           <tbody>
+            {% if pa.all.count > 0 %}
             {% for proximate_analysis in pa.all %}
             <tr>
               <td>{{ proximate_analysis.tsn.hierarchy }}</td>
@@ -120,12 +120,13 @@
               <td>{{ proximate_analysis.n_analysis }}</td>
             </tr>
             {% endfor %}
+            {% else %}
+            <tr><td colspan="2">There are no proximate analysis related to this TSN.</td></tr>
+            {% endif %}
           </tbody>
         </table>
         <p class="w3-small"><sup>a.</sup> Please note that all values are in Standardized format. </p>
-        {% else %}
-        <tr><td colspan="2">There are no linked Food Items available.</td></tr>
-        {% endif %}
+        
       </section>
       {% endblock %}
       {% block info %}
