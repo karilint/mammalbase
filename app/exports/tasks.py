@@ -95,12 +95,12 @@ def write_query_to_file(file_writer, file_name: str, fields: list, query_set: Qu
 
 
 def replace_na(values_list):
-    """Takes an iterable from values_list method of a QuerySet instance and replaces empty strings with NA"""
+    """Takes an iterable from values_list method of a QuerySet instance and replaces empty strings or Nones with NA"""
     values_list = list(values_list)
     for i, row in enumerate(values_list):
         new_row = []
         for item in row:
-            if str(item) == '':
+            if item in ['', None]:
                 new_row.append('NA')
             else:
                 new_row.append(item)

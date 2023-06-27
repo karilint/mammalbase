@@ -32,26 +32,6 @@ def traitlist_query(measurement_choices):
         narrowerTerm=Value('NA'),
         relatedTerm=Value('NA'),
         factorLevels=Value('NA'),
-        maxAllowedValue=Case(When(source_attribute__master_attribute__max_allowed_value__iexact=None,then=Value('NA')
-            ),
-            default='source_attribute__master_attribute__max_allowed_value',
-            output_field=CharField()
-            ),
-        minAllowedValue=Case(When(source_attribute__master_attribute__min_allowed_value__iexact=None,then=Value('NA')
-            ),
-            default='source_attribute__master_attribute__min_allowed_value',
-            output_field=CharField()
-            ),
-        comments=Case(When(source_attribute__master_attribute__remarks__iexact=None,then=Value('NA')
-            ),
-            default='source_attribute__master_attribute__remarks',
-            output_field=CharField()
-            ),
-        traitDescription=Case(When(source_attribute__master_attribute__description__iexact=None,then=Value('NA')
-            ),
-            default='source_attribute__master_attribute__description',
-            output_field=CharField()
-            ),
     ).order_by(
         'source_attribute__master_attribute__groups__name',
         'source_attribute__master_attribute__attributegrouprelation__display_order'
@@ -66,10 +46,10 @@ def traitlist_query(measurement_choices):
         ('source_attribute__master_attribute__value_type', 'valueType'),
         ('source_attribute__master_attribute__unit__print_name', 'expectedUnit'),
         ('factorLevels', 'factorLevels'),
-        ('maxAllowedValue', 'maxAllowedValue'),
-        ('minAllowedValue', 'minAllowedValue'),
-        ('traitDescription', 'traitDescription'),
-        ('comments', 'comments'),
+        ('source_attribute__master_attribute__max_allowed_value', 'maxAllowedValue'),
+        ('source_attribute__master_attribute__min_allowed_value', 'minAllowedValue'),
+        ('source_attribute__master_attribute__description', 'traitDescription'),
+        ('source_attribute__master_attribute__remarks', 'comments'),
         ('source_attribute__master_attribute__reference__citation', 'source')
     ]
 
