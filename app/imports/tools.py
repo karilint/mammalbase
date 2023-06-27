@@ -1095,7 +1095,7 @@ def create_proximate_analysis(row, df):
         attribute_dict["method"] = get_sourcemethod(getattr(row, "measurementMethod"), attribute_dict["reference"], author)
     if "verbatimLocality" in headers:
         attribute_dict["location"] = get_sourcelocation(getattr(row, "verbatimLocality"), attribute_dict["reference"], author)
-    if "verbatimeEventDate" in headers:
+    if "verbatimEventDate" in headers:
         attribute_dict["study_time"] = getattr(row, "verbatimEventDate")
     if "associatedReferences" in headers:
         attribute_dict["cited_reference"] = getattr(row, "associatedReferences")
