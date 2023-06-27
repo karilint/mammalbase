@@ -1,5 +1,4 @@
 from django import forms
-from django.core import validators
 
 
 BROADERTERMS = [
@@ -9,7 +8,7 @@ BROADERTERMS = [
 
 
 class ETSForm(forms.Form):
-    user_email = forms.EmailField(validators=[validators.EmailValidator(message='Invalid email address')],
+    user_email = forms.EmailField(
     )
 
     export_choices = forms.MultipleChoiceField(
