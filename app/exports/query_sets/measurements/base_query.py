@@ -5,6 +5,13 @@ from mb.models import UnitConversion
 
 
 def base_query(measurement_choices):
+    """
+        Base query function that the other query sets utilize. Uses the SourceMeasurementValue
+        objects to access the model fields.
+        Filters necessary to more than one query are also addressed here.
+        Occurence_id used in the occurrence_query and traitdata_query is created here.
+        Returns the QuerySet.
+    """
     non_active = (
               Q(source_attribute__master_attribute__groups__is_active=False)
             | Q(source_attribute__is_active=False)
@@ -15,7 +22,8 @@ def base_query(measurement_choices):
             | Q(source_unit__master_unit__is_active=False)
     )
 
-    query_filter_list = [Q(source_attribute__master_attribute__groups__name=value) for value in measurement_choices]
+    #  measurement_choices is a list of user choices made in forms.py/views.py.  
+    query_filter_list = [Q(source_attribute__master_attribute__attributegrouprelation__group__name=value) for value in measurement_choices]
     measurement_choice_filter = Q()
     for query_filter in query_filter_list:
         measurement_choice_filter |= query_filter

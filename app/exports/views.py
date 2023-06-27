@@ -3,15 +3,15 @@ from django.http import HttpResponseNotFound, FileResponse
 from .models import ExportFile
 from .tasks import ets_export_query_set
 from django.contrib.auth.decorators import login_required
-from .forms import MeasurementsForm
+from .forms import ETSForm
 from mb.views import user_is_data_admin_or_contributor
 
 
 @login_required
 def export_to_tsv(request):
-    """A view that renders an export form."""
+    """A view that renders  export form."""
     if request.method == 'POST':
-        form = MeasurementsForm(request.POST)
+        form = ETSForm(request.POST)
         if form.is_valid():
             user_email = request.POST['user_email']
             checkboxes = request.POST.getlist('export_choices')
@@ -22,7 +22,7 @@ def export_to_tsv(request):
             ets_export_query_set.delay(user_email, export_file_id, is_admin_or_contributor, checkboxes)
             return redirect('submission')
     else:
-        form = MeasurementsForm()
+        form = ETSForm()
     context = {'form': form}
     return render(request, 'export/export_ets.html', context)
 
