@@ -661,6 +661,8 @@ def create_tsn(results, tsn):
             sl = sl_qs[0]
         taxonomic_unit.hierarchy_string = accepted_taxonomic_unit.hierarchy_string
         taxonomic_unit.hierarchy = accepted_taxonomic_unit.hierarchy
+        taxonomic_unit.kingdom_id = accepted_taxonomic_unit.kingdom_id
+        taxonomic_unit.rank_id = accepted_taxonomic_unit.rank_id
         taxonomic_unit.save()
 
     return taxonomic_unit
