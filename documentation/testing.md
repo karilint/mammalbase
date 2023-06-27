@@ -11,11 +11,7 @@ docker exec mammalbase_web_1 bash -c "python manage.py test"
 ```
 
 The tests may not work locally before the database privileges are set for Django. Once docker containers are running, run this command:
-### Windows
-```bash
-docker-compose exec db mysql -u root -p
-```
-### Linux
+
 ```bash
 docker compose exec db mysql -u root -p
 ```
@@ -39,18 +35,28 @@ Test files are located in app/tests.
 
 You can create test coverage report by first installing coverage.py to the container:
 ```bash
-docker exec mammalbase_web_1 bash -c "pip install coverage"
+docker exec mammalbase-web-1 bash -c "pip install coverage"
 ```
 Run tests with:
 ```bash
-docker exec mammalbase_web_1 bash -c "coverage run --source='.' manage.py test"
+docker exec mammalbase-web-1 bash -c "coverage run --source='.' manage.py test"
 ```
 
 To see the report run:
 ```bash
-docker exec mammalbase_web_1 bash -c "coverage report"
+docker exec mammalbase-web-1 bash -c "coverage report"
 ```
 For html report run:
 ```bash
-docker exec mammalbase_web_1 bash -c "coverage html"
+docker exec mammalbase-web-1 bash -c "coverage html"
 ```
+
+### Pylint
+
+Pylint can be run in the containers by using the following command:
+```bash
+docker exec mammalbase-web-1 bash -c "pylint app"
+```
+```app``` can be replaced with the path to a specific directory or file to target.
+
+If you want to run pylint outside the container you will need to install pylint on your own system.
