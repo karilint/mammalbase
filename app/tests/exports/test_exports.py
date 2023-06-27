@@ -3,7 +3,7 @@ import os
 from django.test import TestCase
 
 from mb.models import EntityClass, MasterEntity
-from exports.tasks import export_zip_file
+from exports.tasks import export_zip_file, replace_na
 from exports.models import ExportFile
 from tests.exports.utils.test_export_file_writer import TestExportFileWriter
 
@@ -110,3 +110,21 @@ class ExportZipFileTestCase(TestCase):
             first_column_items.append(row[0])
         self.assertIn('Name', first_column_items)
         self.assertTrue(all(x in first_column_items for x in animals))
+
+
+    def test_replace_na_replaces_empty_string_with_na(self):
+        values = [('', 'test'), ('value', '')]
+        result = replace_na(values)
+        self.assertEqual(result, [('NA', 'test'), ('value', 'NA')])
+
+
+    def test_replace_na_doesnt_replace_white_space_with_na(self):
+        values = [(' ', 'test'), ('value', ' ')]
+        result = replace_na(values)
+        self.assertEqual(result, [(' ', 'test'), ('value', ' ')])
+
+
+    def test_replace_na_doesnt_replace_zero_with_na(self):
+        values = [('0', 'test'), ('value', 0)]
+        result = replace_na(values)
+        self.assertEqual(result, [('0', 'test'), ('value', 0)])

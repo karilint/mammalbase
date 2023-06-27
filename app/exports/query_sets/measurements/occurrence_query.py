@@ -3,6 +3,14 @@ from exports.query_sets.measurements.base_query import base_query
 
 
 def occurrence_query(measurement_choices):
+    """
+        Occurrence query function that defines the fields in the occurrence.tsv file 
+        according to the ETS standard: https://ecologicaltraitdata.github.io/ETS/. 
+        Values that are not yet in the models are set to 'NA'. 
+        occurrence_ids that ends in -0-0-0 are excluded from the query. 
+        Utilizes the base_query. Returns the query and fields whereof non active values
+        are excluded.   
+    """
     base = base_query(measurement_choices)
 
     non_active = (
