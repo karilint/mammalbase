@@ -31,7 +31,8 @@ def export_zip_file(email_receiver: str, queries: list, export_file_id, file_wri
             fields: [(str, str)] -- List of tuples containing desired data fields
                                     at [0] and corresponding column name at [1]
             query_set: QuerySet -- QuerySet object to be executed
-        export_file_id: -- id pointing to ExportFile instance where exported zip will be stored
+        export_file_id -- id pointing to ExportFile instance where exported zip will be stored
+        file_writer -- dependency injection, this class is responsible for file writing in exports
     """
     if email_receiver == '':
         raise ValueError(
@@ -70,7 +71,7 @@ def export_zip_file(email_receiver: str, queries: list, export_file_id, file_wri
 
 
 def write_query_to_file(file_writer, file_name: str, fields: list, query_set: QuerySet):
-    """Used by export_zip_file()"""
+    """Used by export_zip_file, writes a single query result to tsv file"""
     if file_name == '':
         raise ValueError(
             'Expected argument file_name to contain a name for export file, got empty string instead'
@@ -87,6 +88,7 @@ def write_query_to_file(file_writer, file_name: str, fields: list, query_set: Qu
 
 
 def replace_na(values_list):
+    """Takes an iterable from values_list method of a QuerySet instance and replaces empty strings with NA"""
     values_list = list(values_list)
     for i, row in enumerate(values_list):
         new_row = []
