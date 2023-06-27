@@ -4,6 +4,12 @@ from exports.query_sets.measurements.base_query import base_query
 
 
 def taxon_query(measurement_choices):
+    """
+        Taxon query function that defines the fields in the taxon.tsv file 
+        according to the ETS standard: https://ecologicaltraitdata.github.io/ETS/. 
+        Utilizes the base query. taxon.tsv is sorted according to tdwg/taxon model's sort_order field.
+        Returns the query and fields whereof non active values are excluded.
+    """
     base = base_query(measurement_choices)
 
     non_active = (
