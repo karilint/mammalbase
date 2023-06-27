@@ -65,7 +65,7 @@ def export_zip_file(email_receiver: str, queries: list, export_file_id, file_wri
     exit_temp_dir(current_dir, temp_directory)
 
 
-def enter_temp_dir() -> tuple[str, str]:
+def enter_temp_dir():
     current_dir = os.getcwd()
     temp_directory = mkdtemp()
     os.chdir(temp_directory)
