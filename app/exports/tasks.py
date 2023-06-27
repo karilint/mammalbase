@@ -42,17 +42,14 @@ def export_zip_file(email_receiver: str, queries: list, export_file_id, file_wri
         raise ValueError(
             'Expected argument queries to contain at least one query, got empty list instead'
         )
-    current_dir = os.getcwd()
-    temp_directory = mkdtemp()
-    os.chdir(temp_directory)
+    current_dir, temp_directory = enter_temp_dir()
 
     tsv_files = []
     for query in queries:
         try:
             file_path = write_query_to_file(file_writer, **query)
         except (ValueError, TypeError):
-            os.chdir(current_dir)
-            shutil.rmtree(temp_directory)
+            exit_temp_dir(current_dir, temp_directory)
             raise
         tsv_files.append(file_path)
 
@@ -60,12 +57,22 @@ def export_zip_file(email_receiver: str, queries: list, export_file_id, file_wri
     try:
         file_writer.save_zip_to_django_model(export_file_id)
     except (ObjectDoesNotExist, FileNotFoundError):
-        os.chdir(current_dir)
-        shutil.rmtree(temp_directory)
+        exit_temp_dir(current_dir, temp_directory)
         raise
 
     send_email(export_file_id, email_receiver)
 
+    exit_temp_dir(current_dir, temp_directory)
+
+
+def enter_temp_dir() -> tuple[str, str]:
+    current_dir = os.getcwd()
+    temp_directory = mkdtemp()
+    os.chdir(temp_directory)
+    return current_dir, temp_directory
+
+
+def exit_temp_dir(current_dir, temp_directory):
     os.chdir(current_dir)
     shutil.rmtree(temp_directory)
 
