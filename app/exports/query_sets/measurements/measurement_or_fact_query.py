@@ -6,6 +6,15 @@ from datetime import timezone, datetime, timedelta
 from exports.query_sets.measurements.base_query import base_query
 
 def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
+    """ 
+        MOF query function that defines the fields in the measurement_or_fact.tsv file 
+        according to the ETS standard: https://ecologicaltraitdata.github.io/ETS/. 
+        Utilizes the base_query. Values that are not yet in the models are set to 'NA'.
+        References are determined by whether the user is a data_admin/data_contributor or 
+        other user. measurement_or_fact query results are divided into different files 
+        according to the user choices (measurement_choices in base_query). exports/tasks.py has a function create_measurement_or_fact_query() to create the different files.
+        Returns the query and fields whereof non active values are excluded.
+    """
     base = base_query(measurement_choices)
 
     non_active = (
@@ -107,17 +116,8 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         measurement_value_max=Round2(
             F('maximum') * F('coefficient')
         ),
-        measurement_acc=Case(When(measurement_accuracy__iexact=None,
-            then=Value('NA')),
-            default='measurement_accuracy',
-            output_field=CharField()
-            ),
-        statistical_method=Case(When(source_statistic__name__iexact=None,
-            then=Value('NA')),
-            default='source_statistic__name',
-            output_field=CharField()
-            ),
         )
+    
     fields = [
         ('measurement_id','measurementID'),
         ('basis_of_record', 'basisOfRecord'),
@@ -133,8 +133,8 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         ('dispersion', 'dispersion'),
         ('measurement_value_min', 'measurementValue_min'),
         ('measurement_value_max', 'measurementValue_max'),
-        ('measurement_acc', 'measurementAccuracy'),
-        ('statistical_method', 'statisticalMethod')
+        ('measurement_accuracy', 'measurementAccuracy'),
+        ('source_statistic__name', 'statisticalMethod')
     ]
 
     return query, fields
