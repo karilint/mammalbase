@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.test.client import RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import User
-from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
+from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes, SynonymLinks
 from allauth.socialaccount.models import SocialAccount
 from mb.models import EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
 from imports.tools import Check
@@ -1048,3 +1048,73 @@ class ToolsTest(TestCase):
                     self.assertAlmostEqual(reported_values[header][row], std_values[header], 3)
                 elif 'std' in header:
                     self.assertAlmostEqual(expected_values[header][row], std_values[header], 3)
+    
+    def test_create_tsn(self):
+        test_data = {
+        'taxon_id': '26655',
+        'canonical_form': 'Delonix',
+        'classification_path_ids': '202422-954898-846494-954900-846496-846504-18063-846548-500022-500059-26655',
+        'classification_path': 'Plantae-Viridiplantae-Streptophyta-Embryophyta-Tracheophyta-Spermatophytina-Magnoliopsida-Rosanae-Fabales-Fabaceae-Delonix',
+        'classification_path_ranks': 'Kingdom-Subkingdom-Infrakingdom-Superdivision-Division-Subdivision-Class-Superorder-Order-Family-Genus',
+        'taxonomic_status':'accepted'
+        }
+        kingdom = Kingdom(name=test_data['classification_path'].split('-')[0])
+        kingdom.save()
+        rank = TaxonUnitTypes(rank_name=test_data['classification_path_ranks'].split('-')[-1], kingdom_id=kingdom.pk, rank_id=0, dir_parent_rank_id=0, req_parent_rank_id=0)
+        rank.save()
+        taxonomic_unit = tools.create_tsn({'data': [{'results': [test_data]}]}, int(test_data['taxon_id']))
+        self.assertEqual(type(taxonomic_unit),TaxonomicUnits)
+        query = TaxonomicUnits.objects.filter(tsn=int(test_data['taxon_id']))
+        self.assertTrue(len(query)>0)
+        self.assertEqual(query[0].tsn, int(test_data['taxon_id']))
+        self.assertEqual(query[0].completename, test_data['canonical_form'])
+        self.assertEqual(query[0].hierarchy_string, test_data['classification_path_ids'])
+        self.assertEqual(query[0].hierarchy, test_data['classification_path'])
+        self.assertEqual(query[0].kingdom_id, kingdom.pk)
+        self.assertEqual(query[0].rank_id, rank.pk)
+    
+    def test_create_tsn_invalid(self):
+        invalid_test_data = {
+        'taxon_id': '61653',
+        'canonical_form': 'Choniolaimus macrodentatus',
+        'classification_path_ids': '',
+        'classification_path': '',
+        'classification_path_ranks': '',
+        'taxonomic_status':'invalid'
+        }
+        valid_test_data = {
+        'taxon_id': '61652',
+        'canonical_form': 'Marilynia macrodentata',
+        'classification_path_ids': '202423-914154-914155-914158-59490-914188-59492-60662-61479-61648-61652',
+        'classification_path': 'Animalia-Bilateria-Protostomia-Ecdysozoa-Nematoda-Chromadorea-Chromadoria-Desmodorida-Cyatholaimidae-Marilynia-Marilynia macrodentata',
+        'classification_path_ranks': 'Kingdom-Subkingdom-Infrakingdom-Superphylum-Phylum-Class-Subclass-Order-Family-Genus-Species',
+        'taxonomic_status':'valid'
+        }
+        kingdom = Kingdom(name=valid_test_data['classification_path'].split('-')[0])
+        kingdom.save()
+        rank = TaxonUnitTypes(rank_name=valid_test_data['classification_path_ranks'].split('-')[-1], kingdom_id=kingdom.pk, rank_id=0, dir_parent_rank_id=0, req_parent_rank_id=0)
+        rank.save()
+        taxonomic_unit = tools.create_tsn({'data': [{'results': [invalid_test_data]}]}, int(invalid_test_data['taxon_id']))
+        self.assertEqual(type(taxonomic_unit),TaxonomicUnits)
+        query = TaxonomicUnits.objects.filter(tsn=int(invalid_test_data['taxon_id']))
+        self.assertTrue(len(query)>0)
+        self.assertEqual(query[0].tsn, int(invalid_test_data['taxon_id']))
+        self.assertEqual(query[0].completename, invalid_test_data['canonical_form'])
+        self.assertEqual(query[0].hierarchy_string, valid_test_data['classification_path_ids'])
+        self.assertEqual(query[0].hierarchy, valid_test_data['classification_path'])
+        self.assertEqual(query[0].kingdom_id, kingdom.pk)
+        self.assertEqual(query[0].rank_id, rank.pk)
+
+        query_valid = TaxonomicUnits.objects.filter(tsn=int(valid_test_data['taxon_id']))
+        self.assertTrue(len(query_valid)>0)
+        self.assertEqual(query_valid[0].tsn, int(valid_test_data['taxon_id']))
+        self.assertEqual(query_valid[0].completename, valid_test_data['canonical_form'])
+        self.assertEqual(query_valid[0].hierarchy_string, valid_test_data['classification_path_ids'])
+        self.assertEqual(query_valid[0].hierarchy, valid_test_data['classification_path'])
+        self.assertEqual(query_valid[0].kingdom_id, kingdom.pk)
+        self.assertEqual(query_valid[0].rank_id, rank.pk)
+
+        sl_q = SynonymLinks.objects.filter(tsn=query[0])
+        self.assertTrue(len(sl_q)>0)
+        self.assertEqual(sl_q[0].tsn_accepted, query_valid[0])
+        self.assertEqual(sl_q[0].tsn_accepted_name, query_valid[0].completename)

@@ -24,9 +24,7 @@
 id -u <username>
 ```
 ### Windows
-```bash
-whoami /user
-```
+UID is not required on windows machines.
 
 ### Other variables (these don't need to be defined)
 

@@ -661,6 +661,8 @@ def create_tsn(results, tsn):
             sl = sl_qs[0]
         taxonomic_unit.hierarchy_string = accepted_taxonomic_unit.hierarchy_string
         taxonomic_unit.hierarchy = accepted_taxonomic_unit.hierarchy
+        taxonomic_unit.kingdom_id = accepted_taxonomic_unit.kingdom_id
+        taxonomic_unit.rank_id = accepted_taxonomic_unit.rank_id
         taxonomic_unit.save()
 
     return taxonomic_unit
@@ -1093,7 +1095,7 @@ def create_proximate_analysis(row, df):
         attribute_dict["method"] = get_sourcemethod(getattr(row, "measurementMethod"), attribute_dict["reference"], author)
     if "verbatimLocality" in headers:
         attribute_dict["location"] = get_sourcelocation(getattr(row, "verbatimLocality"), attribute_dict["reference"], author)
-    if "verbatimeEventDate" in headers:
+    if "verbatimEventDate" in headers:
         attribute_dict["study_time"] = getattr(row, "verbatimEventDate")
     if "associatedReferences" in headers:
         attribute_dict["cited_reference"] = getattr(row, "associatedReferences")
