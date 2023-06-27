@@ -6,7 +6,7 @@ from celery import shared_task
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from config.settings import SITE_DOMAIN
-from django.db.models import QuerySet, Case, Value, When
+from django.db.models import QuerySet
 
 from exports.query_sets.measurements.traitlist_query import traitlist_query
 from exports.query_sets.measurements.traitdata_query import traitdata_query
@@ -113,6 +113,13 @@ def ets_export_query_set(user_email: str, export_file_id, is_admin_or_contributo
     """Creates ETS-QuerySets."""
 
     def create_measurement_or_fact_queries(measurement_choices, queries):
+        """divides the measurement or fact query into separate queries and files according
+        to user choices
+
+        Args:
+            measurement_choices [str]: list of strings containing user choices
+            queries [QuerySet]: list containing QuerySets used in ETS export
+        """
         for measurement in measurement_choices:
             query_set, fields = measurement_or_fact_query([measurement], is_admin_or_contributor)
             file_name = f'measurement_or_fact_{measurement.split()[0].lower()}'
