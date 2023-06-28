@@ -261,9 +261,9 @@ SELECT2_CACHE_BACKEND = 'select2'
 CELERY_BROKER_URL = get_var("CELERY_BROKER", "redis://redis:6379")
 CELERY_RESULT_BACKEND = "django-db"
 CELERY_BEAT_SCHEDULE = {
-    "hello-mammalians" : {
-        "task": "mb.tasks.hello_mammals",
-        "schedule": timedelta(minutes=1),
+    "update_db_from_itis" : {
+        "task": "mb.tasks.update_db_from_itis",
+        "schedule": timedelta(days=30),
         "args":(),
         "options": {
         }
