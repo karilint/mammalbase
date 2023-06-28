@@ -12,6 +12,7 @@ import imports.tools as tools
 import tempfile, csv, os
 import pandas as pd
 import numpy as np
+import requests_mock
 
 class ToolsTest(TestCase):
     def setUp(self):
@@ -229,6 +230,7 @@ class ToolsTest(TestCase):
         self.empty_res = {'status': 'ok', 'message-type': 'work-list', 'message-version': '1.0.0', 'message': {'facets': {}, 'total-results': 0, 'items': [], 'items-per-page': 2, 'query': {'start-index': 0, 'search-terms': None}}}
         self.empty_title = {'status': 'ok', 'message-type': 'work-list', 'message-version': '1.0.0', 'message': {'facets': {}, 'total-results': 1, 'items': [{'title': None}], 'items-per-page': 2, 'query': {'start-index': 0, 'search-terms': None}}}
         self.empty_author = {'status': 'ok', 'message-type': 'work-list', 'message-version': '1.0.0', 'message': {'facets': {}, 'total-results': 1, 'items': [{'author': None}], 'items-per-page': 2, 'query': {'start-index': 0, 'search-terms': None}}}
+
 
     def test_check_headers_ds(self):
         self.assertEqual(self.check.check_headers_ds(self.file), True)
@@ -777,25 +779,54 @@ class ToolsTest(TestCase):
         result = tools.get_fooditem('TEST', None)
         self.assertEqual(result.name, 'TEST')
     
-    def test_get_fooditem_json(self):
+    @requests_mock.Mocker()
+    def test_get_fooditem_json(self, m):
+        m.get('http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=Taraxacum%20officinale',
+            text='{"class":"gov.usgs.itis.itis_service.data.SvcItisTermList","itisTerms":[{"author":"F.H. Wigg.","class":"gov.usgs.itis.itis_service.data.SvcItisTerm","commonNames":["dandelion","blowball","faceclock","common dandelion"],"nameUsage":"accepted","scientificName":"Taraxacum officinale","tsn":"36213"},{"author":"(Ledeb.) Schinz ex Thell.","class":"gov.usgs.itis.itis_service.data.SvcItisTerm","commonNames":["common dandelion","rough dandelion","fleshy dandelion","horned dandelion"],"nameUsage":"not accepted","scientificName":"Taraxacum officinale ssp. ceratophorum","tsn":"524741"},{"author":"F.H. Wigg.","class":"gov.usgs.itis.itis_service.data.SvcItisTerm","commonNames":["wandering dandelion","common dandelion","lesser hawkbit"],"nameUsage":"accepted","scientificName":"Taraxacum officinale ssp. officinale","tsn":"524742"},{"author":"(Lam.) Schinz & R. Keller","class":"gov.usgs.itis.itis_service.data.SvcItisTerm","commonNames":["common dandelion"],"nameUsage":"not accepted","scientificName":"Taraxacum officinale ssp. vulgare","tsn":"524743"},{"author":"(Lyons) Blytt","class":"gov.usgs.itis.itis_service.data.SvcItisTerm","commonNames":[null],"nameUsage":"not accepted","scientificName":"Taraxacum officinale var. palustre","tsn":"541136"}],"requestedName":"Taraxacum officinale"}'
+        )
+        m.get('https://www.itis.gov/ITISWebService/jsonservice/getFullHierarchyFromTSN?tsn=36213',
+            text='{"author":"","class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecordList","hierarchyList":[{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"","parentTsn":"","rankName":"Kingdom","taxonName":"Plantae","tsn":"202422"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Plantae","parentTsn":"202422","rankName":"Subkingdom","taxonName":"Viridiplantae","tsn":"954898"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Viridiplantae","parentTsn":"954898","rankName":"Infrakingdom","taxonName":"Streptophyta","tsn":"846494"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Streptophyta","parentTsn":"846494","rankName":"Superdivision","taxonName":"Embryophyta","tsn":"954900"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Embryophyta","parentTsn":"954900","rankName":"Division","taxonName":"Tracheophyta","tsn":"846496"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Tracheophyta","parentTsn":"846496","rankName":"Subdivision","taxonName":"Spermatophytina","tsn":"846504"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Spermatophytina","parentTsn":"846504","rankName":"Class","taxonName":"Magnoliopsida","tsn":"18063"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Magnoliopsida","parentTsn":"18063","rankName":"Superorder","taxonName":"Asteranae","tsn":"846535"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Asteranae","parentTsn":"846535","rankName":"Order","taxonName":"Asterales","tsn":"35419"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Asterales","parentTsn":"35419","rankName":"Family","taxonName":"Asteraceae","tsn":"35420"},{"author":"F.H. Wigg.","class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Asteraceae","parentTsn":"35420","rankName":"Genus","taxonName":"Taraxacum","tsn":"36199"},{"author":"F.H. Wigg.","class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Taraxacum","parentTsn":"36199","rankName":"Species","taxonName":"Taraxacum officinale","tsn":"36213"},{"author":"F.H. Wigg.","class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Taraxacum officinale","parentTsn":"36213","rankName":"Subspecies","taxonName":"Taraxacum officinale ssp. officinale","tsn":"524742"}],"rankName":"","sciName":"","tsn":"36213"}'
+        )
         results = tools.get_fooditem_json('TARAXACUM OFFICINALE')
         self.assertEqual(results['data'][0]['results'][0]['taxon_id'], '36213')
     
-    def test_false_get_fooditem_json(self):
+    @requests_mock.Mocker()
+    def test_false_get_fooditem_json(self, m):
+        m.get('http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=Voikukka',
+            text='{"class":"gov.usgs.itis.itis_service.data.SvcItisTermList","itisTerms":[null],"requestedName":"Voikukka"}'
+        )
         results = tools.get_fooditem_json('VOIKUKKA')
         self.assertRaises(KeyError, lambda: results['data'][0]['results'])
     
-    def test_invalid_get_fooditem_json(self):
+    @requests_mock.Mocker()
+    def test_invalid_get_fooditem_json(self, m):
+        m.get('http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=Galipea%20officinalis',
+            text='{"class":"gov.usgs.itis.itis_service.data.SvcItisTermList","itisTerms":[{"author":"Hanc.","class":"gov.usgs.itis.itis_service.data.SvcItisTerm","commonNames":["Angostura tree"],"nameUsage":"not accepted","scientificName":"Galipea officinalis","tsn":"506391"}],"requestedName":"Galipea officinalis"}'
+        )
+        m.get('http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=Oxya%20japonica',
+            text='{"class":"gov.usgs.itis.itis_service.data.SvcItisTermList","itisTerms":[{"author":"(Thunberg, 1815)","class":"gov.usgs.itis.itis_service.data.SvcItisTerm","commonNames":["Japanese grasshopper"],"nameUsage":"invalid","scientificName":"Oxya japonica","tsn":"102221"}],"requestedName":"Oxya japonica"}'
+        )
         results = tools.get_fooditem_json('GALIPEA OFFICINALIS')
         self.assertEqual(results['data'][0]['results'][0]['taxonomic_status'], 'not accepted')
         results = tools.get_fooditem_json('OXYA JAPONICA')
         self.assertEqual(results['data'][0]['results'][0]['taxonomic_status'], 'invalid')
     
-    def test_get_accepted_tsn(self):
+    @requests_mock.Mocker()
+    def test_get_accepted_tsn(self, m):
+        m.get('https://www.itis.gov/ITISWebService/jsonservice/getAcceptedNamesFromTSN?tsn=102221',
+            text='{"acceptedNames":[{"acceptedName":"Oxya velox","acceptedTsn":"650544","author":"(Fabricius, 1787)","class":"gov.usgs.itis.itis_service.data.SvcAcceptedName"}],"class":"gov.usgs.itis.itis_service.data.SvcAcceptedNameList","tsn":"102221"}'
+        )
+        m.get('https://www.itis.gov/ITISWebService/jsonservice/getFullHierarchyFromTSN?tsn=650544', 
+            text='{"author":"","class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecordList","hierarchyList":[{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"","parentTsn":"","rankName":"Kingdom","taxonName":"Animalia","tsn":"202423"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Animalia","parentTsn":"202423","rankName":"Subkingdom","taxonName":"Bilateria","tsn":"914154"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Bilateria","parentTsn":"914154","rankName":"Infrakingdom","taxonName":"Protostomia","tsn":"914155"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Protostomia","parentTsn":"914155","rankName":"Superphylum","taxonName":"Ecdysozoa","tsn":"914158"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Ecdysozoa","parentTsn":"914158","rankName":"Phylum","taxonName":"Arthropoda","tsn":"82696"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Arthropoda","parentTsn":"82696","rankName":"Subphylum","taxonName":"Hexapoda","tsn":"563886"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Hexapoda","parentTsn":"563886","rankName":"Class","taxonName":"Insecta","tsn":"99208"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Insecta","parentTsn":"99208","rankName":"Subclass","taxonName":"Pterygota","tsn":"100500"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Pterygota","parentTsn":"100500","rankName":"Infraclass","taxonName":"Neoptera","tsn":"563890"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Neoptera","parentTsn":"563890","rankName":"Superorder","taxonName":"Polyneoptera","tsn":"914215"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Polyneoptera","parentTsn":"914215","rankName":"Order","taxonName":"Orthoptera","tsn":"102160"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Orthoptera","parentTsn":"102160","rankName":"Suborder","taxonName":"Caelifera","tsn":"102161"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Caelifera","parentTsn":"102161","rankName":"Infraorder","taxonName":"Acrididea","tsn":"657454"},{"author":"MacLeay, 1819","class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Acrididea","parentTsn":"657454","rankName":"Superfamily","taxonName":"Acridoidea","tsn":"650497"},{"author":"MacLeay, 1819","class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Acridoidea","parentTsn":"650497","rankName":"Family","taxonName":"Acrididae","tsn":"102195"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Acrididae","parentTsn":"102195","rankName":"Subfamily","taxonName":"Oxyinae","tsn":"650537"},{"author":"Serville, 1831","class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Oxyinae","parentTsn":"650537","rankName":"Genus","taxonName":"Oxya","tsn":"102220"},{"author":"(Fabricius, 1787)","class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Oxya","parentTsn":"102220","rankName":"Species","taxonName":"Oxya velox","tsn":"650544"}],"rankName":"","sciName":"","tsn":"650544"}'
+        )
         results = tools.get_accepted_tsn(102221)
         self.assertEqual(results['data'][0]['results'][0]['taxon_id'], '650544')
     
-    def test_create_fooditem(self):
+    @requests_mock.Mocker()
+    def test_create_fooditem(self, m):
+        m.get('https://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=Taraxacum%20officinale',
+            text='{"class":"gov.usgs.itis.itis_service.data.SvcItisTermList","itisTerms":[{"author":"F.H. Wigg.","class":"gov.usgs.itis.itis_service.data.SvcItisTerm","commonNames":["dandelion","blowball","faceclock","common dandelion"],"nameUsage":"accepted","scientificName":"Taraxacum officinale","tsn":"36213"},{"author":"(Ledeb.) Schinz ex Thell.","class":"gov.usgs.itis.itis_service.data.SvcItisTerm","commonNames":["common dandelion","rough dandelion","fleshy dandelion","horned dandelion"],"nameUsage":"not accepted","scientificName":"Taraxacum officinale ssp. ceratophorum","tsn":"524741"},{"author":"F.H. Wigg.","class":"gov.usgs.itis.itis_service.data.SvcItisTerm","commonNames":["wandering dandelion","common dandelion","lesser hawkbit"],"nameUsage":"accepted","scientificName":"Taraxacum officinale ssp. officinale","tsn":"524742"},{"author":"(Lam.) Schinz & R. Keller","class":"gov.usgs.itis.itis_service.data.SvcItisTerm","commonNames":["common dandelion"],"nameUsage":"not accepted","scientificName":"Taraxacum officinale ssp. vulgare","tsn":"524743"},{"author":"(Lyons) Blytt","class":"gov.usgs.itis.itis_service.data.SvcItisTerm","commonNames":[null],"nameUsage":"not accepted","scientificName":"Taraxacum officinale var. palustre","tsn":"541136"}],"requestedName":"Taraxacum officinale"}'
+        )
         test_results = {'data':{0:{'results': {0:
                         {'canonical_form': 'Taraxacum officinale',
                         'classification_path': 'Plantae|Viridiplantae|Streptophyta|Embryophyta|Tracheophyta|Spermatophytina|Magnoliopsida|Asteranae|Asterales|Asteraceae|Taraxacum|Taraxacum officinale',
@@ -1073,7 +1104,16 @@ class ToolsTest(TestCase):
         self.assertEqual(query[0].kingdom_id, kingdom.pk)
         self.assertEqual(query[0].rank_id, rank.pk)
     
-    def test_create_tsn_invalid(self):
+
+    @requests_mock.Mocker()
+    def test_create_tsn_invalid(self, m):
+        m.get("https://www.itis.gov/ITISWebService/jsonservice/getAcceptedNamesFromTSN?tsn=61653",
+            text='{"acceptedNames":[{"acceptedName":"Marilynia macrodentata","acceptedTsn":"61652","author":"(Wieser, 1959)","class":"gov.usgs.itis.itis_service.data.SvcAcceptedName"}],"class":"gov.usgs.itis.itis_service.data.SvcAcceptedNameList","tsn":"61653"}'
+        )
+        m.get("https://www.itis.gov/ITISWebService/jsonservice/getFullHierarchyFromTSN?tsn=61652",
+            text='{"author":"","class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecordList","hierarchyList":[{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"","parentTsn":"","rankName":"Kingdom","taxonName":"Animalia","tsn":"202423"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Animalia","parentTsn":"202423","rankName":"Subkingdom","taxonName":"Bilateria","tsn":"914154"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Bilateria","parentTsn":"914154","rankName":"Infrakingdom","taxonName":"Protostomia","tsn":"914155"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Protostomia","parentTsn":"914155","rankName":"Superphylum","taxonName":"Ecdysozoa","tsn":"914158"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Ecdysozoa","parentTsn":"914158","rankName":"Phylum","taxonName":"Nematoda","tsn":"59490"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Nematoda","parentTsn":"59490","rankName":"Class","taxonName":"Chromadorea","tsn":"914188"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Chromadorea","parentTsn":"914188","rankName":"Subclass","taxonName":"Chromadoria","tsn":"59492"},{"author":null,"class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Chromadoria","parentTsn":"59492","rankName":"Order","taxonName":"Desmodorida","tsn":"60662"},{"author":"Filipjev, 1918","class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Desmodorida","parentTsn":"60662","rankName":"Family","taxonName":"Cyatholaimidae","tsn":"61479"},{"author":"Hopper, 1972","class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Cyatholaimidae","parentTsn":"61479","rankName":"Genus","taxonName":"Marilynia","tsn":"61648"},{"author":"(Wieser, 1959)","class":"gov.usgs.itis.itis_service.data.SvcHierarchyRecord","parentName":"Marilynia","parentTsn":"61648","rankName":"Species","taxonName":"Marilynia macrodentata","tsn":"61652"}],"rankName":"","sciName":"","tsn":"61652"}'
+        )
+
         invalid_test_data = {
         'taxon_id': '61653',
         'canonical_form': 'Choniolaimus macrodentatus',

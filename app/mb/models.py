@@ -1414,40 +1414,6 @@ class ProximateAnalysisItem(BaseModel):
     class Meta:
         ordering = ['proximate_analysis','forage']
 
-    def clean(self):
-        if self.dm_reported < 0:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-        if self.dm_reported > 1000:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-        if self.moisture_reported < 0:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-        if self.moisture_reported > 1000:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-        if self.cp_reported < 0:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-        if self.cp_reported > 1000:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-        if self.ee_reported < 0:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-        if self.ee_reported > 1000:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-        if self.cf_reported < 0:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-        if self.cf_reported > 1000:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-        if self.ash_reported < 0:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-        if self.ash_reported > 1000:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-        if self.nfe_reported < 0:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-        if self.nfe_reported > 1000:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-        if self.total_carbohydrates_reported < 0:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-        if self.total_carbohydrates_reported > 1000:
-            raise ValidationError(_('Only numbers between 0 and 1000 are accepted.'))
-
     def get_absolute_url(self):
         """
         Returns the url to access a particular ProximateAnalysisItem instance.
