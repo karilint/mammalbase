@@ -7,7 +7,7 @@
 To run all the existing unit tests, run:
 
 ```bash
-docker exec mammalbase_web_1 bash -c "python manage.py test"
+docker exec mammalbase-web-1 bash -c "python manage.py test"
 ```
 
 The tests may not work locally before the database privileges are set for Django. Once docker containers are running, run this command:
