@@ -141,6 +141,7 @@
     <thead>
       <tr>
         <th>Measurement</th>
+        <th>Location</th>
         <th>Unit</th>
         <th>n Total</th>
         <th>n Unknown</th>
@@ -157,6 +158,7 @@
       {% for measurement in measurements %}
       <tr>
         <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_attribute-detail' pk=measurement.master_attribute_id %}">{{ measurement.master_attribute }} <span class="fa fa-link w3-small"></span></a></td>
+        <td style="text-align:left">{{ measurement.source_location.name }}</td>
         <td style="text-align:center">{{ measurement.master_unit }}</td>
         {% if measurement.n_total == 0 %}
           <td style="text-align:center">-</td>
@@ -213,6 +215,7 @@
     <thead>
       <tr>
         <th>Measurement</th>
+        <th>Location</th>
         <th>Unit</th>
         <th>n Total</th>
         <th>n Unknown</th>
@@ -233,6 +236,7 @@
           {% if measurement.source_attribute.attributerelation_set.count == 0 %}
             <tr>
               <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_attribute-detail' pk=measurement.source_attribute.pk %}">{{ measurement.source_attribute.name }} <span class="fa fa-link w3-small"></span></a></td>
+              <td style="text-align:left">{{ measurement.source_location.name }}</td>
               <td style="text-align:center">{{ measurement.source_unit }}</td>
               {% if measurement.n_total == 0 %}
                 <td style="text-align:center">-</td>

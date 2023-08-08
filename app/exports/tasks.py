@@ -1,3 +1,4 @@
+import datetime
 import os
 import shutil
 from tempfile import mkdtemp
@@ -7,6 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from config.settings import SITE_DOMAIN
 from django.db.models import QuerySet
+from exports.models import ExportFile
 
 from exports.query_sets.measurements.traitlist_query import traitlist_query
 from exports.query_sets.measurements.traitdata_query import traitdata_query
@@ -14,7 +16,6 @@ from exports.query_sets.measurements.taxon_query import taxon_query
 from exports.query_sets.measurements.occurrence_query import occurrence_query
 from exports.query_sets.measurements.metadata_query import metadata_query
 from exports.query_sets.measurements.measurement_or_fact_query import measurement_or_fact_query
-
 from .utilities.export_file_writer import ExportFileWriter
 
 
@@ -173,7 +174,7 @@ def ets_export_query_set(user_email: str, export_file_id, is_admin_or_contributo
 @shared_task
 def send_email(export_id, target_address):
     """Sends user an email with a download link to the exported data"""
-    mail_subject = "Your export from MammalBase is ready"
+    mail_subject = "MammalBase Data Export: Access Now Available"
     message = create_notification_message(export_id)
     send_mail (
         subject = mail_subject,
@@ -184,12 +185,44 @@ def send_email(export_id, target_address):
 
 def create_notification_message(export_id):
     """Creates an email message and download link to the exported data"""
+#    export = ExportFile.objects.get(pk=export_id)
+    current_date = datetime.date.today()
+
+    # Format the date as "7th August 2023"
+    formatted_date = current_date.strftime("%d %B %Y")
+
+    # Add "th" to the day if it's between 11 and 13 to handle exceptions
+    if 11 <= current_date.day <= 13:
+        formatted_date = formatted_date.replace(str(current_date.day), str(current_date.day) + "th")
+    else:
+        # Handle other day numbers with appropriate suffixes (st, nd, rd)
+        suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(current_date.day % 10, 'th')
+        formatted_date = formatted_date.replace(str(current_date.day), str(current_date.day) + suffix)
+
+    # Print the text with the formatted date
+    print(f"Accessed {formatted_date}")
+
     return f"""
-        Hello,
+Dear MammalBase User,
 
-        The data you requested has been processed and can be accessed from https://{SITE_DOMAIN}/exports/get_file/{export_id}
+We hope this email finds you well. We are pleased to inform you that your requested data export from MammalBase is now ready for access. You can find the export file using the Ecological Traitdata Standard (ETS) format at the link provided at the end of this message.
 
-        Kind regards,
+The ETS format allows for the integration of the dataset into your research workflow. To learn more about the ETS terminology, please visit: https://terminologies.gfbio.org/terms/ets/pages/
 
-        Team MammalBase
-        """
+At MammalBase, we remain dedicated to fostering research on mammalian traits and measurements, continually expanding our database with the latest findings to meet the needs of researchers like you.
+
+As a part of our ongoing efforts to enhance the quality and scope of our database, we welcome contributions from the research community. Should you or your colleagues possess additional original, published trait and measurement data on mammals, we would be grateful to include it. For further inquiries, kindly contact Dr Kari Lintulaakso at kari.lintulaakso@helsinki.fi at the Finnish Museum of Natural History, and he will be pleased to provide a preformatted import template file in ETS format.
+
+To cite the exported dataset, please include the following information:
+The MammalBase community 2023. / CC BY 4.0. http://doi.org/10.5281/zenodo.7462864 Accessed {formatted_date} at https://mammalbase.org
+
+To access your requested data, kindly use the following link: https://{SITE_DOMAIN}/exports/get_file/{export_id}
+
+If you require any assistance or have inquiries about the data or our platform, please don't hesitate to contact our dedicated Team MammalBase.
+
+We value your participation in the MammalBase community and appreciate your support in making this resource a valuable asset to researchers worldwide.
+
+Best regards,
+
+Team MammalBase
+"""
