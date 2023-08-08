@@ -44,7 +44,7 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
                     Value(now_format_1),
                     Value(' , Data version '),
                     Value(now_format_2),
-                    Value(' at https://mammalbase.org/me/'),
+                    Value(' at https://mammalbase.net/me/'),
                     output_field=CharField()
                 )
 
