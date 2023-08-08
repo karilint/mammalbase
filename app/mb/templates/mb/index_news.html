@@ -11,10 +11,29 @@
 <!--End of article header -->
 <section class="w3-threequarter w3-container">
   <header class="w3-container w3-text-teal"><h2>MammalBase - News</h2></header>
-  <p><b><i>March 16, 2021: the beta version of MammalBase is now online.</i></b></p>
-  <p>Currently, we are testing this new platform and we will add more data and functionalities as we proceed.</p>
-  <p>If you are interested in collaborating and sharing your mammal measurement/trait/diet data or if you are interested in being a curator of a specific taxonomic group or a mammalian trait please contact the first author of <a class="btn btn-default" href="https://doi.org/10.1007/s42991-022-00323-6" target="_blank">Lintulaakso <i>et al.</i>, 2022. <span class="fa fa-external-link"></span></a> stating your name, current affiliation, area of expertise and your ORCID. Or, if you feel that you have some extra time to spare with coding the user interface, please contact us.</p>
+
+  <button onclick="myFunction('Demo3')" class="w3-button w3-block w3-black w3-left-align">June 30, 2023: the first version of MammalBase export is now online.</button>
+  <div id="Demo3" class="w3-hide w3-container">
+    <p>A group of Bachelor of Science students at the University of Helsinki specialising in software engineering successfully integrated the "Export" functionality into the MammalBase interface.</p>
+    <p>This newly introduced feature enables data exports of Measurements in ETS (Ecological Trait-data Standard) format.</p>
+    <p>In addition, the group integrated a new "Import" functionality, Proximate Analysis, into the MammalBase interface.</p>
+  </div>
+
+  <button onclick="myFunction('Demo2')" class="w3-button w3-block w3-black w3-left-align">June 30, 2022: the first version of MammalBase import is now online.</button>
+  <div id="Demo2" class="w3-hide w3-container">
+    <p>A group of Bachelor of Science students at the University of Helsinki specialising in software engineering successfully integrated the "Import" functionality into the MammalBase interface.</p>
+    <p>This newly introduced feature enables data imports of Diet Sets and Traits and Measurements.</p>
+    <p>If you are interested in collaborating with us, please contact us.</p>
+  </div>
+  
+  <button onclick="myFunction('Demo1')" class="w3-button w3-block w3-black w3-left-align">March 16, 2021: the beta version of MammalBase is now online.</button>
+  <div id="Demo1" class="w3-hide w3-container">
+    <p>Currently, we are testing this new platform and we will add more data and functionalities as we proceed.</p>
+    <p>If you are interested in collaborating and sharing your mammal measurement/trait/diet data or if you are interested in being a curator of a specific taxonomic group or a mammalian trait please contact the first author of <a class="btn btn-default" href="https://doi.org/10.1007/s42991-022-00323-6" target="_blank">Lintulaakso <i>et al.</i>, 2022. <span class="fa fa-external-link"></span></a> stating your name, current affiliation, area of expertise and your ORCID. Or, if you feel that you have some extra time to spare with coding the user interface, please contact us.</p>
+  </div>  
+
 </section>
+
 {% endblock %}
 {% block nav %}
 <p>
@@ -28,4 +47,18 @@
 {% block pagination %}
 {% endblock %}
 {% block script %}
-{% endblock %}
+  <script>
+    function myFunction(id) {
+      var x = document.getElementById(id);
+      if (x.className.indexOf("w3-show") == -1) {
+        x.className += " w3-show";
+        x.previousElementSibling.className = 
+        x.previousElementSibling.className.replace("w3-black", "w3-teal");
+      } else { 
+        x.className = x.className.replace(" w3-show", "");
+        x.previousElementSibling.className = 
+        x.previousElementSibling.className.replace("w3-red", "w3-black");
+      }
+    }
+    </script>
+    {% endblock %}
