@@ -1,3 +1,4 @@
+import datetime
 import os
 import shutil
 from tempfile import mkdtemp
@@ -7,7 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from config.settings import SITE_DOMAIN
 from django.db.models import QuerySet
-from .models import ExportFile
+from exports.models import ExportFile
 
 from exports.query_sets.measurements.traitlist_query import traitlist_query
 from exports.query_sets.measurements.traitdata_query import traitdata_query
@@ -184,8 +185,8 @@ def send_email(export_id, target_address):
 
 def create_notification_message(export_id):
     """Creates an email message and download link to the exported data"""
-    export = ExportFile.objects.get(pk=export_id)
-    current_date = export.created_on
+#    export = ExportFile.objects.get(pk=export_id)
+    current_date = datetime.date.today()
 
     # Format the date as "7th August 2023"
     formatted_date = current_date.strftime("%d %B %Y")
