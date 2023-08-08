@@ -20,7 +20,7 @@
         <tr>
           <th>Taxon</th>
           <th>Rank</th>
-          <th>Reference</th>
+          <th>Higher Classification</th>
         </tr>
       </thead>
       <tbody>
@@ -28,7 +28,7 @@
         <tr>
           <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_entity-detail' pk=x.pk %}">{{ x.name }} <span class="fa fa-link w3-small"></span></a></td>
           <td>{{ x.entity }}</td>
-          <td>{{ x.reference }}</td>
+          <td>{{ x.taxon.higher_classification }}</td>
         </tr>
         {% endfor %}
       </tbody>
