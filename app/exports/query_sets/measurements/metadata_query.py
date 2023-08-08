@@ -42,7 +42,7 @@ def metadata_query(measurement_choices):
             Value(now_format_1),
             Value(' , Data version '),
             Value(now_format_3),
-            Value(' at https://mammalbase.org/me/'),
+            Value(' at https://mammalbase.net/me/'),
             output_field=CharField()
         ),
         conforms_to=Value(

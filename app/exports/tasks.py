@@ -214,7 +214,7 @@ At MammalBase, we remain dedicated to fostering research on mammalian traits and
 As a part of our ongoing efforts to enhance the quality and scope of our database, we welcome contributions from the research community. Should you or your colleagues possess additional original, published trait and measurement data on mammals, we would be grateful to include it. For further inquiries, kindly contact Dr Kari Lintulaakso at kari.lintulaakso@helsinki.fi at the Finnish Museum of Natural History, and he will be pleased to provide a preformatted import template file in ETS format.
 
 To cite the exported dataset, please include the following information:
-The MammalBase community 2023. / CC BY 4.0. http://doi.org/10.5281/zenodo.7462864 Accessed {formatted_date} at https://mammalbase.org
+The MammalBase community 2023. / CC BY 4.0. http://doi.org/10.5281/zenodo.7462864 Accessed {formatted_date} at https://mammalbase.net
 
 To access your requested data, kindly use the following link: https://{SITE_DOMAIN}/exports/get_file/{export_id}
 

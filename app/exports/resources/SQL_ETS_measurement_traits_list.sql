@@ -64,7 +64,7 @@ SELECT
 , ifnull(orcid.uid, 'http://orcid.org/0000-0001-9627-8821') author
 , NOW() issued
 , DATE_FORMAT(now(), '%Y-%m-%dT%H:%i+02:00') `version`
-, concat('The MammalBase community ',YEAR(NOW()),' , Data version ', DATE_FORMAT(now(), "%D %M %Y"),' at https://mammalbase.org/me/') bibliographicCitation
+, concat('The MammalBase community ',YEAR(NOW()),' , Data version ', DATE_FORMAT(now(), "%D %M %Y"),' at https://mammalbase.net/me/') bibliographicCitation
 , 'Ecological Trait-data Standard Vocabulary; v0.10; URL: https://terminologies.gfbio.org/terms/ets/pages/; URL: https://doi.org/10.5281/zenodo.1485739' conformsTo
 , 'Lintulaakso, Kari;https://orcid.org/0000-0001-9627-8821;Finnish Museum of Natural History LUOMUS' rightsHolder
 , 'Attribution 4.0 International (CC BY 4.0)' rights
