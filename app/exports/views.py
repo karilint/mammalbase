@@ -1,10 +1,11 @@
+from django.contrib.auth.decorators import login_required, permission_required
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect
 from django.http import HttpResponseNotFound, FileResponse
 from exports.models import ExportFile
 from .tasks import ets_export_query_set
-from django.contrib.auth.decorators import login_required
 from .forms import ETSForm
-from mb.views import user_is_data_admin_or_contributor
+from mb.views import user_is_data_admin_or_contributor, user_is_data_admin_or_owner
 
 
 @login_required
@@ -32,9 +33,13 @@ def form_submitted(request):
 
 
 @login_required
+@permission_required('exports.get_exported_file', raise_exception=True)
 def get_exported_file(request, file_id):
     try:
         file_model = ExportFile.objects.filter(id=file_id)[0]
+        if not user_is_data_admin_or_owner(request.user, file_model):
+            raise PermissionDenied
+
         f = file_model.file.open()
         return FileResponse(f, as_attachment=True)
     except IOError:
