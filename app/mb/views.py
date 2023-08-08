@@ -1457,8 +1457,13 @@ class source_measurement_value__delete(UserPassesTestMixin, DeleteView):
             args=(source_entity_id,)
         )
 
+@login_required
+@permission_required('mb.read_source_measurement_value', raise_exception=True)
 def source_measurement_value_detail(request, pk):
     source_measurement_value = get_object_or_404(SourceMeasurementValue, pk=pk, is_active=1)
+    if not user_is_data_admin_or_owner(request.user, source_measurement_value):
+        raise PermissionDenied
+
     return render(request, 'mb/source_measurement_value_detail.html', {'source_measurement_value': source_measurement_value})
 
 @login_required
