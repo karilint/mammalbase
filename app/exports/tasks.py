@@ -7,6 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from config.settings import SITE_DOMAIN
 from django.db.models import QuerySet
+from .models import ExportFile
 
 from exports.query_sets.measurements.traitlist_query import traitlist_query
 from exports.query_sets.measurements.traitdata_query import traitdata_query
@@ -14,7 +15,6 @@ from exports.query_sets.measurements.taxon_query import taxon_query
 from exports.query_sets.measurements.occurrence_query import occurrence_query
 from exports.query_sets.measurements.metadata_query import metadata_query
 from exports.query_sets.measurements.measurement_or_fact_query import measurement_or_fact_query
-
 from .utilities.export_file_writer import ExportFileWriter
 
 
