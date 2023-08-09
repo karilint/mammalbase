@@ -158,6 +158,11 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+if DEBUG:
+    ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
+else:
+    ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
