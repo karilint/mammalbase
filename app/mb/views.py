@@ -758,6 +758,7 @@ def master_entity_detail(request, pk):
             select se.name source_taxon
                 , ma.id master_attribute_id
                 , ma.name master_attribute
+            	, sl.name location
             	, smv.n_total
             	, smv.n_unknown
                 , smv.n_female
@@ -782,6 +783,8 @@ def master_entity_detail(request, pk):
             	on mr.id=sr.master_reference_id
             join mb_sourcemeasurementvalue smv
             	on smv.source_entity_id=se.id
+            join mb_sourcelocation sl
+            	on sl.id=smv.source_location_id
             join mb_sourceattribute sa
             	on sa.id=smv.source_attribute_id
             join mb_attributerelation ar

@@ -1,8 +1,8 @@
 from django import forms
 
-
+# BROADERTERMS: ('value will be same as the name of master attribute group', 'isplay value on screen')
 BROADERTERMS = [
-    ('Standard measurements', 'Standard measurements'),
+    ('External measurements', 'External measurements'),
     ('Cranial measurements', 'Cranial measurements'),
 ]
 
