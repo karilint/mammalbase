@@ -37,7 +37,6 @@ def user_has_rights_to_export_file(user, export_file_object):
 
 
 @login_required
-@permission_required('exports.get_exported_file', raise_exception=True)
 def get_exported_file(request, file_id):
     try:
         file_object = ExportFile.objects.filter(id=file_id)[0]
