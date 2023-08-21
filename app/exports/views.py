@@ -32,16 +32,22 @@ def form_submitted(request):
     return render(request,'export/form_submitted.html')
 
 
+def user_has_rights_to_export_file(user, export_file_object):
+    return user.groups.filter(name='data_admin').exists() or export_file_object.created_by == user
+
+
 @login_required
 @permission_required('exports.get_exported_file', raise_exception=True)
 def get_exported_file(request, file_id):
     try:
-        file_model = ExportFile.objects.filter(id=file_id)[0]
-        if not user_is_data_admin_or_owner(request.user, file_model):
+        file_object = ExportFile.objects.filter(id=file_id)[0]
+
+        if user_has_rights_to_export_file(request.user, file_object):
+            f = file_object.file.open()
+            return FileResponse(f, as_attachment=True)
+        else:
             raise PermissionDenied
 
-        f = file_model.file.open()
-        return FileResponse(f, as_attachment=True)
     except IOError:
         return HttpResponseNotFound('<h1>File does not exist</h1>')
     except IndexError:
