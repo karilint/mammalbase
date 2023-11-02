@@ -394,12 +394,12 @@ class Check:
     
     def check_part(self, df):
         headers = list(df.columns.values)
-        accepted = ['BARK', 'BLOOD', 'BONES', 'BUD', 'CARRION', 'EGGS', 'EXUDATES', 'FECES', 'FLOWER', 'FRUIT', 'LARVAE', 'LEAF', 'MINERAL', 'NECTAR/JUICE', 'NONE', 'POLLEN', 'ROOT', 'SEED', 'SHOOT', 'STEM', 'WHOLE']
+        accepted = ['BARK', 'BLOOD', 'BONES', 'BUD', 'CARRION', 'EGGS', 'EXUDATES', 'FECES', 'FLOWER', 'FRUIT', 'LARVAE', 'LEAF', 'MINERAL', 'NECTAR/JUICE', 'NONE', 'POLLEN', 'ROOT', 'SEED', 'SHOOT', 'STEM', 'UNKNOWN', 'WHOLE']
         if 'PartOfOrganism' not in headers:
             return True
         for row, value in enumerate(df.loc[:, 'PartOfOrganism'], 1):
             if value.lower() != 'nan' and value.upper() not in accepted:
-                messages.error(self.request, f"Part is invalid on row {row}. The accepted part names are: bark, blood, bones, bud, carrion, eggs, exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, none, pollen, root, seed, shoot, stem, whole")
+                messages.error(self.request, f"Part is invalid on row {row}. The accepted part names are: bark, blood, bones, bud, carrion, eggs, exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, none, pollen, root, seed, shoot, stem, unknown, whole")
                 return False
         return True
 
