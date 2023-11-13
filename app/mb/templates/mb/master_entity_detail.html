@@ -1,7 +1,10 @@
 {% extends "mb/base_generic.html" %}
 {% load humanize custom_tags %}
 {% block title %}
-<title>MammalBase - Accepted taxon: {{ master_entity.name }}</title>
+  <title>MammalBase - Accepted taxon: {{ master_entity.name }}</title>
+{% endblock %}
+{% block meta %}
+  <meta name="description" content="Data for the mammalian species {{ master_entity.name }}. The taxonomy, diet, trait and measurement data for mammalogy research.">
 {% endblock %}
 {% block content %}
 <!--Article header -->
