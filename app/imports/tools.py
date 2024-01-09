@@ -430,7 +430,7 @@ class Check:
            "samplingEffort":250,
            "verbatimEventDate":250,
            "measurementMethod":500,
-           "associatedReferences":500,
+           "associatedReferences":250,
            "verbatimTraitName":250,
            "verbatimTraitValue":250,
            "verbatimTraitUnit":250,
@@ -515,6 +515,7 @@ def get_sourcereference_citation(reference, author):
     if len(sr_old) > 0:
         return sr_old[0]
     new_reference = SourceReference(citation=reference, status=1, created_by=author)
+    print(new_reference)
     new_reference.save()
     response_data = get_referencedata_from_crossref(reference)
     create_masterreference(reference, response_data, new_reference, author)
@@ -525,6 +526,7 @@ def get_entityclass(taxonRank, author):
     if len(ec_all) > 0:
         return ec_all[0]
     new_entity = EntityClass(name=taxonRank, created_by=author)
+    print(new_entity)
     new_entity.save()
     return new_entity
 
@@ -533,6 +535,7 @@ def get_sourceentity(vs_name, reference, entity, author):
     if len(se_old) > 0:
         return se_old[0]
     new_sourceentity = SourceEntity(reference=reference, entity=entity, name=vs_name, created_by=author)
+    print(new_sourceentity)
     new_sourceentity.save()
     create_new_entity_relation(new_sourceentity)
     return new_sourceentity
@@ -546,6 +549,7 @@ def get_timeperiod(sampling, ref, author):
         return tp_all[0]
 
     new_timeperiod = TimePeriod(reference=ref, name=sampling, created_by=author)
+    print(new_timeperiod)
     new_timeperiod.save()
     return new_timeperiod
 
@@ -557,6 +561,7 @@ def get_sourcemethod(method, ref, author):
         return sr_old[0]
 
     new_sourcemethod = SourceMethod(reference=ref, name=method, created_by=author)
+    print(new_sourcemethod)
     new_sourcemethod.save()
     return new_sourcemethod
 
@@ -568,6 +573,7 @@ def get_sourcelocation(location, ref, author):
         return sl_old[0]
 
     new_sourcelocation = SourceLocation(reference=ref, name=location, created_by=author)
+    print(new_sourcelocation)
     new_sourcelocation.save()
     return new_sourcelocation
 
@@ -646,6 +652,7 @@ def create_tsn(results, tsn):
             rank = TaxonUnitTypes.objects.filter(rank_name=path_rank, kingdom_id=kingdom_id)[0].pk
         
         taxonomic_unit = TaxonomicUnits(tsn=tsn, kingdom_id=kingdom_id, rank_id=rank, completename=completename, hierarchy_string=hierarchy_string, hierarchy=hierarchy, common_names=None, tsn_update_date=None)
+        print(taxonomic_unit)
         taxonomic_unit.save()
     else:
         taxonomic_unit = taxonomic_unit[0]
@@ -656,6 +663,7 @@ def create_tsn(results, tsn):
         sl_qs = itis.SynonymLinks.objects.all().filter(tsn = tsn)
         if len(sl_qs) == 0:
             sl = itis.SynonymLinks(tsn = taxonomic_unit, tsn_accepted = accepted_taxonomic_unit, tsn_accepted_name = accepted_taxonomic_unit.completename)
+            print(sl)
             sl.save()
         else:
             sl = sl_qs[0]
@@ -663,6 +671,7 @@ def create_tsn(results, tsn):
         taxonomic_unit.hierarchy = accepted_taxonomic_unit.hierarchy
         taxonomic_unit.kingdom_id = accepted_taxonomic_unit.kingdom_id
         taxonomic_unit.rank_id = accepted_taxonomic_unit.rank_id
+        print(taxonomic_unit)
         taxonomic_unit.save()
 
     return taxonomic_unit
@@ -680,6 +689,7 @@ def create_fooditem(results, food_upper, part):
     food_item_exists = FoodItem.objects.filter(name__iexact=name)
     if len(food_item_exists) > 0:
         return food_item_exists[0]
+    print(food_item)
     food_item.save()
     return food_item
 
@@ -723,6 +733,7 @@ def get_fooditem(food, part):
         else:
             part = None
         food_item = FoodItem(name=food_upper, part=part, tsn=None, pa_tsn=None, is_cultivar=0)
+        print(food_item)
         food_item.save()
         return food_item
     return create_fooditem(rank_id[max(rank_id)], food_upper, part)
@@ -742,38 +753,48 @@ def possible_nan_to_none(possible):
 def create_dietset(row, df):
     headers = list(df.columns.values)
     author = get_author(getattr(row, 'author'))
+    print(author)
     reference = get_sourcereference_citation(getattr(row, 'references'), author)
+    print(reference)
     entityclass = get_entityclass(getattr(row, 'taxonRank'), author)
+    print(entityclass)
     taxon =  get_sourceentity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
     if 'verbatimLocality' in headers:
         location = get_sourcelocation(getattr(row, 'verbatimLocality'), reference, author)
+        print(location)
     else:
         location = None
     if 'sex' in headers:
         gender = get_choicevalue(getattr(row, 'sex'))
     else:
         gender = None
+        print(gender)
     if 'individualCount' in headers:
         sample_size = possible_nan_to_zero(getattr(row, 'individualCount'))
+        print(sample_size)
     else:
         sample_size = 0
     if 'associatedReferences' in headers:
         cited_reference =  possible_nan_to_none(getattr(row, 'associatedReferences'))
+        print(cited_reference)
     else:
         cited_reference = None
     if 'samplingEffort' in headers:
         time_period = get_timeperiod(getattr(row, 'samplingEffort'), reference, author)
+        print(time_period)
     else:
         time_period = None
     if 'measurementMethod' in headers:
         method =  get_sourcemethod(getattr(row, 'measurementMethod'), reference, author)
+        print(method)
     else:
         method = None
     if 'verbatimEventDate' in headers:
         study_time = possible_nan_to_none(getattr(row, 'verbatimEventDate'))
+        print(study_time)
     else:
         study_time = None
-        
+
     ds_old = DietSet.objects.filter(
         reference=reference,
         taxon=taxon,
@@ -786,6 +807,8 @@ def create_dietset(row, df):
         study_time=study_time,
         created_by=author
     )
+    print(str(ds_old.query))
+
     if len(ds_old) > 0:
         ds = ds_old[0]
     else:
@@ -801,6 +824,7 @@ def create_dietset(row, df):
             study_time=study_time,
             created_by=author
         )
+        print(ds)
         ds.save()
 
     create_dietsetitem(row, ds, headers)
@@ -813,12 +837,16 @@ def create_dietsetitem(row, diet_set, headers):
         food_item = get_fooditem(getattr(row, 'verbatimAssociatedTaxa'), None)
     list_order = getattr(row, 'sequence')
     if 'measurementValue' in headers:
-        percentage = possible_nan_to_zero(getattr(row, 'measurementValue'))
+        percentage = round(possible_nan_to_zero(getattr(row, 'measurementValue')), 3)
     else:
         percentage = 0
-    old_ds = DietSetItem.objects.filter(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)
+#    old_ds = DietSetItem.objects.filter(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage)
+    old_ds = DietSetItem.objects.filter(diet_set=diet_set, food_item=food_item, list_order=list_order)
+#    print(str(old_ds.query))
+#    print(diet_set.id, food_item.id, list_order, percentage)
     if len(old_ds) == 0:
         dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage) 
+        print(dietsetitem)
         dietsetitem.save()
 
 def trim(text:str):
@@ -924,8 +952,10 @@ def create_masterreference(source_citation, response_data, sr, user_author):
             citation=citation,
             created_by=user_author
         )
+        print(mr)
         mr.save()
         sr.master_reference = mr
+        print(sr)
         sr.save()
         return True
     except DatabaseError as db_err:
@@ -1324,6 +1354,7 @@ def create_sourcemeasurementvalue_no_gender(taxon, attribute, locality, count, m
         cited_reference=cited_reference,
         created_by=author
     )
+    print(sm_value)
     sm_value.save()
 
 def create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, mes_max, std, vt_value, statistic, unit,
@@ -1386,6 +1417,7 @@ def create_sourcemeasurementvalue(taxon, attribute, locality, count, mes_min, me
         cited_reference=cited_reference,
         created_by=author
     )
+    print(sm_value)
     sm_value.save()
     return
 
@@ -1405,6 +1437,7 @@ def get_sourceunit(unit, author):
     if len(su_old) > 0:
         return su_old[0]
     su = SourceUnit(name=unit, created_by=author)
+    print(su)
     su.save()
     return su
 
@@ -1417,6 +1450,7 @@ def get_sourcechoicesetoptionvalue(entity, sourcechoiceoption, author):
     scov = SourceChoiceSetOptionValue(
         source_entity=entity, source_choiceset_option=sourcechoiceoption, created_by=author
     )
+    print(scov)
     scov.save()
     return scov
 
@@ -1427,6 +1461,7 @@ def get_sourcechoicesetoption(name, attribute, author):
     if len(sco_old) > 0:
         return sco_old[0]
     sco = SourceChoiceSetOption(source_attribute=attribute, name=name, created_by=author)
+    print(sco)
     sco.save()
     return sco
 
@@ -1437,6 +1472,7 @@ def get_sourcestatistic(statistic, ref, author):
     if len(ss_old) > 0:
         return ss_old[0]
     ss = SourceStatistic(name=statistic, reference=ref, created_by=author)
+    print(ss)
     ss.save()
     return ss
 
@@ -1447,5 +1483,6 @@ def get_sourceattribute(name, ref, entity, method, type_value, author):
     if len(sa_old) > 0:
         return sa_old[0]
     sa = SourceAttribute(name=name, reference=ref, entity=entity, method=method, type=type_value, created_by=author)
+    print(sa)
     sa.save()
     return sa
