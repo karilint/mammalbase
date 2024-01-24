@@ -5,7 +5,8 @@ from . import views
 from mb.views import (
     import_diet_set,
     import_ets,
-    import_proximate_analysis
+    import_proximate_analysis,
+    import_occurences
 )
 import debug_toolbar
 #from rest_framework.urlpatterns import format_suffix_patterns
@@ -54,6 +55,7 @@ urlpatterns = [
 #    path('import/ds', import_diet_set, name='diet_set-import'),
     path('import/diet_set', import_diet_set, name='import_diet_set'),
     path('import/ets', import_ets, name='import_ets'),
+    path('import/occurences', import_occurences, name='import_occurences'),
     path('import/proximate_analysis', import_proximate_analysis, name='import_proximate_analysis'),
     path('ma/', views.master_attribute_list, name='master_attribute-list'),
     path('ma/<int:pk>/', views.master_attribute_detail, name='master_attribute-detail'),

@@ -34,7 +34,7 @@ from .models import (AttributeRelation, ChoiceSetOptionRelation, DietSet
     , RelationClass
     , SourceAttribute, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceEntity
     , SourceMeasurementValue, SourceReference, TimePeriod, ViewMasterTraitValue, ViewProximateAnalysisTable)
-from imports.views import import_diet_set, import_ets, import_proximate_analysis
+from imports.views import import_diet_set, import_ets, import_proximate_analysis, import_occurences
 from imports.tools import *
 from itis.models import TaxonomicUnits
 from itis.views import *

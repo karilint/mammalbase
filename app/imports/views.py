@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 
 from utils.views import render	# MB Utils
-from .tools import create_ets, messages, Check, create_dietset, create_proximate_analysis
+from .tools import create_ets, messages, Check, create_dietset, create_proximate_analysis, create_occurences
 
 
 @login_required
@@ -85,3 +85,9 @@ def import_ets(request):
 	except Exception as e:
 		messages.error(request,"Unable to upload file. "+repr(e))
 	return HttpResponseRedirect(reverse("import_ets"))
+
+@login_required
+def import_occurences(request):
+	if request.method == "GET":
+		return render(request, "import/import_occurences.html")
+	
