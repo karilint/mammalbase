@@ -3,7 +3,7 @@
 # for example if you want to paginate them, you can do that.
 # They are in f.qs
 import django_filters
-from .models import (DietSet, EntityClass, FoodItem
+from .models.models import (DietSet, EntityClass, FoodItem
     , MasterAttribute, MasterEntity, MasterReference
     , ProximateAnalysis, ProximateAnalysisItem
     , SourceAttribute, SourceEntity, SourceReference, TimePeriod

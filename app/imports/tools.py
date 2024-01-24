@@ -17,10 +17,10 @@ from django.contrib.auth.models import User
 from allauth.socialaccount.models import SocialAccount
 from requests_cache import CachedSession
 
-from mb.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue
-from mb.models import SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod
-from mb.models import SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation
-from mb.models import MasterEntity, ProximateAnalysisItem, ProximateAnalysis
+from mb.models.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue
+from mb.models.models import SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod
+from mb.models.models import SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation
+from mb.models.models import MasterEntity, ProximateAnalysisItem, ProximateAnalysis
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 import itis.views as itis
 from config.settings import ITIS_CACHE

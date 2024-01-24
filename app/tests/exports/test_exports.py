@@ -2,7 +2,7 @@ import os
 
 from django.test import TestCase
 
-from mb.models import EntityClass, MasterEntity
+from mb.models.models import EntityClass, MasterEntity
 from exports.tasks import export_zip_file, replace_na
 from exports.models import ExportFile
 from tests.exports.utils.test_export_file_writer import TestExportFileWriter
