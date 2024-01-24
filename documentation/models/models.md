@@ -1,5 +1,5 @@
 ```mermaid
-classDiagram
+classDiagram {
 	Occurrence -->Event
 	Occurrence -->Location
 	Occurrence -->Taxon
@@ -555,4 +555,5 @@ classDiagram
 	+String nomenclaturalStatus
 	+Text taxonRemarks
 	}
+}
 ```
