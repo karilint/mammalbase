@@ -11,7 +11,7 @@ classDiagram
 		+String lifeStage
 		+String verbatimEventDate
 		+String occurrenceRemarks
-		+FK associatedReferences
+		+String associatedReferences
     }
     class Event {
 		+String eventID
@@ -32,8 +32,11 @@ classDiagram
     class Taxon {
       	+String taxonID
     }
+	class SourceReference {
+		String sourceReferenceID
+	}
 
-    Occurrence "1" -- "0.." Event : eventID
-    Occurrence "1" -- "0.." Location : locationID
-    Occurrence "0.." -- "0.." Taxon : taxonID
+    Occurrence "0" -- "1.." Event : eventID
+    Occurrence "0" -- "1.." Location : locationID
+    Occurrence "1.." -- "0.." Taxon : taxonID
 ```
