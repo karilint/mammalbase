@@ -27,7 +27,7 @@ from .forms import (AttributeRelationForm, ChoiceSetOptionRelationForm
     , SourceEntityRelationForm, SourceMeasurementValueForm
     , SourceReferenceAttributeForm, SourceReferenceForm
     , TaxonomicUnitsForm, TimePeriodForm)
-from .models import (AttributeRelation, ChoiceSetOptionRelation, DietSet
+from .models.models import (AttributeRelation, ChoiceSetOptionRelation, DietSet
     , DietSetItem, EntityRelation, FoodItem
     , MasterAttribute, MasterChoiceSetOption, MasterEntity, MasterReference
     , ProximateAnalysis, ProximateAnalysisItem
