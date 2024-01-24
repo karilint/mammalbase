@@ -9,7 +9,6 @@ classDiagram
 		+String organismQuantityType
 		+String sex
 		+String lifeStage
-		+String verbatimEventDate
 		+String occurrenceRemarks
 		+String associatedReferences
     }
@@ -19,6 +18,7 @@ classDiagram
 		+String samplingProtocol
 		+String habitatType
 		+int habitatPercentage
+		+String verbatimEventDate
     }
     class Location {
       	+String verbatimLocality
