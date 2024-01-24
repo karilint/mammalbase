@@ -39,4 +39,5 @@ classDiagram
     Occurrence "0" -- "1.." Event : eventID
     Occurrence "0" -- "1.." Location : locationID
     Occurrence "1.." -- "0.." Taxon : taxonID
+	Occurrence "0" -- "1.." SourceReferenceID
 ```
