@@ -18,6 +18,10 @@ class Occurrence(BaseModel):
         'SourceReference',
         on_delete = models.CASCADE,
         )
+    event_id = models.ForeignKey(
+        'OccurrenceEvent',
+        on_delete = models.CASCADE
+        )
     taxon_id = models.ForeignKey(
         'SourceEntity',
         on_delete=models.CASCADE,
@@ -57,3 +61,21 @@ class Occurrence(BaseModel):
         null=True,
         help_text="References to other sources of information about the Occurrence.",
         )
+
+    
+class OccurrenceEvent(BaseModel):
+    """
+    Model representing an event that is associated with an Occurrence.
+    """
+    sampling_protocol = models.TextField(
+        blank=True,
+        null=True,
+        help_text="The name of, reference to, or description of the method or protocol used during an Event.",
+        )
+    verbatim_event_date = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="The verbatim original representation of the date and time information for an Event.",
+        )
+
