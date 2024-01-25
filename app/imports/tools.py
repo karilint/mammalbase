@@ -1035,20 +1035,21 @@ def create_occurrences(row, headers):
     #set attribute dict
     #create model
 
-    print(str(row))
-
-
-    """
     attribute_dict = {
-        "reference" : get_sourcereference_citation(getattr(row, 'references'), author),
-        "method" : None,
-        "location" : None,
-        "study_time" : None,
-        "cited_reference" : None
+        "verbatimScientificName " : getattr(row, 'verbatimScientificName'),
+        "scientificNameAuthorship" : getattr(row, 'scientificNameAuthorship'),
+        "taxonRank" : getattr(row, 'taxonRank'),
+        "organismQuantity" : getattr(row, 'organismQuantity'),
+        "organismQuantityType" : getattr(row, 'organismQuantityType'),
+        "sex" : getattr(row, 'sex'),
+        "lifeStage" : getattr(row, 'lifeStage'),
+        "associatedReferences" : getattr(row, 'associatedReferences')
     }
+
+    print(str(attribute_dict))
+
     occurence = Occurrence(attributes)
     occurence.save()
-    """
     return
     
 
