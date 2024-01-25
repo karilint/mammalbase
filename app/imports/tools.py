@@ -1035,6 +1035,9 @@ def create_occurrence(row, headers):
     #set attribute dict
     #create model
 
+    print(str(row))
+
+
     """
     attribute_dict = {
         "reference" : get_sourcereference_citation(getattr(row, 'references'), author),
