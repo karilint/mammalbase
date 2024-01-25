@@ -1048,9 +1048,12 @@ def create_occurrences(row, headers):
 
     print(str(attribute_dict))
 
+    """
     occurence = Occurrence(attributes)
     occurence.save()
+    """
     return
+
     
 
 
