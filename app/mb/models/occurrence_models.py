@@ -79,3 +79,42 @@ class OccurrenceEvent(BaseModel):
         help_text="The verbatim original representation of the date and time information for an Event.",
         )
 
+# source_locality ?
+class OccurrenceLocation(BaseModel):
+    """
+    Model representing a location associated with an Occurrence.
+    """
+    verbatim_locality = models.ForeignKey(
+        'SourceLocation',
+        on_delete=models.CASCADE,
+        )
+    verbatim_eleveation = models.CharField(
+        blank=True,
+        null=True,
+        help_text="The original textual description of the verbatim elevation."
+    )
+    verbatim_longitude = models.CharField(
+        blank=True,
+        null=True,
+        help_text="The original textual description of the verbatim longitude."
+    )
+    verbatim_latitude = models.CharField(
+        blank=True,
+        null=True,
+        help_text="The original textual description of the verbatim latitude."
+    )
+    verbatim_depth = models.CharField(
+        blank=True,
+        null=True,
+        help_text="The original textual description of the verbatim depth."
+    )
+    verbatim_coordinate_system = models.CharField(
+        blank=True,
+        null=True,
+        help_text="The original textual description of the verbatim coordinate system."
+    )
+    verbatim_srs = models.CharField(
+        blank=True,
+        null=True,
+        help_text="The original textual description of the verbatim spatial reference system."
+    )
