@@ -39,6 +39,7 @@ class Occurrence(BaseModel):
         null=True,
         help_text="The type of the number of organisms in the Occurrence.",
         )
+    # check accepted values
     sex = models.ForeignKey(
         'ChoiceValue',
         on_delete = models.CASCADE,
@@ -46,11 +47,13 @@ class Occurrence(BaseModel):
         null=True,
         limit_choices_to={'choice_set':'Sex'}
         )
-    life_stage = models.CharField(
-        max_length=50,
+    # check accepted values
+    life_stage = models.ForeignKey(
+        'ChoiceValue',
+        on_delete = models.SET_NULL,
         blank=True,
-        null=True,
-        help_text="The life stage of the organism in the Occurrence.",
+        null = True,
+        limit_choices_to={'choice_set': 'LifeStage'}
         )
     occurrence_remarks = models.TextField(
         blank=True,
