@@ -676,6 +676,8 @@ def create_tsn(results, tsn):
 
     return taxonomic_unit
 
+
+
 def create_fooditem(results, food_upper, part):
     tsn = int(results['data'][0]['results'][0]['taxon_id'])
     taxonomic_unit = create_tsn(results, tsn)
@@ -1026,6 +1028,30 @@ def create_new_entity_relation(source_entity):
                 print('Error creating new entity relation ', sys.exc_info(), traceback.format_exc())
     except:
         print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
+
+def create_occurrence(row, headers):
+    #TODO:
+    #get items
+    #set attribute dict
+    #create model
+
+    """
+    attribute_dict = {
+        "reference" : get_sourcereference_citation(getattr(row, 'references'), author),
+        "method" : None,
+        "location" : None,
+        "study_time" : None,
+        "cited_reference" : None
+    }
+    occurence = Occurrence(attributes)
+    occurence.save()
+    """
+    return
+    
+
+
+
+
 
 @transaction.atomic
 def create_ets(row, headers):
