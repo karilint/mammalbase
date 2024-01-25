@@ -87,7 +87,16 @@ def import_ets(request):
 	return HttpResponseRedirect(reverse("import_ets"))
 
 @login_required
-def import_occurences(request):
+def import_occurrences(request):
 	if request.method == "GET":
-		return render(request, "import/import_occurences.html")
+		return render(request, "import/import_occurrences.html")
 	
+	try:
+		csv_file = request.FILES["csv_file"]
+		df = pd.read_csv(csv_file, sep='\t')
+		check = Check(request)
+
+	except Exception as e:
+		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
+		messages.error(request,"Unable to upload file. "+repr(e))
+	return HttpResponseRedirect(reverse("import_occurrences"))
