@@ -1029,13 +1029,7 @@ def create_new_entity_relation(source_entity):
     except:
         print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
 
-def create_occurrences(row):
-    #headers = list(df.columns.values)
-    #TODO:
-    #get items
-    #set attribute dict
-    #create model
-
+def create_occurrences(row, heards):
     organismQuantity = getattr(row, 'organismQuantity')
     organismQuantityType = getattr(row, 'organismQuantityType')
     sex = getattr(row, 'sex')
@@ -1043,11 +1037,14 @@ def create_occurrences(row):
     occurrenceRemarks = getattr(row, 'occurrenceRemarks')
     associatedReferences = getattr(row, 'associatedReferences')
 
-    
-
     """
     occurrence = Occurrence()
-    #TODO: add these ^^ attributes to this occurrence-model
+    occurrence.organism_quantity = organism_quantity 
+    occurrence.organism_quantity_type = organism_quantity_type
+    occurrence.sex = sex
+    occurrence.life_stage = life_stage
+    occurrence.occurrence_remarks = occurrence_remarks
+    occurrence.associated_references = associated_references
     occurrence.save()
     """
     return
