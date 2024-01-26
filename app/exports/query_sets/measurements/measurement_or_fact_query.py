@@ -28,25 +28,31 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
     now_format_1 = now.strftime('%Y-%m-%d %H:%M:%S +02:00')
     now_format_2 = now.strftime('%d %m %Y')
 
-    if is_admin_or_contributor:
-        references = Replace(
-                Replace(
-                    'source_entity__reference__master_reference__citation',
-                    Value('<i>'),
-                    Value('')
-                ),
-                Value('</i>'),
-                Value('')
+    mb_reference = Concat(
+        Value('The MammalBase community '),
+        Value(now_format_1),
+        Value(' , Data version '),
+        Value(now_format_2),
+        Value(' at https://mammalbase.net/me/'),
+        output_field=CharField()
+    )
+
+    references = Replace(
+        Replace(
+            'source_entity__reference__master_reference__citation',
+            Value('<i>'),
+            Value('')
+        ),
+        Value('</i>'),
+        Value('')
+    )
+
+    if not is_admin_or_contributor:
+        references = Case(
+            When(source_entity__reference__master_reference__is_public = True,
+                then = references ),
+                default = mammalbase_reference
         )
-    else:
-        references = Concat(
-                    Value('The MammalBase community '),
-                    Value(now_format_1),
-                    Value(' , Data version '),
-                    Value(now_format_2),
-                    Value(' at https://mammalbase.net/me/'),
-                    output_field=CharField()
-                )
 
     query = base.exclude(non_active).annotate(
         measurement_id=Concat(

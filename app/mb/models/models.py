@@ -416,6 +416,7 @@ class MasterReference(BaseModel):
     page = models.CharField(max_length=50, help_text="Enter the Page(s) of the Standard Reference", blank=True, null=True,)
     citation = models.CharField(max_length=500, help_text="Enter the Citation of the Standard Reference")
 #    link = models.URLField(max_length=200, help_text="Enter a valid URL for the Source Reference", blank=True, null=True,)
+    is_public = models.BooleanField(help_text="Enter if the source is public", blank=False, null=True,)
 
     class Meta:
         ordering = ['citation']
