@@ -1030,21 +1030,18 @@ def create_new_entity_relation(source_entity):
         print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
 
 def create_occurrences(row, heards):
-    organismQuantity = getattr(row, 'organismQuantity')
-    organismQuantityType = getattr(row, 'organismQuantityType')
-    sex = getattr(row, 'sex')
-    lifeStage = getattr(row, 'lifeStage')
-    occurrenceRemarks = getattr(row, 'occurrenceRemarks')
-    associatedReferences = getattr(row, 'associatedReferences')
+    attribute_dict = {
+        "organismQuantity" : getattr(row, 'organismQuantity'),
+        "organismQuantityType" : getattr(row, 'organismQuantityType'),
+        "sex" : getattr(row, 'sex'),
+        #"lifeStage" = getattr(row, 'lifeStage'),
+        "occurrenceRemarks" : getattr(row, 'occurrenceRemarks'),
+        "associatedReferences" : getattr(row, 'associatedReferences')
+    }
 
+    
     """
-    occurrence = Occurrence()
-    occurrence.organism_quantity = organism_quantity 
-    occurrence.organism_quantity_type = organism_quantity_type
-    occurrence.sex = sex
-    occurrence.life_stage = life_stage
-    occurrence.occurrence_remarks = occurrence_remarks
-    occurrence.associated_references = associated_references
+    occurrence = Occurrence(**attribute_dict)
     occurrence.save()
     """
     return
