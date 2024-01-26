@@ -51,7 +51,7 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         references = Case(
             When(source_entity__reference__master_reference__is_public = True,
                 then = references ),
-                default = mammalbase_reference
+                default = mb_reference
         )
 
     query = base.exclude(non_active).annotate(
