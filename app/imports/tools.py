@@ -1029,7 +1029,7 @@ def create_new_entity_relation(source_entity):
     except:
         print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
 
-def create_occurrences(row, heards):
+def create_occurrences(row, headers):
     attribute_dict = {
         "organismQuantity" : getattr(row, 'organismQuantity'),
         "organismQuantityType" : getattr(row, 'organismQuantityType'),
