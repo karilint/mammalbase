@@ -1029,36 +1029,28 @@ def create_new_entity_relation(source_entity):
     except:
         print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
 
-def create_occurrences(row, headers):
+def create_occurrences(row):
+    #headers = list(df.columns.values)
     #TODO:
     #get items
     #set attribute dict
     #create model
 
-    attribute_dict = {
-        "verbatimScientificName " : getattr(row, 'verbatimScientificName'),
-        "scientificNameAuthorship" : getattr(row, 'scientificNameAuthorship'),
-        "taxonRank" : getattr(row, 'taxonRank'),
-        "organismQuantity" : getattr(row, 'organismQuantity'),
-        "organismQuantityType" : getattr(row, 'organismQuantityType'),
-        "sex" : getattr(row, 'sex'),
-        "lifeStage" : getattr(row, 'lifeStage'),
-        "associatedReferences" : getattr(row, 'associatedReferences')
-    }
-
-    print(str(attribute_dict))
-
-    """
-    occurence = Occurrence(attributes)
-    occurence.save()
-    """
-    return
+    organismQuantity = getattr(row, 'organismQuantity')
+    organismQuantityType = getattr(row, 'organismQuantityType')
+    sex = getattr(row, 'sex')
+    lifeStage = getattr(row, 'lifeStage')
+    occurrenceRemarks = getattr(row, 'occurrenceRemarks')
+    associatedReferences = getattr(row, 'associatedReferences')
 
     
 
-
-
-
+    """
+    occurrence = Occurrence()
+    #TODO: add these ^^ attributes to this occurrence-model
+    occurrence.save()
+    """
+    return
 
 @transaction.atomic
 def create_ets(row, headers):
