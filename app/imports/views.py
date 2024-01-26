@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 
 from utils.views import render	# MB Utils
-from .tools import create_ets, messages, Check, create_dietset, create_proximate_analysis
+from .tools import create_ets, messages, Check, create_dietset, create_proximate_analysis, create_occurrences
 
 
 @login_required
@@ -87,7 +87,27 @@ def import_ets(request):
 	return HttpResponseRedirect(reverse("import_ets"))
 
 @login_required
-def import_occurences(request):
+def import_occurrences(request):
 	if request.method == "GET":
-		return render(request, "import/import_occurences.html")
+		return render(request, "import/import_occurrences.html")
 	
+	try:
+		csv_file = request.FILES["csv_file"]
+		df = pd.read_csv(csv_file, sep=';')
+		check = Check(request)
+
+		#if not check.check_valid_author(df) or not check.check_all_occurrences(df):
+		#		return HttpResponseRedirect(reverse("import_occurrences"))
+
+		headers =  list(df.columns.values)
+		for row in df.itertuples():
+			create_occurrences(row)
+		success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
+		messages.add_message(request, 50 ,success_message, extra_tags="import-message")
+		messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")
+		return HttpResponseRedirect(reverse("import_occurrences"))
+
+	except Exception as e:
+		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
+		messages.error(request,"Unable to upload file. "+repr(e))
+	return HttpResponseRedirect(reverse("import_occurrences"))

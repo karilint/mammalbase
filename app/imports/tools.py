@@ -676,6 +676,8 @@ def create_tsn(results, tsn):
 
     return taxonomic_unit
 
+
+
 def create_fooditem(results, food_upper, part):
     tsn = int(results['data'][0]['results'][0]['taxon_id'])
     taxonomic_unit = create_tsn(results, tsn)
@@ -1026,6 +1028,29 @@ def create_new_entity_relation(source_entity):
                 print('Error creating new entity relation ', sys.exc_info(), traceback.format_exc())
     except:
         print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
+
+def create_occurrences(row):
+    #headers = list(df.columns.values)
+    #TODO:
+    #get items
+    #set attribute dict
+    #create model
+
+    organismQuantity = getattr(row, 'organismQuantity')
+    organismQuantityType = getattr(row, 'organismQuantityType')
+    sex = getattr(row, 'sex')
+    lifeStage = getattr(row, 'lifeStage')
+    occurrenceRemarks = getattr(row, 'occurrenceRemarks')
+    associatedReferences = getattr(row, 'associatedReferences')
+
+    
+
+    """
+    occurrence = Occurrence()
+    #TODO: add these ^^ attributes to this occurrence-model
+    occurrence.save()
+    """
+    return
 
 @transaction.atomic
 def create_ets(row, headers):
