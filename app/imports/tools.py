@@ -65,7 +65,7 @@ class Check:
 
         headers = list(df.colums.values)
 
-        for header in occ_headers:
+        for header in headers:
             if header not in occ_headers:
                 messages.error(self.request, "The import file does not contain the required headers. The missing header is: " + str(header) + ".")
                 return False
