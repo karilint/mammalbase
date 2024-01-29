@@ -31,6 +31,47 @@ class Check:
         self.request = request
         self.id = None
 
+    def check_occurrence_headers(self, df):
+        """Check occurrence headers validity.
+
+        Args:
+            headers (list): headers in list
+        """
+        occ_headers = [
+            "references",
+            "verbatimScientificName",
+            "scientificNameAuthorship",
+            "taxonRank",
+            "organismQuantity", 
+            "organismQuantityType",
+            "sex",
+            "lifeStage",
+            "verbatimEventDate", 
+            "occurrenceRemarks", 
+            "verbatimLocality", 
+            "verbatimElevation",
+            "verbatimDepth",
+            "verbatimCoordinates",
+            "verbatimLatitude",
+            "verbatimLongitude",
+            "verbatimCoordinateSystem",
+            "verbatimSRS",
+            "author",
+            "associatedReferences",
+            "samplingProtocol",
+            "habitatType",
+            "habitatPercentage"
+        ]
+
+        headers = list(df.colums.values)
+
+        for header in occ_headers:
+            if header not in occ_headers:
+                messages.error(self.request, "The import file does not contain the required headers. The missing header is: " + str(header) + ".")
+                return False
+        return True
+
+
     def check_all_ds(self, df, force=False):
         return (
             self.check_headers_ds(df) and 
@@ -1030,6 +1071,9 @@ def create_new_entity_relation(source_entity):
         print('Error creating new entity relation', sys.exc_info(), traceback.format_exc())
 
 def create_occurrences(row, headers):
+    #create function in try-catch
+    #create get-functions to get FK-values
+
     attribute_dict = {
         "organismQuantity" : getattr(row, 'organismQuantity'),
         "organismQuantityType" : getattr(row, 'organismQuantityType'),
@@ -1038,6 +1082,8 @@ def create_occurrences(row, headers):
         "occurrenceRemarks" : getattr(row, 'occurrenceRemarks'),
         "associatedReferences" : getattr(row, 'associatedReferences')
     }
+
+
 
     
     """

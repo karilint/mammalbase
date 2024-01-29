@@ -95,9 +95,12 @@ def import_occurrences(request):
 		csv_file = request.FILES["csv_file"]
 		df = pd.read_csv(csv_file, sep=';')
 		check = Check(request)
-
-		#if not check.check_valid_author(df) or not check.check_all_occurrences(df):
-		#		return HttpResponseRedirect(reverse("import_occurrences"))
+		
+		
+		#if not check.check_valid_author(df) or not check.check_occurrence_headers(df):
+		if not check.check_occurrence_headers(df):
+				print("error")
+				return HttpResponseRedirect(reverse("import_occurrences"))
 
 		headers =  list(df.columns.values)
 		for row in df.itertuples():
