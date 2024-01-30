@@ -84,7 +84,7 @@ class Event(BaseModel):
         blank=True,
         null=True,
         on_delete=models.CASCADE
-    )
+        )
     verbatim_event_date = models.CharField(
         max_length=250,
         blank=True,
@@ -108,37 +108,37 @@ class SourceLocality(BaseModel):
         blank=True,
         null=True,
         help_text="The original textual description of the verbatim elevation."
-    )
+        )
     verbatim_longitude = models.CharField(
         blank=True,
         null=True,
         help_text="The original textual description of the verbatim longitude."
-    )
+        )
     verbatim_latitude = models.CharField(
         blank=True,
         null=True,
         help_text="The original textual description of the verbatim latitude."
-    )
+        )
     verbatim_depth = models.CharField(
         blank=True,
         null=True,
         help_text="The original textual description of the verbatim depth."
-    )
+        )
     verbatim_coordinate_system = models.CharField(
         blank=True,
         null=True,
         help_text="The original textual description of the verbatim coordinate system."
-    )
+        )
     verbatim_coordinates = models.CharField(
         blank=True,
         null=True,
         help_text="The original textual description of the verbatim coordinates."
-    )
+        )
     verbatim_srs = models.CharField(
         blank=True,
         null=True,
         help_text="The original textual description of the verbatim spatial reference system."
-    )
+        )
 
 class SourceHabitat(BaseModel):
     """
