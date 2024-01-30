@@ -1,12 +1,5 @@
-from django.conf import settings
 from django.db import models
-from django.db.models import Q
-from django.utils import timezone
-from django.core.validators import MaxValueValidator, MinValueValidator
-from itis.models import TaxonomicUnits
-from tdwg.models import Taxon as TdwgTaxon
 from .base_model import BaseModel
-from .models import SourceLocation, SourceReference, SourceMethod
 
 class Occurrence(BaseModel):
     """
