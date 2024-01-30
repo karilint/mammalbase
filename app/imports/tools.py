@@ -63,97 +63,190 @@ class Check:
             "habitatPercentage"
         ]
 
+        #TODO: here add header validity checking, like this (in pseudocode):
+        if not (
+            self.check_references(df, force=False) and
+            self.check_verbatimScientificName(df) and
+            self.check_scientificNameAuthorship(df) and
+            self.check_taxonRank(df) and
+            self.check_organismQuantity(df) and
+            self.check_organismQuantityType(df) and
+            self.check_gender(df) and
+            self.check_lifeStage(df) and
+            self.check_verbatimEventDate(df) and
+            self.check_occurrenceRemarks(df) and
+            self.check_verbatimLocality(df) and
+            self.check_verbatimElevation(df) and
+            self.check_verabtimDepth(df) and
+            self.check_verbatimCoordinates(df) and
+            self.check_verbatimLatitude(df) and
+            self.check_verbatimLongitude(df) and
+            self.check_verbatimCoordinateSystem(df) and
+            self.check_verbatimSRS(df) and
+            self.check_author(df) and 
+            self.check_associatedReferences(df) and
+            self.check_samplingProtocol(df) and
+            self.check_habitatType(df) and
+            self.check_habitatPercentage(df)
+        ):
+            messages.error(self.request, "The import file does not in correct format.")
+            return False
+
         headers = list(df.colums.values)
 
         for header in headers:
             if header not in occ_headers:
                 messages.error(self.request, "The import file does not contain the required headers. The missing header is: " + str(header) + ".")
                 return False
-            #TODO: here add header validity checking, like this (in pseudocode):
-            """
-            if (
-                self.check_headers_ds(df) and 
-                self.check_author(df) and 
-                self.check_verbatimScientificName(df) and
-                self.check_taxonRank(df) and
-                self.check_gender(df) and
-                self.check_verbatim_associated_taxa(df) and
-                self.check_sequence(df) and
-                self.check_measurementValue(df) and 
-                self.check_part(df) and 
-                self.check_references(df, force) and
-                self.check_lengths(df)
-            ) continue
-            else:
-                messages.error(self.request, "The import file does not in correct format.")
-                return False
-            """
-
         return True
     
-    #TODO: create unit tests for functions below
+    #############################################
+    #TODO: create unit tests for functions below#
+    #############################################
     
-    def check_references(self, header):
-        pass
+    def check_scientificNameAuthorship(self, df):
+        headers = list(df.colums.values)
 
-    def check_verbatimScientificName(self, header):
-        pass
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
+    
+    def check_organismQuantityType(df):
+        headers = list(df.colums.values)
 
-    def check_scientificNameAuthorship(self, header):
-        pass
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
 
-    def check_organismQuantity(self, header):
-        pass
+    def check_organismQuantity(self, df):
+        headers = list(df.colums.values)
 
-    def check_organismQuantityType(self, eader):
-        pass
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
 
-    def check_lifeStage(self, header):
-        pass
+    def check_lifeStage(self, df):
+        headers = list(df.colums.values)
 
-    def check_verbatimEventDate(self, header):
-        pass
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
 
-    def check_occurrenceRemarks(self, header):
-        pass
+    def check_verbatimEventDate(self, df):
+        headers = list(df.colums.values)
 
-    def check_verbatimLocality(self, header):
-        pass
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
 
-    def check_verbatimElevation(self, header):
-        pass
+    def check_occurrenceRemarks(self, df):
+        headers = list(df.colums.values)
 
-    def check_verbatimDepth(self, header):
-        pass
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
 
-    def check_verbatimCoordinates(self, header):
-        pass
+    def check_verbatimLocality(self, df):
+        headers = list(df.colums.values)
 
-    def check_verbatimLatitude(self, header):
-        pass
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
 
-    def check_verbatimLongitude(self, header):
-        pass
+    def check_verbatimElevation(self, df):
+        headers = list(df.colums.values)
 
-    def check_verbatimCoordinateSystem(self, header):
-        pass
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
 
-    def check_verbatimSRS(self, header):
-        pass
+    def check_verbatimDepth(self, df):
+        headers = list(df.colums.values)
 
-    def check_associatedReferences(self, header):
-        pass
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
 
-    def check_samplingProtocol(self, header):
-        pass
+    def check_verbatimCoordinates(self, df):
+        headers = list(df.colums.values)
 
-    def check_habitatType(self, header):
-        pass
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
 
-    def check_habitatPercentage(self, header):
-        pass
+    def check_verbatimLatitude(self, df):
+        headers = list(df.colums.values)
 
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
 
+    def check_verbatimLongitude(self, df):
+        headers = list(df.colums.values)
+
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
+
+    def check_verbatimCoordinateSystem(self, df):
+        headers = list(df.colums.values)
+
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
+
+    def check_verbatimSRS(self, df):
+        headers = list(df.colums.values)
+
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
+
+    def check_associatedReferences(self, df):
+        headers = list(df.colums.values)
+
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
+
+    def check_samplingProtocol(self, df):
+        headers = list(df.colums.values)
+
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
+
+    def check_habitatType(self, df):
+        headers = list(df.colums.values)
+
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
+
+    def check_habitatPercentage(self, df):
+        headers = list(df.colums.values)
+
+        for header in headers:
+            #here add a check (e.g. by regex)
+            continue
+        return True
 
     def check_all_ds(self, df, force=False):
         return (
