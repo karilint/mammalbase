@@ -16,7 +16,7 @@ class Occurrence(BaseModel):
 
     reference = models.ForeignKey(
         'SourceReference',
-        on_delete = models.CASCADE,
+        on_delete = models.CASCADE
         )
     event = models.ForeignKey(
         'Event',
@@ -26,22 +26,21 @@ class Occurrence(BaseModel):
         'SourceLocality',
         on_delete = models.CASCADE
         )
-    taxon = models.ForeignKey(
+    verbatim_scientific_name = models.ForeignKey(
         'SourceEntity',
-        on_delete=models.CASCADE,
-        related_name='taxon_%(class)s'
+        on_delete= models.CASCADE
         )
     organism_quantity = models.CharField(
         max_length=50,
         blank=True,
         null=True,
-        help_text="The number of organisms in the Occurrence.",
+        help_text="The number of organisms in the Occurrence."
         )
     organism_quantity_type = models.CharField(
         max_length=50,
         blank=True,
         null=True,
-        help_text="The type of the number of organisms in the Occurrence.",
+        help_text="The type of the number of organisms in the Occurrence."
         )
     gender = models.ForeignKey(
         'ChoiceValue',
@@ -60,12 +59,12 @@ class Occurrence(BaseModel):
     occurrence_remarks = models.TextField(
         blank=True,
         null=True,
-        help_text="Comments or notes about the Occurrence.",
+        help_text="Comments or notes about the Occurrence."
         )
     associated_references = models.TextField(
         blank=True,
         null=True,
-        help_text="References to other sources of information about the Occurrence.",
+        help_text="References to other sources of information about the Occurrence."
         )
 
     
@@ -89,7 +88,7 @@ class Event(BaseModel):
         max_length=250,
         blank=True,
         null=True,
-        help_text="The verbatim original representation of the date and time information for an Event.",
+        help_text="The verbatim original representation of the date and time information for an Event."
         )
 
 class SourceLocality(BaseModel):
@@ -98,11 +97,11 @@ class SourceLocality(BaseModel):
     """
     reference = models.ForeignKey(
         'SourceReference',
-        on_delete = models.CASCADE,
+        on_delete = models.CASCADE
         )
     verbatim_locality = models.ForeignKey(
         'SourceLocation',
-        on_delete=models.CASCADE,
+        on_delete=models.CASCADE
         )
     verbatim_eleveation = models.CharField(
         blank=True,
@@ -152,4 +151,9 @@ class SourceHabitat(BaseModel):
         blank=True,
         null=True,
         help_text="Enter the Name of the Source Habitat"
+        )
+    habitatPercentage = models.CharField(
+        blank=True,
+        null=True,
+        help_text="Enter the Percentage of the Source Habitat"
         )
