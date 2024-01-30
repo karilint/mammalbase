@@ -39,15 +39,13 @@ class Occurrence(BaseModel):
         null=True,
         help_text="The type of the number of organisms in the Occurrence.",
         )
-    # check accepted values
-    sex = models.ForeignKey(
+    gender = models.ForeignKey(
         'ChoiceValue',
         on_delete = models.CASCADE,
         blank=True,
         null=True,
-        limit_choices_to={'choice_set':'Sex'}
+        limit_choices_to={'choice_set':'Gender'}
         )
-    # check accepted values
     life_stage = models.ForeignKey(
         'ChoiceValue',
         on_delete = models.SET_NULL,
@@ -67,7 +65,7 @@ class Occurrence(BaseModel):
         )
 
     
-class OccurrenceEvent(BaseModel):
+class Event(BaseModel):
     """
     Model representing an event that is associated with an Occurrence.
     """
@@ -83,7 +81,6 @@ class OccurrenceEvent(BaseModel):
         help_text="The verbatim original representation of the date and time information for an Event.",
         )
 
-# source_locality ?
 class OccurrenceLocation(BaseModel):
     """
     Model representing a location associated with an Occurrence.
