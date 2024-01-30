@@ -582,8 +582,23 @@ class SourceEntity(BaseModel):
         'MasterEntity',
         through='EntityRelation',
         through_fields=('source_entity', 'master_entity')
-    )
-    name = models.CharField(max_length=250, help_text="Enter the Name of the Source Entity")
+        )
+    name = models.CharField(
+        max_length=250,
+        help_text="Enter the Name of the Source Entity"
+        )
+    scientific_name_authorship = models.ForeignKey(
+        'Taxon',
+        blank=True,
+        null=True,
+        to_field= 'scientific_name_authorship',
+        on_delete= models.CASCADE,
+        )
+    taxon_rank = models.ForeignKey(
+        'Taxon',
+        to_field= 'taxon_rank',
+        on_delete= models.CASCADE,
+        )
 
     class Meta:
         ordering = ['name']
