@@ -69,7 +69,90 @@ class Check:
             if header not in occ_headers:
                 messages.error(self.request, "The import file does not contain the required headers. The missing header is: " + str(header) + ".")
                 return False
+            #TODO: here add header validity checking, like this (in pseudocode):
+            """
+            if (
+                self.check_headers_ds(df) and 
+                self.check_author(df) and 
+                self.check_verbatimScientificName(df) and
+                self.check_taxonRank(df) and
+                self.check_gender(df) and
+                self.check_verbatim_associated_taxa(df) and
+                self.check_sequence(df) and
+                self.check_measurementValue(df) and 
+                self.check_part(df) and 
+                self.check_references(df, force) and
+                self.check_lengths(df)
+            ) continue
+            else:
+                messages.error(self.request, "The import file does not in correct format.")
+                return False
+            """
+
         return True
+    
+    #TODO: create unit tests for functions below
+    
+    def check_references(self, header):
+        pass
+
+    def check_verbatimScientificName(self, header):
+        pass
+
+    def check_scientificNameAuthorship(self, header):
+        pass
+
+    def check_organismQuantity(self, header):
+        pass
+
+    def check_organismQuantityType(self, eader):
+        pass
+
+    def check_lifeStage(self, header):
+        pass
+
+    def check_verbatimEventDate(self, header):
+        pass
+
+    def check_occurrenceRemarks(self, header):
+        pass
+
+    def check_verbatimLocality(self, header):
+        pass
+
+    def check_verbatimElevation(self, header):
+        pass
+
+    def check_verbatimDepth(self, header):
+        pass
+
+    def check_verbatimCoordinates(self, header):
+        pass
+
+    def check_verbatimLatitude(self, header):
+        pass
+
+    def check_verbatimLongitude(self, header):
+        pass
+
+    def check_verbatimCoordinateSystem(self, header):
+        pass
+
+    def check_verbatimSRS(self, header):
+        pass
+
+    def check_associatedReferences(self, header):
+        pass
+
+    def check_samplingProtocol(self, header):
+        pass
+
+    def check_habitatType(self, header):
+        pass
+
+    def check_habitatPercentage(self, header):
+        pass
+
 
 
     def check_all_ds(self, df, force=False):
