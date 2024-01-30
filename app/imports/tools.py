@@ -104,7 +104,16 @@ class Check:
     #TODO: create unit tests for functions below#
     #############################################
     
+    
     def check_scientificNameAuthorship(self, df):
+        """Check scientificNameAuthorship validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -113,6 +122,14 @@ class Check:
         return True
     
     def check_organismQuantityType(df):
+        """Check organismQuantityType validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -121,6 +138,14 @@ class Check:
         return True
 
     def check_organismQuantity(self, df):
+        """Check organismQuantity validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -129,6 +154,14 @@ class Check:
         return True
 
     def check_lifeStage(self, df):
+        """Check lifeStage validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -137,6 +170,14 @@ class Check:
         return True
 
     def check_verbatimEventDate(self, df):
+        """Check verbatimEventDate validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -145,6 +186,14 @@ class Check:
         return True
 
     def check_occurrenceRemarks(self, df):
+        """Check occurrenceRemarks validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -153,6 +202,14 @@ class Check:
         return True
 
     def check_verbatimLocality(self, df):
+        """Check verbatimLocality validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -161,6 +218,14 @@ class Check:
         return True
 
     def check_verbatimElevation(self, df):
+        """Check verbatimElevation validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -169,6 +234,14 @@ class Check:
         return True
 
     def check_verbatimDepth(self, df):
+        """Check verbatimDepth validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -177,6 +250,14 @@ class Check:
         return True
 
     def check_verbatimCoordinates(self, df):
+        """Check verbatimCoordinates validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -185,6 +266,14 @@ class Check:
         return True
 
     def check_verbatimLatitude(self, df):
+        """Check verbatimLatitude validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -193,6 +282,14 @@ class Check:
         return True
 
     def check_verbatimLongitude(self, df):
+        """Check verbatimLongitude validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -201,6 +298,14 @@ class Check:
         return True
 
     def check_verbatimCoordinateSystem(self, df):
+        """Check verbatimCoordinateSystem validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -209,6 +314,14 @@ class Check:
         return True
 
     def check_verbatimSRS(self, df):
+        """Check verbatimSRS validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -217,6 +330,14 @@ class Check:
         return True
 
     def check_associatedReferences(self, df):
+        """Check associatedReferences validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -225,6 +346,14 @@ class Check:
         return True
 
     def check_samplingProtocol(self, df):
+        """Check samplingProtocol validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -233,6 +362,14 @@ class Check:
         return True
 
     def check_habitatType(self, df):
+        """Check habitatType validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
@@ -241,6 +378,14 @@ class Check:
         return True
 
     def check_habitatPercentage(self, df):
+        """Check habitatPercentage validity.
+
+        Args:
+            df (Pandas): pd.read_csv-generated csv-content
+
+        Returns:
+            bool: True if checking is ok or checker do not find the header, False if checking is not ok 
+        """
         headers = list(df.colums.values)
 
         for header in headers:
