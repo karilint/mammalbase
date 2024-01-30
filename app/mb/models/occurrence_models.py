@@ -6,7 +6,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from itis.models import TaxonomicUnits
 from tdwg.models import Taxon as TdwgTaxon
 from .base_model import BaseModel
-from .models import SourceLocation, SourceReference
+from .models import SourceLocation, SourceReference, SourceMethod
 
 class Occurrence(BaseModel):
     """
@@ -14,15 +14,19 @@ class Occurrence(BaseModel):
     at a particular time.
     """
 
-    reference_id = models.ForeignKey(
+    reference = models.ForeignKey(
         'SourceReference',
         on_delete = models.CASCADE,
         )
-    event_id = models.ForeignKey(
-        'OccurrenceEvent',
+    event = models.ForeignKey(
+        'Event',
         on_delete = models.CASCADE
         )
-    taxon_id = models.ForeignKey(
+    location = models.ForeignKey(
+        'SourceLocality',
+        on_delete = models.CASCADE
+        )
+    taxon = models.ForeignKey(
         'SourceEntity',
         on_delete=models.CASCADE,
         related_name='taxon_%(class)s'
@@ -69,11 +73,18 @@ class Event(BaseModel):
     """
     Model representing an event that is associated with an Occurrence.
     """
-    sampling_protocol = models.TextField(
+    sampling_protocol = models.ForeignKey(
+        'SourceMethod',
         blank=True,
         null=True,
-        help_text="The name of, reference to, or description of the method or protocol used during an Event.",
+        on_delete=models.CASCADE
         )
+    habitat_type = models.ForeignKey(
+        'SourceHabitat',
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE
+    )
     verbatim_event_date = models.CharField(
         max_length=250,
         blank=True,
@@ -81,10 +92,14 @@ class Event(BaseModel):
         help_text="The verbatim original representation of the date and time information for an Event.",
         )
 
-class OccurrenceLocation(BaseModel):
+class SourceLocality(BaseModel):
     """
     Model representing a location associated with an Occurrence.
     """
+    reference = models.ForeignKey(
+        'SourceReference',
+        on_delete = models.CASCADE,
+        )
     verbatim_locality = models.ForeignKey(
         'SourceLocation',
         on_delete=models.CASCADE,
@@ -114,8 +129,27 @@ class OccurrenceLocation(BaseModel):
         null=True,
         help_text="The original textual description of the verbatim coordinate system."
     )
+    verbatim_coordinates = models.CharField(
+        blank=True,
+        null=True,
+        help_text="The original textual description of the verbatim coordinates."
+    )
     verbatim_srs = models.CharField(
         blank=True,
         null=True,
         help_text="The original textual description of the verbatim spatial reference system."
     )
+
+class SourceHabitat(BaseModel):
+    """
+    Model representing a habitat associated with an Occurrence.
+    """
+    reference = models.ForeignKey(
+        'SourceReference',
+        on_delete = models.CASCADE,
+        )
+    name = models.CharField(
+        blank=True,
+        null=True,
+        help_text="Enter the Name of the Source Habitat"
+        )
