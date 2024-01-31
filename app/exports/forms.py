@@ -1,12 +1,7 @@
 from django import forms
+from mb.models.models import MasterAttributeGroup
 
-# BROADERTERMS: ('value will be same as the name of master attribute group', 'display value on screen')
-BROADERTERMS = [
-    ('External measurements', 'External measurements'),
-    ('Cranial measurements', 'Cranial measurements'),
-]
-
-#TODO
+BROADERTERMS = [(group.name, group.name) for group in MasterAttributeGroup.objects.all()]
 
 class ETSForm(forms.Form):
     user_email = forms.EmailField(
