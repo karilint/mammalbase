@@ -27,14 +27,14 @@ from .forms import (AttributeRelationForm, ChoiceSetOptionRelationForm
     , SourceEntityRelationForm, SourceMeasurementValueForm
     , SourceReferenceAttributeForm, SourceReferenceForm
     , TaxonomicUnitsForm, TimePeriodForm)
-from .models import (AttributeRelation, ChoiceSetOptionRelation, DietSet
+from .models.models import (AttributeRelation, ChoiceSetOptionRelation, DietSet
     , DietSetItem, EntityRelation, FoodItem
     , MasterAttribute, MasterChoiceSetOption, MasterEntity, MasterReference
     , ProximateAnalysis, ProximateAnalysisItem
     , RelationClass
     , SourceAttribute, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceEntity
     , SourceMeasurementValue, SourceReference, TimePeriod, ViewMasterTraitValue, ViewProximateAnalysisTable)
-from imports.views import import_diet_set, import_ets, import_proximate_analysis
+from imports.views import import_diet_set, import_ets, import_proximate_analysis, import_occurrences
 from imports.tools import *
 from itis.models import TaxonomicUnits
 from itis.views import *

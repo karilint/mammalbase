@@ -2,7 +2,7 @@ from django import forms
 from django_select2.forms import (
     ModelSelect2Widget,
 )
-from .models import (AttributeRelation, ChoiceSetOptionRelation, DietSet, DietSetItem, EntityRelation
+from .models.models import (AttributeRelation, ChoiceSetOptionRelation, DietSet, DietSetItem, EntityRelation
     , FoodItem, MasterAttribute, MasterChoiceSetOption, MasterEntity, MasterReference
     , ProximateAnalysis, ProximateAnalysisItem, SourceAttribute
     , SourceChoiceSetOption, SourceChoiceSetOptionValue

@@ -1,7 +1,7 @@
 from django.db.models import Subquery, OuterRef, F, Q, Case, When, CharField, Value
 from django.db.models.functions import Concat
-from mb.models import SourceMeasurementValue
-from mb.models import UnitConversion
+from mb.models.models import SourceMeasurementValue
+from mb.models.models import UnitConversion
 
 
 def base_query(measurement_choices):
@@ -20,7 +20,7 @@ def base_query(measurement_choices):
             | Q(source_entity__master_entity__is_active=False)
             | Q(source_unit__is_active=False)
             | Q(source_unit__master_unit__is_active=False)
-    )
+    ) #filtteröi onko tiettyjen kysymysten arvot active vai non-active
 
     #  measurement_choices is a list of user choices made in forms.py/views.py.  
     query_filter_list = [Q(source_attribute__master_attribute__attributegrouprelation__group__name=value) for value in measurement_choices]

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
 from tdwg.models import Taxon
-from mb import models
+from mb.models import models
 from itis.models import TaxonomicUnits
 
 admin.site.register([Taxon,])
