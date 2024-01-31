@@ -81,8 +81,7 @@ class BaseImporter:
             return master_reference[0]
         else:
             new_master_reference = self.get_master_reference_from_cross_ref(source_reference.citation, author)
-            if new_master_reference:
-                source_reference.master_reference = new_master_reference                                                                                                                             
+            if new_master_reference:                                                                                                                          
                 return new_master_reference
             else:
                 return None
@@ -94,7 +93,10 @@ class BaseImporter:
             return source_reference[0]
         
         new_reference = SourceReference(citation=citation,status=1, createdBy=author)
+        master_reference = self.get_or_create_master_reference(new_reference, author)
+        new_reference.master_reference = master_reference
         new_reference.save()
+        
         return new_reference
         
     def get_or_create_entity_class(self, taxon_rank: str, author: User):

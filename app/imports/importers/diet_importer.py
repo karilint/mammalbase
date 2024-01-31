@@ -29,35 +29,49 @@ class DietImporter(BaseImporter):
         row_data = {key: func(getattr(row, key)) for key, func in column_functions.items() if key in headers}
 
         # Ensure default values for keys not in headers
-        default_values = {'location': None, 'gender': None, 'sample_size': 0, 'cited_reference': None, 'time_period': None, 'method': None, 'study_time': None}
-        row_data = {**default_values, **row_data}
-
-
-        # Creating or retrieving DietSet object
-        ds_kwargs = {'reference': reference, 'taxon': taxon, 'created_by': author, **row_data}
+        default_values = {'location': None,
+                          'gender': None,
+                          'sample_size': 0,
+                          'cited_reference': None,
+                          'time_period': None,
+                          'method': None,
+                          'study_time': None
+                          }
         
-        # Rename keys to match model attributes
-        model_attribute_mapping = {
-            'sex': 'gender',
-            'individualCount': 'sample_size',
-            'associatedReferences': 'cited_reference',
-            'samplingEffort': 'time_period',
-            'measurementMethod': 'method',
-            'verbatimEventDate': 'study_time',
-            'verbatimLocality': 'location',
+        model = {
+            'gender': row_data['sex'],
+            'sample_size': row_data['individualCount'],
+            'cited_reference': row_data['associatedReferences'],
+            'time_period': row_data['samplingEffort'],
+            'method': row_data['measurementMethod'],
+            'study_time': row_data['verbatimEventDate'],
+            'location': row_data['verbatimLocality'],
+            'reference': reference,
+            'taxon': taxon,
         }
-        for key, value in model_attribute_mapping.items():
-            if key in ds_kwargs:
-                ds_kwargs[value] = ds_kwargs.pop(key)
         
-        ds, created = DietSet.objects.get_or_create(**ds_kwargs)
-        if created:
-            print("New DietSet created:", ds)
-        else:
-            print("Existing DietSet found:", ds)
+        row_data = {**default_values, **model}
+        
+        
+        # Creating or retrieving DietSet object
+        diet_set,  = DietSet.objects.filter(
+            **row_data)
 
-        # Create DietSet item
-        self.create_diet_set_item(row, ds)
+        if diet_set.exists():
+            print("Existing DietSet found")
+            return False
+        else:
+            diet_set = DietSet({
+                'created_by': author,
+                **row_data
+            })
+            diet_set.save()
+            print("New DietSet created:",
+                  diet_set)
+            # Create DietSet item
+            self.create_diet_set_item(row, diet_set)
+            return True
+
         
         
     def create_diet_set_item(self, row, diet_set: DietSet):
