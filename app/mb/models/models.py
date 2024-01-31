@@ -7,6 +7,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from itis.models import TaxonomicUnits
 from tdwg.models import Taxon as TdwgTaxon
 from .base_model import BaseModel
+from .occurrence_models import Occurrence, Event, SourceLocality, SourceHabitat
 
 
 # For doi validation
@@ -596,8 +597,9 @@ class SourceEntity(BaseModel):
         )
     taxon_rank = models.ForeignKey(
         TdwgTaxon,
-        related_name='taxonrank_%(class)s',
+        related_name='taxon_rank_%(class)s',
         on_delete= models.CASCADE,
+        default= None
         )
 
     class Meta:

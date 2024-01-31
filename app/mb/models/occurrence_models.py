@@ -40,6 +40,7 @@ class Occurrence(BaseModel):
         on_delete = models.CASCADE,
         blank=True,
         null=True,
+        related_name='gender_%(class)s',
         limit_choices_to={'choice_set':'Gender'}
         )
     life_stage = models.ForeignKey(
@@ -47,6 +48,7 @@ class Occurrence(BaseModel):
         on_delete = models.SET_NULL,
         blank=True,
         null = True,
+        related_name='life_stage_%(class)s',
         limit_choices_to={'choice_set': 'LifeStage'}
         )
     occurrence_remarks = models.TextField(
@@ -97,36 +99,43 @@ class SourceLocality(BaseModel):
         on_delete=models.CASCADE
         )
     verbatim_eleveation = models.CharField(
+        max_length=250,
         blank=True,
         null=True,
         help_text="The original textual description of the verbatim elevation."
         )
     verbatim_longitude = models.CharField(
+        max_length=250,
         blank=True,
         null=True,
         help_text="The original textual description of the verbatim longitude."
         )
     verbatim_latitude = models.CharField(
+        max_length=250,
         blank=True,
         null=True,
         help_text="The original textual description of the verbatim latitude."
         )
     verbatim_depth = models.CharField(
+        max_length=250,
         blank=True,
         null=True,
         help_text="The original textual description of the verbatim depth."
         )
     verbatim_coordinate_system = models.CharField(
+        max_length=250,
         blank=True,
         null=True,
         help_text="The original textual description of the verbatim coordinate system."
         )
     verbatim_coordinates = models.CharField(
+        max_length=250,
         blank=True,
         null=True,
         help_text="The original textual description of the verbatim coordinates."
         )
     verbatim_srs = models.CharField(
+        max_length=250,
         blank=True,
         null=True,
         help_text="The original textual description of the verbatim spatial reference system."
@@ -141,11 +150,13 @@ class SourceHabitat(BaseModel):
         on_delete = models.CASCADE,
         )
     name = models.CharField(
+        max_length=250,
         blank=True,
         null=True,
         help_text="Enter the Name of the Source Habitat"
         )
     habitatPercentage = models.CharField(
+        max_length=250,
         blank=True,
         null=True,
         help_text="Enter the Percentage of the Source Habitat"
