@@ -1398,34 +1398,35 @@ def create_occurrences(row, headers):
     #create get-functions to get FK-values
 
     attribute_dict = {
-        "reference" : getattr(row, 'references'),
-        "verbatim_scientific_name" : getattr(row, 'verbatimScientificName'),
-        "scientific_name_authorship" : getattr(row, 'scientificNameAuthorship'),
-        "taxon_rank" : getattr(row, 'taxonRank'),
+        "reference" : get_sourcereference_citation(getattr(row, 'references', get_author(getattr(row, 'author')))),
+        "verbatim_scientific_name" : SourceEntity(getattr(row, 'verbatimScientificName')),
         "organism_quantity" : getattr(row, 'organismQuantity'),
         "organism_quantity_type" : getattr(row, 'organismQuantityType'),
-        "gender" : getattr(row, 'sex'),
-        "life_stage" : getattr(row, 'lifeStage'),
-        "verbatim_event_date" : getattr(row, 'verbatimEventDate'),
+        "gender" : ChoiceValue(getattr(row, 'sex')),
+        "life_stage" : ChoiceValue(getattr(row, 'lifeStage')),
         "occurrence_remarks" : getattr(row, 'occurrenceRemarks'),
-        "verbatimL_locality" : getattr(row, 'verbatimLocality'),
-        "verbatim_elevation" : getattr(row, 'verbatimElevation'),
-        "verbatim_depth" : getattr(row, 'verbatimDepth'),
-        "verbatim_coordinates" : getattr(row, 'verbatimCoordinates'),
-        "verbatim_latitude" : getattr(row, 'verbatimLatitude'),
-        "verbatim_longitude" : getattr(row, 'verbatimLongitude'),
-        "verbatim_coordinate_system" : getattr(row, 'verbatimCoordinateSystem'),
-        "verbatim_srs" : getattr(row, 'verbatimSRS'),
-        "author" : getattr(row, 'author'),
         "associated_references" : getattr(row, 'associatedReferences'),
-        "sampling_protocol" : getattr(row, 'samplingProtocol'),
-        "habitat_type" : getattr(row, 'habitatType'),
-        "habitat_percentage" : getattr(row, 'habitatPercentage'),
         "event" : None,
         "location": None,
         
     }
-    
+
+    #"scientific_name_authorship" : getattr(row, 'scientificNameAuthorship'),
+    #"taxon_rank" : getattr(row, 'taxonRank'),
+    #"verbatim_event_date" : getattr(row, 'verbatimEventDate'),
+    #"verbatimL_locality" : getattr(row, 'verbatimLocality'),
+    #"verbatim_elevation" : getattr(row, 'verbatimElevation'),
+    #"verbatim_depth" : getattr(row, 'verbatimDepth'),
+    #"verbatim_coordinates" : getattr(row, 'verbatimCoordinates'),
+    #"verbatim_latitude" : getattr(row, 'verbatimLatitude'),
+    #"verbatim_longitude" : getattr(row, 'verbatimLongitude'),
+    #"verbatim_coordinate_system" : getattr(row, 'verbatimCoordinateSystem'),
+    #"verbatim_srs" : getattr(row, 'verbatimSRS'),
+    #"author" : getattr(row, 'author'),
+    #"sampling_protocol" : getattr(row, 'samplingProtocol'),
+    #"habitat_type" : getattr(row, 'habitatType'),
+    #"habitat_percentage" : getattr(row, 'habitatPercentage'),
+
     occurrence = Occurrence(**attribute_dict)
     occurrence.save()
 
