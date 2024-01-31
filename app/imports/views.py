@@ -8,6 +8,7 @@ from django.urls import reverse
 from utils.views import render	# MB Utils
 from .tools import create_ets, messages, create_dietset, create_proximate_analysis, create_occurrences
 from .checker import Check
+from .importers.occurrence_importer import OccurrencesImporter
 
 
 @login_required
@@ -104,7 +105,7 @@ def import_occurrences(request):
 
 		headers =  list(df.columns.values)
 		for row in df.itertuples():
-			create_occurrences(row, headers)
+			OccurrencesImporter().importRow(row)
 		success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
 		messages.add_message(request, 50 ,success_message, extra_tags="import-message")
 		messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")
