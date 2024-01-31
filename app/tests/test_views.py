@@ -14,7 +14,7 @@ from django.contrib.contenttypes.models import ContentType
 from allauth.socialaccount.models import SocialAccount
 from mb.models.models import EntityClass, MasterReference, SourceAttribute, SourceEntity, SourceLocation, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue, MasterEntity
 from itis.models import Kingdom, TaxonUnitTypes
-from imports.checkers import Check
+from imports.checker import Check
 import imports.tools as tools
 import tempfile, csv, os
 import pandas as pd
