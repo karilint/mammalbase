@@ -1,9 +1,10 @@
 from imports.importers.base_importer import BaseImporter
 from django.db import transaction
 from mb.models import DietSet, DietSetItem
+from mb.models.occurrence_models import Occurrence
 from ..tools import possible_nan_to_none, possible_nan_to_zero, get_choicevalue
 
-class DietImporter(BaseImporter):
+class OccurrencesImporter(BaseImporter):
     
     @transaction.atomic
     def importRow(self, row):
@@ -14,16 +15,20 @@ class DietImporter(BaseImporter):
         reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
         entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
         taxon = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+        verbatimScientificname = taxon
         
         column_functions = {
-            'sex': get_choicevalue,
-            'individualCount': possible_nan_to_zero,
-            'associatedReferences': possible_nan_to_none,
-            'samplingEffort': lambda val: self.get_or_create_time_period(val, reference, author),
-            'measurementMethod': lambda val: self.get_or_create_source_method(val, reference, author),
-            'verbatimEventDate': possible_nan_to_none,
-            'verbatimLocality': lambda val: self.get_or_create_source_location(val, reference, author),
-        }
+            "reference" : reference(getattr(row, 'references', author)),
+            "verbatim_scientific_name" : verbatimScientificname,
+            "organism_quantity" : getattr(row, 'organismQuantity'),
+            "organism_quantity_type" : getattr(row, 'organismQuantityType'),
+            "gender" : get_choicevalue(getattr(row, 'sex')),
+            "life_stage" : get_choicevalue(getattr(row, 'lifeStage')),
+            "occurrence_remarks" : getattr(row, 'occurrenceRemarks'),
+            "associated_references" : getattr(row, 'associatedReferences'),
+            "event" : None,
+            "location": None,
+          }
         
         # Dictionary comprehension for conditional assignments
         row_data = {key: func(getattr(row, key)) for key, func in column_functions.items() if key in headers}
@@ -80,4 +85,4 @@ class DietImporter(BaseImporter):
             dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage) 
             dietsetitem.save()
 
-DietImpoter = DietImporter()
+OccurrencesImpoter = OccurrencesImporter()
