@@ -21,6 +21,7 @@ from mb.models.models import ChoiceValue, DietSet, EntityClass, MasterReference,
 from mb.models.models import SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod
 from mb.models.models import SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation
 from mb.models.models import MasterEntity, ProximateAnalysisItem, ProximateAnalysis
+from mb.models.occurrence_models import *
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 import itis.views as itis
 from config.settings import ITIS_CACHE
@@ -1397,21 +1398,37 @@ def create_occurrences(row, headers):
     #create get-functions to get FK-values
 
     attribute_dict = {
-        "organismQuantity" : getattr(row, 'organismQuantity'),
-        "organismQuantityType" : getattr(row, 'organismQuantityType'),
-        "sex" : getattr(row, 'sex'),
-        #"lifeStage" = getattr(row, 'lifeStage'),
-        "occurrenceRemarks" : getattr(row, 'occurrenceRemarks'),
-        "associatedReferences" : getattr(row, 'associatedReferences')
+        "reference" : getattr(row, 'references'),
+        "verbatim_scientific_name" : getattr(row, 'verbatimScientificName'),
+        "scientific_name_authorship" : getattr(row, 'scientificNameAuthorship'),
+        "taxon_rank" : getattr(row, 'taxonRank'),
+        "organism_quantity" : getattr(row, 'organismQuantity'),
+        "organism_quantity_type" : getattr(row, 'organismQuantityType'),
+        "gender" : getattr(row, 'sex'),
+        "life_stage" : getattr(row, 'lifeStage'),
+        "verbatim_event_date" : getattr(row, 'verbatimEventDate'),
+        "occurrence_remarks" : getattr(row, 'occurrenceRemarks'),
+        "verbatimL_locality" : getattr(row, 'verbatimLocality'),
+        "verbatim_elevation" : getattr(row, 'verbatimElevation'),
+        "verbatim_depth" : getattr(row, 'verbatimDepth'),
+        "verbatim_coordinates" : getattr(row, 'verbatimCoordinates'),
+        "verbatim_latitude" : getattr(row, 'verbatimLatitude'),
+        "verbatim_longitude" : getattr(row, 'verbatimLongitude'),
+        "verbatim_coordinate_system" : getattr(row, 'verbatimCoordinateSystem'),
+        "verbatim_srs" : getattr(row, 'verbatimSRS'),
+        "author" : getattr(row, 'author'),
+        "associated_references" : getattr(row, 'associatedReferences'),
+        "sampling_protocol" : getattr(row, 'samplingProtocol'),
+        "habitat_type" : getattr(row, 'habitatType'),
+        "habitat_percentage" : getattr(row, 'habitatPercentage'),
+        "event" : None,
+        "location": None,
+        
     }
-
-
-
     
-    """
     occurrence = Occurrence(**attribute_dict)
     occurrence.save()
-    """
+
     return
 
 @transaction.atomic
