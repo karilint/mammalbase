@@ -7,7 +7,7 @@ class Occurrence(BaseModel):
     at a particular time.
     """
 
-    reference = models.ForeignKey(
+    source_reference = models.ForeignKey(
         'SourceReference',
         on_delete = models.CASCADE
         )
@@ -15,13 +15,14 @@ class Occurrence(BaseModel):
         'Event',
         on_delete = models.CASCADE
         )
-    location = models.ForeignKey(
+    source_locality = models.ForeignKey(
         'SourceLocality',
         on_delete = models.CASCADE
         )
-    verbatim_scientific_name = models.ForeignKey(
+    source_entity = models.ForeignKey(
         'SourceEntity',
-        on_delete= models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='taxon_%(class)s',
         )
     organism_quantity = models.CharField(
         max_length=50,
@@ -67,13 +68,13 @@ class Event(BaseModel):
     """
     Model representing an event that is associated with an Occurrence.
     """
-    sampling_protocol = models.ForeignKey(
+    source_method = models.ForeignKey(
         'SourceMethod',
         blank=True,
         null=True,
         on_delete=models.CASCADE
         )
-    habitat_type = models.ForeignKey(
+    source_habitat = models.ForeignKey(
         'SourceHabitat',
         blank=True,
         null=True,
@@ -90,11 +91,11 @@ class SourceLocality(BaseModel):
     """
     Model representing a location associated with an Occurrence.
     """
-    reference = models.ForeignKey(
+    source_reference = models.ForeignKey(
         'SourceReference',
         on_delete = models.CASCADE
         )
-    verbatim_locality = models.ForeignKey(
+    source_location = models.ForeignKey(
         'SourceLocation',
         on_delete=models.CASCADE
         )
@@ -145,17 +146,17 @@ class SourceHabitat(BaseModel):
     """
     Model representing a habitat associated with an Occurrence.
     """
-    reference = models.ForeignKey(
+    source_reference = models.ForeignKey(
         'SourceReference',
         on_delete = models.CASCADE,
         )
-    name = models.CharField(
+    habitat_type = models.CharField(
         max_length=250,
         blank=True,
         null=True,
         help_text="Enter the Name of the Source Habitat"
         )
-    habitatPercentage = models.CharField(
+    habitat_percentage = models.CharField(
         max_length=250,
         blank=True,
         null=True,

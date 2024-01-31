@@ -588,18 +588,11 @@ class SourceEntity(BaseModel):
         max_length=250,
         help_text="Enter the Name of the Source Entity"
         )
-    scientific_name_authorship = models.ForeignKey(
+    taxon = models.ForeignKey(
         TdwgTaxon,
         blank=True,
         null=True,
-        related_name='scientific_name_authorship_%(class)s',
         on_delete= models.CASCADE,
-        )
-    taxon_rank = models.ForeignKey(
-        TdwgTaxon,
-        related_name='taxon_rank_%(class)s',
-        on_delete= models.CASCADE,
-        default= None
         )
 
     class Meta:
