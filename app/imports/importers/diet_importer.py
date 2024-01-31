@@ -1,7 +1,7 @@
 from imports.importers.base_importer import BaseImporter
 from django.db import transaction
-from mb.models import DietSet, DietSetItem
-from ..tools import possible_nan_to_none, possible_nan_to_zero, get_choicevalue
+from mb.models.models import DietSet, DietSetItem
+from ..tools import possible_nan_to_none, possible_nan_to_zero
 
 class DietImporter(BaseImporter):
     
@@ -16,7 +16,7 @@ class DietImporter(BaseImporter):
         taxon = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
         
         column_functions = {
-            'sex': get_choicevalue,
+            'sex': self.get_choicevalue,
             'individualCount': possible_nan_to_zero,
             'associatedReferences': possible_nan_to_none,
             'samplingEffort': lambda val: self.get_or_create_time_period(val, reference, author),
@@ -93,3 +93,4 @@ class DietImporter(BaseImporter):
         if len(old_ds) == 0:
             dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage) 
             dietsetitem.save()
+

@@ -2,13 +2,14 @@ import re
 from django.db import transaction
 import pandas as pd
 import requests
-from mb.models import User, SourceReference, MasterReference, EntityClass, SourceEntity, EntityRelation, MasterEntity, SourceLocation, TimePeriod, SourceMethod
+from mb.models.models import SourceReference, MasterReference, EntityClass, SourceEntity, EntityRelation, MasterEntity, SourceLocation, TimePeriod, SourceMethod, ChoiceValue
 from ..tools import make_harvard_citation_journalarticle
 from datetime import timedelta
 from config.settings import ITIS_CACHE
 from requests_cache import CachedSession
 import itis.views as itis
 import json
+from django.contrib.auth.models import User
 class BaseImporter:
 
     @transaction.atomic
@@ -239,6 +240,14 @@ class BaseImporter:
             new_source_method = SourceMethod(name=method, reference=source_reference, created_by=author)
             new_source_method.save()
             return new_source_method
+        
+    def get_choicevalue(self, gender: str):
+        if gender == 'nan':
+            return None
+        if gender != '22' or gender != '23':
+            return None
+        choicevalue = ChoiceValue.objects.filter(pk=gender)
+        return choicevalue[0]
             
         
         

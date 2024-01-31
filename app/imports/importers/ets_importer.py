@@ -1,7 +1,8 @@
 from imports.importers.base_importer import BaseImporter
-from tools import possible_nan_to_none, possible_nan_to_zero, get_choicevalue
-from md.models.models import SourceAttribute, SourceReference, SourceEntityClass, SourceMethod, SourceUnit, ChoiceValue, SourceStatistic, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceEntity, User, SourceMeasurementMethod
+from ..tools import possible_nan_to_none, possible_nan_to_zero
+from mb.models.models import SourceAttribute, SourceReference, SourceEntity, SourceMethod, SourceUnit, ChoiceValue, SourceStatistic, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceMeasurementValue
 from django.db import transaction
+from django.contrib.auth.models import User
 
 
 class EtsImporter(BaseImporter):
@@ -110,23 +111,23 @@ class EtsImporter(BaseImporter):
         row_data = {**default_values, **model}
 
         # Creating or retrieving DietSet object
-        source_measurement_method,  = SourceMeasurementMethod.objects.filter(
+        source_measurement,  = SourceMeasurementValue.objects.filter(
             **row_data)
 
-        if source_measurement_method.exists():
+        if source_measurement.exists():
             print("Existing SourceMeasurementMethod found")
             return False
         else:
-            source_measurement_method = SourceMeasurementMethod({
+            source_measurement = SourceMeasurementValue({
                 'created_by': author,
                 **row_data
             })
-            source_measurement_method.save()
+            source_measurement.save()
             print("New SourceMeasurementMethod created:",
-                  source_measurement_method)
+                  source_measurement)
             return True
 
-    def get_or_create_source_attribute(self, name: str, source_reference: SourceReference, entity_class: SourceEntityClass, source_method: SourceMethod, type_value: int, author: User):
+    def get_or_create_source_attribute(self, name: str, source_reference: SourceReference, entity_class: SourceEntity, source_method: SourceMethod, type_value: int, author: User):
         """
         Returns a SourceAttribute object if it exists, otherwise creates it.
         """
