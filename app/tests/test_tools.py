@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes, SynonymLinks
 from allauth.socialaccount.models import SocialAccount
 from mb.models.models import EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue
-from imports.tools import Check
+from imports.checker import Check
 from decimal import Decimal
 import imports.tools as tools
 import tempfile, csv, os

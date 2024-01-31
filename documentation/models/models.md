@@ -11,6 +11,7 @@ classDiagram
 		+String lifeStage
 		+String occurrenceRemarks
 		+String associatedReferences
+		+String sourceReferenceID
     }
     class Event {
 		+String eventID
