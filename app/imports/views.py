@@ -6,7 +6,8 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 
 from utils.views import render	# MB Utils
-from .tools import create_ets, messages, Check, create_dietset, create_proximate_analysis
+from .tools import create_ets, messages, create_dietset, create_proximate_analysis
+from .checker import Check
 
 
 @login_required
