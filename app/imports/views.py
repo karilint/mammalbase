@@ -98,9 +98,9 @@ def import_occurrences(request):
 		
 		
 		#if not check.check_valid_author(df) or not check.check_occurrence_headers(df):
-		if not check.check_occurrence_headers(df):
-				print("error")
-				return HttpResponseRedirect(reverse("import_occurrences"))
+		#if not check.check_occurrence_headers(df):
+				#print("error")
+				#return HttpResponseRedirect(reverse("import_occurrences"))
 
 		headers =  list(df.columns.values)
 		for row in df.itertuples():

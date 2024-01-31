@@ -62,7 +62,7 @@ class Check:
             "habitatType",
             "habitatPercentage"
         ]
-
+        
         #TODO: here add header validity checking, like this (in pseudocode):
         if not (
             self.check_references(df, force=False) and
@@ -91,6 +91,7 @@ class Check:
         ):
             messages.error(self.request, "The import file does not in correct format.")
             return False
+        
 
         headers = list(df.colums.values)
 
