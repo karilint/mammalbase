@@ -1,16 +1,17 @@
 from imports.importers.base_importer import BaseImporter
+from ..tools import possible_nan_to_none, possible_nan_to_zero
+from mb.models.models import SourceAttribute, SourceReference, SourceEntity, SourceMethod, SourceUnit, ChoiceValue, SourceStatistic, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceMeasurementValue
 from django.db import transaction
-from mb.models.models import ChoiceValue
-from mb.models.occurrence_models import Occurrence
+from django.contrib.auth.models import User
 
 class OccurrencesImporter(BaseImporter):
     
     @transaction.atomic
-    def importRow(self, row):
-        #headers = list(row.columns.values)
+    def importRow(self, row, headers):
         
         # Common assignments
-        author = self.get_author(getattr(row, 'author')) # toimii jos tyyliin author = "kissa"
+        #author = self.get_author(getattr(row, 'author')) # toimii jos tyyliin 
+        author = self.get_author(getattr(row, 'author'))
         reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
         entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
         taxon = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
