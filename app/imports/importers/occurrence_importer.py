@@ -12,7 +12,7 @@ class OccurrencesImporter(BaseImporter):
         
         # Common assignments
         #author = self.get_author(getattr(row, 'author')) # toimii jos tyyliin 
-        author = self.get_author(getattr(row, 'author'))
+        author = "kissa" #self.get_author(getattr(row, 'author'))
         reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
         entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
         taxon = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)

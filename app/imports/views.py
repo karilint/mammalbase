@@ -100,7 +100,7 @@ def import_occurrences(request):
 	
 	try:
 		csv_file = request.FILES["csv_file"]
-		df = pd.read_csv(csv_file, sep='\t')
+		df = pd.read_csv(csv_file, sep=';')
 		check = Check(request)
 		
 		
