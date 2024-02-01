@@ -10,6 +10,7 @@ from .tools import messages, create_proximate_analysis
 from .checker import Check
 from .importers.diet_importer import DietImporter
 from .importers.ets_importer import EtsImporter
+from .importers.occurrence_importer import OccurrencesImporter
 
 
 @login_required
