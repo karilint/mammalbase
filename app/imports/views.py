@@ -108,8 +108,9 @@ def import_occurrences(request):
 		#	return HttpResponseRedirect(reverse("import_occurrences"))
 
 		headers =  list(df.columns.values)
+		occ_importer=OccurrencesImporter()
 		for row in df.itertuples():
-			OccurrencesImporter().importRow(row)
+			occ_importer.importRow(row)
 		success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
 		messages.add_message(request, 50 ,success_message, extra_tags="import-message")
 		messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")

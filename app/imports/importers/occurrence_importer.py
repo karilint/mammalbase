@@ -7,17 +7,17 @@ class OccurrencesImporter(BaseImporter):
     
     @transaction.atomic
     def importRow(self, row):
-        headers = list(row.columns.values)
+        #headers = list(row.columns.values)
         
         # Common assignments
-        author = self.get_author(getattr(row, 'author'))
+        author = self.get_author(getattr(row, 'author')) # toimii jos tyyliin author = "kissa"
         reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
         entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
         taxon = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
         verbatimScientificname = taxon
         
         column_functions = {
-            "source_reference" : reference(getattr(row, 'references', author)),
+            "source_reference" : getattr(row, 'references', author),
             "event" : None,
             "source_locality" : None,
             "source_entity" : None,
