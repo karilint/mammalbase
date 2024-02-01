@@ -3,6 +3,7 @@ from ..tools import possible_nan_to_none, possible_nan_to_zero
 from mb.models.models import SourceAttribute, SourceReference, SourceEntity, SourceMethod, SourceUnit, ChoiceValue, SourceStatistic, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceMeasurementValue
 from django.db import transaction
 from django.contrib.auth.models import User
+from mb.models.occurrence_models import Occurrence
 
 class OccurrencesImporter(BaseImporter):
     
@@ -56,7 +57,7 @@ class OccurrencesImporter(BaseImporter):
             if key in ds_kwargs:
                 ds_kwargs[value] = ds_kwargs.pop(key)
         
-        ds, created = DietSet.objects.get_or_create(**ds_kwargs)
+        ds, created = Occurrence.objects.get_or_create(**ds_kwargs)
         if created:
             print("New  created:", ds)
         else:
