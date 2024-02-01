@@ -588,6 +588,7 @@ class SourceEntity(BaseModel):
         max_length=250,
         help_text="Enter the Name of the Source Entity"
         )
+    
     taxon = models.ForeignKey(
         TdwgTaxon,
         blank=True,
