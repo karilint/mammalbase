@@ -1,8 +1,7 @@
 from imports.importers.base_importer import BaseImporter
 from django.db import transaction
-from mb.models import DietSet, DietSetItem
+from mb.models.models import ChoiceValue
 from mb.models.occurrence_models import Occurrence
-from ..tools import possible_nan_to_none, possible_nan_to_zero, get_choicevalue
 
 class OccurrencesImporter(BaseImporter):
     
@@ -18,17 +17,18 @@ class OccurrencesImporter(BaseImporter):
         verbatimScientificname = taxon
         
         column_functions = {
-            "reference" : reference(getattr(row, 'references', author)),
-            "verbatim_scientific_name" : verbatimScientificname,
+            "source_reference" : reference(getattr(row, 'references', author)),
+            "event" : None,
+            "source_locality" : None,
+            "source_entity" : None,
             "organism_quantity" : getattr(row, 'organismQuantity'),
             "organism_quantity_type" : getattr(row, 'organismQuantityType'),
-            "gender" : get_choicevalue(getattr(row, 'sex')),
-            "life_stage" : get_choicevalue(getattr(row, 'lifeStage')),
+            "verbatim_scientific_name" : verbatimScientificname,          
+            "gender" : ChoiceValue(getattr(row, 'sex')),
+            "life_stage" : ChoiceValue(getattr(row, 'lifeStage')),
             "occurrence_remarks" : getattr(row, 'occurrenceRemarks'),
             "associated_references" : getattr(row, 'associatedReferences'),
-            "event" : None,
-            "location": None,
-          }
+        }
         
         # Dictionary comprehension for conditional assignments
         row_data = {key: func(getattr(row, key)) for key, func in column_functions.items() if key in headers}
@@ -57,32 +57,13 @@ class OccurrencesImporter(BaseImporter):
         
         ds, created = DietSet.objects.get_or_create(**ds_kwargs)
         if created:
-            print("New DietSet created:", ds)
+            print("New  created:", ds)
         else:
             print("Existing DietSet found:", ds)
-
-        # Create DietSet item
-        self.create_diet_set_item(row, ds)
         
-        
-    def create_diet_set_item(self, row, diet_set: DietSet):
-        """
-        Creates a DietSetItem object from a row of data and a DietSet object.
-        """
-        headers = list(row.columns.values)
-        if 'PartOfOrganism' in headers:
-            food_item = self.get_food_item(getattr(row, 'verbatimAssociatedTaxa'), possible_nan_to_none(getattr(row, 'PartOfOrganism')))
-        else:
-            food_item = self.get_food_item(getattr(row, 'verbatimAssociatedTaxa'), None)
-        list_order = getattr(row, 'sequence')
-        if 'measurementValue' in headers:
-            percentage = round(possible_nan_to_zero(getattr(row, 'measurementValue')), 3)
-        else:
-            percentage = 0
-        old_ds = DietSetItem.objects.filter(diet_set=diet_set, food_item=food_item, list_order=list_order)
+        new_occurrence = Occurrence(**column_functions)
+        new_occurrence.save()
+    
 
-        if len(old_ds) == 0:
-            dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage) 
-            dietsetitem.save()
 
 OccurrencesImpoter = OccurrencesImporter()
