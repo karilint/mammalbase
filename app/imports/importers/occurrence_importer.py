@@ -12,12 +12,13 @@ class OccurrencesImporter(BaseImporter):
         
         # Common assignments
         #author = self.get_author(getattr(row, 'author')) # toimii jos tyyliin 
-        author = "kissa" 
+        author = "admin" 
         reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
-        #entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
-        #verbatimScientificname = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
-         
-        
+        entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
+        verbatimScientificname = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+
+
+        # Maybe neccessary later?
         column_functions = {
             "source_reference" : reference,
             "event" : None,
@@ -25,21 +26,28 @@ class OccurrencesImporter(BaseImporter):
             "source_entity" : None,
             "organism_quantity" : getattr(row, 'organismQuantity'),
             "organism_quantity_type" : getattr(row, 'organismQuantityType'),
-            #"verbatim_scientific_name" : None,          
+            "verbatim_scientific_name" : verbatimScientificname,  # NOT IN USE!        
             "gender" : self.get_choicevalue(getattr(row, 'sex')),
             "life_stage" : self.get_choicevalue(getattr(row, 'lifeStage')),
             "occurrence_remarks" : getattr(row, 'occurrenceRemarks'),
             "associated_references" : getattr(row, 'associatedReferences'),
         }
         
-
-        
-        created = Occurrence.objects.get_or_create(**column_functions)
-        if created:
-            print("New  created:")
-        else:
-            print("Existing DietSet found:")
-        
+        created = None
+        try:
+            created = Occurrence.objects.get_or_create(source_reference=reference, event=None, source_locality=None, source_entity=None,
+                                                       organism_quantity=getattr(row, 'organismQuantity'), organism_quantity_type=getattr(row, 'organismQuantityType'), gender=self.get_choicevalue(getattr(row, 'sex')), 
+                                                       life_stage=self.get_choicevalue(getattr(row, 'lifeStage')),
+                                                       occurrence_remarks=getattr(row, 'occurrenceRemarks'), associated_references=getattr(row, 'associatedReferences'))
+            if created:
+                print("New Occurrence created " + str(created))
+            else:
+                print("Existing Occurrence found")
+            return True
+        except Exception as error:
+            print("error in importing: " + str(error))
+            return False
+     
     
 
 

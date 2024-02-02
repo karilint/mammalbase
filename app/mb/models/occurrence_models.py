@@ -13,7 +13,9 @@ class Occurrence(BaseModel):
         )
     event = models.ForeignKey(
         'Event',
-        on_delete = models.CASCADE
+        on_delete = models.CASCADE,
+        blank=True,
+        null=True
         )
     source_locality = models.ForeignKey(
         'SourceLocality',
