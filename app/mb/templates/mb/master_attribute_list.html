@@ -21,6 +21,7 @@
           <th>Trait</th>
           <th>Unit</th>
           <th>Reference</th>
+          <th>Attribute Group</th>
         </tr>
       </thead>
       <tbody>
@@ -29,6 +30,7 @@
             <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_attribute-detail' pk=x.pk %}">{{ x.name }} <span class="fa fa-link w3-small"></span></a></td>
             <td>{{ x.unit.print_name }}</td>
             <td>{{ x.reference|safe }}</td>
+            <td>{{ x.group }}</td>
         </tr>
         {% endfor %}
       </tbody>
