@@ -21,7 +21,6 @@ class BaseImporter:
         Return User object for the given social_id
         """
         author = User.objects.filter(socialaccount__uid=social_id)
-        print(str(author))
         if author.count() == 1:
             return author[0]
         else:
