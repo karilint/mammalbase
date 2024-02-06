@@ -88,6 +88,10 @@ class BaseImporter:
                 return None
         
     def get_or_create_source_reference(self, citation: str, author: User):
+        # here add a real validation for citation and author
+        if (citation.lower() == "nan" or citation == None) or (author.lower() == "nan" or author == None):
+            raise Exception("SourceReference is not valid!")
+
         source_reference = SourceReference.objects.filter(citation__iexact=citation)
         
         if source_reference.count() == 1:
