@@ -39,7 +39,7 @@
     </tr>
     <tr>
       <th class="w3-quarter">Attribute Group:</th>
-      <td class="w3-threequarter>">{{ attribute_group }}</td>
+      <td class="w3-threequarter">{{ attribute_group }}</td>
     </tr>
     <tr>
       <th class="w3-quarter">Reference:</th>
@@ -111,7 +111,7 @@
           <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ sa.source_attribute }} <span class="fa fa-link w3-small"></span></a></td>
         {% endif %}
         <td title="{{ sa.source_attribute.reference|safe }}">{{ sa.source_attribute.reference|truncatechars:50|safe }}</td>
-        <td title="source method">{{ sa.source_attribute.method |default_if_none:"-" }}</td>
+        <td class="mb-private-internal" title="sa.source_attribute.method|safe">{{ sa.source_attribute.method |default_if_none:"-" }}</td>
       </tr>
       {% endfor %}
       {% else %}
