@@ -19,7 +19,8 @@ class Occurrence(BaseModel):
         )
     source_location = models.ForeignKey(
         'SourceLocation',
-        on_delete = models.CASCADE
+        on_delete = models.CASCADE,
+        default=None
         )
     source_entity = models.ForeignKey(
         'SourceEntity',
