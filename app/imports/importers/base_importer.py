@@ -11,6 +11,9 @@ import itis.views as itis
 import json
 from django.contrib.auth.models import User
 class BaseImporter:
+    """
+    Base class for all importers
+    """
 
     @transaction.atomic
     def importRow(self, row : pd.Series):
