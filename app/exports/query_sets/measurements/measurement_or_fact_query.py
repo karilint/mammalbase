@@ -59,7 +59,7 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         ),
         sa_name=F('source_choiceset_option__source_attribute__name'),
         sco_name=F('source_choiceset_option__name'),
-        ma_name=F('source_choiceset_option__source_attribute__master_attribute')
+        ma_name=F('source_choiceset_option__source_attribute__master_attribute__name')
     )
 
 
