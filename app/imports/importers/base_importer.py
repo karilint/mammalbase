@@ -2,14 +2,18 @@ import re
 from django.db import transaction
 import pandas as pd
 import requests
-from mb.models import User, SourceReference, MasterReference, EntityClass, SourceEntity, EntityRelation, MasterEntity, SourceLocation, TimePeriod, SourceMethod
+from mb.models.models import SourceReference, MasterReference, EntityClass, SourceEntity, EntityRelation, MasterEntity, SourceLocation, TimePeriod, SourceMethod, ChoiceValue
 from ..tools import make_harvard_citation_journalarticle
 from datetime import timedelta
 from config.settings import ITIS_CACHE
 from requests_cache import CachedSession
 import itis.views as itis
 import json
+from django.contrib.auth.models import User
 class BaseImporter:
+    """
+    Base class for all importers
+    """
 
     @transaction.atomic
     def importRow(self, row : pd.Series):
@@ -81,8 +85,7 @@ class BaseImporter:
             return master_reference[0]
         else:
             new_master_reference = self.get_master_reference_from_cross_ref(source_reference.citation, author)
-            if new_master_reference:
-                source_reference.master_reference = new_master_reference                                                                                                                             
+            if new_master_reference:                                                                                                                          
                 return new_master_reference
             else:
                 return None
@@ -94,7 +97,10 @@ class BaseImporter:
             return source_reference[0]
         
         new_reference = SourceReference(citation=citation,status=1, createdBy=author)
+        master_reference = self.get_or_create_master_reference(new_reference, author)
+        new_reference.master_reference = master_reference
         new_reference.save()
+        
         return new_reference
         
     def get_or_create_entity_class(self, taxon_rank: str, author: User):
@@ -237,6 +243,14 @@ class BaseImporter:
             new_source_method = SourceMethod(name=method, reference=source_reference, created_by=author)
             new_source_method.save()
             return new_source_method
+        
+    def get_choicevalue(self, gender: str):
+        if gender == 'nan':
+            return None
+        if gender != '22' or gender != '23':
+            return None
+        choicevalue = ChoiceValue.objects.filter(pk=gender)
+        return choicevalue[0]
             
         
         
