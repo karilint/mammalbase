@@ -65,11 +65,11 @@ class BaseModel(models.Model):
             if rel.on_delete == models.CASCADE and hasattr(rel.related_model, 'is_active'):
                 related_manager = getattr(self, rel.get_accessor_name())
                 related_objects = related_manager.all()
-                
+
                 # Recursively soft delete the related objects
                 for related_obj in related_objects:
                     related_obj.delete()  # This will ensure related objects of related_obj are also soft-deleted
-        
+
         # Soft delete the current object
         self.is_active = False
         self.save()
@@ -303,7 +303,7 @@ class MasterAttribute(BaseModel):
     max_allowed_value = models.CharField(blank=True, null=True, max_length=25, help_text="Enter maximum value for the Master Attribute")
     description = models.TextField(blank=True, null=True, max_length=500, help_text="Enter description for the Master Attribute")
     remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Master Attribute")
-    # Add description-field 
+    # Add description-field
     groups = models.ManyToManyField('MasterAttributeGroup', through='AttributeGroupRelation')
 
     value_type = models.CharField(max_length=25, choices=TYPE, default='character', help_text='Select the valueType of the MasterAttribute')
@@ -775,7 +775,7 @@ class SourceMeasurementValue(BaseModel):
         String for representing the Model object (in Admin site etc.)
         """
         return '%s: %s ' % (self.source_attribute.name, str(self.n_total))
-    
+
     # Used to calculate the quality of the measurement data
     def calculate_data_quality_score_for_measurement(self):
         score = 0
@@ -792,7 +792,7 @@ class SourceMeasurementValue(BaseModel):
             score += 2
         elif citation != None:
             score += 1
-        
+
         #3 weight of source quality in the diet
         source_type = self.source_entity.reference.master_reference.type
         print(source_type)
@@ -822,7 +822,7 @@ class SourceMeasurementValue(BaseModel):
             score += 1
 
         return score
-    
+
 class SourceMethod(BaseModel):
     """
     Model representing a Source Method in MammalBase
@@ -1142,26 +1142,23 @@ class DietSet(BaseModel):
         String for representing the Model object (in Admin site etc.)
         """
         return '%s - %s ' % (self.taxon, self.reference)
-    
+
     def calculate_data_quality_score(self):
         score = 0
-        if self.time_period:
-            time = self.time_period.time_in_months
-        else:
-            time = 12
-        #1
+
+        # 1. Taxon quality
         entity = self.taxon.entity.name
         if entity == 'Species' or entity == 'Subspecies':
             score += 1
 
-        #2
+        # 2. The weight of having a reported citation of the data in the diet
         c_reference = self.cited_reference
         if c_reference == 'Original study':
             score += 2
-        elif c_reference != None:
+        elif c_reference:
             score += 1
 
-        #3
+        # 3. The weight of source quality in the diet
         master = self.reference.master_reference.type
         if master == 'journal-article':
             score += 3
@@ -1169,35 +1166,19 @@ class DietSet(BaseModel):
             score += 2
         elif master == 'dataset':
             score += 1
-        
-        #4
+
+        # 4. The weight of having a described method in the diet
         method = self.method
         if method:
-            print(method)
             score += 2
 
-        # Will be deleted just testing   
-        print(f"this is the entity: {entity}")
-        print(f"this is the cited reference: {c_reference}")
-        print(f"this is master reference: {master}")
-        print(f"this is the method: {method}")
-        #5 not done 
+        # 5. The weight of food item taxonomy
+        diet_set_items = DietSetItem.objects.filter(diet_set=self, food_item__tsn__rank_id__gt=100)
+        score += 2 * diet_set_items.count()
 
-        if self.taxon.master_entity:
-            print("siuuu")
-        txn = self.taxon.master_entity.all()
-        if txn:
-            print("setti irti!")
-            print(txn[0].taxon.kingdom)
-
-        print(txn)
-        test = self.dietsetitem_set.all()
-        for i in test:
-            if i.food_item.tsn != None:
-                print(i.food_item.tsn.kingdom_id)
-        print(f"this is the end")
-        weighted_score = score*(time/12)
         return score
+
+
 
 
 class DietSetItem(BaseModel):
