@@ -17,8 +17,8 @@ class Occurrence(BaseModel):
         blank=True,
         null=True
         )
-    source_locality = models.ForeignKey(
-        'SourceLocality',
+    source_location = models.ForeignKey(
+        'SourceLocation',
         on_delete = models.CASCADE
         )
     source_entity = models.ForeignKey(
@@ -87,61 +87,6 @@ class Event(BaseModel):
         blank=True,
         null=True,
         help_text="The verbatim original representation of the date and time information for an Event."
-        )
-
-class SourceLocality(BaseModel):
-    """
-    Model representing a location associated with an Occurrence.
-    """
-    source_reference = models.ForeignKey(
-        'SourceReference',
-        on_delete = models.CASCADE
-        )
-    source_location = models.ForeignKey(
-        'SourceLocation',
-        on_delete=models.CASCADE
-        )
-    verbatim_eleveation = models.CharField(
-        max_length=250,
-        blank=True,
-        null=True,
-        help_text="The original textual description of the verbatim elevation."
-        )
-    verbatim_longitude = models.CharField(
-        max_length=250,
-        blank=True,
-        null=True,
-        help_text="The original textual description of the verbatim longitude."
-        )
-    verbatim_latitude = models.CharField(
-        max_length=250,
-        blank=True,
-        null=True,
-        help_text="The original textual description of the verbatim latitude."
-        )
-    verbatim_depth = models.CharField(
-        max_length=250,
-        blank=True,
-        null=True,
-        help_text="The original textual description of the verbatim depth."
-        )
-    verbatim_coordinate_system = models.CharField(
-        max_length=250,
-        blank=True,
-        null=True,
-        help_text="The original textual description of the verbatim coordinate system."
-        )
-    verbatim_coordinates = models.CharField(
-        max_length=250,
-        blank=True,
-        null=True,
-        help_text="The original textual description of the verbatim coordinates."
-        )
-    verbatim_srs = models.CharField(
-        max_length=250,
-        blank=True,
-        null=True,
-        help_text="The original textual description of the verbatim spatial reference system."
         )
 
 class SourceHabitat(BaseModel):

@@ -619,7 +619,52 @@ class SourceLocation(BaseModel):
         'SourceReference',
         on_delete = models.CASCADE,
         )
-    name = models.CharField(max_length=250, help_text="Enter the Name of the Source Location")
+    name = models.CharField(
+        max_length=250,
+        help_text="Enter the Name of the Source Location"
+        )
+    verbatim_eleveation = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="The original textual description of the verbatim elevation."
+        )
+    verbatim_longitude = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="The original textual description of the verbatim longitude."
+        )
+    verbatim_latitude = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="The original textual description of the verbatim latitude."
+        )
+    verbatim_depth = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="The original textual description of the verbatim depth."
+        )
+    verbatim_coordinate_system = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="The original textual description of the verbatim coordinate system."
+        )
+    verbatim_coordinates = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="The original textual description of the verbatim coordinates."
+        )
+    verbatim_srs = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="The original textual description of the verbatim spatial reference system."
+        )
 
     class Meta:
         ordering = ['name']
