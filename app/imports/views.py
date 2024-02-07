@@ -10,6 +10,7 @@ from .tools import messages, create_proximate_analysis
 from .checker import Check
 from .importers.diet_importer import DietImporter
 from .importers.ets_importer import EtsImporter
+from .importers.occurrence_importer import OccurrencesImporter
 
 
 @login_required
@@ -75,6 +76,7 @@ def import_ets(request):
 		df = pd.read_csv(csv_file, sep='\t')
 		check = Check(request)
 
+		
 		if not check.check_valid_author(df) or not check.check_all_ets(df):
 			return HttpResponseRedirect(reverse("import_ets"))
 
@@ -98,15 +100,18 @@ def import_occurrences(request):
 	
 	try:
 		csv_file = request.FILES["csv_file"]
-		df = pd.read_csv(csv_file, sep=';')
+		df = pd.read_csv(csv_file, sep='\t')
 		check = Check(request)
-
-		#if not check.check_valid_author(df) or not check.check_all_occurrences(df):
-		#		return HttpResponseRedirect(reverse("import_occurrences"))
+		
+		
+		#if not check.check_valid_author(df) or not check.check_occurrence_headers(df):
+		#	print("error")
+		#	return HttpResponseRedirect(reverse("import_occurrences"))
 
 		headers =  list(df.columns.values)
+		occ_importer=OccurrencesImporter()
 		for row in df.itertuples():
-			create_occurrences(row)
+			occ_importer.importRow(row, headers)
 		success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
 		messages.add_message(request, 50 ,success_message, extra_tags="import-message")
 		messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")

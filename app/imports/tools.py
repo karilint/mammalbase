@@ -21,6 +21,7 @@ from mb.models.models import ChoiceValue, DietSet, EntityClass, MasterReference,
 from mb.models.models import SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod
 from mb.models.models import SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation
 from mb.models.models import MasterEntity, ProximateAnalysisItem, ProximateAnalysis
+from mb.models.occurrence_models import *
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 import itis.views as itis
 from config.settings import ITIS_CACHE
