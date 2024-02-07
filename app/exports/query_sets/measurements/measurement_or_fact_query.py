@@ -2,6 +2,7 @@ from django.db.models import F, Value, CharField, Case, When, Subquery, Min, Q
 from django.db.models.functions import Concat, Replace
 from exports.query_sets.custom_db_functions import Round2
 from datetime import timezone, datetime, timedelta
+from mb.models.models import SourceChoiceSetOptionValue
 
 from exports.query_sets.measurements.base_query import base_query
 
@@ -16,6 +17,7 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         Returns the query and fields whereof non active values are excluded.
     """
     base = base_query(measurement_choices)
+
 
     non_active = (
           Q(source_entity__master_entity__entity__is_active=False)
@@ -47,6 +49,19 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
                     Value(' at https://mammalbase.net/me/'),
                     output_field=CharField()
                 )
+
+    nominal_query = SourceChoiceSetOptionValue.objects.annotate(
+        entity_id=Concat(
+            Value('http://localhost:8000/sav/'),
+            'id',
+            Value('/'),
+            output_field=CharField()
+        ),
+        sa_name=F('source_choiceset_option__source_attribute__name'),
+        sco_name=F('source_choiceset_option__name'),
+        ma_name=F('source_choiceset_option__source_attribute__master_attribute')
+    )
+
 
     query = base.exclude(non_active).annotate(
         measurement_id=Concat(
@@ -121,8 +136,12 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
     if measurement_choices[0] == "Nominal traits":
         # TODO: Find fields in query and export to spreadsheet here
         fields = [
-            ('measurement_id','measurementID'),
+            ('entity_id','traitID'),
+            ('sa_name', 'sourceattributeName'),
+            ('sco_name', 'sourcechoicesetoptionName'),
+            ('ma_name', 'masterattributeName')
         ]
+        return nominal_query, fields
     elif measurement_choices[0] in ('External measurements', 'Cranial measurements'):    
         fields = [
             ('measurement_id','measurementID'),
@@ -142,9 +161,10 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
             ('measurement_accuracy', 'measurementAccuracy'),
             ('source_statistic__name', 'statisticalMethod')
         ]
+        return query, fields
     else:
         fields = [
             ("id",f'Unknown choice: {measurement_choices[0]}')
         ]
 
-    return query, fields
+        return query, fields
