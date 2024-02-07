@@ -775,7 +775,54 @@ class SourceMeasurementValue(BaseModel):
         String for representing the Model object (in Admin site etc.)
         """
         return '%s: %s ' % (self.source_attribute.name, str(self.n_total))
+    
+    # Used to calculate the quality of the measurement data
+    def calculate_data_quality_score_for_measurement(self):
+        score = 0
+        #1 taxon quality ??? Might not be done the right way need to confirm this
+        txn = self.source_entity.entity.name
+        print(txn)
+        if txn == 'Species' or txn == 'Subspecies':
+            score += 1
 
+        #2 weight of having a reported citation of the data
+        citation = self.cited_reference
+        print(citation)
+        if citation == 'Original study':
+            score += 2
+        elif citation != None:
+            score += 1
+        
+        #3 weight of source quality in the diet
+        source_type = self.source_entity.reference.master_reference.type
+        print(source_type)
+        if source_type == 'journal-article':
+            score += 3
+        elif source_type == 'book':
+            score += 2
+        elif source_type == 'data set':
+            score += 1
+
+        #4 weight of having a described method in the method
+        method = self.source_attribute.method
+        print(method)
+        if method:
+            score += 1
+
+        #5 weight of having individual count
+        if self.n_total != 0:
+            score += 1
+
+        #6 weight of having minimum and maximum
+        if self.minimum != 0 and self.maximum != 0:
+            score += 1
+
+        #7 weight of having Standard Deviation
+        if self.std != 0:
+            score += 1
+
+        return score
+    
 class SourceMethod(BaseModel):
     """
     Model representing a Source Method in MammalBase
@@ -1095,6 +1142,62 @@ class DietSet(BaseModel):
         String for representing the Model object (in Admin site etc.)
         """
         return '%s - %s ' % (self.taxon, self.reference)
+    
+    def calculate_data_quality_score(self):
+        score = 0
+        if self.time_period:
+            time = self.time_period.time_in_months
+        else:
+            time = 12
+        #1
+        entity = self.taxon.entity.name
+        if entity == 'Species' or entity == 'Subspecies':
+            score += 1
+
+        #2
+        c_reference = self.cited_reference
+        if c_reference == 'Original study':
+            score += 2
+        elif c_reference != None:
+            score += 1
+
+        #3
+        master = self.reference.master_reference.type
+        if master == 'journal-article':
+            score += 3
+        elif master == 'book':
+            score += 2
+        elif master == 'dataset':
+            score += 1
+        
+        #4
+        method = self.method
+        if method:
+            print(method)
+            score += 2
+
+        # Will be deleted just testing   
+        print(f"this is the entity: {entity}")
+        print(f"this is the cited reference: {c_reference}")
+        print(f"this is master reference: {master}")
+        print(f"this is the method: {method}")
+        #5 not done 
+
+        if self.taxon.master_entity:
+            print("siuuu")
+        txn = self.taxon.master_entity.all()
+        if txn:
+            print("setti irti!")
+            print(txn[0].taxon.kingdom)
+
+        print(txn)
+        test = self.dietsetitem_set.all()
+        for i in test:
+            if i.food_item.tsn != None:
+                print(i.food_item.tsn.kingdom_id)
+        print(f"this is the end")
+        weighted_score = score*(time/12)
+        return score
 
 
 class DietSetItem(BaseModel):
