@@ -2,7 +2,8 @@ import re
 from django.db import transaction
 import pandas as pd
 import requests
-from mb.models.models import SourceReference, MasterReference, EntityClass, SourceEntity, EntityRelation, MasterEntity, SourceLocation, TimePeriod, SourceMethod, ChoiceValue
+from mb.models.models import SourceReference, MasterReference, EntityClass, SourceEntity, EntityRelation, MasterEntity, TimePeriod, SourceMethod, ChoiceValue
+from mb.models.location_models import SourceLocation
 from ..tools import make_harvard_citation_journalarticle
 from datetime import timedelta
 from config.settings import ITIS_CACHE
