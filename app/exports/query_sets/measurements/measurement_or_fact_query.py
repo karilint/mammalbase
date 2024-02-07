@@ -117,24 +117,34 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
             F('maximum') * F('coefficient')
         ),
         )
-    
-    fields = [
-        ('measurement_id','measurementID'),
-        ('basis_of_record', 'basisOfRecord'),
-        ('source_entity__reference__master_reference__type', 'basisOfRecordDescription'),
-        ('references', 'references'),
-        ('measurement_resolution', 'measurementResolution'),
-        ('measurement_method', 'measurementMethod'),
-        ('measurement_determinedBy', 'measurementDeterminedBy'),
-        ('measurement_determinedDate', 'measurementDeterminedDate'),
-        ('measurement_remarks', 'measurementRemarks'),
-        ('aggregate_measure', 'aggregateMeasure'),
-        ('individual_count', 'individualCount'),
-        ('dispersion', 'dispersion'),
-        ('measurement_value_min', 'measurementValue_min'),
-        ('measurement_value_max', 'measurementValue_max'),
-        ('measurement_accuracy', 'measurementAccuracy'),
-        ('source_statistic__name', 'statisticalMethod')
-    ]
+
+    if measurement_choices[0] == "Nominal traits":
+        # TODO: Find fields in query and export to spreadsheet here
+        fields = [
+            ('measurement_id','measurementID'),
+        ]
+    elif measurement_choices[0] in ('External measurements', 'Cranial measurements'):    
+        fields = [
+            ('measurement_id','measurementID'),
+            ('basis_of_record', 'basisOfRecord'),
+            ('source_entity__reference__master_reference__type', 'basisOfRecordDescription'),
+            ('references', 'references'),
+            ('measurement_resolution', 'measurementResolution'),
+            ('measurement_method', 'measurementMethod'),
+            ('measurement_determinedBy', 'measurementDeterminedBy'),
+            ('measurement_determinedDate', 'measurementDeterminedDate'),
+            ('measurement_remarks', 'measurementRemarks'),
+            ('aggregate_measure', 'aggregateMeasure'),
+            ('individual_count', 'individualCount'),
+            ('dispersion', 'dispersion'),
+            ('measurement_value_min', 'measurementValue_min'),
+            ('measurement_value_max', 'measurementValue_max'),
+            ('measurement_accuracy', 'measurementAccuracy'),
+            ('source_statistic__name', 'statisticalMethod')
+        ]
+    else:
+        fields = [
+            ("id",f'Unknown choice: {measurement_choices[0]}')
+        ]
 
     return query, fields
