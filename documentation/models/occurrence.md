@@ -3,7 +3,7 @@ classDiagram
     class Occurrence {
         FK(SourceReference) source_reference
         FK(Event) event
-        FK(SourceLocality) source_locality
+        FK(SourceLocation) source_location
         FK(SourceEntity) source_entity
         +String organism_quantity
         +String organism_quantity_type
@@ -17,9 +17,9 @@ classDiagram
         FK(SourceHabitat) source_habitat
         +String verbatim_event_date
     }
-    class SourceLocality {
+    class SourceLocation {
         FK(SourceReference) source_reference
-        FK(SourceLocation) source_location
+        +String name
         +String verbatim_elevation
         +String verbatim_depth
         +float verbatim_latitude
@@ -42,12 +42,12 @@ classDiagram
     }
 
     Occurrence "1.." -- "1" Event : event_id
-    Occurrence "1" -- "1" SourceLocality : source_locality_id
+    Occurrence "1" -- "1" SourceLocation : source_location_id
     Occurrence "1.." -- "1" SourceEntity : source_entity_id
     Occurrence "1.." -- "1" SourceReference : source_reference_id
     Event "1.." -- "1" SourceHabitat : source_habitat_id
     Event "1.." -- "1" SourceMethod : source_method_id
-    SourceLocality "1.." -- "1" SourceReference : source_reference_id
+    SourceLocation "1.." -- "1" SourceReference : source_reference_id
     SourceHabitat "1.." -- "1" SourceReference : source_reference_id
 
 
