@@ -2,7 +2,8 @@ import re
 from django.db import transaction
 import pandas as pd
 import requests
-from mb.models.models import SourceReference, MasterReference, EntityClass, SourceEntity, EntityRelation, MasterEntity, SourceLocation, TimePeriod, SourceMethod, ChoiceValue
+from mb.models.models import SourceReference, MasterReference, EntityClass, SourceEntity, EntityRelation, MasterEntity, TimePeriod, SourceMethod, ChoiceValue
+from mb.models.location_models import SourceLocation
 from ..tools import make_harvard_citation_journalarticle
 from datetime import timedelta
 from config.settings import ITIS_CACHE
@@ -11,6 +12,9 @@ import itis.views as itis
 import json
 from django.contrib.auth.models import User
 class BaseImporter:
+    """
+    Base class for all importers
+    """
 
     @transaction.atomic
     def importRow(self, row : pd.Series):
@@ -21,7 +25,6 @@ class BaseImporter:
         Return User object for the given social_id
         """
         author = User.objects.filter(socialaccount__uid=social_id)
-        print(str(author))
         if author.count() == 1:
             return author[0]
         else:
@@ -89,6 +92,10 @@ class BaseImporter:
                 return None
         
     def get_or_create_source_reference(self, citation: str, author: User):
+        # here add a real validation for citation and author
+        if (citation.lower() == "nan" or citation == None) or (author.lower() == "nan" or author == None):
+            raise Exception("SourceReference is not valid!")
+
         source_reference = SourceReference.objects.filter(citation__iexact=citation)
         
         if source_reference.count() == 1:
@@ -210,7 +217,10 @@ class BaseImporter:
         """
         Return SourceLocation object for the given location or create a new one
         """
-        source_location = SourceLocation.objects.filter(name__iexact=location, reference=source_reference)
+        try:
+            source_location = SourceLocation.objects.filter(name__iexact=location, reference=source_reference)
+        except Exception as error:
+            print("virhe" + str(error))
         if source_location.count() == 1:
             return source_location[0]
         else:

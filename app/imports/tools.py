@@ -18,7 +18,8 @@ from allauth.socialaccount.models import SocialAccount
 from requests_cache import CachedSession
 
 from mb.models.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue
-from mb.models.models import SourceChoiceSetOption, SourceEntity, SourceLocation, SourceMeasurementValue, SourceMethod
+from mb.models.models import SourceChoiceSetOption, SourceEntity, SourceMeasurementValue, SourceMethod
+from mb.models.location_models import SourceLocation
 from mb.models.models import SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation
 from mb.models.models import MasterEntity, ProximateAnalysisItem, ProximateAnalysis
 from mb.models.occurrence_models import *
