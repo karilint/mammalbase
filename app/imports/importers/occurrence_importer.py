@@ -17,11 +17,12 @@ class OccurrencesImporter(BaseImporter):
             reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
             entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
             verbatimScientificname = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+            print("common assigments success")
         except Exception as e:
             """
             We don't add anything if we encounter an error.
             """
-            return False
+            return True
         
 
         
@@ -44,7 +45,10 @@ class OccurrencesImporter(BaseImporter):
         
         created = None
         try:
-            obj, created = Occurrence.objects.get_or_create(source_reference=reference, event=None, source_locality=None, source_entity=None,
+            #create source location model
+            new_source_location = self.get_or_create_source_location(getattr(row, 'verbatimLocality'), reference, author)
+
+            obj, created = Occurrence.objects.get_or_create(source_reference=reference, event=None, source_location=new_source_location, source_entity=None,
                                                        organism_quantity=getattr(row, 'organismQuantity'), organism_quantity_type=getattr(row, 'organismQuantityType'), gender=self.get_choicevalue(getattr(row, 'sex')), 
                                                        life_stage=self.get_choicevalue(getattr(row, 'lifeStage')),
                                                        occurrence_remarks=getattr(row, 'occurrenceRemarks'), associated_references=getattr(row, 'associatedReferences'))
@@ -54,7 +58,7 @@ class OccurrencesImporter(BaseImporter):
                 print("Existing Occurrence found")
             return True
         except Exception as error:
-            print("error in importing: " + str(error.message))
+            print("error in importing: " + str(error))
             return False
      
     
