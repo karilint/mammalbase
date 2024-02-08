@@ -64,27 +64,21 @@ class Validation():
         elif rule == "verbatimScientificName":
             rule_error = self.validate_verbatim_scientific_name(data, field_name, field_rules)
         
-        elif rule == "taxonRank":
-            rule_error = self.validate_taxon_rank(data, field_name, field_rules)
-        
         elif rule == "gender":
             rule_error = self.validate_gender(data, field_name, field_rules)
-        
-        elif rule == "VerbatimAssociatedTaxa":
-            rule_error = self.validate_verbatim_associated_taxa(data, field_name, field_rules)
         
         elif rule.startswith("in"):
             rule_error = self.validate_in_fields(data,field_name, rule)
         
         elif rule == "sequence":
-            rule_error = self.validate_sequence(data, field_name, field_rules)
+            rule_error = self.validate_sequence_fields(data, field_name, field_rules)
         
         elif rule == "measurementValue":
             rule_error = self.validate_measurement_value(data, field_name, field_rules)
         
-        elif rule == "part":
-            rule_error = self.validate_part(data, field_name, field_rules)
-        
+        elif rule == "alpha":
+            rule_error = self.validate_alpha_fields(data,field_name)
+
         elif rule == "in_db":
             rule_error = self.validate_in_db(data, field_name, field_rules)
         
@@ -92,13 +86,16 @@ class Validation():
             rule_error = self.validate_lengths(data, field_name, field_rules)
             
         elif rule == "digits":
-            rule_error = self.validate_integer_fields(data,field_name)
+            rule_error = self.validate_digit_fields(data,field_name)
 
         elif rule.startswith("max"):
             rule_error = self.validate_max_fields(data,field_name,rule)
 
         elif rule.startswith("min"):
             rule_error = self.validate_min_fields(data,field_name,rule)
+        
+        elif rule.startswith("nameYear"):
+            rule_error = self.validate_nameYear_fields(data,field_name,rule)
         
         elif rule.startswith("regex"):
             rule_error = self.validate_regex_fields(data,field_name, rule)
@@ -108,7 +105,7 @@ class Validation():
         
         return rule_error
 
-    def validate_boolean(self, data, field_name):
+    def validate_boolean_fields(self, data, field_name):
         errs = []
         try:
             if data[field_name] != (True or False):
@@ -118,15 +115,26 @@ class Validation():
 
         return errs  
 
-    def validate_integer_fields(self, data, field_name):
+    def validate_digit_fields(self, data, field_name):
         """Used for validating integer fields, returns a list of error messages"""
 
         errs = []
+
         try:
-            if not data[field_name].isdigit():
+            if not isinstance(float(data[field_name]),(int, float)):
                 errs.append(self.return_field_message(field_name,"integer"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'integer'))
+        return errs
+    
+    def validate_nameYear_fields(self, data, field_name):
+        errs = []
+        try:
+            name_year_pattern = r"\((?:\w+(?:,\s*\d{1,4})?|\w+)\)(?:\s*|$)|\w+,\s*\d{1,4}"
+            if not re.match(name_year_pattern, data[field_name]) or data[field_name].count('(') != data[field_name].count(')'):
+                errs.append(self.return_field_message(field_name, "invalid name and year format"))
+        except KeyError:
+            errs.append(self.return_no_field_message(field_name, 'integer'))
         return errs
 
     def validate_date(self, data, field_name):
@@ -154,6 +162,18 @@ class Validation():
             errs.append(self.return_no_field_message(field_name, 'required'))
 
         return errs 
+    
+    def validate_alpha_fields(self, data, field_name):
+        """Used for validating fields for alphabets only, returns a list of error messages"""
+
+        errs = []
+        try:
+            if not data[field_name].isalpha():
+                errs.append(self.return_field_message(field_name,"alpha"))
+        except KeyError:
+            errs.append(self.return_no_field_message(field_name,'alpha'))
+        
+        return errs
 
     def validate_in_fields(self, data, field_name, rule):
         """Used for validating fields for some number of values to allow, returns a list of error messages"""
