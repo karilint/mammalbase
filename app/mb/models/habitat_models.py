@@ -7,8 +7,8 @@ class SourceHabitat(BaseModel):
     """
     master_habitat = models.ManyToManyField(
         'MasterHabitat',
-        through='habitatRelation',
-        through_fields=('source_habitat, master_habitat')
+        through='HabitatRelation',
+        through_fields=('source_habitat', 'master_habitat')
     )
     source_reference = models.ForeignKey(
         'SourceReference',
@@ -34,8 +34,6 @@ class MasterHabitat(BaseModel):
         )
     source_habitat = models.ManyToManyField(
         'SourceHabitat',
-        through='HabitatRelation',
-        through_fields=('master_habitat, source_habitat')
         )
     name = models.CharField(
         max_length=250, 
@@ -43,7 +41,7 @@ class MasterHabitat(BaseModel):
         )
     
     class Meta:
-        ordering = ['name']
+      ordering = ['name']
 
     def get_absolute_url(self):
         """
@@ -63,16 +61,16 @@ class HabitatRelation(BaseModel):
     master_habitat = models.ForeignKey('MasterHabitat', on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('source_habitat', 'master_habitat',)
+      unique_together = ('source_habitat', 'master_habitat',)
 
-        def get_absolute_url(self):
-            """
-            Returns the url to access a particular Source Habitat instance.
-            """
-            return reverse('attribute-relation-detail', args=[str(self.id)])
+    def get_absolute_url(self):
+        """
+        Returns the url to access a particular Source Habitat instance.
+        """
+        return reverse('attribute-relation-detail', args=[str(self.id)])
 
-        def __str__(self):
-            """
-            String for representing the Model object
-            """
-            return '{0} ({1}) {2}'.format(self.source_habitat.habitat_type,self.master_habitat.name,self.master_habitat.reference)
+    def __str__(self):
+        """
+        String for representing the Model object
+        """
+        return '{0} ({1}) {2}'.format(self.source_habitat.habitat_type,self.master_habitat.name,self.master_habitat.reference)
