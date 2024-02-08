@@ -1,5 +1,7 @@
+from base_validation import Validation
 
-class Occurrence_validation():
+
+class Occurrence_validation(Validation):
     rules = {
         "references": "required | min:10 | max:500| regex:.*([1-2][0-9]{3}) | in_db:SourceReference,citation__iexact", #DONE
         "verbatimScientificName": "required | alpha", #Done
@@ -23,7 +25,34 @@ class Occurrence_validation():
         "associatedReferences": "", #DONE, can be anything
         "samplingProtocol": "", #DONE, no possible validator since darincore quote "whereas this term allows for any string literal value." e.g 'Takats et al. 2001. Guidelines for Nocturnal Owl Monitoring in North America. Beaverhill Bird Observatory and Bird Studies Canada, Edmonton, Alberta. 32 pp., http://www.bsc-eoc.org/download/Owl.pdf'
         "habitatType": "", #DONE, no possible validator since darincore quote "whereas this term allows for any string literal value." e.g 'B (bushland): densely growing woody vegetation of shrubby habit, low stature <6 m in height, canopy cover >20%'
-        "habitatPercentage": "digit"
+        "habitatPercentage": "digit" #Done
+    }
+    
+    data = {
+        "references",
+        "verbatimScientificName", 
+        "scientificNameAuthorship",
+        "taxonRank",     
+        "organismQuantity",     
+        "organismQuantityType",     
+        "sex",     
+        "lifeStage",     
+        "verbatimEventDate",     
+        "occurrenceRemarks",     
+        "verbatimLocality",     
+        "verbatimElevation",     
+        "verbatimDepth",     
+        "verbatimCoordinates",     
+        "verbatimLatitude",     
+        "verbatimLongitude",     
+        "verbatimCoordinateSystem",     
+        "verbatimSRS",     
+        "author",     
+        "associatedReferences",     
+        "samplingProtocol",     
+        "habitatType",     
+        "habitatPercentage"
+        
     }
 
 
