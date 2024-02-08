@@ -217,7 +217,10 @@ class BaseImporter:
         """
         Return SourceLocation object for the given location or create a new one
         """
-        source_location = SourceLocation.objects.filter(name__iexact=location, reference=source_reference)
+        try:
+            source_location = SourceLocation.objects.filter(name__iexact=location, reference=source_reference)
+        except Exception as error:
+            print("virhe" + str(error))
         if source_location.count() == 1:
             return source_location[0]
         else:
