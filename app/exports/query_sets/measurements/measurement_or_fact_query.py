@@ -57,9 +57,38 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
             Value('/'),
             output_field=CharField()
         ),
-        sa_name=F('source_choiceset_option__source_attribute__name'),
-        sco_name=F('source_choiceset_option__name'),
-        ma_name=F('source_choiceset_option__source_attribute__master_attribute__name')
+        #sa_name=F('source_choiceset_option__source_attribute__name'),
+        #sco_name=F('source_choiceset_option__name'),
+        #ma_name=F('source_choiceset_option__source_attribute__master_attribute__name'),
+        basis_of_record=Value('literatureData'),
+        basis_of_record_description=F('source_entity__reference__master_reference__type'),
+        references=references,
+        measurement_resolution=Case(
+            When(
+                source_entity__master_entity__entity__name__iendswith='species',
+                then=Value('NA')
+            ),
+            default=Concat(
+                'source_entity__master_entity__entity__name',
+                Value(' level data')
+            )
+        ),
+        measurement_method=Case(
+            When(
+                source_choiceset_option__source_attribute__method__name__exact=None,
+                then=Value('NA')
+            ),
+            default='source_choiceset_option__source_attribute__method__name',
+            output_field=CharField()
+        ),
+        measurement_determinedBy=Value('NA'),
+        measurement_determinedDate=Value('NA'),
+        measurement_remarks=Value('NA'),
+        aggregate_measure=Value('NA'),
+        individual_count=Value('NA'),
+        dispersion=Value('NA'),
+        measurement_value_min=Value('NA'),
+        measurement_value_max=Value('NA')
     )
 
 
@@ -137,9 +166,22 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         # TODO: Find fields in query and export to spreadsheet here
         fields = [
             ('entity_id','traitID'),
-            ('sa_name', 'sourceattributeName'),
-            ('sco_name', 'sourcechoicesetoptionName'),
-            ('ma_name', 'masterattributeName')
+            ('basis_of_record', 'basisOfRecord'),
+            ('source_entity__reference__master_reference__type', 'basisOfRecordDescription'),
+            ('references', 'references'),
+            ('measurement_resolution', 'measurementResolution'),
+            ('measurement_method', 'measurementMethod'),
+            ('measurement_determinedBy', 'measurementDeterminedBy'),
+            ('measurement_determinedDate', 'measurementDeterminedDate'),
+            ('measurement_remarks', 'measurementRemarks'),
+            ('aggregate_measure', 'aggregateMeasure'),
+            ('individual_count', 'individualCount'),
+            ('dispersion', 'dispersion'),
+            ('measurement_value_min', 'measurementValue_min'),
+            ('measurement_value_max', 'measurementValue_max')
+            #('sa_name', 'sourceattributeName'),
+            #('sco_name', 'sourcechoicesetoptionName'),
+            #('ma_name', 'masterattributeName'),
         ]
         return nominal_query, fields
     elif measurement_choices[0] in ('External measurements', 'Cranial measurements'):    
