@@ -57,9 +57,6 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
             Value('/'),
             output_field=CharField()
         ),
-        #sa_name=F('source_choiceset_option__source_attribute__name'),
-        #sco_name=F('source_choiceset_option__name'),
-        #ma_name=F('source_choiceset_option__source_attribute__master_attribute__name'),
         basis_of_record=Value('literatureData'),
         basis_of_record_description=F('source_entity__reference__master_reference__type'),
         references=references,
@@ -179,9 +176,6 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
             ('dispersion', 'dispersion'),
             ('measurement_value_min', 'measurementValue_min'),
             ('measurement_value_max', 'measurementValue_max')
-            #('sa_name', 'sourceattributeName'),
-            #('sco_name', 'sourcechoicesetoptionName'),
-            #('ma_name', 'masterattributeName'),
         ]
         query = nominal_query
     elif measurement_choices[0] in ('External measurements', 'Cranial measurements'):    
