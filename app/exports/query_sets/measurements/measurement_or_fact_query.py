@@ -183,7 +183,7 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
             #('sco_name', 'sourcechoicesetoptionName'),
             #('ma_name', 'masterattributeName'),
         ]
-        return nominal_query, fields
+        query = nominal_query
     elif measurement_choices[0] in ('External measurements', 'Cranial measurements'):    
         fields = [
             ('measurement_id','measurementID'),
@@ -203,10 +203,9 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
             ('measurement_accuracy', 'measurementAccuracy'),
             ('source_statistic__name', 'statisticalMethod')
         ]
-        return query, fields
     else:
         fields = [
             ("id",f'Unknown choice: {measurement_choices[0]}')
         ]
 
-        return query, fields
+    return query, fields
