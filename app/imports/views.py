@@ -116,9 +116,11 @@ def import_occurrences(request):
 		occ_importer=OccurrencesImporter()
 		for row in df.itertuples():
 			created = occ_importer.importRow(row, headers, importing_errors)
+			if created == True:
+				success_rows =+ 1
 
 		if len(importing_errors) > 0:
-			success_message = "File imported successfully with some errors in these rows: "
+			success_message = str(success_rows) + " rows of data was imported successfully with some errors in these rows: "
 
 			for error in importing_errors:
 				success_message = success_message + error
