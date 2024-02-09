@@ -47,7 +47,9 @@ class OccurrencesImporter(BaseImporter):
         try:
             #create source location model
             new_source_location = self.get_or_create_source_location(getattr(row, 'verbatimLocality'), reference, author)
+            print("source location created")
             new_event = Event.objects.get_or_create(verbatim_event_date=getattr(row, 'verbatimEventDate'))
+            print("event created")
 
             obj, created = Occurrence.objects.get_or_create(source_reference=reference, event=new_event, source_location=new_source_location, source_entity=verbatimScientificname,
                                                        organism_quantity=getattr(row, 'organismQuantity'), organism_quantity_type=getattr(row, 'organismQuantityType'), gender=self.get_choicevalue(getattr(row, 'sex')), 
