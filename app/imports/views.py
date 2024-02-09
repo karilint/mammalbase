@@ -108,11 +108,22 @@ def import_occurrences(request):
 		#	print("error")
 		#	return HttpResponseRedirect(reverse("import_occurrences"))
 
+		importing_errors = []
+		success_rows = 0
+		success_message = None
+
 		headers =  list(df.columns.values)
 		occ_importer=OccurrencesImporter()
 		for row in df.itertuples():
-			occ_importer.importRow(row, headers)
-		success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
+			created = occ_importer.importRow(row, headers, importing_errors)
+
+		if len(importing_errors) > 0:
+			success_message = "File imported successfully with some errors in these rows: "
+
+			for error in importing_errors:
+				success_message = success_message + error
+		else:
+			success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
 		messages.add_message(request, 50 ,success_message, extra_tags="import-message")
 		messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")
 		return HttpResponseRedirect(reverse("import_occurrences"))

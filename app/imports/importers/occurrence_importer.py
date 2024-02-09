@@ -6,9 +6,11 @@ from django.contrib.auth.models import User
 from mb.models.occurrence_models import Occurrence, Event
 
 class OccurrencesImporter(BaseImporter):
+
+    
     
     @transaction.atomic
-    def importRow(self, row, headers):
+    def importRow(self, row, headers, importing_errors):
         
         # Common assignments
         try:
@@ -21,7 +23,8 @@ class OccurrencesImporter(BaseImporter):
             """
             We don't add anything if we encounter an error.
             """
-            print("virhe Common assignments " + str(e))
+            importing_errors.append(str(row))
+            print("tapahtui virhe: " + str(e))
             return False
         
 
@@ -47,9 +50,9 @@ class OccurrencesImporter(BaseImporter):
         try:
             #create source location model
             new_source_location = self.get_or_create_source_location(getattr(row, 'verbatimLocality'), reference, author)
-            print("source location created")
-            new_event = Event.objects.get_or_create(verbatim_event_date=getattr(row, 'verbatimEventDate'))
-            print("event created")
+            print("source location created " + str(new_source_location))
+            new_event, created = Event.objects.get_or_create(verbatim_event_date=getattr(row, 'verbatimEventDate'))
+            print("event created " + str(new_event))
 
             obj, created = Occurrence.objects.get_or_create(source_reference=reference, event=new_event, source_location=new_source_location, source_entity=verbatimScientificname,
                                                        organism_quantity=getattr(row, 'organismQuantity'), organism_quantity_type=getattr(row, 'organismQuantityType'), gender=self.get_choicevalue(getattr(row, 'sex')), 

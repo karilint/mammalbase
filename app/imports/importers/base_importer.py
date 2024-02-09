@@ -75,7 +75,8 @@ class BaseImporter:
         except Exception as e:
             print(f"Error: {e}")
             return None
-        
+    
+    # TÄMÄ ON VIRHEELLINEN! MasterReferencellä ei ole kenttää source_reference
     def get_or_create_master_reference(self, source_reference: SourceReference, author: User):
         """
         Return MasterReference object for the given source_reference
@@ -89,7 +90,7 @@ class BaseImporter:
                 return new_master_reference
             else:
                 return None
-        
+    
     def get_or_create_source_reference(self, citation: str, author: User):
         # here add a real validation for citation and author
         if (citation.lower() == "nan" or citation == None) or (str(author).lower() == "nan" or author == None):
@@ -100,11 +101,13 @@ class BaseImporter:
         if source_reference.count() == 1:
             return source_reference[0]
         
+        
         new_reference = SourceReference(citation=citation,status=1, created_by=author)
         master_reference = self.get_or_create_master_reference(new_reference, author)
         new_reference.master_reference = master_reference
         new_reference.save()
-        
+        print("uusi master reference luotu " + str(new_reference))
+
         return new_reference
         
     def get_or_create_entity_class(self, taxon_rank: str, author: User):
