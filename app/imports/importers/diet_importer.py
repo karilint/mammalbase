@@ -1,7 +1,7 @@
 from imports.importers.base_importer import BaseImporter
 from django.db import transaction
-from mb.models import DietSet, DietSetItem
-from ..tools import possible_nan_to_none, possible_nan_to_zero, get_choicevalue
+from mb.models.models import DietSet, DietSetItem
+from ..tools import possible_nan_to_none, possible_nan_to_zero
 
 class DietImporter(BaseImporter):
     
@@ -16,7 +16,7 @@ class DietImporter(BaseImporter):
         taxon = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
         
         column_functions = {
-            'sex': get_choicevalue,
+            'sex': self.get_choicevalue,
             'individualCount': possible_nan_to_zero,
             'associatedReferences': possible_nan_to_none,
             'samplingEffort': lambda val: self.get_or_create_time_period(val, reference, author),
@@ -29,35 +29,49 @@ class DietImporter(BaseImporter):
         row_data = {key: func(getattr(row, key)) for key, func in column_functions.items() if key in headers}
 
         # Ensure default values for keys not in headers
-        default_values = {'location': None, 'gender': None, 'sample_size': 0, 'cited_reference': None, 'time_period': None, 'method': None, 'study_time': None}
-        row_data = {**default_values, **row_data}
-
-
-        # Creating or retrieving DietSet object
-        ds_kwargs = {'reference': reference, 'taxon': taxon, 'created_by': author, **row_data}
+        default_values = {'location': None,
+                          'gender': None,
+                          'sample_size': 0,
+                          'cited_reference': None,
+                          'time_period': None,
+                          'method': None,
+                          'study_time': None
+                          }
         
-        # Rename keys to match model attributes
-        model_attribute_mapping = {
-            'sex': 'gender',
-            'individualCount': 'sample_size',
-            'associatedReferences': 'cited_reference',
-            'samplingEffort': 'time_period',
-            'measurementMethod': 'method',
-            'verbatimEventDate': 'study_time',
-            'verbatimLocality': 'location',
+        model = {
+            'gender': row_data['sex'],
+            'sample_size': row_data['individualCount'],
+            'cited_reference': row_data['associatedReferences'],
+            'time_period': row_data['samplingEffort'],
+            'method': row_data['measurementMethod'],
+            'study_time': row_data['verbatimEventDate'],
+            'location': row_data['verbatimLocality'],
+            'reference': reference,
+            'taxon': taxon,
         }
-        for key, value in model_attribute_mapping.items():
-            if key in ds_kwargs:
-                ds_kwargs[value] = ds_kwargs.pop(key)
         
-        ds, created = DietSet.objects.get_or_create(**ds_kwargs)
-        if created:
-            print("New DietSet created:", ds)
-        else:
-            print("Existing DietSet found:", ds)
+        row_data = {**default_values, **model}
+        
+        
+        # Creating or retrieving DietSet object
+        diet_set,  = DietSet.objects.filter(
+            **row_data)
 
-        # Create DietSet item
-        self.create_diet_set_item(row, ds)
+        if diet_set.exists():
+            print("Existing DietSet found")
+            return False
+        else:
+            diet_set = DietSet({
+                'created_by': author,
+                **row_data
+            })
+            diet_set.save()
+            print("New DietSet created:",
+                  diet_set)
+            # Create DietSet item
+            self.create_diet_set_item(row, diet_set)
+            return True
+
         
         
     def create_diet_set_item(self, row, diet_set: DietSet):
@@ -79,3 +93,4 @@ class DietImporter(BaseImporter):
         if len(old_ds) == 0:
             dietsetitem = DietSetItem(diet_set=diet_set, food_item=food_item, list_order=list_order, percentage=percentage) 
             dietsetitem.save()
+
