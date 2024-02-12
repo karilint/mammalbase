@@ -36,9 +36,9 @@ def export_zip_file(
             ['file_name'] -- file_name to save queries to
             ['queries_and_fields'] -- queries and corresponding fields
     export_file_id -- id pointing to ExportFile instance where exported zip
-                will be stored
+                      will be stored
     file_writer -- dependency injection, this class is responsible for file
-                writing in exports
+                   writing in exports
     """
     if email_receiver == '':
         raise ValueError(
@@ -94,6 +94,23 @@ def write_queries_to_file(
         file_name: str,
         queries_and_fields: list):
     """Used by export_zip_file, writes a list of query results to tsv file"""
+
+    def replace_na(values_list):
+        """Helper function for replacing empty strings and Nones with NA on
+        data returned by QuerySet.values_list()
+        """
+        values_list = list(values_list)
+        for i, row in enumerate(values_list):
+            new_row = []
+            for item in row:
+                if item in ['', None]:
+                    new_row.append('NA')
+                else:
+                    new_row.append(item)
+            values_list[i] = tuple(new_row)
+        return values_list
+
+
     if file_name == '':
         raise ValueError(
             'Expected argument file_name to contain a name for export file, '
@@ -105,8 +122,6 @@ def write_queries_to_file(
             'got empty list instead'
         )
 
-    # TODO: Remove duplicate lines
-
     # Get headers from first entrys fields list
     _, headers = zip(*queries_and_fields[0][1])
 
@@ -117,28 +132,24 @@ def write_queries_to_file(
                 'Expected fields to contain at least one field, '
                 'got empty list instead'
             )
-        fields, _ = zip(*fields)
+        fields, check_headers = zip(*fields)
+        if len(headers) != len(check_headers):
+            raise ValueError(
+                'Count of header fields doesn\'t match across queries.'
+            )
+        for i in range(len(headers)):
+            if headers[i] != check_headers[i]:
+                raise ValueError(
+                    'Headers fields are not same on queries. '
+                    f"'{headers[i]}' vs '{check_headers[i]}'"
+                )
         rows.extend(replace_na(query_set.values_list(*fields)))
-    
+
+    # TODO: Remove duplicate lines
+
     file_path = f'{file_name}.tsv'
     file_writer.write_rows(file_path, headers, rows)
     return file_path
-
-
-def replace_na(values_list):
-    """Takes an iterable from values_list method of a QuerySet instance and
-    replaces empty strings or Nones with NA
-    """
-    values_list = list(values_list)
-    for i, row in enumerate(values_list):
-        new_row = []
-        for item in row:
-            if item in ['', None]:
-                new_row.append('NA')
-            else:
-                new_row.append(item)
-        values_list[i] = tuple(new_row)
-    return values_list
 
 
 @shared_task
@@ -146,16 +157,29 @@ def ets_export_query_set(
         user_email: str,
         export_file_id,
         is_admin_or_contributor: bool,
-        measurement_choices):
-    """Creates ETS-QuerySets."""
+        measurement_choices: list):
+    """Creates ETS-QuerySets.
+    
+    Keyword arguments:
+    user_email -- Email where to send the download link
+    export_file_id -- id pointing to ExportFile instance where exported zip
+                will be stored
+    is_admin_or_contributor -- Whether current user is in admin or
+                datacontributor groups
+    measurement_choices -- List of strings selected from export page. Valid
+                options can be found at MasterAttributeGroup
+    """
 
-    def create_measurement_or_fact_queries(measurement_choices, export_list):
+    def create_measurement_or_fact_queries(
+            measurement_choices: list,
+            export_list: list):
         """divides the measurement or fact query into separate queries and
         files according to user choices
 
-        Args:
-            measurement_choices [str]: list of strings containing user choices
-            export_list [list]: list containing QuerySets used in ETS export
+        Keyword arguments:
+        measurement_choices -- list of strings containing user choices
+        export_list -- list containing dicts with filename and list of 
+                (query, fields) tuples to put to that file
         """
         for measurement in measurement_choices:
             file_name = f'measurement_or_fact_{measurement.split()[0].lower()}'
