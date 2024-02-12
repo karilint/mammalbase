@@ -78,4 +78,4 @@ def traitdata_query(measurement_choices):
         ('warnings', 'warnings'),
     ]
 
-    return query, fields
+    return [(query, fields)]

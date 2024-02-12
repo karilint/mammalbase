@@ -202,4 +202,4 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
             ("id",f'Unknown choice: {measurement_choices[0]}')
         ]
 
-    return query, fields
+    return [(query, fields)]

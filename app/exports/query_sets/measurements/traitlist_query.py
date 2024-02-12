@@ -53,4 +53,4 @@ def traitlist_query(measurement_choices):
         ('source_attribute__master_attribute__reference__citation', 'source')
     ]
 
-    return query, fields
+    return [(query, fields)]

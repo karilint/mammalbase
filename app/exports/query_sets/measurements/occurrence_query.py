@@ -66,4 +66,4 @@ def occurrence_query(measurement_choices):
         ('occurrence_remarks', 'occurrenceRemarks'),
     ]
 
-    return query, fields
+    return [(query, fields)]

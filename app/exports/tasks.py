@@ -20,7 +20,7 @@ from .utilities.export_file_writer import ExportFileWriter
 
 
 @shared_task
-def export_zip_file(email_receiver: str, queries: list, export_file_id, file_writer=ExportFileWriter()):
+def export_zip_file(email_receiver: str, export_list: list, export_file_id, file_writer=ExportFileWriter()):
     """
     Exports a zip file containing tsv files resulting from given queries,
     saves it to the db and sends the download link as an email.
@@ -29,9 +29,10 @@ def export_zip_file(email_receiver: str, queries: list, export_file_id, file_wri
         email_receiver: str -- Email receiver address
         queries: [dict] -- List of dictionaries containing fields
             file_name: str -- Desired name of the exported file
-            fields: [(str, str)] -- List of tuples containing desired data fields
-                                    at [0] and corresponding column name at [1]
-            query_set: QuerySet -- QuerySet object to be executed
+            export_list: list -- List of queries to export to the file
+                fields: [(str, str)] -- List of tuples containing desired data fields
+                                        at [0] and corresponding column name at [1]
+                query_set: QuerySet -- QuerySet object to be executed
         export_file_id -- id pointing to ExportFile instance where exported zip will be stored
         file_writer -- dependency injection, this class is responsible for file writing in exports
     """
@@ -39,16 +40,20 @@ def export_zip_file(email_receiver: str, queries: list, export_file_id, file_wri
         raise ValueError(
             'Expected argument email_receiver to contain an email address, got empty string instead'
         )
-    if len(queries) == 0:
+    if len(export_list) == 0:
         raise ValueError(
             'Expected argument queries to contain at least one query, got empty list instead'
         )
     current_dir, temp_directory = enter_temp_dir()
 
     tsv_files = []
-    for query in queries:
+    for export_entry in export_list:
         try:
-            file_path = write_query_to_file(file_writer, **query)
+            file_path = write_queries_to_file(
+                file_writer,
+                export_entry['file_name'],
+                export_entry['fields_and_queries']
+            )
         except (ValueError, TypeError):
             exit_temp_dir(current_dir, temp_directory)
             raise
@@ -78,17 +83,19 @@ def exit_temp_dir(current_dir, temp_directory):
     shutil.rmtree(temp_directory)
 
 
-def write_query_to_file(file_writer, file_name: str, fields: list, query_set: QuerySet):
-    """Used by export_zip_file, writes a single query result to tsv file"""
+def write_queries_to_file(file_writer, file_name: str, fields_and_queries: list):
+    """Used by export_zip_file, writes a list of query results to tsv file"""
     if file_name == '':
         raise ValueError(
             'Expected argument file_name to contain a name for export file, got empty string instead'
         )
-    if len(fields) == 0:
+    if len(fields_and_queries) == 0:
         raise ValueError(
-            'Expected query to contain at least one field, got empty list instead'
+            'Expected query to contain at least one query, got empty list instead'
         )
-
+    # TODO: Handle multiple queries
+    query_set, fields = fields_and_queries[0]
+    
     fields, headers = zip(*fields)
     file_path = f'{file_name}.tsv'
     file_writer.write_rows(file_path, headers, replace_na(query_set.values_list(*fields)))
@@ -113,60 +120,48 @@ def replace_na(values_list):
 def ets_export_query_set(user_email: str, export_file_id, is_admin_or_contributor: bool, measurement_choices):
     """Creates ETS-QuerySets."""
 
-    def create_measurement_or_fact_queries(measurement_choices, queries):
+    def create_measurement_or_fact_queries(measurement_choices, export_list):
         """divides the measurement or fact query into separate queries and files according
         to user choices
 
         Args:
             measurement_choices [str]: list of strings containing user choices
-            queries [QuerySet]: list containing QuerySets used in ETS export
+            export_list [QuerySet]: list containing QuerySets used in ETS export
         """
         for measurement in measurement_choices:
-            query_set, fields = measurement_or_fact_query([measurement], is_admin_or_contributor)
             file_name = f'measurement_or_fact_{measurement.split()[0].lower()}'
-            queries.append({
+            export_list.append({
                 'file_name': file_name,
-                'fields': fields,
-                'query_set': query_set
+                'fields_and_queries': measurement_or_fact_query([measurement], is_admin_or_contributor)
             })
 
-    queries = []
-    create_measurement_or_fact_queries(measurement_choices, queries)
+    export_list = []
+    create_measurement_or_fact_queries(measurement_choices, export_list)
 
-    query, fields = traitdata_query(measurement_choices)
-    queries.append({
-            'file_name': 'traitdata',
-            'fields': fields,
-            'query_set': query
+    export_list.append({
+        'file_name': 'traitdata',
+        'fields_and_queries': traitdata_query(measurement_choices)
     })
-    query, fields = taxon_query(measurement_choices)
-    queries.append({
-            'file_name': 'taxon',
-            'fields': fields,
-            'query_set': query
+    export_list.append({
+        'file_name': 'taxon',
+        'fields_and_queries': taxon_query(measurement_choices)
     })
-    query, fields = occurrence_query(measurement_choices)
-    queries.append({
-            'file_name': 'occurrence',
-            'fields': fields,
-            'query_set': query
+    export_list.append({
+        'file_name': 'occurrence',
+        'fields_and_queries': occurrence_query(measurement_choices)
     })
-    query, fields = metadata_query(measurement_choices)
-    queries.append({
-            'file_name': 'metadata',
-            'fields': fields,
-            'query_set': query
+    export_list.append({
+        'file_name': 'metadata',
+        'fields_and_queries': metadata_query(measurement_choices)
     })
-    query, fields = traitlist_query(measurement_choices)
-    queries.append({
-            'file_name': 'traitlist',
-            'fields': fields,
-            'query_set': query
+    export_list.append({
+        'file_name': 'traitlist',
+        'fields_and_queries': traitlist_query(measurement_choices)
     })
 
     export_zip_file(
         email_receiver=user_email,
-        queries=queries,
+        export_list=export_list,
         export_file_id=export_file_id
     )
 

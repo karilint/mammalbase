@@ -39,4 +39,4 @@ def taxon_query(measurement_choices):
         ('source_entity__master_entity__taxon__genus', 'genus'),
     ]
 
-    return query, fields
+    return [(query, fields)]
