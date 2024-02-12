@@ -1,7 +1,7 @@
 from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
 from tdwg.models import Taxon
-from mb.models import models
+from mb.models import models, location_models
 from itis.models import TaxonomicUnits
 
 admin.site.register([Taxon,])
@@ -37,7 +37,7 @@ admin.site.register(models.SourceAttribute, SimpleHistoryAdmin)
 admin.site.register(models.SourceChoiceSetOption, SimpleHistoryAdmin)
 admin.site.register(models.SourceChoiceSetOptionValue, SimpleHistoryAdmin)
 admin.site.register(models.SourceEntity, SimpleHistoryAdmin)
-admin.site.register(models.SourceLocation, SimpleHistoryAdmin)
+admin.site.register(location_models.SourceLocation, SimpleHistoryAdmin)
 admin.site.register(models.SourceMeasurementValue, SimpleHistoryAdmin)
 admin.site.register(models.SourceMethod, SimpleHistoryAdmin)
 admin.site.register(models.SourceReference, SimpleHistoryAdmin)
