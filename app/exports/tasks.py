@@ -170,48 +170,24 @@ def ets_export_query_set(
                 options can be found at MasterAttributeGroup
     """
 
-    def create_measurement_or_fact_queries(
-            measurement_choices: list,
-            export_list: list):
-        """divides the measurement or fact query into separate queries and
-        files according to user choices
-
-        Keyword arguments:
-        measurement_choices -- list of strings containing user choices
-        export_list -- list containing dicts with filename and list of 
-                (query, fields) tuples to put to that file
-        """
-        for measurement in measurement_choices:
-            file_name = f'measurement_or_fact_{measurement.split()[0].lower()}'
-            export_list.append({
-                'file_name': file_name,
-                'queries_and_fields': measurement_or_fact_query([measurement],
-                        is_admin_or_contributor)
-            })
-
     export_list = []
-    create_measurement_or_fact_queries(measurement_choices, export_list)
 
-    export_list.append({
-        'file_name': 'traitdata',
-        'queries_and_fields': traitdata_query(measurement_choices)
-    })
-    export_list.append({
-        'file_name': 'taxon',
-        'queries_and_fields': taxon_query(measurement_choices)
-    })
-    export_list.append({
-        'file_name': 'occurrence',
-        'queries_and_fields': occurrence_query(measurement_choices)
-    })
-    export_list.append({
-        'file_name': 'metadata',
-        'queries_and_fields': metadata_query(measurement_choices)
-    })
-    export_list.append({
-        'file_name': 'traitlist',
-        'queries_and_fields': traitlist_query(measurement_choices)
-    })
+    for measurement in measurement_choices:
+        export_list.append({
+                'file_name': ('measurement_or_fact_'
+                        f'{measurement.split()[0].lower()}'),
+                'queries_and_fields': measurement_or_fact_query([measurement],
+                        is_admin_or_contributor) })
+
+    for file_name, query_function in {
+            'traitdata': traitdata_query,
+            'traitlist': traitlist_query,
+            'taxon': taxon_query,
+            'occurrence': occurrence_query,
+            'metadata': metadata_query }.items():
+        export_list.append({
+                'file_name': file_name,
+                'queries_and_fields': query_function(measurement_choices) })
 
     export_zip_file(
         email_receiver=user_email,
