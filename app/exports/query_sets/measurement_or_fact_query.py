@@ -6,17 +6,30 @@ from mb.models.models import SourceChoiceSetOptionValue
 
 from .base_query import base_query
 
-def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
-    """ 
-        MOF query function that defines the fields in the measurement_or_fact.tsv file 
-        according to the ETS standard: https://ecologicaltraitdata.github.io/ETS/. 
-        Utilizes the base_query. Values that are not yet in the models are set to 'NA'.
-        References are determined by whether the user is a data_admin/data_contributor or 
-        other user. measurement_or_fact query results are divided into different files 
-        according to the user choices (measurement_choices in base_query). exports/tasks.py has a function create_measurement_or_fact_query() to create the different files.
-        Returns the query and fields whereof non active values are excluded.
+def measurement_or_fact_query(
+        measurement_choice :str,
+        is_admin_or_contributor: bool):
+    """ Gather query and corresponding fields to satisfy the ETS standard.
+
+    Keyword Arguments:
+    measurement_choice -- entry name from MasterAttributeGroup
+    is_admin_or_contributor -- admin/contirbutor status from mb/views
+
+    Return Value:
+    List with a (QuerySet, fields) tuple.
+
+    Description:
+    MOF query is function that defines the query and the fields to be later
+    processed to the the measurement_or_fact_<choice>.tsv file according to
+    the ETS standard: https://ecologicaltraitdata.github.io/ETS/.
+    Utilizes the base_query. Values that are not yet in the models are set
+    to 'NA'. References are determined by whether the user is
+    a data_admin/data_contributor or other user. Returned query and fields
+    depends whats in measurement_choice so that caller can make a file per
+    a choice. measurement_or_fact_query returns the query and fields whereof
+    non active values are excluded.
     """
-    base = base_query(measurement_choices)
+    base = base_query([measurement_choice])
 
 
     non_active = (
@@ -165,7 +178,7 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         ),
         )
 
-    if measurement_choices[0] == "Nominal traits":
+    if measurement_choice == "Nominal traits":
         # TODO: Find fields in query and export to spreadsheet here
         fields = [
             ('entity_id','traitID'),
@@ -184,7 +197,7 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
             ('measurement_value_max', 'measurementValue_max')
         ]
         query = nominal_query
-    elif measurement_choices[0] in ('External measurements', 'Cranial measurements'):    
+    elif measurement_choice in ('External measurements', 'Cranial measurements'):
         fields = [
             ('measurement_id','measurementID'),
             ('basis_of_record', 'basisOfRecord'),
@@ -205,7 +218,7 @@ def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
         ]
     else:
         fields = [
-            ("id",f'Unknown choice: {measurement_choices[0]}')
+            ("id",f'Unknown choice: {measurement_choice}')
         ]
 
     return [(query, fields)]

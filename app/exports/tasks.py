@@ -162,7 +162,7 @@ def ets_export_query_set(
         export_list.append({
                 'file_name': ('measurement_or_fact_'
                         f'{measurement.split()[0].lower()}'),
-                'queries_and_fields': measurement_or_fact_query([measurement],
+                'queries_and_fields': measurement_or_fact_query(measurement,
                         is_admin_or_contributor) })
 
     for file_name, query_function in {
