@@ -1,7 +1,3 @@
-import os
-import shutil
-from tempfile import mkdtemp
-
 from celery import shared_task
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
@@ -10,7 +6,9 @@ from django.db.models import QuerySet
 from .models import ExportFile
 from .utilities import (
         ExportFileWriter,
-        generate_download_ready_message)
+        generate_download_ready_message,
+        enter_temp_dir,
+        exit_temp_dir)
 from .query_sets import (
         traitlist_query,
         traitdata_query,
@@ -75,18 +73,6 @@ def export_zip_file(
     send_email(export_file_id, email_receiver)
 
     exit_temp_dir(current_dir, temp_directory)
-
-
-def enter_temp_dir():
-    current_dir = os.getcwd()
-    temp_directory = mkdtemp()
-    os.chdir(temp_directory)
-    return current_dir, temp_directory
-
-
-def exit_temp_dir(current_dir, temp_directory):
-    os.chdir(current_dir)
-    shutil.rmtree(temp_directory)
 
 
 def write_queries_to_file( 
