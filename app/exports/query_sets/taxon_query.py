@@ -1,6 +1,6 @@
 from django.db.models import Value, CharField, Q
 from django.db.models.functions import Concat
-from exports.query_sets.measurements.base_query import base_query
+from .base_query import base_query
 
 
 def taxon_query(measurement_choices):

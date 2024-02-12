@@ -1,5 +1,5 @@
 from django.db.models import Value, Case, When, CharField, Q
-from exports.query_sets.measurements.base_query import base_query
+from .base_query import base_query
 
 
 def occurrence_query(measurement_choices):

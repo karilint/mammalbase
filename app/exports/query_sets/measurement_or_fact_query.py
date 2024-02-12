@@ -4,7 +4,7 @@ from exports.query_sets.custom_db_functions import Round2
 from datetime import timezone, datetime, timedelta
 from mb.models.models import SourceChoiceSetOptionValue
 
-from exports.query_sets.measurements.base_query import base_query
+from .base_query import base_query
 
 def measurement_or_fact_query(measurement_choices, is_admin_or_contributor):
     """ 

@@ -1,7 +1,7 @@
 from django.db.models.functions import Concat
 from django.db.models import CharField, Value, F, Case, When, Q
-from ..custom_db_functions import Round2
-from exports.query_sets.measurements.base_query import base_query
+from .custom_db_functions import Round2
+from .base_query import base_query
 
 
 def traitdata_query(measurement_choices):
