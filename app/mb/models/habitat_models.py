@@ -32,6 +32,12 @@ class MasterHabitat(BaseModel):
         'MasterReference',
         on_delete = models.CASCADE,
         )
+    parent = models.ForeignKey(
+        'self',
+        null = True,
+        blank = True,
+        on_delete = models.CASCADE
+    )
     source_habitat = models.ManyToManyField(
         'SourceHabitat',
         )
@@ -41,6 +47,8 @@ class MasterHabitat(BaseModel):
         )
     eco_code = models.PositiveSmallIntegerField(
         default=0,
+        blank=True,
+        null=True,
         help_text='Eco code'
         )
     
