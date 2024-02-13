@@ -11,10 +11,10 @@ from .checker import Check
 from .importers.diet_importer import DietImporter
 from .importers.ets_importer import EtsImporter
 from .importers.occurrence_importer import OccurrencesImporter
-from validation_lib.occurrence_validation import Validation
+from .validation_lib.occurrence_validation import Occurrence_validation
 
 
-validator = Validation()
+validator = Occurrence_validation()
 
 @login_required
 def import_diet_set(request):
@@ -160,17 +160,23 @@ def import_occurrences(request):
 		headers =  list(df.columns.values)
 		occ_importer=OccurrencesImporter()
 		
-		data = validator.data()
+		data = validator.data
 
-		for row in df.itertuples():
+
+		for row in df.itertuples(index=False):
 			i = 0
 			for x in row:
 				data[headers[i]] = x
 				i += 1
-			isvalid = validator.is_valid(data, Validation.rules)
+				print("rivi"+ str(row))
+				print("Virheeseen=?"+ str(x))
+			print("RIVI VALMIS!!!!!!")
+			isvalid = validator.is_valid(data, validator.rules)
+			print("is it valid?????"+str(isvalid))
 			errors = validator.errors
+			print(str(errors))
 			if not isvalid:
-				messages.error(request,"Unable to upload file. "+ errors)
+				messages.error(request,"Unable toooooooooo upload file. "+ errors)
 				return HttpResponseRedirect(reverse("import_occurrences"))
 			created = occ_importer.importRow(row, headers, importing_errors)
 			if created == True:
@@ -188,6 +194,6 @@ def import_occurrences(request):
 		return HttpResponseRedirect(reverse("import_occurrences"))
 
 	except Exception as e:
-		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
-		messages.error(request,"Unable to upload file. "+repr(e))
+		logging.getLogger("error_logger").error("Unable to@@ upload file. "+repr(e))
+		messages.error(request,"Unable to@@ upload file. "+repr(e))
 	return HttpResponseRedirect(reverse("import_occurrences"))

@@ -95,7 +95,7 @@ class Validation():
             rule_error = self.validate_min_fields(data,field_name,rule)
         
         elif rule.startswith("nameYear"):
-            rule_error = self.validate_nameYear_fields(data,field_name,rule)
+            rule_error = self.validate_nameYear_fields(data,field_name)
         
         elif rule.startswith("regex"):
             rule_error = self.validate_regex_fields(data,field_name, rule)
@@ -106,6 +106,7 @@ class Validation():
         return rule_error
 
     def validate_boolean_fields(self, data, field_name):
+        print("yritetään field " + str(data[field_name]))
         errs = []
         try:
             if data[field_name] != (True or False):
@@ -117,17 +118,19 @@ class Validation():
 
     def validate_digit_fields(self, data, field_name):
         """Used for validating integer fields, returns a list of error messages"""
-
+        print("yritetään digittejä"+ str(data[field_name]))
         errs = []
 
         try:
-            if not isinstance(float(data[field_name]),(int, float)):
-                errs.append(self.return_field_message(field_name,"integer"))
+            if not isinstance(float(data[field_name]),(int, float)) or data[field_name] == "nan":
+                errs.append(self.return_field_message(field_name,"digits"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name,'integer'))
+            errs.append(self.return_no_field_message(field_name,'digits'))
         return errs
     
     def validate_nameYear_fields(self, data, field_name):
+        print("yritetään nameyear " + str(data[field_name]))
+
         errs = []
         try:
             name_year_pattern = r"\((?:\w+(?:,\s*\d{1,4})?|\w+)\)(?:\s*|$)|\w+,\s*\d{1,4}"
@@ -138,6 +141,7 @@ class Validation():
         return errs
 
     def validate_date(self, data, field_name):
+        print("yritetään datea " + str(data[field_name]))
         errs = []
         try:
             date_str = data[field_name]
@@ -165,10 +169,12 @@ class Validation():
     
     def validate_alpha_fields(self, data, field_name):
         """Used for validating fields for alphabets only, returns a list of error messages"""
-
+        print("yritetään alpha  " + str(data[field_name]))
         errs = []
+
+        
         try:
-            if not data[field_name].isalpha():
+            if not re.match("^[a-zA-Z]+$",data[field_name]) or data[field_name] != "nan":
                 errs.append(self.return_field_message(field_name,"alpha"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'alpha'))
@@ -177,7 +183,7 @@ class Validation():
 
     def validate_in_fields(self, data, field_name, rule):
         """Used for validating fields for some number of values to allow, returns a list of error messages"""
-
+        print("yritetään in fields " + str(data[field_name]))
         #retrieve the value for that in rule
         ls = rule.split(':')[1].split(',')
         errs = []
@@ -190,6 +196,7 @@ class Validation():
         return errs
 
     def validate_author(self, data, field_name):
+        print("yritetään author " + str(data[field_name]))
         errs = []
         try:
             author = data[field_name]
@@ -209,7 +216,7 @@ class Validation():
 
     def validate_required_fields(self, data, field_name):
         """Used for validating required fields, returns a list of error messages"""
-
+        print("yritetään author " + str(data[field_name]))
         errs = []
         try:
             if data[field_name] == '':
@@ -221,6 +228,7 @@ class Validation():
 
     def validate_verbatim_scientific_name(self, data, field_name, field_rules):
         """Validate verbatim scientific name field"""
+        print("yritetään verbatim scientific name " + str(data[field_name]))
         # Your validation logic here
         # Example:
         if not data.get(field_name):
@@ -231,6 +239,7 @@ class Validation():
 
     def validate_gender(self, data, field_name, field_rules):
         """Validate gender field"""
+        print("yritetään gender " + str(data[field_name]))
         if not data.get(field_name):
             return self.return_no_field_message(field_name, 'gender')
         if data != ("male" or "female" or None):
@@ -238,7 +247,7 @@ class Validation():
 
     def validate_measurement_value(self, data, field_name, field_rules):
         """Validate measurement value field"""
-
+        print("yritetään measurement " + str(data[field_name]))
         if not data.get(field_name):
             return self.return_no_field_message(field_name, 'measurement value')
         measurement_value = data[field_name]
@@ -252,6 +261,7 @@ class Validation():
         return ""
 
     def validate_in_db(self, data, field_name, field_rules):
+        print("yritetään in db " + str(data[field_name]))
         model = apps.get_model('mb', field_rules[0])
         errs = []
 
@@ -261,6 +271,7 @@ class Validation():
 
 
     def validate_regex_fields(self, data, field_name, rule):
+        print("yritetään regex field " + str(data[field_name]))
         """Used for validating field data to match a regular expression, returns a list of error messages"""
 
         regex = str(rule.split(':')[1])
@@ -272,6 +283,7 @@ class Validation():
         return errs
 
     def validate_lengths(self, data, field_name, field_rules):
+        print("yritetään length " + str(data[field_name]))
         """Validate lengths field"""
         # Your validation logic here
         # Example:
@@ -281,6 +293,7 @@ class Validation():
         return ""  # No error message if validation passes
 
     def validate_max_fields(self, data, field_name, rule):
+        print("yritetään max " + str(data[field_name]))
         """Used for validating fields for a maximum integer value, returns a list of error messages"""
 
         #retrieve the value for that max rule
@@ -300,6 +313,7 @@ class Validation():
         return errs
 
     def validate_min_fields(self, data, field_name, rule):
+        print("yritetään min " + str(data[field_name]))
         """Used for validating fields for a minimum integer value, returns a list of error messages"""
 
         #retrieve the value for that min rule
