@@ -36,8 +36,12 @@ class MasterHabitat(BaseModel):
         'SourceHabitat',
         )
     name = models.CharField(
-        max_length=250, 
+        max_length=250,
         help_text="Enter the Name of the Master Habitat"
+        )
+    eco_code = models.PositiveSmallIntegerField(
+        default=0,
+        help_text='Eco code'
         )
     
     class Meta:
