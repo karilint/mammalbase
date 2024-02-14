@@ -63,6 +63,15 @@ class Validation():
         
         elif rule == "verbatimScientificName":
             rule_error = self.validate_verbatim_scientific_name(data, field_name, field_rules)
+
+        elif rule == "verbatimLatitude":
+            rule_error = self.validate_verbatim_latitude(data, field_name)
+
+        elif rule == "verbatimLongitude":
+            rule_error = self.validate_verbatim_longitude(data, field_name)
+
+        elif rule == "verbatimEventDate":
+            rule_error = self.validate_verbatim_eventdate(data, field_name)
         
         elif rule == "gender":
             rule_error = self.validate_gender(data, field_name, field_rules)
@@ -100,10 +109,39 @@ class Validation():
         elif rule.startswith("regex"):
             rule_error = self.validate_regex_fields(data,field_name, rule)
 
+        elif rule.startswith("verbatimCoordinates"):
+            rule_error = self.validate_verbatim_coordinates(data, field_name)
+
         
         # Add more elif blocks for each additional rule you want to handle
         
         return rule_error
+    
+    def validate_verbatim_coordinates(self, data, field_name):
+        print("yritetään verbatim coordnates " + str(data[field_name]))
+        errs = []
+
+        #before matching remove all whitespaces from str(data[field_name])
+
+        return errs
+    
+        """
+        try:
+            if data[field_name] != (True or False):
+                errs.append(self.return_field_message(field_name,"boolean"))
+        except KeyError:
+            errs.append(self.return_no_field_message(field_name,'boolean'))
+
+        return errs
+        """ 
+    
+    def validate_verbatim_eventdate(self, data, field_name):
+        return []
+    def validate_verbatim_latitude(self, data, field_name):
+        return []
+    
+    def validate_verbatim_longitude(self, data, field_name):
+        return []
 
     def validate_boolean_fields(self, data, field_name):
         print("yritetään field " + str(data[field_name]))
@@ -188,7 +226,7 @@ class Validation():
         errs = []
 
         try:
-            if data[field_name] not in ls:
+            if str(data[field_name]) not in ls:
                 errs.append(self.return_field_message(field_name, "in"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'in'))
@@ -274,7 +312,7 @@ class Validation():
         """Used for validating field data to match a regular expression, returns a list of error messages"""
 
         regex = str(rule.split(':')[1])
-        errs,result = self.match_regular_expression(regex,data[field_name],"regex")
+        errs,result = self.match_regular_expression(regex,str(data[field_name]),"regex")
 
         #in case the RE did not match or there was a key error
         if not result:

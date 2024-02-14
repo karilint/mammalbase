@@ -176,8 +176,10 @@ def import_occurrences(request):
 			errors = validator.errors
 			print(str(errors))
 			if not isvalid:
-				messages.error(request,"Unable toooooooooo upload file. "+ errors)
+				messages.error(request,"Unable toooooooooo upload file. "+ str(errors))
 				return HttpResponseRedirect(reverse("import_occurrences"))
+			
+			# if data is valid, let's import it to database
 			created = occ_importer.importRow(row, headers, importing_errors)
 			if created == True:
 				success_rows =+ 1

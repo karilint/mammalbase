@@ -10,20 +10,24 @@ class Occurrence_validation(Validation):
             "references": "required | min:10 | max:500| regex:.*([1-2][0-9]{3}) | in_db:SourceReference,citation__iexact", #DONE
             "verbatimScientificName": "required | alpha", #Done
             "scientificNameAuthorship": "", #Done #nameyear ennen
-            "taxonRank": "in:subspecies, varietas, forma, species, genus, nothogenus, nothospecies,  nothosubspecies, family, nan", #DONE
+            "taxonRank": "in:Subspecies,Varietas,Forma,Species,Genus,Nothogenus,Nothospecies,Nothosubspecies,Family,nan", #DONE
             "organismQuantity": "digits", #DONE
             "organismQuantityType": "", #DONE, no possible validator since darvincore quote "whereas this term allows for any string literal value." e.g '% biomass'
             "sex": "in:male,female,nan", #DONE
             "lifeStage": "alpha", #Only accept alphabeticals #alpha
-            "verbatimEventDate": "in: I,V,X,L,C,D,M,1,2,3,4,5,6,7,8,9,nan", #DONE
+            "verbatimEventDate": "", #DONE
+            #"verbatimEventDate": "in: I,V,X,L,C,D,M,1,2,3,4,5,6,7,8,9,nan", #DONE
             "occurrenceRemarks": "", #DONE, cannot be tested since it can be anything
             "verbatimLocality": "", #DONE, cannot be tested since it can be anything
-            "verbatimElevation": "in:0,1,2,3,4,5,6,7,8,9,nan", #DONE
-            "verbatimDepth": "in:0,1,2,3,4,5,6,7,8,9,nan", #DONE
-            "verbatimCoordinates": "in:N,E,S,W,°,T,d,nan", #DONE
-            "verbatimLatitude": "in:N,E,S,W,°,T,d,nan", #DONE
-            "verbatimLongitude": "in:N,E,S,W,°,T,d,nan", #DONE
-            "verbatimCoordinateSystem": "in:decimal degrees,degrees decimal minutes, degrees decimal seconds, UTM,nan", #Done
+            "verbatimElevation": "", #DONE
+            "verbatimDepth": "", #DONE
+            #"verbatimCoordinates": "in:N,E,S,W,°,T,d,nan", #DONE
+            "verbatimCoordinates": "verbatimCoordinates", #DONE
+            "verbatimLatitude": "", #DONE
+            "verbatimLongitude": "", #DONE
+            #"verbatimLatitude": "in:N,E,S,W,°,T,d,nan", #DONE
+            #"verbatimLongitude": "in:N,E,S,W,°,T,d,nan", #DONE
+            "verbatimCoordinateSystem": "in:decimal degrees,degrees minutes,degrees decimal seconds,UTM,nan", #Done
             "verbatimSRS": "", #Maybe done maybe kesken
             "author": "required | author", #DONE
             "associatedReferences": "", #DONE, can be anything
