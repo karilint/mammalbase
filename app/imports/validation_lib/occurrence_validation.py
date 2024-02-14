@@ -1,0 +1,64 @@
+from .base_validation import Validation
+
+
+class Occurrence_validation(Validation):
+
+    def __init__(self):
+        super().__init__()
+
+        self.rules = {
+            "references": "required | min:10 | max:500| regex:.*([1-2][0-9]{3}) | in_db:SourceReference,citation__iexact", #DONE
+            "verbatimScientificName": "required | alpha", #Done
+            "scientificNameAuthorship": "", #Done #nameyear ennen
+            "taxonRank": "in:subspecies, varietas, forma, species, genus, nothogenus, nothospecies,  nothosubspecies, family, nan", #DONE
+            "organismQuantity": "digits", #DONE
+            "organismQuantityType": "", #DONE, no possible validator since darvincore quote "whereas this term allows for any string literal value." e.g '% biomass'
+            "sex": "in:male,female,nan", #DONE
+            "lifeStage": "alpha", #Only accept alphabeticals #alpha
+            "verbatimEventDate": "in: I,V,X,L,C,D,M,1,2,3,4,5,6,7,8,9,nan", #DONE
+            "occurrenceRemarks": "", #DONE, cannot be tested since it can be anything
+            "verbatimLocality": "", #DONE, cannot be tested since it can be anything
+            "verbatimElevation": "in:0,1,2,3,4,5,6,7,8,9,nan", #DONE
+            "verbatimDepth": "in:0,1,2,3,4,5,6,7,8,9,nan", #DONE
+            "verbatimCoordinates": "in:N,E,S,W,°,T,d,nan", #DONE
+            "verbatimLatitude": "in:N,E,S,W,°,T,d,nan", #DONE
+            "verbatimLongitude": "in:N,E,S,W,°,T,d,nan", #DONE
+            "verbatimCoordinateSystem": "in:decimal degrees,degrees decimal minutes, degrees decimal seconds, UTM,nan", #Done
+            "verbatimSRS": "", #Maybe done maybe kesken
+            "author": "required | author", #DONE
+            "associatedReferences": "", #DONE, can be anything
+            "samplingProtocol": "", #DONE, no possible validator since darincore quote "whereas this term allows for any string literal value." e.g 'Takats et al. 2001. Guidelines for Nocturnal Owl Monitoring in North America. Beaverhill Bird Observatory and Bird Studies Canada, Edmonton, Alberta. 32 pp., http://www.bsc-eoc.org/download/Owl.pdf'
+            "habitatType": "", #DONE, no possible validator since darincore quote "whereas this term allows for any string literal value." e.g 'B (bushland): densely growing woody vegetation of shrubby habit, low stature <6 m in height, canopy cover >20%'
+            "habitatPercentage": "" #Done
+        }
+    
+        self.data = {
+                "references": "",
+                "verbatimScientificName": "",
+                "scientificNameAuthorship": "",
+                "taxonRank": "",
+                "organismQuantity": "",
+                "organismQuantityType": "",
+                "sex": "",
+                "lifeStage": "",
+                "verbatimEventDate": "",
+                "occurrenceRemarks": "",
+                "verbatimLocality": "",
+                "verbatimElevation": "",
+                "verbatimDepth": "",
+                "verbatimCoordinates": "",
+                "verbatimLatitude": "",
+                "verbatimLongitude": "",
+                "verbatimCoordinateSystem": "",
+                "verbatimSRS": "",
+                "author": "",
+                "associatedReferences": "",
+                "samplingProtocol": "",
+                "habitatType": "",
+                "habitatPercentage": ""
+            }
+
+
+
+    # diet set
+    # BARK, BLOOD, BONES, BUD, CARRION, EGGS, EXUDATES, FECES, FLOWER, FRUIT, LARVAE, LEAF, MINERAL, NECTAR/JUICE, NONE, POLLEN, ROOT, SEED, SHOOT, STEM, UNKNOWN, WHOLE

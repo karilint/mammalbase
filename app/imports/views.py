@@ -11,7 +11,10 @@ from .checker import Check
 from .importers.diet_importer import DietImporter
 from .importers.ets_importer import EtsImporter
 from .importers.occurrence_importer import OccurrencesImporter
+from .validation_lib.occurrence_validation import Occurrence_validation
 
+
+validator = Occurrence_validation()
 
 @login_required
 def import_diet_set(request):
@@ -93,6 +96,48 @@ def import_ets(request):
 		messages.error(request,"Unable to upload file. "+repr(e))
 	return HttpResponseRedirect(reverse("import_ets"))
 
+
+"""
+@login_required
+def import_occurrences(request):
+	if request.method == "GET":
+		return render(request, "import/import_occurrences.html")
+	
+	try:
+		csv_file = request.FILES["csv_file"]
+		df = pd.read_csv(csv_file, sep='\t')
+		check = Check(request)
+		
+		
+		if not check.check_valid_author(df):
+			return HttpResponseRedirect(reverse("import_proximate_analysis"))
+
+		headers =  list(df.columns.values)
+		occ_importer=OccurrencesImporter()
+		data = validator.data()
+		for row in df.itertuples():
+			i = 0
+			for x in row:
+				data[headers[i]] = x
+				i += 1
+			isvalid = validator.is_valid(data, Validation.rules)
+			errors = validator.errors
+			if not isvalid:
+				messages.error(request,"Unable to upload file. "+ errors)
+				return HttpResponseRedirect(reverse("import_occurrences"))
+			occ_importer.importRow(row, headers)
+		success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
+		messages.add_message(request, 50 ,success_message, extra_tags="import-message")
+		messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")
+		return HttpResponseRedirect(reverse("import_occurrences"))
+
+	except Exception as e:
+		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
+		messages.error(request,"Unable to upload file. "+repr(e))
+	return HttpResponseRedirect(reverse("import_occurrences"))
+"""
+
+
 @login_required
 def import_occurrences(request):
 	if request.method == "GET":
@@ -114,7 +159,25 @@ def import_occurrences(request):
 
 		headers =  list(df.columns.values)
 		occ_importer=OccurrencesImporter()
-		for row in df.itertuples():
+		
+		data = validator.data
+
+
+		for row in df.itertuples(index=False):
+			i = 0
+			for x in row:
+				data[headers[i]] = x
+				i += 1
+				print("rivi"+ str(row))
+				print("Virheeseen=?"+ str(x))
+			print("RIVI VALMIS!!!!!!")
+			isvalid = validator.is_valid(data, validator.rules)
+			print("is it valid?????"+str(isvalid))
+			errors = validator.errors
+			print(str(errors))
+			if not isvalid:
+				messages.error(request,"Unable toooooooooo upload file. "+ errors)
+				return HttpResponseRedirect(reverse("import_occurrences"))
 			created = occ_importer.importRow(row, headers, importing_errors)
 			if created == True:
 				success_rows =+ 1
@@ -131,6 +194,6 @@ def import_occurrences(request):
 		return HttpResponseRedirect(reverse("import_occurrences"))
 
 	except Exception as e:
-		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
-		messages.error(request,"Unable to upload file. "+repr(e))
+		logging.getLogger("error_logger").error("Unable to@@ upload file. "+repr(e))
+		messages.error(request,"Unable to@@ upload file. "+repr(e))
 	return HttpResponseRedirect(reverse("import_occurrences"))
