@@ -59,7 +59,10 @@ class Validation():
             rule_error = self.validate_date_fields(data, field_name, field_rules)
         
         elif rule == "author":
-            rule_error = self.validate_author(data, field_name)
+            rule_error = self.validate_author_fields(data, field_name)
+
+        elif rule == "required":
+            rule_error = self.validate_required_fields(data, field_name)
         
         elif rule == "verbatimScientificName":
             rule_error = self.validate_verbatim_scientific_name(data, field_name, field_rules)
@@ -88,7 +91,7 @@ class Validation():
         elif rule == "alpha":
             rule_error = self.validate_alpha_fields(data,field_name)
 
-        elif rule == "in_db":
+        elif rule.startswith("in_db"):
             rule_error = self.validate_in_db(data, field_name, field_rules)
         
         elif rule == "lengths":
@@ -148,6 +151,7 @@ class Validation():
         errs = []
         try:
             if data[field_name] != (True or False):
+                print("VIRHE")
                 errs.append(self.return_field_message(field_name,"boolean"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'boolean'))
@@ -161,6 +165,7 @@ class Validation():
 
         try:
             if not isinstance(float(data[field_name]),(int, float)) or data[field_name] == "nan":
+                print("VIRHE")
                 errs.append(self.return_field_message(field_name,"digits"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'digits'))
@@ -173,6 +178,7 @@ class Validation():
         try:
             name_year_pattern = r"\((?:\w+(?:,\s*\d{1,4})?|\w+)\)(?:\s*|$)|\w+,\s*\d{1,4}"
             if not re.match(name_year_pattern, data[field_name]) or data[field_name].count('(') != data[field_name].count(')'):
+                print("VIRHE")
                 errs.append(self.return_field_message(field_name, "invalid name and year format"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name, 'integer'))
@@ -211,7 +217,8 @@ class Validation():
         errs = []
 
         try:
-            if not re.match("^[a-zA-Z]+$",str(data[field_name])) or str(data[field_name]) != "nan":
+            if not re.match("^[a-zA-Z\s]+$",str(data[field_name])) and str(data[field_name]) != "nan":
+                print("VIRHE")
                 errs.append(self.return_field_message(field_name,"alpha"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'alpha'))
@@ -227,12 +234,13 @@ class Validation():
 
         try:
             if str(data[field_name]) not in ls:
+                print("VIRHE")
                 errs.append(self.return_field_message(field_name, "in"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'in'))
         return errs
 
-    def validate_author(self, data, field_name):
+    def validate_author_fields(self, data, field_name):
         print("yritetään author " + str(data[field_name]))
         errs = []
         try:
@@ -244,6 +252,7 @@ class Validation():
             else:
                 parts = author.split('-')
                 if len(parts) != 4 or not all(part.isdigit() and len(part) == 4 for part in parts):
+                    print("VIRHE")
                     errs.append(self.return_field_message(field_name, "invalid author format"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name, 'required'))
@@ -253,10 +262,11 @@ class Validation():
 
     def validate_required_fields(self, data, field_name):
         """Used for validating required fields, returns a list of error messages"""
-        print("yritetään author " + str(data[field_name]))
+        print("yritetään required " + str(data[field_name]))
         errs = []
         try:
-            if data[field_name] == '':
+            if str(data[field_name]) == "" or str(data[field_name]) == "nan":
+                print("VIRHE")
                 errs.append(self.return_field_message(field_name,"required"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'required'))
@@ -269,6 +279,7 @@ class Validation():
         # Your validation logic here
         # Example:
         if not data.get(field_name):
+            print("VIRHE")
             return self.return_no_field_message(field_name, 'verbatim scientific name')
         # Additional validation logic...
         return ""  # No error message if validation passes
@@ -303,6 +314,7 @@ class Validation():
         errs = []
 
         if not model.objects.filter(**{field_rules[1]: data[field_name]}).exists():
+            print("VIRHE in db")
             errs.append(self.return_no_field_message(field_name,'in_db'))
         return errs
 
@@ -338,11 +350,13 @@ class Validation():
 
         errs = []
         try:
-            if data[field_name].isdigit():
-                if int(data[field_name]) > max_value:
+            if isinstance(data[field_name],(float,int)):
+                if (data[field_name]) > max_value:
+                    print("VIRHE")
                     errs.append(self.return_field_message(field_name,"max"))
             else:
-                if len(data[field_name]) > max_value:
+                if len(str(data[field_name])) > max_value:
+                    print("VIRHE")
                     errs.append(self.return_field_message(field_name,"max"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'maximum'))
@@ -355,14 +369,16 @@ class Validation():
 
         #retrieve the value for that min rule
         min_value = int(rule.split(':')[1])
-
+        print("minimi "+ str(min_value))
         errs = []
         try:
-            if data[field_name].isdigit():
-                if int(data[field_name]) < min_value:
+            if isinstance(data[field_name],(float,int)):
+                if (data[field_name]) < min_value:
+                    print("VIRHE")
                     errs.append(self.return_field_message(field_name,"min"))
             else:
-                if len(data[field_name]) < min_value:
+                if len(str(data[field_name])) < min_value:
+                    print("VIRHE")
                     errs.append(self.return_field_message(field_name,"min"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'minimum'))

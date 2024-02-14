@@ -10,7 +10,7 @@ class OccurrencesImporter(BaseImporter):
     
     
     @transaction.atomic
-    def importRow(self, row, headers, importing_errors):
+    def importRow(self, row, importing_errors):
         
         # Common assignments
         try:

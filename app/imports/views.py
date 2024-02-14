@@ -14,7 +14,7 @@ from .importers.occurrence_importer import OccurrencesImporter
 from .validation_lib.occurrence_validation import Occurrence_validation
 
 
-validator = Occurrence_validation()
+
 
 @login_required
 def import_diet_set(request):
@@ -97,105 +97,65 @@ def import_ets(request):
 	return HttpResponseRedirect(reverse("import_ets"))
 
 
-"""
 @login_required
 def import_occurrences(request):
 	if request.method == "GET":
 		return render(request, "import/import_occurrences.html")
 	
+	validator = Occurrence_validation()
+	importer = OccurrencesImporter()
+
 	try:
 		csv_file = request.FILES["csv_file"]
 		df = pd.read_csv(csv_file, sep='\t')
-		check = Check(request)
-		
-		
-		if not check.check_valid_author(df):
-			return HttpResponseRedirect(reverse("import_proximate_analysis"))
-
-		headers =  list(df.columns.values)
-		occ_importer=OccurrencesImporter()
-		data = validator.data()
-		for row in df.itertuples():
-			i = 0
-			for x in row:
-				data[headers[i]] = x
-				i += 1
-			isvalid = validator.is_valid(data, Validation.rules)
-			errors = validator.errors
-			if not isvalid:
-				messages.error(request,"Unable to upload file. "+ errors)
-				return HttpResponseRedirect(reverse("import_occurrences"))
-			occ_importer.importRow(row, headers)
-		success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
-		messages.add_message(request, 50 ,success_message, extra_tags="import-message")
-		messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")
-		return HttpResponseRedirect(reverse("import_occurrences"))
-
-	except Exception as e:
-		logging.getLogger("error_logger").error("Unable to upload file. "+repr(e))
-		messages.error(request,"Unable to upload file. "+repr(e))
-	return HttpResponseRedirect(reverse("import_occurrences"))
-"""
-
-
-@login_required
-def import_occurrences(request):
-	if request.method == "GET":
-		return render(request, "import/import_occurrences.html")
-	
-	try:
-		csv_file = request.FILES["csv_file"]
-		df = pd.read_csv(csv_file, sep='\t')
-		check = Check(request)
-		
-		
-		#if not check.check_valid_author(df) or not check.check_occurrence_headers(df):
-		#	print("error")
-		#	return HttpResponseRedirect(reverse("import_occurrences"))
 
 		importing_errors = []
 		success_rows = 0
-		success_message = None
+		message = None
 
 		headers =  list(df.columns.values)
-		occ_importer=OccurrencesImporter()
-		
 		data = validator.data
 
-
 		for row in df.itertuples(index=False):
-			i = 0
-			for x in row:
+			# Loop through headers and add the data to empty data dict for validation
+			for i, x in enumerate(row):
 				data[headers[i]] = x
-				i += 1
-				print("rivi"+ str(row))
-				print("Virheeseen=?"+ str(x))
-			print("RIVI VALMIS!!!!!!")
+			print("Data saatu rivistä ja lisätty se data dictiin, seuraavana validointi riville !")
+
+			# Check through the data and the rules that they are valid
 			isvalid = validator.is_valid(data, validator.rules)
-			print("is it valid?????"+str(isvalid))
 			errors = validator.errors
 			print(str(errors))
+			#If data is not valid return the reason
 			if not isvalid:
-				messages.error(request,"Unable toooooooooo upload file. "+ str(errors))
+				messages.error(request,"Unable to upload file. "+ str(errors))
 				return HttpResponseRedirect(reverse("import_occurrences"))
 			
-			# if data is valid, let's import it to database
-			created = occ_importer.importRow(row, headers, importing_errors)
-			if created == True:
+			# if data is valid, import it to database
+			print("SEURAAVANA IMPORTTTAAAAUS")
+			created = importer.importRow(row, importing_errors)
+			created
+			if created:
+				print(print("JEEE RIVI IMPORTATTU"))
 				success_rows =+ 1
-
-		if len(importing_errors) > 0:
-			success_message = str(success_rows) + " rows of data was imported successfully with some errors in these rows: "
+			else:
+				print("FAILAUKSEEEN")
+		if success_rows == 0:
+			message = "0 rows of data was imported"
+		elif len(importing_errors) > 0 and success_rows > 0:
+			message = str(success_rows) + " rows of data was imported successfully with some errors in these rows: "
 
 			for error in importing_errors:
-				success_message = success_message + error
+				message = message + error
 		else:
-			success_message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
-		messages.add_message(request, 50 ,success_message, extra_tags="import-message")
+			message = "File imported successfully. "+ str(df.shape[0])+ " rows of data was imported."
+		messages.add_message(request, 50 ,message, extra_tags="import-message")
 		messages.add_message(request, 50 , df.to_html(), extra_tags="show-data")
 		return HttpResponseRedirect(reverse("import_occurrences"))
 
 	except Exception as e:
-		logging.getLogger("error_logger").error("Unable to@@ upload file. "+repr(e))
-		messages.error(request,"Unable to@@ upload file. "+repr(e))
+		logging.getLogger("error_logger").error("Unable to upload file due coding error. "+repr(e))
+		messages.error(request,"Unable to upload file. "+repr(e))
 	return HttpResponseRedirect(reverse("import_occurrences"))
+
+
