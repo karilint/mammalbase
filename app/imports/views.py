@@ -135,9 +135,11 @@ def import_occurrences(request):
 			print("SEURAAVANA IMPORTTTAAAAUS")
 			created = importer.importRow(row, importing_errors)
 			created
+			print(str(success_rows))
 			if created:
+				success_rows += 1
 				print(print("JEEE RIVI IMPORTATTU"))
-				success_rows =+ 1
+				
 			else:
 				print("FAILAUKSEEEN")
 		if success_rows == 0:
