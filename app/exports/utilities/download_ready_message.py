@@ -1,9 +1,9 @@
 from datetime import date
 from config.settings import SITE_DOMAIN
 
-def generate_download_ready_message(export_id):
+def download_ready_message(export_id):
     """Creates an email message and download link to the exported data"""
-#    export = ExportFile.objects.get(pk=export_id)
+    # ¿¿¿ export = ExportFile.objects.get(pk=export_id) ???
     current_date = date.today()
 
     # Format the date as "7th August 2023"
@@ -21,8 +21,8 @@ def generate_download_ready_message(export_id):
                 str(current_date.day),
                 str(current_date.day) + suffix)
 
-    # Print the text with the formatted date
-    print(f"Accessed {formatted_date}")
+    # Print the text with the formatted date (for logs ?)
+    print(f"EMAIL - download_ready_message(): Accessed {formatted_date}")
 
     return f"""
 Dear MammalBase User,

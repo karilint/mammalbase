@@ -6,7 +6,7 @@ from django.db.models import QuerySet
 from .models import ExportFile
 from .utilities import (
         ExportFileWriter,
-        generate_download_ready_message,
+        download_ready_message,
         enter_temp_dir,
         exit_temp_dir)
 from .query_sets import (
@@ -28,7 +28,7 @@ def export_zip_file(
     Exports a zip file containing tsv files resulting from given queries,
     saves it to the db and sends the download link as an email.
 
-    Keyword arguments:
+    Arguments:
     email_recipient -- Email receiver address
     export_list -- List of dicts containing information for creating files
             ['file_name'] -- file_name to save queries to
@@ -72,7 +72,7 @@ def export_zip_file(
         # TODO: raise what error?
         raise
 
-    send_email(export_file_id, email_recipient)
+    send_download_ready_email(export_file_id, email_recipient)
 
     exit_temp_dir(current_dir, temp_directory)
 
@@ -148,7 +148,7 @@ def ets_export_query_set(
         measurement_choices: list):
     """Creates ETS-QuerySets.
     
-    Keyword arguments:
+    Arguments:
     email_recipient -- Email where to send the download link
     export_file_id -- id pointing to ExportFile instance where exported zip
                 will be stored
@@ -185,11 +185,11 @@ def ets_export_query_set(
 
 
 @shared_task
-def send_email(export_id, email_recipient):
+def send_download_ready_email(export_id, email_recipient):
     """Sends user an email with a download link to the exported data"""
     send_mail (
         subject = "MammalBase Data Export: Access Now Available",
-        message = generate_download_ready_message(export_id),
+        message = download_ready_message(export_id),
         from_email = None,
         recipient_list = [email_recipient],
     )
