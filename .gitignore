@@ -161,4 +161,4 @@ cython_debug/
 *_cache.sqlite
 
 # keep habitat csv files
-!app/scripts/habitat_csvt/*.csv
+!app/scripts/habitat_csv/*.csv
