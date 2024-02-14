@@ -4,6 +4,7 @@ from mb.models.models import SourceAttribute, SourceReference, SourceEntity, Sou
 from django.db import transaction
 from django.contrib.auth.models import User
 from mb.models.occurrence_models import Occurrence, Event
+from mb.models.habitat_models import SourceHabitat
 
 class OccurrencesImporter(BaseImporter):
 
@@ -18,6 +19,7 @@ class OccurrencesImporter(BaseImporter):
             reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
             entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
             verbatimScientificname = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+            source_habitat = self.get_or_create_source_habitat(getattr(row, 'habitatType'), author)
         except Exception as e:
             """
             We don't add anything if we encounter an error.
@@ -32,7 +34,7 @@ class OccurrencesImporter(BaseImporter):
             #create source location model
             new_source_location = self.get_or_create_source_location(getattr(row, 'verbatimLocality'), reference, author)
             print("source location created " + str(new_source_location))
-            new_event, created = Event.objects.get_or_create(verbatim_event_date=getattr(row, 'verbatimEventDate'))
+            new_event, created = Event.objects.get_or_create(verbatim_event_date=getattr(row, 'verbatimEventDate'), source_habitat=source_habitat)
             print("new event created: " + str(new_event))
 
             obj, created = Occurrence.objects.get_or_create(source_reference=reference, event=new_event, source_location=new_source_location, source_entity=verbatimScientificname,

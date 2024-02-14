@@ -4,6 +4,7 @@ import pandas as pd
 import requests
 from mb.models.models import SourceReference, MasterReference, EntityClass, SourceEntity, EntityRelation, MasterEntity, TimePeriod, SourceMethod, ChoiceValue
 from mb.models.location_models import SourceLocation
+from mb.models.habitat_models import SourceHabitat
 from ..tools import make_harvard_citation_journalarticle
 from datetime import timedelta
 from config.settings import ITIS_CACHE
@@ -138,7 +139,7 @@ class BaseImporter:
             new_entity_class = EntityClass(name=taxon_rank, created_by=author)
             new_entity_class.save()
             return new_entity_class
-        
+    
     def get_or_create_source_entity(self, name: str, source_reference: SourceReference, entity_class: EntityClass, author: User):
         """
         Return SourceEntity object for the given name or create a new one
@@ -278,6 +279,18 @@ class BaseImporter:
             return None
         choicevalue = ChoiceValue.objects.filter(pk=gender)
         return choicevalue[0]
+    
+    def get_or_create_source_habitat(self, habitat_type: str, habitat_percentage: str, author: User):
+        """
+        Return SourceHabitat object for the given habitat_type or create a new one
+        """
+        source_habitat = SourceHabitat.objects.filter(habitat_type__iexact=habitat_type)
+        if source_habitat.count() == 1:
+            return source_habitat[0]
+        else:
+            new_source_habitat = SourceHabitat(habitat_type=habitat_type, habitat_percentage=habitat_percentage, created_by=author)
+            new_source_habitat.save()
+            return new_source_habitat
             
         
         
