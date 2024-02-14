@@ -19,7 +19,6 @@ olson_reference = importer.get_or_create_master_reference(citation="Olson, D. M.
 olson_path = os.path.join(script_dir, "biomes_olson_1983.csv")
 olson_df = pd.read_csv(olson_path)
 
-"""
 for index, row in olson_df.iterrows():
     prev_habitat = None
     for i in range(len(row)-1):
@@ -37,7 +36,7 @@ for index, row in olson_df.iterrows():
             habitat.save()
 
         prev_habitat = habitat
-"""
+
 
 wwf_path = os.path.join(script_dir, "biomes_wwf.csv")
 wwf_df = pd.read_csv(wwf_path)
@@ -49,6 +48,23 @@ for index, row in wwf_df.iterrows():
     habitat, created = MasterHabitat.objects.get_or_create(
                 reference=olson_reference,
                 biome_code=biome_code,
+                name=name,
+            )
+    
+    if created:
+        habitat.save()
+
+holdridge_reference = importer.get_or_create_master_reference(citation="Holdridge, L.R. (1947). Determination of world plant formations from simple climatic data. Science. 105 (2727): 367–8.", author=user)       
+holdridge_path = os.path.join(script_dir, "biomes_holdridge.csv")
+holdridge_df = pd.read_csv(holdridge_path)
+
+for index, row in holdridge_df.iterrows():
+    iiasa_code = row.iloc[0]
+    name = row.iloc[1]
+    
+    habitat, created = MasterHabitat.objects.get_or_create(
+                reference=holdridge_reference,
+                iiasa_code=iiasa_code,
                 name=name,
             )
     

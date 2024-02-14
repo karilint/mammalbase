@@ -55,6 +55,11 @@ class MasterHabitat(BaseModel):
         null=True,
         help_text='Enter the biome code of the Master Habitat'
         )
+    iiasa_code = models.PositiveSmallIntegerField(
+        blank=True,
+        null=True,
+        help_text='Enter the IIASA code of the Master Habitat'
+        )
     
     class Meta:
       ordering = ['name']
