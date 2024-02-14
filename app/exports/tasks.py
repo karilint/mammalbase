@@ -20,7 +20,7 @@ from .query_sets import (
 
 @shared_task
 def export_zip_file(
-        email_receiver: str,
+        email_recipient: str,
         export_list: list,
         export_file_id,
         file_writer=ExportFileWriter()):
@@ -29,7 +29,7 @@ def export_zip_file(
     saves it to the db and sends the download link as an email.
 
     Keyword arguments:
-    email_receiver -- Email receiver address
+    email_recipient -- Email receiver address
     export_list -- List of dicts containing information for creating files
             ['file_name'] -- file_name to save queries to
             ['queries_and_fields'] -- queries and corresponding fields
@@ -38,9 +38,9 @@ def export_zip_file(
     file_writer -- dependency injection, this class is responsible for file
                    writing in exports
     """
-    if email_receiver == '':
+    if email_recipient == '':
         raise ValueError(
-            'Expected argument email_receiver to contain an email address, '
+            'Expected argument email_recipient to contain an email address, '
             'got empty string instead'
         )
     if len(export_list) == 0:
@@ -60,6 +60,7 @@ def export_zip_file(
             )
         except (ValueError, TypeError):
             exit_temp_dir(current_dir, temp_directory)
+            # TODO: raise what error?
             raise
         tsv_files.append(file_path)
 
@@ -68,9 +69,10 @@ def export_zip_file(
         file_writer.save_zip_to_django_model(export_file_id)
     except (ObjectDoesNotExist, FileNotFoundError):
         exit_temp_dir(current_dir, temp_directory)
+        # TODO: raise what error?
         raise
 
-    send_email(export_file_id, email_receiver)
+    send_email(export_file_id, email_recipient)
 
     exit_temp_dir(current_dir, temp_directory)
 
@@ -140,14 +142,14 @@ def write_queries_to_file(
 
 @shared_task
 def ets_export_query_set(
-        user_email: str,
+        email_recipient: str,
         export_file_id,
         is_admin_or_contributor: bool,
         measurement_choices: list):
     """Creates ETS-QuerySets.
     
     Keyword arguments:
-    user_email -- Email where to send the download link
+    email_recipient -- Email where to send the download link
     export_file_id -- id pointing to ExportFile instance where exported zip
                 will be stored
     is_admin_or_contributor -- Whether current user is in admin or
@@ -158,11 +160,11 @@ def ets_export_query_set(
 
     export_list = []
 
-    for measurement in measurement_choices:
+    for choice in measurement_choices:
         export_list.append({
                 'file_name': ('measurement_or_fact_'
-                        f'{measurement.split()[0].lower()}'),
-                'queries_and_fields': measurement_or_fact_query(measurement,
+                        f'{choice.split()[0].lower()}'),
+                'queries_and_fields': measurement_or_fact_query(choice,
                         is_admin_or_contributor) })
 
     for file_name, query_function in {
@@ -176,18 +178,18 @@ def ets_export_query_set(
                 'queries_and_fields': query_function(measurement_choices) })
 
     export_zip_file(
-        email_receiver=user_email,
+        email_recipient=email_recipient,
         export_list=export_list,
         export_file_id=export_file_id
     )
 
 
 @shared_task
-def send_email(export_id, target_address):
+def send_email(export_id, email_recipient):
     """Sends user an email with a download link to the exported data"""
     send_mail (
         subject = "MammalBase Data Export: Access Now Available",
         message = generate_download_ready_message(export_id),
         from_email = None,
-        recipient_list = [target_address],
+        recipient_list = [email_recipient],
     )
