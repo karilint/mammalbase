@@ -1,6 +1,8 @@
-from django.db.models import Value, CharField, Q, Case, When
+from django.db.models import Value, CharField, Q, Case, When, F
 from django.db.models.functions import Concat, Replace
 from .base_query import base_query
+from mb.models.models import SourceChoiceSetOptionValue
+from mb.models.models import MasterChoiceSetOption
 
 
 def traitlist_query(measurement_choices):
@@ -37,6 +39,30 @@ def traitlist_query(measurement_choices):
         'source_attribute__master_attribute__attributegrouprelation__display_order'
     ).distinct()
 
+    nominal_query = SourceChoiceSetOptionValue.objects.annotate(
+        identifier=Concat(
+            Value('https://www.mammalbase.net/ma/'),
+            'source_choiceset_option__source_attribute__master_attribute__id',
+            Value('/'),
+            output_field=CharField()
+        ),
+        trait=Replace(
+            'source_choiceset_option__source_attribute__master_attribute__name',
+            Value(' '),
+            Value('_')
+        ),
+        narrowerTerm=Value('NA'),
+        relatedTerm=Value('NA'),
+        broaderTerm=Value('NA'),
+        expectedUnit=Value('NA'),
+        max_allowed_value=Value('NA'),
+        min_allowed_value=Value('NA'),
+        comments=Value('NA'),
+    ).order_by(
+        'source_choiceset_option__source_attribute__master_attribute__groups__name',
+        'source_choiceset_option__source_attribute__master_attribute__attributegrouprelation__display_order'
+    ).distinct()
+
     fields = [
         ('identifier', 'identifier'),
         ('trait', 'trait'),
@@ -53,4 +79,27 @@ def traitlist_query(measurement_choices):
         ('source_attribute__master_attribute__reference__citation', 'source')
     ]
 
-    return [(query, fields)]
+    nominal_fields = [
+        ('identifier', 'identifier'),
+        ('trait', 'trait'),
+        ('broaderTerm', 'broaderTerm'),
+        ('narrowerTerm', 'narrowerTerm'),
+        ('relatedTerm', 'relatedTerm'),
+        ('source_choiceset_option__source_attribute__master_attribute__value_type', 'valueType'),
+        ('expectedUnit', 'expectedUnit'),
+        ('source_choiceset_option__master_choiceset_option__name', 'factorLevels'),
+        ('max_allowed_value', 'maxAllowedValue'),
+        ('min_allowed_value', 'minAllowedValue'),
+        ('source_choiceset_option__source_attribute__master_attribute__description', 'traitDescription'),
+        ('comments', 'comments'),
+        ('source_choiceset_option__source_attribute__master_attribute__reference__citation', 'source')
+    ]
+
+    queries = []
+    if "Nominal traits" in measurement_choices:
+        queries.append((nominal_query, nominal_fields))
+    
+    if "Cranial measurements" in measurement_choices or "External measurements" in measurement_choices:
+        queries.append((query, fields))
+
+    return queries
