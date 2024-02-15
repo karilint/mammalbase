@@ -92,7 +92,7 @@ class MasterEntityAdmin(SimpleHistoryAdmin):
 @admin.register(models.MasterReference)
 class MasterReferenceAdmin(SimpleHistoryAdmin):
     search_fields = ['citation']
-    list_filter = ['type', 'year', 'container_title', ]
+    list_filter = ['type', 'year']
 
 @admin.register(models.ProximateAnalysisItem)
 class ProximateAnalysisItemAdmin(SimpleHistoryAdmin):
@@ -110,10 +110,7 @@ class SourceAttributeAdmin(SimpleHistoryAdmin):
          admin.RelatedOnlyFieldListFilter),
         ('master_attribute',
          admin.RelatedOnlyFieldListFilter),
-        'name',
-        'type',
-        ('method',
-         admin.RelatedOnlyFieldListFilter)]
+        'type']
 
 @admin.register(models.SourceChoiceSetOptionValue)
 class SourceChoiceSetOptionValueAdmin(SimpleHistoryAdmin):
