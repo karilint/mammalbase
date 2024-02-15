@@ -93,9 +93,6 @@ class Validation():
 
         elif rule.startswith("in_db"):
             rule_error = self.validate_in_db(data, field_name, field_rules)
-        
-        elif rule == "lengths":
-            rule_error = self.validate_lengths(data, field_name, field_rules)
             
         elif rule == "digits":
             rule_error = self.validate_digit_fields(data,field_name)
@@ -331,15 +328,6 @@ class Validation():
             errs.append(self.return_field_message(field_name,"regex"))
         return errs
 
-    def validate_lengths(self, data, field_name, field_rules):
-        print("yritetään length " + str(data[field_name]))
-        """Validate lengths field"""
-        # Your validation logic here
-        # Example:
-        if not data.get(field_name):
-            return self.return_no_field_message(field_name, 'lengths')
-        # Additional validation logic...
-        return ""  # No error message if validation passes
 
     def validate_max_fields(self, data, field_name, rule):
         print("yritetään max " + str(data[field_name]))
