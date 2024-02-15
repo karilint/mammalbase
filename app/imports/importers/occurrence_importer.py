@@ -19,7 +19,7 @@ class OccurrencesImporter(BaseImporter):
             reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
             entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
             verbatimScientificname = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
-            source_habitat = self.get_or_create_source_habitat(getattr(row, 'habitatType'), author)
+            source_habitat = self.get_or_create_source_habitat(getattr(row, 'habitatType'),getattr(row, 'habitatPercentage'), reference, author)
         except Exception as e:
             """
             We don't add anything if we encounter an error.
@@ -51,8 +51,5 @@ class OccurrencesImporter(BaseImporter):
         except Exception as error:
             print("error in importing: " + str(error))
             return False
-     
-    
-
 
 OccurrencesImpoter = OccurrencesImporter()
