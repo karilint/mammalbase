@@ -11,7 +11,7 @@ class Proximate_analysis_validation(Validation):
             "PartOfOrganism"                            : "required|in:BARK,BLOOD,BONES,BUD,CARRION,EGGS,EXUDATES,FECES,FLOWER,FRUIT,LARVAE,LEAF,MINERAL,NECTAR/JUICE,NONE,POLLEN,ROOT,SEED,SHOOT,STEM,UNKNOWN,WHOLE",  #Done
             "author"                                    : "required|author",                                    #Done
             "references"                                : "required|min:10|max:500|regex:.*([1-2][0-9]{3})",    #Done
-            "individualCount"                           : "digits", # ?
+            "individualCount"                           : "digits", 
             "measurementMethod"                         : "max:500",
             "measurementDeterminedBy"                   : "",
             "verbatimLocality"                          : "max:250",   #Done
@@ -38,7 +38,7 @@ class Proximate_analysis_validation(Validation):
             "verbatimTraitValue__nitrogen_free_extract" : "max:250",   #Done
             "dispersion__nitrogen_free_extract"         : "",
             "measurementMethod__nitrogen_free_extract"  : "",
-            "associatedReferences"                      : ""
+            "associatedReferences"                      : "max:500|regex:.*([1-2][0-9]{3}"
         }
     
         self.data = {

@@ -7,43 +7,53 @@ class Ets_validation(Validation):
         super().__init__()
 
         self.rules = {
-            "author":                       "required|author", #DONE
-            "verbatimScientificName":       "required|alpha", #Done
-            "taxonRank":                    "in:Subspecies,Varietas,Forma,Species,Genus,Nothogenus,Nothospecies,Nothosubspecies,Family,nan", #DONE
-            "verbatimLocality":             "max:250", #DONE, cannot be tested since it can be anything
-            "habitat" :                     "max:250", # ???
-            "samplingEffort" :              "max:250",
-            "sex":                          "in:male,female,nan", #DONE
-            "individualCount" :             "digits",
-            "verbatimEventDate":            "max:250", #DONE
-            "measurementMethod " :          "max:500", #max 500
-            "verbatimAssociatedTaxa" :      "max:250", #DONE alkaa verbatim
-            "PartOfOrganism" :              "in:BARK,BLOOD,BONES,BUD,CARRION,EGGS,EXUDATES,FECES,FLOWER,FRUIT,LARVAE,LEAF,MINERAL,NECTAR/JUICE,NONE,POLLEN,ROOT,SEED,SHOOT,STEM,UNKNOWN,WHOLE",
-            "sequence" :                    "max:250", #?
-            "measurementValue" :            "digis|min:0", #?
-            "associatedReferences" :        "max:250", #max 250
-            "references":                   "required|min:10|max:500|regex:.*([1-2][0-9]{3})", #DONE #|in_db:SourceReference,citation__iexact
+            "references": "required|min:10|max:500|regex:.*([1-2][0-9]{3})",
+            "verbatimScientificName": "required|alpha",
+            "taxonRank": "in:Subspecies,Varietas,Forma,Species,Genus,Nothogenus,Nothospecies,Nothosubspecies,Family,nan",
+            "verbatimTraitName": "max:250",
+            "verbatimTraitUnit": "max:25",
+            "individualCount": "digits",
+            "measurementValue_min": "",
+            "measurementValue_max": "",
+            "dispersion": "max:250",
+            "statisticalMethod": "max:250",
+            "verbatimTraitValue": "",
+            "sex": "in:male,female,nan",
+            "lifeStage": "alpha",
+            "measurementMethod": "alpha",
+            "measurementRemarks": "",
+            "measurementAccuracy": "",
+            "measurementDeterminedBy": "",
+            "verbatimLocality": "max:250",
+            "author": "required|author",
+            "associatedReferences": "max:500|regex:.*([1-2][0-9]{3}"
         }
+
 
     
         self.data = {
-            "author": "",
+            "references": "",
             "verbatimScientificName": "",
             "taxonRank": "",
-            "verbatimLocality": "",
-            "habitat": "",
-            "samplingEffort": "",
-            "sex": "",
+            "verbatimTraitName": "",
+            "verbatimTraitUnit": "",
             "individualCount": "",
-            "verbatimEventDate": "",
+            "measurementValue_min": "",
+            "measurementValue_max": "",
+            "dispersion": "",
+            "statisticalMethod": "",
+            "verbatimTraitValue": "",
+            "sex": "",
+            "lifeStage": "",
             "measurementMethod": "",
-            "verbatimAssociatedTaxa": "",
-            "PartOfOrganism": "",
-            "sequence": "",
-            "measurementValue": "",
-            "associatedReferences": "",
-            "references": ""
+            "measurementRemarks": "",
+            "measurementAccuracy": "",
+            "measurementDeterminedBy": "",
+            "verbatimLocality": "",
+            "author": "",
+            "associatedReferences": ""
         }
+
     
 
 

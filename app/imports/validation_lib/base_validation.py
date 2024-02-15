@@ -328,6 +328,20 @@ class Validation():
             errs.append(self.return_field_message(field_name,"regex"))
         return errs
 
+    def validate_lengths_fields(self, data, field_name, field_rules):
+        print("yritetään length " + str(data[field_name]))
+        """Validate lengths field"""
+
+        # Retrieve the specific value for that rule
+        specific_value = field_rules.split(':')[1]
+        errs = []
+        try:
+            if data[field_name] != specific_value:
+                errs.append(self.return_field_message(field_name, "specific", specific_value))
+        except KeyError:
+            errs.append(self.return_no_field_message(field_name, 'specific'))
+
+        return errs
 
     def validate_max_fields(self, data, field_name, rule):
         print("yritetään max " + str(data[field_name]))
