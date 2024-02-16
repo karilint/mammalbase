@@ -19,6 +19,9 @@ from django.apps import apps
 class Validation():
 
     def __init__(self):
+        """
+        Validation class. The class is derived from https://github.com/walid-mashal/laravel-validation
+        """
         self.error_message_templates = self.get_error_message_templates()
         self.custom_error_messages = {}
         # List to store the error messages in
@@ -118,6 +121,15 @@ class Validation():
         return rule_error
     
     def validate_verbatim_coordinates(self, data, field_name):
+        """Validate verbatimCoordinates
+
+        Args:
+            data (python-dictionary): Generaged dictionary from tsv-file.
+            field_name (str): field name
+
+        Returns:
+            list: Possible validation errors in list. Otherwise empty list if valdion is correct.
+        """
         print("yritetään verbatim coordnates " + str(data[field_name]))
         errs = []
 
@@ -125,17 +137,16 @@ class Validation():
 
         return errs
     
-        """
-        try:
-            if data[field_name] != (True or False):
-                errs.append(self.return_field_message(field_name,"boolean"))
-        except KeyError:
-            errs.append(self.return_no_field_message(field_name,'boolean'))
-
-        return errs
-        """ 
-    
     def validate_verbatim_eventdate(self, data, field_name):
+        """Validate verbatimEventDate
+
+        Args:
+            data (python-dictionary): Generaged dictionary from tsv-file.
+            field_name (str): field name
+
+        Returns:
+            list: Possible validation errors in list. Otherwise empty list if valdion is correct.
+        """
         return []
     def validate_verbatim_latitude(self, data, field_name):
         return []
@@ -144,6 +155,15 @@ class Validation():
         return []
 
     def validate_boolean_fields(self, data, field_name):
+        """Validate boolean values.
+
+        Args:
+            data (python-dictionary): Generaged dictionary from tsv-file.
+            field_name (str): field name
+
+        Returns:
+            list: Possible validation errors in list. Otherwise empty list if valdion is correct.
+        """
         print("yritetään field " + str(data[field_name]))
         errs = []
         try:
@@ -169,6 +189,15 @@ class Validation():
         return errs
     
     def validate_nameYear_fields(self, data, field_name):
+        """Validate nameYear
+
+        Args:
+            data (python-dictionary): Generaged dictionary from tsv-file.
+            field_name (str): field name
+
+        Returns:
+            list: Possible validation errors in list. Otherwise empty list if validation is correct.
+        """
         print("yritetään nameyear " + str(data[field_name]))
 
         errs = []
@@ -182,6 +211,15 @@ class Validation():
         return errs
 
     def validate_date(self, data, field_name):
+        """Validate date
+
+        Args:
+            data (python-dictionary): Generaged dictionary from tsv-file.
+            field_name (str): field name
+
+        Returns:
+            list: Possible validation errors in list. Otherwise empty list if validaion is correct.
+        """
         print("yritetään datea " + str(data[field_name]))
         errs = []
         try:
@@ -238,6 +276,15 @@ class Validation():
         return errs
 
     def validate_author_fields(self, data, field_name):
+        """Validate author.
+
+        Args:
+            data (python-dictionary): Generaged dictionary from tsv-file.
+            field_name (str): field name
+
+        Returns:
+            list: Possible validation errors in list. Otherwise empty list if validaion is correct.
+        """
         print("yritetään author " + str(data[field_name]))
         errs = []
         try:
@@ -306,6 +353,15 @@ class Validation():
         return ""
 
     def validate_in_db(self, data, field_name, field_rules):
+        """Validate in db.
+
+        Args:
+            data (python-dictionary): Generaged dictionary from tsv-file.
+            field_name (str): field name
+
+        Returns:
+            list: Possible validation errors in list. Otherwise empty list if validaion is correct.
+        """
         print("yritetään in db " + str(data[field_name]))
         model = apps.get_model('mb', field_rules[0])
         errs = []
@@ -317,6 +373,15 @@ class Validation():
 
 
     def validate_regex_fields(self, data, field_name, rule):
+        """Validate regex fields.
+
+        Args:
+            data (python-dictionary): Generaged dictionary from tsv-file.
+            field_name (str): field name
+
+        Returns:
+            list: Possible validation errors in list. Otherwise empty list if validaion is correct.
+        """
         print("yritetään regex field " + str(data[field_name]))
         """Used for validating field data to match a regular expression, returns a list of error messages"""
 
@@ -329,6 +394,15 @@ class Validation():
         return errs
 
     def validate_lengths_fields(self, data, field_name, field_rules):
+        """Validate length fields.
+
+        Args:
+            data (python-dictionary): Generaged dictionary from tsv-file.
+            field_name (str): field name
+
+        Returns:
+            list: Possible validation errors in list. Otherwise empty list if validaion is correct.
+        """
         print("yritetään length " + str(data[field_name]))
         """Validate lengths field"""
 
@@ -344,6 +418,15 @@ class Validation():
         return errs
 
     def validate_max_fields(self, data, field_name, rule):
+        """Validate max fields.
+
+        Args:
+            data (python-dictionary): Generaged dictionary from tsv-file.
+            field_name (str): field name
+
+        Returns:
+            list: Possible validation errors in list. Otherwise empty list if validaion is correct.
+        """
         print("yritetään max " + str(data[field_name]))
         """Used for validating fields for a maximum integer value, returns a list of error messages"""
 
@@ -366,6 +449,15 @@ class Validation():
         return errs
 
     def validate_min_fields(self, data, field_name, rule):
+        """Validate min fields.
+
+        Args:
+            data (python-dictionary): Generaged dictionary from tsv-file.
+            field_name (str): field name
+
+        Returns:
+            list: Possible validation errors in list. Otherwise empty list if validaion is correct.
+        """
         print("yritetään min " + str(data[field_name]))
         """Used for validating fields for a minimum integer value, returns a list of error messages"""
 
@@ -413,18 +505,31 @@ class Validation():
 
         return errs,result
 
-    # def load_json_file(self,file_name):
-    #     with open(file_name) as f:
-    #         t = f.read()
-    #         return json.loads(t)
-
     def return_no_field_message(self, field_name, rule_name):
+        """Return no field message.
+
+        Args:
+            data (python-dictionary): Generaged dictionary from tsv-file.
+            field_name (str): field name
+
+        Returns:
+            str: Error message from dictionary (see custom_error_messages-function).
+        """
         if self.custom_error_messages.__contains__(field_name+".no_field"):
             return self.custom_error_messages[field_name+".no_field"]
         else:
             return self.error_message_templates['no_field'] % (field_name,rule_name)
 
     def return_field_message(self, field_name, rule_name):
+        """Return field message.
+
+        Args:
+            data (python-dictionary): Generaged dictionary from tsv-file.
+            field_name (str): field name
+
+        Returns:
+            str: Error message from dictionary (see custom_error_messages-function).
+        """
         if self.custom_error_messages.__contains__(field_name+"."+rule_name):
             return self.custom_error_messages[field_name+"."+rule_name]
         else:
@@ -440,6 +545,11 @@ class Validation():
         return not len(errors) > 0
 
     def get_error_message_templates(self):
+        """Dictionary for error messages.
+
+        Returns:
+            dictionary: list of all possible error messages.
+        """
         return {
             "after": "'%s' is an invalid after date",
             "alpha":"'%s' can have only alphabets",
@@ -468,6 +578,11 @@ class Validation():
         }
     
     def get_custom_error_messages(self):
+        """Dictionary for custom error messages.
+
+        Returns:
+            dictionary: list of all possible error messages.
+        """
         return {
             "_comment": "You did not provide any field named <feld_name> in your data dictionary",
             "field_name.rule":"You did not provide any field named field_name in your data dictionary",

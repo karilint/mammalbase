@@ -9,6 +9,17 @@ from utils.views import render	# MB Utils
 from .tools import messages
 
 def wrapper(request, validator, importer, path):
+    """Wrapper for differnt viewers. 
+
+    Args:
+        request (_type_): HTTP-request
+        validator (Occurrence_validation): Occurrence_validation object.
+        importer (OccurrencesImporter): OccurrenceImporter object
+        path (str): The path of the html template to be returned.
+
+    Returns:
+        HTTP-response: html-template
+    """
     if request.method == "GET":
         print(f"import/{path}.html")
         return render(request, f"import/{path}.html")

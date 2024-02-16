@@ -4,6 +4,9 @@ from .base_validation import Validation
 class Diet_set_validation(Validation):
 
     def __init__(self):
+        """
+        Rules for diet set validation.
+        """
         super().__init__()
 
         self.rules = {

@@ -4,6 +4,9 @@ from .base_validation import Validation
 class Proximate_analysis_validation(Validation):
 
     def __init__(self):
+        """
+        Rules for proximate analysis validation.
+        """
         super().__init__()
 
         self.rules = {

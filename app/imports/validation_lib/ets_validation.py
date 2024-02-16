@@ -4,6 +4,9 @@ from .base_validation import Validation
 class Ets_validation(Validation):
 
     def __init__(self):
+        """
+        Rules for ets validation.
+        """
         super().__init__()
 
         self.rules = {

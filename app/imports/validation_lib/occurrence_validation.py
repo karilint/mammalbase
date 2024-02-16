@@ -4,6 +4,9 @@ from .base_validation import Validation
 class Occurrence_validation(Validation):
 
     def __init__(self):
+        """
+        Rules for occurrence validation.
+        """
         super().__init__()
 
         self.rules = {
