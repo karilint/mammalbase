@@ -12,7 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 import re, datetime, sys
-from mb.models.models import SourceReference
+from mb.models.models import ChoiceValue, SourceReference
 from django.apps import apps
 
 
@@ -130,7 +130,6 @@ class Validation():
         Returns:
             list: Possible validation errors in list. Otherwise empty list if valdion is correct.
         """
-        print("yritetään verbatim coordnates " + str(data[field_name]))
         errs = []
 
         #before matching remove all whitespaces from str(data[field_name])
@@ -164,11 +163,9 @@ class Validation():
         Returns:
             list: Possible validation errors in list. Otherwise empty list if valdion is correct.
         """
-        print("yritetään field " + str(data[field_name]))
         errs = []
         try:
             if data[field_name] != (True or False):
-                print("VIRHE")
                 errs.append(self.return_field_message(field_name,"boolean"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'boolean'))
@@ -177,12 +174,10 @@ class Validation():
 
     def validate_digit_fields(self, data, field_name):
         """Used for validating integer fields, returns a list of error messages"""
-        print("yritetään digittejä"+ str(data[field_name]))
         errs = []
 
         try:
             if not isinstance(float(data[field_name]),(int, float)) or data[field_name] == "nan":
-                print("VIRHE")
                 errs.append(self.return_field_message(field_name,"digits"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'digits'))
@@ -198,13 +193,11 @@ class Validation():
         Returns:
             list: Possible validation errors in list. Otherwise empty list if validation is correct.
         """
-        print("yritetään nameyear " + str(data[field_name]))
 
         errs = []
         try:
             name_year_pattern = r"\((?:\w+(?:,\s*\d{1,4})?|\w+)\)(?:\s*|$)|\w+,\s*\d{1,4}"
             if not re.match(name_year_pattern, data[field_name]) or data[field_name].count('(') != data[field_name].count(')'):
-                print("VIRHE")
                 errs.append(self.return_field_message(field_name, "invalid name and year format"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name, 'integer'))
@@ -220,7 +213,6 @@ class Validation():
         Returns:
             list: Possible validation errors in list. Otherwise empty list if validaion is correct.
         """
-        print("yritetään datea " + str(data[field_name]))
         errs = []
         try:
             date_str = data[field_name]
@@ -248,12 +240,10 @@ class Validation():
     
     def validate_alpha_fields(self, data, field_name):
         """Used for validating fields for alphabets only, returns a list of error messages"""
-        print("yritetään alpha  " + str(data[field_name]))
         errs = []
 
         try:
             if not re.match("^[a-zA-Z\s]+$",str(data[field_name])) and str(data[field_name]) != "nan":
-                print("VIRHE")
                 errs.append(self.return_field_message(field_name,"alpha"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'alpha'))
@@ -262,14 +252,12 @@ class Validation():
 
     def validate_in_fields(self, data, field_name, rule):
         """Used for validating fields for some number of values to allow, returns a list of error messages"""
-        print("yritetään in fields " + str(data[field_name]))
         #retrieve the value for that in rule
         ls = rule.split(':')[1].split(',')
         errs = []
 
         try:
             if str(data[field_name]) not in ls:
-                print("VIRHE")
                 errs.append(self.return_field_message(field_name, "in"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'in'))
@@ -285,7 +273,6 @@ class Validation():
         Returns:
             list: Possible validation errors in list. Otherwise empty list if validaion is correct.
         """
-        print("yritetään author " + str(data[field_name]))
         errs = []
         try:
             author = data[field_name]
@@ -296,7 +283,6 @@ class Validation():
             else:
                 parts = author.split('-')
                 if len(parts) != 4 or not all(part.isdigit() and len(part) == 4 for part in parts):
-                    print("VIRHE")
                     errs.append(self.return_field_message(field_name, "invalid author format"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name, 'required'))
@@ -306,11 +292,9 @@ class Validation():
 
     def validate_required_fields(self, data, field_name):
         """Used for validating required fields, returns a list of error messages"""
-        print("yritetään required " + str(data[field_name]))
         errs = []
         try:
             if str(data[field_name]) == "" or str(data[field_name]) == "nan":
-                print("VIRHE")
                 errs.append(self.return_field_message(field_name,"required"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'required'))
@@ -319,11 +303,9 @@ class Validation():
 
     def validate_verbatim_scientific_name(self, data, field_name, field_rules):
         """Validate verbatim scientific name field"""
-        print("yritetään verbatim scientific name " + str(data[field_name]))
         # Your validation logic here
         # Example:
         if not data.get(field_name):
-            print("VIRHE")
             return self.return_no_field_message(field_name, 'verbatim scientific name')
         # Additional validation logic...
         return ""  # No error message if validation passes
@@ -331,15 +313,26 @@ class Validation():
 
     def validate_gender(self, data, field_name, field_rules):
         """Validate gender field"""
-        print("yritetään gender " + str(data[field_name]))
+        gender = str(data[field_name])
+
+        # Change the first letter to uppercase
+        choicevalue = ChoiceValue.objects.filter(choice_set="Gender", caption=gender.capitalize())
+
+        if gender == 'nan':
+            return ""
+        if gender != '22' or gender != '23' or gender.capitalize() != str(choicevalue[0].caption):
+            return self.return_no_field_message(field_name, 'sex')
+        return ""
+
+        """
         if not data.get(field_name):
             return self.return_no_field_message(field_name, 'gender')
         if data != ("male" or "female" or None):
             return self.return_field_message(field_name, "invalid gender")
+        """
 
     def validate_measurement_value(self, data, field_name, field_rules):
         """Validate measurement value field"""
-        print("yritetään measurement " + str(data[field_name]))
         if not data.get(field_name):
             return self.return_no_field_message(field_name, 'measurement value')
         measurement_value = data[field_name]
@@ -362,27 +355,15 @@ class Validation():
         Returns:
             list: Possible validation errors in list. Otherwise empty list if validaion is correct.
         """
-        print("yritetään in db " + str(data[field_name]))
         model = apps.get_model('mb', field_rules[0])
         errs = []
 
         if not model.objects.filter(**{field_rules[1]: data[field_name]}).exists():
-            print("VIRHE in db")
             errs.append(self.return_no_field_message(field_name,'in_db'))
         return errs
 
 
     def validate_regex_fields(self, data, field_name, rule):
-        """Validate regex fields.
-
-        Args:
-            data (python-dictionary): Generaged dictionary from tsv-file.
-            field_name (str): field name
-
-        Returns:
-            list: Possible validation errors in list. Otherwise empty list if validaion is correct.
-        """
-        print("yritetään regex field " + str(data[field_name]))
         """Used for validating field data to match a regular expression, returns a list of error messages"""
 
         regex = str(rule.split(':')[1])
@@ -394,16 +375,6 @@ class Validation():
         return errs
 
     def validate_lengths_fields(self, data, field_name, field_rules):
-        """Validate length fields.
-
-        Args:
-            data (python-dictionary): Generaged dictionary from tsv-file.
-            field_name (str): field name
-
-        Returns:
-            list: Possible validation errors in list. Otherwise empty list if validaion is correct.
-        """
-        print("yritetään length " + str(data[field_name]))
         """Validate lengths field"""
 
         # Retrieve the specific value for that rule
@@ -418,16 +389,6 @@ class Validation():
         return errs
 
     def validate_max_fields(self, data, field_name, rule):
-        """Validate max fields.
-
-        Args:
-            data (python-dictionary): Generaged dictionary from tsv-file.
-            field_name (str): field name
-
-        Returns:
-            list: Possible validation errors in list. Otherwise empty list if validaion is correct.
-        """
-        print("yritetään max " + str(data[field_name]))
         """Used for validating fields for a maximum integer value, returns a list of error messages"""
 
         #retrieve the value for that max rule
@@ -437,11 +398,9 @@ class Validation():
         try:
             if isinstance(data[field_name],(float,int)):
                 if (data[field_name]) > max_value:
-                    print("VIRHE")
                     errs.append(self.return_field_message(field_name,"max"))
             else:
                 if len(str(data[field_name])) > max_value:
-                    print("VIRHE")
                     errs.append(self.return_field_message(field_name,"max"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'maximum'))
@@ -449,30 +408,17 @@ class Validation():
         return errs
 
     def validate_min_fields(self, data, field_name, rule):
-        """Validate min fields.
-
-        Args:
-            data (python-dictionary): Generaged dictionary from tsv-file.
-            field_name (str): field name
-
-        Returns:
-            list: Possible validation errors in list. Otherwise empty list if validaion is correct.
-        """
-        print("yritetään min " + str(data[field_name]))
         """Used for validating fields for a minimum integer value, returns a list of error messages"""
 
         #retrieve the value for that min rule
         min_value = int(rule.split(':')[1])
-        print("minimi "+ str(min_value))
         errs = []
         try:
             if isinstance(data[field_name],(float,int)):
                 if (data[field_name]) < min_value:
-                    print("VIRHE")
                     errs.append(self.return_field_message(field_name,"min"))
             else:
                 if len(str(data[field_name])) < min_value:
-                    print("VIRHE")
                     errs.append(self.return_field_message(field_name,"min"))
         except KeyError:
             errs.append(self.return_no_field_message(field_name,'minimum'))
@@ -574,7 +520,8 @@ class Validation():
             "same":"'%s' has invalid value for same rule",
             "size":"'%s' has invalid value for size rule",
             "website":"'%s' must be a valid Website URL",
-            "no_field":"No field named '%s' to validate for %s rule"
+            "no_field":"No field named '%s' to validate for %s rule",
+            "sex": "%s has invalid value"
         }
     
     def get_custom_error_messages(self):

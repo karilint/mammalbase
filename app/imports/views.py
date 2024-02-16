@@ -18,10 +18,16 @@ from .validation_lib.ets_validation import Ets_validation
 from .views_wrapper import wrapper
 
 
-
-
 @login_required
 def import_diet_set(request):
+	"""Import diet set from web form.
+
+	Args:
+		request (_type_): _description_
+
+	Returns:
+		HTTP-response: html-template
+	"""
 	validator = Diet_set_validation()
 	importer = DietImporter()
 	path = "import_diet_set"
@@ -30,6 +36,14 @@ def import_diet_set(request):
 
 @login_required
 def import_proximate_analysis(request):
+	"""Import proximate analysis from web form.
+
+	Args:
+		request (_type_): _description_
+
+	Returns:
+		HTTP-response: html-template
+	"""
 	#validator = Proximate_analysis_validation()
 	#importer = ProximateAnalysisImporter()
 	path = "import_proximate_analysis"
@@ -39,6 +53,14 @@ def import_proximate_analysis(request):
 
 @login_required
 def import_ets(request):
+	"""Import ets from web form.
+
+	Args:
+		request (_type_): _description_
+
+	Returns:
+		HTTP-response: html-template
+	"""
 	validator = Ets_validation()
 	importer = EtsImporter()
 	path = "import_ets"
@@ -48,6 +70,14 @@ def import_ets(request):
 
 @login_required
 def import_occurrences(request):
+	"""Import occurrences from web form.
+
+	Args:
+		request (_type_): _description_
+
+	Returns:
+		HTTP-response: html-template
+	"""
 	validator = Occurrence_validation()
 	importer = OccurrencesImporter()
 	path = "import_occurrences"

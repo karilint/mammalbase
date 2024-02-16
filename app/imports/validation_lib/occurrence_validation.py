@@ -16,20 +16,16 @@ class Occurrence_validation(Validation):
             "taxonRank"                 : "in:Subspecies,Varietas,Forma,Species,Genus,Nothogenus,Nothospecies,Nothosubspecies,Family,nan", #DONE
             "organismQuantity"          : "digits", #DONE
             "organismQuantityType"      : "", #DONE, no possible validator since darvincore quote "whereas this term allows for any string literal value." e.g '% biomass'
-            "sex"                       : "in:male,female,nan", #DONE
+            "sex"                       : "gender", #"in:male,female,nan", #DONE
             "lifeStage"                 : "alpha", #Only accept alphabeticals #alpha
             "verbatimEventDate"         : "", #DONE
-            #"verbatimEventDate"        : "in: I,V,X,L,C,D,M,1,2,3,4,5,6,7,8,9,nan", #DONE
             "occurrenceRemarks"         : "", #DONE, cannot be tested since it can be anything
             "verbatimLocality"          : "max:250", #DONE, cannot be tested since it can be anything
             "verbatimElevation"         : "max:250", #DONE
             "verbatimDepth"             : "max:250", #DONE
-            #"verbatimCoordinates"      : "in:N,E,S,W,°,T,d,nan", #DONE
             "verbatimCoordinates"       : "verbatimCoordinates", #DONE
             "verbatimLatitude"          : "", #DONE
             "verbatimLongitude"         : "", #DONE
-            #"verbatimLatitude"         : "in:N,E,S,W,°,T,d,nan", #DONE
-            #"verbatimLongitude"        : "in:N,E,S,W,°,T,d,nan", #DONE
             "verbatimCoordinateSystem"  : "in:decimal degrees,degrees minutes,degrees decimal seconds,UTM,nan", #Done
             "verbatimSRS"               : "", #Maybe done maybe kesken
             "author"                    : "required|author", #DONE

@@ -4,13 +4,15 @@ import pandas as pd
 import requests
 from mb.models.models import SourceReference, MasterReference, EntityClass, SourceEntity, EntityRelation, MasterEntity, TimePeriod, SourceMethod, ChoiceValue
 from mb.models.location_models import SourceLocation
-from ..tools import make_harvard_citation_journalarticle
+from ..tools import make_harvard_citation_journalarticle, messages
 from datetime import timedelta
 from config.settings import ITIS_CACHE
 from requests_cache import CachedSession
 import itis.views as itis
 import json
 from django.contrib.auth.models import User
+import logging
+
 class BaseImporter:
     """
     Base class for all importers
@@ -109,7 +111,9 @@ class BaseImporter:
                 return None
     
     def get_or_create_source_reference(self, citation: str, author: User):
-        # here add a real validation for citation and author
+        """
+        Return new or exists source reference.
+        """
         if (citation.lower() == "nan" or citation == None) or (str(author).lower() == "nan" or author == None):
             raise Exception("SourceReference is not valid!")
 
@@ -123,7 +127,6 @@ class BaseImporter:
         master_reference = self.get_or_create_master_reference(citation, author)
         new_reference.master_reference = master_reference
         new_reference.save()
-        print("uusi master reference luotu " + str(new_reference))
 
         return new_reference
         
@@ -239,7 +242,7 @@ class BaseImporter:
         try:
             source_location = SourceLocation.objects.filter(name__iexact=location, reference=source_reference)
         except Exception as error:
-            print("virhe" + str(error))
+            raise Exception(str(error))
         if source_location.count() == 1:
             return source_location[0]
         else:
