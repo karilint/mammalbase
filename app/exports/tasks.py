@@ -83,22 +83,6 @@ def write_queries_to_file(
         queries_and_fields: list):
     """Used by export_zip_file, writes a list of query results to tsv file"""
 
-    def replace_na(values_list):
-        """Helper function for replacing empty strings and Nones with NA on
-        data returned by QuerySet.values_list()
-        """
-        values_list = list(values_list)
-        for i, row in enumerate(values_list):
-            new_row = []
-            for item in row:
-                if item in ['', None]:
-                    new_row.append('NA')
-                else:
-                    new_row.append(item)
-            values_list[i] = tuple(new_row)
-        return values_list
-
-
     if file_name == '':
         raise ValueError(
             'Expected argument file_name to contain a name for export file, '
@@ -113,7 +97,7 @@ def write_queries_to_file(
     # Get headers from first entrys fields list
     _, headers = zip(*queries_and_fields[0][1])
 
-    rows=[]
+    rows_to_export=set()
     for query_set, fields in queries_and_fields:
         if len(queries_and_fields) == 0:
             raise ValueError(
@@ -131,12 +115,15 @@ def write_queries_to_file(
                     'Headers fields are not same on queries. '
                     f"'{headers[i]}' vs '{check_headers[i]}'"
                 )
-        rows.extend(replace_na(query_set.values_list(*fields)))
-
-    # TODO: Remove duplicate lines
+        for row in query_set.values_list(*fields):
+            na_row=[]
+            for column in row:
+                # Columns without value shuld me marked as 'NA' in ETS
+                na_row.append('NA' if column in ('', None) else column)
+            rows_to_export.add(tuple(na_row))
 
     file_path = f'{file_name}.tsv'
-    file_writer.write_rows(file_path, headers, rows)
+    file_writer.write_rows(file_path, headers, rows_to_export)
     return file_path
 
 
