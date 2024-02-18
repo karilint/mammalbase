@@ -15,7 +15,6 @@ admin.site.register([TaxonomicUnits, ])
 #    search_fields = ['name', ]
 #    history_list_display = ['name', ]
 
-
 @admin.register(models.AttributeGroupRelation)
 class AttributeGroupRelationAdmin(SimpleHistoryAdmin):
     search_fields = ['group__name', 'attribute__name']
@@ -75,9 +74,21 @@ class MasterAttributeAdmin(SimpleHistoryAdmin):
     list_filter = [('entity', admin.RelatedOnlyFieldListFilter),
                    'name', ('unit', admin.RelatedOnlyFieldListFilter)]
 
+class MasterAttributeInline(admin.TabularInline):
+    model = models.AttributeGroupRelation
+    extra = 0
+
 @admin.register(models.MasterAttributeGroup)
 class MasterAttributeGroupAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('name', 'remarks', 'get_master_attributes')
+    inlines = [MasterAttributeInline]
+
+    def get_master_attributes(self, obj):
+        master_attributes = obj.masterattribute_set.all()
+        attribute_names = ', '.join(attr.name for attr in master_attributes)
+        return attribute_names
+
+    get_master_attributes.short_description = 'Master Attributes' 
 
 @admin.register(models.MasterChoiceSetOption)
 class MasterChoiceSetOptionAdmin(SimpleHistoryAdmin):
