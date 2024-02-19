@@ -5,7 +5,7 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 from django.core.files import File
 
-from ..models import ExportFile
+from exports.models import ExportFile
 
 class ExportFileWriter:
     """ Writes files, zips and adds as File object to the ExportFile model """
