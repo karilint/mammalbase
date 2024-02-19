@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from mb.models import FoodItem, ViewProximateAnalysisTable
+from mb.models.models import FoodItem, ViewProximateAnalysisTable
 from itis.models import TaxonomicUnits
 def run():
     food_items = FoodItem.objects.all().filter(tsn__gt=0).filter(pa_tsn__isnull=True).order_by('-tsn')

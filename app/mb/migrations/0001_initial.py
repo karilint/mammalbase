@@ -5,7 +5,7 @@ import django.core.validators
 from django.db import migrations, models
 import django.db.models.deletion
 import django_userforeignkey.models.fields
-import mb.models
+import mb.models.models
 import simple_history.models
 
 
@@ -155,7 +155,7 @@ class Migration(migrations.Migration):
                 ('modified_on', models.DateTimeField(auto_now=True)),
                 ('is_active', models.BooleanField(default=True, help_text='Is the record active')),
                 ('type', models.CharField(blank=True, choices=[('book', 'book'), ('book-chapter', 'book-chapter'), ('book-part', 'book-part'), ('book-section', 'book-section'), ('book-series', 'book-series'), ('book-set', 'book-set'), ('book-track', 'book-track'), ('component', 'component'), ('dataset', 'dataset'), ('dissertation', 'dissertation'), ('edited-book', 'edited-book'), ('journal', 'journal'), ('journal-article', 'journal-article'), ('journal-issue', 'journal-issue'), ('journal-volume', 'journal-volume'), ('monograph', 'monograph'), ('other', 'other'), ('posted-content', 'posted-content'), ('proceedings', 'proceedings'), ('proceedings-article', 'proceedings-article'), ('reference-book', 'reference-book'), ('reference-entry', 'reference-entry'), ('report', 'report'), ('report-series', 'report-series'), ('standard', 'standard'), ('standard-series', 'standard-series')], default='other', help_text='Select the type of the Standard Reference', max_length=25, null=True)),
-                ('doi', models.CharField(blank=True, help_text='Enter the DOI number that begins with 10 followed by a period', max_length=100, null=True, validators=[mb.models.validate_doi])),
+                ('doi', models.CharField(blank=True, help_text='Enter the DOI number that begins with 10 followed by a period', max_length=100, null=True, validators=[mb.models.models.validate_doi])),
                 ('uri', models.URLField(blank=True, help_text='Enter the Uniform Resource Identifier link', null=True)),
                 ('first_author', models.CharField(blank=True, help_text='Enter the name of the first author of the Standard Reference', max_length=50, null=True)),
                 ('year', models.IntegerField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(1800), django.core.validators.MaxValueValidator(2100)])),
@@ -282,7 +282,7 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True, help_text='Is the record active')),
                 ('citation', models.CharField(help_text='Enter the Citation of the Source Reference', max_length=450)),
                 ('status', models.PositiveSmallIntegerField(choices=[(1, 'Created - Not verified'), (2, 'Verified - Accepted'), (3, 'Verified - Rejected')], default=1, help_text='Status of the Std. Reference')),
-                ('doi', models.CharField(blank=True, help_text='Enter the DOI number that begins with 10 followed by a period', max_length=100, null=True, validators=[mb.models.validate_doi])),
+                ('doi', models.CharField(blank=True, help_text='Enter the DOI number that begins with 10 followed by a period', max_length=100, null=True, validators=[mb.models.models.validate_doi])),
                 ('created_by', django_userforeignkey.models.fields.UserForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='createdby_sourcereference', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
                 ('master_reference', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='mb.masterreference')),
                 ('modified_by', django_userforeignkey.models.fields.UserForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='modifiedby_sourcereference', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
@@ -640,7 +640,7 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True, help_text='Is the record active')),
                 ('citation', models.CharField(help_text='Enter the Citation of the Source Reference', max_length=450)),
                 ('status', models.PositiveSmallIntegerField(choices=[(1, 'Created - Not verified'), (2, 'Verified - Accepted'), (3, 'Verified - Rejected')], default=1, help_text='Status of the Std. Reference')),
-                ('doi', models.CharField(blank=True, help_text='Enter the DOI number that begins with 10 followed by a period', max_length=100, null=True, validators=[mb.models.validate_doi])),
+                ('doi', models.CharField(blank=True, help_text='Enter the DOI number that begins with 10 followed by a period', max_length=100, null=True, validators=[mb.models.models.validate_doi])),
                 ('history_id', models.AutoField(primary_key=True, serialize=False)),
                 ('history_date', models.DateTimeField()),
                 ('history_type', models.CharField(choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')], max_length=1)),
@@ -994,7 +994,7 @@ class Migration(migrations.Migration):
                 ('history_change_reason', models.TextField(null=True)),
                 ('is_active', models.BooleanField(default=True, help_text='Is the record active')),
                 ('type', models.CharField(blank=True, choices=[('book', 'book'), ('book-chapter', 'book-chapter'), ('book-part', 'book-part'), ('book-section', 'book-section'), ('book-series', 'book-series'), ('book-set', 'book-set'), ('book-track', 'book-track'), ('component', 'component'), ('dataset', 'dataset'), ('dissertation', 'dissertation'), ('edited-book', 'edited-book'), ('journal', 'journal'), ('journal-article', 'journal-article'), ('journal-issue', 'journal-issue'), ('journal-volume', 'journal-volume'), ('monograph', 'monograph'), ('other', 'other'), ('posted-content', 'posted-content'), ('proceedings', 'proceedings'), ('proceedings-article', 'proceedings-article'), ('reference-book', 'reference-book'), ('reference-entry', 'reference-entry'), ('report', 'report'), ('report-series', 'report-series'), ('standard', 'standard'), ('standard-series', 'standard-series')], default='other', help_text='Select the type of the Standard Reference', max_length=25, null=True)),
-                ('doi', models.CharField(blank=True, help_text='Enter the DOI number that begins with 10 followed by a period', max_length=100, null=True, validators=[mb.models.validate_doi])),
+                ('doi', models.CharField(blank=True, help_text='Enter the DOI number that begins with 10 followed by a period', max_length=100, null=True, validators=[mb.models.models.validate_doi])),
                 ('uri', models.URLField(blank=True, help_text='Enter the Uniform Resource Identifier link', null=True)),
                 ('first_author', models.CharField(blank=True, help_text='Enter the name of the first author of the Standard Reference', max_length=50, null=True)),
                 ('year', models.IntegerField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(1800), django.core.validators.MaxValueValidator(2100)])),

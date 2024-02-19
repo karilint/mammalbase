@@ -1,14 +1,13 @@
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
-from django.db.models.query import QuerySet
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
-from django_userforeignkey.models.fields import UserForeignKey
 from django.core.validators import MaxValueValidator, MinValueValidator
-from simple_history.models import HistoricalRecords
 from itis.models import TaxonomicUnits
 from tdwg.models import Taxon as TdwgTaxon
+from .base_model import BaseModel
+
 
 # For doi validation
 from django.core.exceptions import ValidationError
@@ -20,63 +19,6 @@ def validate_doi(value):
             _('Value "%(value)s" does not begin with 10 followed by a period'),
             params={'value': value},
         )
-
-class CustomQuerySet(QuerySet):
-    def delete(self):
-        self.update(is_active=False)
-
-class ActiveManager(models.Manager):
-    def is_active(self):
-        return self.model.objects.filter(is_active=True)
-
-    def get_queryset(self):
-        return CustomQuerySet(self.model, using=self._db)
-
-# https://medium.com/@KevinPavlish/add-common-fields-to-all-your-django-models-bce033ac2cdc
-class BaseModel(models.Model):
-    """
-    A base model including basic fields for each Model
-    see. https://pypi.org/project/django-userforeignkey/
-    """
-    created_on = models.DateTimeField(auto_now_add=True)
-    modified_on = models.DateTimeField(auto_now=True)
-    created_by = UserForeignKey(auto_user_add=True, verbose_name="The user that is automatically assigned", related_name='createdby_%(class)s')
-    modified_by = UserForeignKey(auto_user=True, verbose_name="The user that is automatically assigned", related_name='modifiedby_%(class)s')
-# https://django-simple-history.readthedocs.io/en/2.6.0/index.html
-    history = HistoricalRecords(
-        history_change_reason_field=models.TextField(null=True),
-        inherit=True)
-# https://stackoverflow.com/questions/5190313/django-booleanfield-how-to-set-the-default-value-to-true
-    is_active = models.BooleanField(default=True, help_text='Is the record active')
-    objects = ActiveManager()
-
-# https://stackoverflow.com/questions/4825815/prevent-delete-in-django-model
-#    def delete(self):
-#        self.is_active = False
-#        self.save()
-
-    # Code by ChatGPT4
-    def delete(self):
-        """
-        Recursively soft delete this object and cascade the soft delete to related objects.
-        """
-        # Handle related fields with cascading deletion
-        for rel in self._meta.related_objects:
-            if rel.on_delete == models.CASCADE and hasattr(rel.related_model, 'is_active'):
-                related_manager = getattr(self, rel.get_accessor_name())
-                related_objects = related_manager.all()
-
-                # Recursively soft delete the related objects
-                for related_obj in related_objects:
-                    related_obj.delete()  # This will ensure related objects of related_obj are also soft-deleted
-
-        # Soft delete the current object
-        self.is_active = False
-        self.save()
-
-    class Meta:
-        abstract = True
-
 
 class AttributeRelation(BaseModel):
     source_attribute = models.ForeignKey('SourceAttribute', on_delete=models.CASCADE)
@@ -336,6 +278,11 @@ class MasterChoiceSetOption(BaseModel):
         'MasterAttribute',
         on_delete = models.CASCADE,
         )
+    source_choiceset_option = models.ManyToManyField(
+        'SourceChoiceSetOption',
+        through='ChoiceSetOptionRelation',
+        through_fields=('master_choiceset_option', 'source_choiceset_option')
+    )
     display_order = models.PositiveSmallIntegerField(default=10, help_text='Display order on choises')
     name = models.CharField(max_length=250, help_text="Enter the Name of the Master Attribute")
     description = models.TextField(blank=True, null=True, max_length=1500, help_text="Enter description for the Master Choice Set Option")
@@ -398,33 +345,6 @@ class MasterEntity(BaseModel):
         """
         return '%s' % (self.name)
 
-class MasterLocation(BaseModel):
-    """
-    Model representing a MasterLocation in MammalBase
-    """
-    reference = models.ForeignKey(
-        'MasterReference',
-        on_delete = models.CASCADE,
-        )
-    name = models.CharField(max_length=250, help_text="Enter the Name of the Master Location")
-    tgn = models.PositiveSmallIntegerField(default=0, blank=True, null=True, help_text='Enter Thesaurus of Geographic Names id')
-
-    class Meta:
-        ordering = ['name']
-
-    def get_absolute_url(self):
-        """
-        Returns the url to access a particular Source Location instance.
-        """
-        return reverse('master-location-detail', args=[str(self.id)])
-
-    def __str__(self):
-        """
-        String for representing the Model object (in Admin site etc.)
-        """
-        return '%s' % (self.name)
-
-
 class MasterReference(BaseModel):
     """
     Model representing a Standard Reference in MammalBase
@@ -473,6 +393,7 @@ class MasterReference(BaseModel):
     page = models.CharField(max_length=50, help_text="Enter the Page(s) of the Standard Reference", blank=True, null=True,)
     citation = models.CharField(max_length=500, help_text="Enter the Citation of the Standard Reference")
 #    link = models.URLField(max_length=200, help_text="Enter a valid URL for the Source Reference", blank=True, null=True,)
+    is_public = models.BooleanField(help_text="Enter if the source is public", blank=False, null=True,)
 
     class Meta:
         ordering = ['citation']
@@ -576,6 +497,11 @@ class SourceChoiceSetOption(BaseModel):
         'SourceAttribute',
         on_delete = models.CASCADE,
         )
+    master_choiceset_option = models.ManyToManyField(
+        'MasterChoiceSetOption',
+        through='ChoiceSetOptionRelation',
+        through_fields=('source_choiceset_option', 'master_choiceset_option')
+    )
     display_order = models.PositiveSmallIntegerField(default=10, help_text='Display order on choises')
     name = models.CharField(max_length=250, help_text="Enter the Source Choice Set Option")
     description = models.TextField(blank=True, null=True, max_length=500, help_text="Enter the description for the Source Choice Set Option")
@@ -639,8 +565,18 @@ class SourceEntity(BaseModel):
         'MasterEntity',
         through='EntityRelation',
         through_fields=('source_entity', 'master_entity')
-    )
-    name = models.CharField(max_length=250, help_text="Enter the Name of the Source Entity")
+        )
+    name = models.CharField(
+        max_length=250,
+        help_text="Enter the Name of the Source Entity"
+        )
+
+    taxon = models.ForeignKey(
+        TdwgTaxon,
+        blank=True,
+        null=True,
+        on_delete= models.CASCADE,
+        )
 
     class Meta:
         ordering = ['name']
@@ -650,31 +586,6 @@ class SourceEntity(BaseModel):
         Returns the url to access a particular Source Entity instance.
         """
         return reverse('source-entity-detail', args=[str(self.id)])
-
-    def __str__(self):
-        """
-        String for representing the Model object (in Admin site etc.)
-        """
-        return '%s' % (self.name)
-
-class SourceLocation(BaseModel):
-    """
-    Model representing a SourceLocation in MammalBase
-    """
-    reference = models.ForeignKey(
-        'SourceReference',
-        on_delete = models.CASCADE,
-        )
-    name = models.CharField(max_length=250, help_text="Enter the Name of the Source Location")
-
-    class Meta:
-        ordering = ['name']
-
-    def get_absolute_url(self):
-        """
-        Returns the url to access a particular Source Location instance.
-        """
-        return reverse('source-location-detail', args=[str(self.id)])
 
     def __str__(self):
         """
