@@ -1174,12 +1174,10 @@ class DietSet(BaseModel):
 
         # 5. The weight of food item taxonomy
         diet_set_items = DietSetItem.objects.filter(diet_set=self, food_item__tsn__rank_id__gt=100)
-        score += 2 * diet_set_items.count()
+        if diet_set_items.count():
+            score += (2 * diet_set_items.count()) // diet_set_items.count()
 
         return score
-
-
-
 
 class DietSetItem(BaseModel):
     """
