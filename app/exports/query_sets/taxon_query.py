@@ -1,6 +1,7 @@
 from django.db.models import Value, CharField, Q
 from django.db.models.functions import Concat
-from exports.query_sets.measurements.base_query import base_query
+from .base_query import base_query
+from mb.models.models import SourceChoiceSetOptionValue
 
 
 def taxon_query(measurement_choices):
@@ -28,6 +29,18 @@ def taxon_query(measurement_choices):
         taxon_class=Value('Mammalia'),
     ).order_by('source_entity__master_entity__taxon__sort_order').distinct()
 
+    nominal_query = SourceChoiceSetOptionValue.objects.exclude(non_active).annotate(
+        taxon_id=Concat(
+            Value('https://www.mammalbase.net/me/'),
+            'source_entity__master_entity__id',
+            Value('/'),
+            output_field=CharField()
+        ),
+        kingdom=Value('Animalia'),
+        phylum=Value('Chordata'),
+        taxon_class=Value('Mammalia'),
+    ).order_by('source_entity__master_entity__taxon__sort_order').distinct()
+
     fields = [
         ('taxon_id','taxonID'),
         ('source_entity__master_entity__entity__name', 'taxonRank'),
@@ -39,4 +52,12 @@ def taxon_query(measurement_choices):
         ('source_entity__master_entity__taxon__genus', 'genus'),
     ]
 
-    return query, fields
+    queries = []
+    if "Nominal traits" in measurement_choices:
+        queries.append((nominal_query, fields))
+    
+    if "Cranial measurements" in measurement_choices or "External measurements" in measurement_choices:
+        queries.append((query, fields))
+
+
+    return queries
