@@ -341,33 +341,6 @@ class MasterEntity(BaseModel):
         """
         return '%s' % (self.name)
 
-class MasterLocation(BaseModel):
-    """
-    Model representing a MasterLocation in MammalBase
-    """
-    reference = models.ForeignKey(
-        'MasterReference',
-        on_delete = models.CASCADE,
-        )
-    name = models.CharField(max_length=250, help_text="Enter the Name of the Master Location")
-    tgn = models.PositiveSmallIntegerField(default=0, blank=True, null=True, help_text='Enter Thesaurus of Geographic Names id')
-
-    class Meta:
-        ordering = ['name']
-
-    def get_absolute_url(self):
-        """
-        Returns the url to access a particular Source Location instance.
-        """
-        return reverse('master-location-detail', args=[str(self.id)])
-
-    def __str__(self):
-        """
-        String for representing the Model object (in Admin site etc.)
-        """
-        return '%s' % (self.name)
-
-
 class MasterReference(BaseModel):
     """
     Model representing a Standard Reference in MammalBase
@@ -416,6 +389,7 @@ class MasterReference(BaseModel):
     page = models.CharField(max_length=50, help_text="Enter the Page(s) of the Standard Reference", blank=True, null=True,)
     citation = models.CharField(max_length=500, help_text="Enter the Citation of the Standard Reference")
 #    link = models.URLField(max_length=200, help_text="Enter a valid URL for the Source Reference", blank=True, null=True,)
+    is_public = models.BooleanField(help_text="Enter if the source is public", blank=False, null=True,)
 
     class Meta:
         ordering = ['citation']
@@ -582,8 +556,18 @@ class SourceEntity(BaseModel):
         'MasterEntity',
         through='EntityRelation',
         through_fields=('source_entity', 'master_entity')
-    )
-    name = models.CharField(max_length=250, help_text="Enter the Name of the Source Entity")
+        )
+    name = models.CharField(
+        max_length=250,
+        help_text="Enter the Name of the Source Entity"
+        )
+    
+    taxon = models.ForeignKey(
+        TdwgTaxon,
+        blank=True,
+        null=True,
+        on_delete= models.CASCADE,
+        )
 
     class Meta:
         ordering = ['name']
@@ -593,31 +577,6 @@ class SourceEntity(BaseModel):
         Returns the url to access a particular Source Entity instance.
         """
         return reverse('source-entity-detail', args=[str(self.id)])
-
-    def __str__(self):
-        """
-        String for representing the Model object (in Admin site etc.)
-        """
-        return '%s' % (self.name)
-
-class SourceLocation(BaseModel):
-    """
-    Model representing a SourceLocation in MammalBase
-    """
-    reference = models.ForeignKey(
-        'SourceReference',
-        on_delete = models.CASCADE,
-        )
-    name = models.CharField(max_length=250, help_text="Enter the Name of the Source Location")
-
-    class Meta:
-        ordering = ['name']
-
-    def get_absolute_url(self):
-        """
-        Returns the url to access a particular Source Location instance.
-        """
-        return reverse('source-location-detail', args=[str(self.id)])
 
     def __str__(self):
         """
