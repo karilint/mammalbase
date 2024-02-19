@@ -1,3 +1,4 @@
+""" TODO: Remake export tests
 import os
 
 from django.test import TestCase
@@ -7,7 +8,6 @@ from exports.tasks import export_zip_file, replace_na
 from exports.models import ExportFile
 from tests.exports.utils.test_export_file_writer import TestExportFileWriter
 
-""" TODO: Remake export tests
 class ExportZipFileTestCase(TestCase):
     def setUp(self):
         self.current_dir = os.getcwd()

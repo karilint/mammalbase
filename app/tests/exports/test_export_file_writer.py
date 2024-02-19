@@ -1,10 +1,10 @@
+""" TODO: Remake export unit tests
 from django.test import TestCase
 from exports.tasks import enter_temp_dir, exit_temp_dir
 from exports.models import ExportFile
 from exports.utilities.export_file_writer import ExportFileWriter
 from zipfile import ZipFile
 
-""" TODO: Remake export unit tests
 class ExportFileWriterTestCase(TestCase):
     def setUp(self):
         self.current_dir, self.temp_dir = enter_temp_dir()
