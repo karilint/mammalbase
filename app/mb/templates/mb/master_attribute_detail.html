@@ -97,8 +97,8 @@
     <thead>
       <tr>
         <th>Source Trait</th>
-        <th>Reference</th>
         <th>Method</th>
+        <th>Reference</th>
       </tr>
     </thead>
     <tbody>
@@ -110,8 +110,8 @@
         {% else %}
           <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ sa.source_attribute }} <span class="fa fa-link w3-small"></span></a></td>
         {% endif %}
-        <td title="{{ sa.source_attribute.reference|safe }}">{{ sa.source_attribute.reference|truncatechars:50|safe }}</td>
         <td class="mb-private-internal" title="sa.source_attribute.method|safe">{{ sa.source_attribute.method |default_if_none:"-" }}</td>
+        <td title="{{ sa.source_attribute.reference|safe }}">{{ sa.source_attribute.reference|truncatechars:50|safe }}</td>
       </tr>
       {% endfor %}
       {% else %}
