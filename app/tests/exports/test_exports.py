@@ -69,7 +69,38 @@ class ExportZipFileTestCase(TestCase):
         )
 
     def test_export_zip_file_fails_on_empty_queries_and_fields(self):
-        self.export_args['export_list'][0]['queries_and_fields'] = None
+        self.export_args['export_list'][0]['queries_and_fields'] = []
+        self.assertRaises(
+            ValueError,
+            export_zip_file,
+            **self.export_args,
+            file_writer=self.test_writer,
+        )
+        self.assertEqual(
+            self.current_dir,
+            os.getcwd()
+        )
+
+    def test_export_zip_file_fails_on_query_with_no_fields(self):
+        self.export_args['export_list'][0]['queries_and_fields'] = [
+            (self.query,[])
+        ]
+        self.assertRaises(
+            ValueError,
+            export_zip_file,
+            **self.export_args,
+            file_writer=self.test_writer,
+        )
+        self.assertEqual(
+            self.current_dir,
+            os.getcwd()
+        )
+
+    def test_export_zip_file_fails_on_mismatched_fields(self):
+        self.export_args['export_list'][0]['queries_and_fields'] = [
+            (self.query,[self.fields]),
+            (self.query,[('f1', 'F1'), ('f2', 'F2'),('f3', 'F3')])
+        ]
         self.assertRaises(
             ValueError,
             export_zip_file,
