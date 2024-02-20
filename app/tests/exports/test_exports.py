@@ -136,7 +136,11 @@ class ExportZipFileTestCase(TestCase):
                 managed = False
                 db_table = "test_export_zip_file"
                 app_label = "test"
-        connection.schema_editor().create_model(ExportTestClass)
+        with connection.schema_editor() as schema_editor:
+            prev_state = schema_editor.connection.in_atomic_block
+            schema_editor.connection.in_atomic_block = False
+            schema_editor.create_model(ExportTestClass)
+            schema_editor.connection.in_atomic_block = prev_state
         data = [
             ('Norsu', 'Hiiri', 12),
             ('Mirri', 'Vesi', None),
