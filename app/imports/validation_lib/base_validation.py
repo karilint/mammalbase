@@ -324,13 +324,6 @@ class Validation():
             return self.return_no_field_message(field_name, 'sex')
         return ""
 
-        """
-        if not data.get(field_name):
-            return self.return_no_field_message(field_name, 'gender')
-        if data != ("male" or "female" or None):
-            return self.return_field_message(field_name, "invalid gender")
-        """
-
     def validate_measurement_value(self, data, field_name, field_rules):
         """Validate measurement value field"""
         if not data.get(field_name):

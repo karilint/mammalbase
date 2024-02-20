@@ -79,23 +79,6 @@ class BaseImporter:
             print(f"Error: {e}")
             return None
     
-    # TÄMÄ ON VIRHEELLINEN! MasterReferencellä ei ole kenttää source_reference
-    #def get_or_create_master_reference(self, source_reference: SourceReference, author: User):
-        """
-        Return MasterReference object for the given source_reference
-        """
-        
-        """
-        master_reference = MasterReference.objects.filter(source_reference=source_reference)
-        if master_reference.count() == 1:
-            return master_reference[0]
-        else:
-            new_master_reference = self.get_master_reference_from_cross_ref(source_reference.citation, author)
-            if new_master_reference:                                                                                                                          
-                return new_master_reference
-            else:
-                return None
-        """
     def get_or_create_master_reference(self, citation: str, author: User):
         """
         Return MasterReference object for the given source_reference
@@ -275,6 +258,9 @@ class BaseImporter:
             return new_source_method
         
     def get_choicevalue(self, gender: str):
+        """
+        Return choice value.
+        """
         if gender == 'nan':
             return None
         if gender != '22' or gender != '23':
