@@ -136,7 +136,7 @@ class ExportZipFileTestCase(TestCase):
             'Name\tAfraid\tAge\n',
             'Norsu\tHiiri\t12\n',
             'Mirri\tVesi\tNA\n',
-            'Sifaka\tNA\t0\n,
+            'Sifaka\tNA\t0\n',
         ]
         for animal, afraid, age in data:
             EntityClass(name=animal, afraid=afraid, age=age).save()
