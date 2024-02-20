@@ -29,17 +29,21 @@ class ExportZipFileTestCase(TestCase):
             'Scientific name',
         ]
         self.export_args = {
-            'email_receiver': self.email,
-            'queries': [{
-                'file_name': self.file_name,
-                'fields': list(zip(self.fields, self.headers)),
-                'query_set': self.query
-            }],
+            'email_recipient': self.email,
+            'export_list': [
+                (
+                    'file_name': self.file_name,
+                    'queries_and_fields': [(
+                        self.query,
+                        list(zip(self.fields, self.headers)),
+                    )],
+                )
+            ]
             'export_file_id': export_file_id
         }
 
     def test_export_zip_file_fails_on_empty_email(self):
-        self.export_args['email_receiver'] = ''
+        self.export_args['email_recipient'] = ''
         self.assertRaises(
             ValueError,
             export_zip_file,
@@ -52,7 +56,7 @@ class ExportZipFileTestCase(TestCase):
         )
 
     def test_export_zip_file_fails_on_empty_query_list(self):
-        self.export_args['queries'] = []
+        self.export_args['export_list'] = []
         self.assertRaises(
             ValueError,
             export_zip_file,
@@ -65,7 +69,7 @@ class ExportZipFileTestCase(TestCase):
         )
 
     def test_export_zip_file_fails_on_empty_fields_list(self):
-        self.export_args['queries'][0]['fields'] = []
+        self.export_args['export_list'][0]['queries_and_fields'][1] = []
         self.assertRaises(
             ValueError,
             export_zip_file,
@@ -78,7 +82,7 @@ class ExportZipFileTestCase(TestCase):
         )
 
     def test_export_zip_file_fails_on_empty_file_name(self):
-        self.export_args['queries'][0]['file_name'] = ''
+        self.export_args['export_list'][0]['file_name'] = ''
         self.assertRaises(
             ValueError,
             export_zip_file,
@@ -96,12 +100,14 @@ class ExportZipFileTestCase(TestCase):
         for animal in animals:
             EntityClass(name=animal).save()
         export_zip_file(
-            email_receiver='testi@testi.fi',
-            queries=[{
+            email_recipient='testi@testi.fi',
+            export_list=[
                 'file_name': 'entity_class',
-                'fields': [('name', 'Name')],
-                'query_set': EntityClass.objects.all()
-            }],
+                queries_and_fields=[(
+                    EntityClass.objects.all()
+                    [('name', 'Name')],
+                )],
+            ]
             export_file_id=123,
             file_writer=self.test_writer
         )
