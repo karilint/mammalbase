@@ -1,9 +1,11 @@
-""" TODO: Remake export unit tests
 from django.test import TestCase
-from exports.tasks import enter_temp_dir, exit_temp_dir
-from exports.models import ExportFile
-from exports.utilities.export_file_writer import ExportFileWriter
 from zipfile import ZipFile
+
+from exports.models import ExportFile
+from exports.utilities import (
+        ExportFileWriter,
+        enter_temp_dir,
+        exit_temp_dir)
 
 class ExportFileWriterTestCase(TestCase):
     def setUp(self):
@@ -44,4 +46,3 @@ class ExportFileWriterTestCase(TestCase):
         self.assertEqual(file_contents[0], 'header1\theader2\n')
         self.assertEqual(file_contents[1], '1\t2\n')
         self.assertEqual(file_contents[2], '3\t4\n')
-"""
