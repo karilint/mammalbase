@@ -135,6 +135,7 @@ class ExportZipFileTestCase(TestCase):
             class Meta:
                 managed = False
                 db_table = "test_export_zip_file"
+                app_label = "test"
         connection.schema_editor().create_model(ExportTestClass)
         data = [
             ('Norsu', 'Hiiri', 12),
