@@ -131,7 +131,7 @@ class ExportZipFileTestCase(TestCase):
         class ExportTestClass(models.Model):
             animal = models.CharField(max_length=255)
             afraid = models.CharField(max_length=255)
-            age = models.IntegerField()
+            age = models.IntegerField(blank=True, null=True)
             class Meta:
                 managed = False
                 db_table = "test_export_zip_file"
