@@ -1,12 +1,11 @@
-""" TODO: Remake export tests
 import os
 
 from django.test import TestCase
 
 from mb.models.models import EntityClass, MasterEntity
-from exports.tasks import export_zip_file, replace_na
+from exports.tasks import export_zip_file
 from exports.models import ExportFile
-from tests.exports.utils.test_export_file_writer import TestExportFileWriter
+from .utils.test_export_file_writer import TestExportFileWriter
 
 class ExportZipFileTestCase(TestCase):
     def setUp(self):
@@ -112,7 +111,8 @@ class ExportZipFileTestCase(TestCase):
         self.assertIn('Name', first_column_items)
         self.assertTrue(all(x in first_column_items for x in animals))
 
-
+""" TODO: NA replacement now happens part of write_queries_to_file
+          write test cases there.
     def test_replace_na_replaces_empty_string_with_na(self):
         values = [('', 'test'), ('value', '')]
         result = replace_na(values)
