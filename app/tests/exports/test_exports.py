@@ -109,7 +109,7 @@ class ExportZipFileTestCase(TestCase):
                         [('name', 'Name')],
                     )],
                 }
-            ]
+            ],
             export_file_id=123,
             file_writer=self.test_writer
         )
