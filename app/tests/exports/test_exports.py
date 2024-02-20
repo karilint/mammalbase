@@ -127,9 +127,19 @@ class ExportZipFileTestCase(TestCase):
 
 
     def test_export_zip_file_writes_correct_lines(self):
-        animals = ['Norsu', 'Mirri', 'Sifaka']
-        for animal in animals:
-            EntityClass(name=animal).save()
+        data = [
+            ('Norsu', 'Hiiri', 12),
+            ('Mirri', 'Vesi', None),
+            ('Sifaka', '', 3),
+        ]
+        excepted_output = [
+            'Name\tAfraid\tAge\n',
+            'Norsu\tHiiri\t12\n',
+            'Mirri\tVesi\tNA\n',
+            'Sifaka\tNA\t0\n,
+        ]
+        for animal, afraid, age in data:
+            EntityClass(name=animal, afraid=afraid, age=age).save()
         export_zip_file(
             email_recipient='testi@testi.fi',
             export_list=[
@@ -137,35 +147,18 @@ class ExportZipFileTestCase(TestCase):
                     'file_name': 'entity_class',
                     'queries_and_fields': [(
                         EntityClass.objects.all(),
-                        [('name', 'Name')]
+                        [
+                            ('name', 'Name'),
+                            ('afraid', 'Afraid'),
+                            ('age', 'Age')
+                        ]
                     )]
                 }
             ],
             export_file_id=123,
             file_writer=self.test_writer
         )
-        first_column_items = []
-        for row in self.test_writer.files[0][1]:
-            first_column_items.append(row[0])
-        self.assertIn('Name', first_column_items)
-        self.assertTrue(all(x in first_column_items for x in animals))
-
-""" TODO: NA replacement now happens part of write_queries_to_file
-          write test cases there.
-    def test_replace_na_replaces_empty_string_with_na(self):
-        values = [('', 'test'), ('value', '')]
-        result = replace_na(values)
-        self.assertEqual(result, [('NA', 'test'), ('value', 'NA')])
-
-
-    def test_replace_na_doesnt_replace_white_space_with_na(self):
-        values = [(' ', 'test'), ('value', ' ')]
-        result = replace_na(values)
-        self.assertEqual(result, [(' ', 'test'), ('value', ' ')])
-
-
-    def test_replace_na_doesnt_replace_zero_with_na(self):
-        values = [('0', 'test'), ('value', 0)]
-        result = replace_na(values)
-        self.assertEqual(result, [('0', 'test'), ('value', 0)])
-"""
+        for row, expected_row in zip(
+                self.test_writer.files[0][1],
+                excepted_output):
+            self.assertEqual(row, expected_row)
