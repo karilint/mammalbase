@@ -1,7 +1,7 @@
 import os
 
 from django.test import TestCase
-from django.db import models
+from django.db import models, migrations
 
 from mb.models.models import EntityClass, MasterEntity
 from exports.tasks import export_zip_file
@@ -128,12 +128,19 @@ class ExportZipFileTestCase(TestCase):
 
 
     def test_export_zip_file_writes_correct_lines(self):
-        class TestClass(models.Model):
+        migrations.CreateModel(
+            name="ExportTestClass",
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False)),
+                ('animal', models.CharField(max_length=255)),
+                ('afraid', models.CharField(max_length=255)),
+                ('age', models.IntegerField()),
+            ]
+        )
+        class ExportTestClass(models.Model):
             animal = models.CharField(max_length=255)
             afraid = models.CharField(max_length=255)
             age = models.IntegerField()
-            class Meta:
-                app_label = 'test_export_zip_file'
         data = [
             ('Norsu', 'Hiiri', 12),
             ('Mirri', 'Vesi', None),
@@ -146,14 +153,14 @@ class ExportZipFileTestCase(TestCase):
             'Sifaka\tNA\t0\n',
         ]
         for animal, afraid, age in data:
-            TestClass(animal=animal, afraid=afraid, age=age).save()
+            ExportTestClass(animal=animal, afraid=afraid, age=age).save()
         export_zip_file(
             email_recipient='testi@testi.fi',
             export_list=[
                 {
                     'file_name': 'entity_class',
                     'queries_and_fields': [(
-                        TestClass.objects.all(),
+                        ExportTestClass.objects.all(),
                         [
                             ('animal', 'Name'),
                             ('afraid', 'Afraid'),
