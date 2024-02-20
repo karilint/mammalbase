@@ -31,13 +31,13 @@ class ExportZipFileTestCase(TestCase):
         self.export_args = {
             'email_recipient': self.email,
             'export_list': [
-                (
+                {
                     'file_name': self.file_name,
                     'queries_and_fields': [(
                         self.query,
                         list(zip(self.fields, self.headers)),
                     )],
-                )
+                }
             ]
             'export_file_id': export_file_id
         }
