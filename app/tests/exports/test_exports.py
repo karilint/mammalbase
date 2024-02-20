@@ -147,10 +147,10 @@ class ExportZipFileTestCase(TestCase):
             ('Sifaka', '', 3),
         ]
         excepted_output = [
-            'Name\tAfraid\tAge\n',
-            'Norsu\tHiiri\t12\n',
-            'Mirri\tVesi\tNA\n',
-            'Sifaka\tNA\t0\n',
+            ('Name', 'Afraid', 'Age'),
+            ('Norsu', 'Hiiri', '12'),
+            ('Mirri', 'Vesi', 'NA'),
+            ('Sifaka', 'NA', '3')
         ]
         for animal, afraid, age in data:
             ExportTestClass(animal=animal, afraid=afraid, age=age).save()
