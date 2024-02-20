@@ -132,6 +132,8 @@ class ExportZipFileTestCase(TestCase):
             animal = models.CharField(max_length=255)
             afraid = models.CharField(max_length=255)
             age = models.IntegerField()
+            class Meta:
+                app_label = 'test_export_zip_file'
         data = [
             ('Norsu', 'Hiiri', 12),
             ('Mirri', 'Vesi', None),
