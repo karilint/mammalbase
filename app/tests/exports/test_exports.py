@@ -172,7 +172,10 @@ class ExportZipFileTestCase(TestCase):
             export_file_id=123,
             file_writer=self.test_writer
         )
+        # header line first
+        self.assertEqual(self.test_writer.files[0][1][0],excepted_output[0])
+        # data order can be what ever long as everything is there
         for row, expected_row in zip(
-                self.test_writer.files[0][1],
-                excepted_output):
+                sorted(self.test_writer.files[0][1]),
+                sorted(excepted_output)):
             self.assertEqual(row, expected_row)
