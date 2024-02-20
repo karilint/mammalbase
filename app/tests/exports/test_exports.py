@@ -38,7 +38,7 @@ class ExportZipFileTestCase(TestCase):
                         list(zip(self.fields, self.headers)),
                     )],
                 }
-            ]
+            ],
             'export_file_id': export_file_id
         }
 
