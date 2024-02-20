@@ -1,7 +1,7 @@
 import os
 
 from django.test import TestCase
-from django.db import models, migrations
+from django.db import models, connection
 
 from mb.models.models import EntityClass, MasterEntity
 from exports.tasks import export_zip_file
@@ -128,21 +128,14 @@ class ExportZipFileTestCase(TestCase):
 
 
     def test_export_zip_file_writes_correct_lines(self):
-        migrations.CreateModel(
-            name="ExportTestClass",
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False)),
-                ('animal', models.CharField(max_length=255)),
-                ('afraid', models.CharField(max_length=255)),
-                ('age', models.IntegerField()),
-            ]
-        )
         class ExportTestClass(models.Model):
             animal = models.CharField(max_length=255)
             afraid = models.CharField(max_length=255)
             age = models.IntegerField()
             class Meta:
-                app_label = "test_export_zip_file"
+                managed = False
+                db_table = "test_export_zip_file"
+        connection.schema_editor().create_model(ExportTestClass)
         data = [
             ('Norsu', 'Hiiri', 12),
             ('Mirri', 'Vesi', None),
