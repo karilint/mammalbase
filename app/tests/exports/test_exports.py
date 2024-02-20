@@ -35,7 +35,7 @@ class ExportZipFileTestCase(TestCase):
                     'file_name': self.file_name,
                     'queries_and_fields': [(
                         self.query,
-                        list(zip(self.fields, self.headers)),
+                        list(zip(self.fields, self.headers))
                     )],
                 }
             ],
@@ -68,8 +68,8 @@ class ExportZipFileTestCase(TestCase):
             os.getcwd()
         )
 
-    def test_export_zip_file_fails_on_empty_fields_list(self):
-        self.export_args['export_list'][0]['queries_and_fields'][1] = []
+    def test_export_zip_file_fails_on_empty_queries_and_fields(self):
+        self.export_args['export_list'][0]['queries_and_fields'] = None
         self.assertRaises(
             ValueError,
             export_zip_file,
@@ -105,9 +105,9 @@ class ExportZipFileTestCase(TestCase):
                 {
                     'file_name': 'entity_class',
                     'queries_and_fields': [(
-                        EntityClass.objects.all()
-                        [('name', 'Name')],
-                    )],
+                        EntityClass.objects.all(),
+                        [('name', 'Name')]
+                    )]
                 }
             ],
             export_file_id=123,
