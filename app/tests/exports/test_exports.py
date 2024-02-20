@@ -102,11 +102,13 @@ class ExportZipFileTestCase(TestCase):
         export_zip_file(
             email_recipient='testi@testi.fi',
             export_list=[
-                'file_name': 'entity_class',
-                queries_and_fields=[(
-                    EntityClass.objects.all()
-                    [('name', 'Name')],
-                )],
+                {
+                    'file_name': 'entity_class',
+                    'queries_and_fields': [(
+                        EntityClass.objects.all()
+                        [('name', 'Name')],
+                    )],
+                }
             ]
             export_file_id=123,
             file_writer=self.test_writer
