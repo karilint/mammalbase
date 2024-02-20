@@ -13,7 +13,7 @@ class Occurrence_validation(Validation):
             "references"                : "required|min:10|max:500|regex:.*([1-2][0-9]{3})", 
             "verbatimScientificName"    : "required|alpha", 
             "scientificNameAuthorship"  : "", 
-            "taxonRank"                 : "in:Subspecies,Varietas,Forma,Species,Genus,Nothogenus,Nothospecies,Nothosubspecies,Family,nan", #DONE
+            "taxonRank"                 : "in:Subspecies,Varietas,Forma,Species,Genus,Nothogenus,Nothospecies,Nothosubspecies,Family,nan", 
             "organismQuantity"          : "digits", 
             "organismQuantityType"      : "", 
             "sex"                       : "gender", 
@@ -32,7 +32,7 @@ class Occurrence_validation(Validation):
             "associatedReferences"      : "", 
             "samplingProtocol"          : "", 
             "habitatType"               : "", 
-            "habitatPercentage"         : "max:500|regex:.*([1-2][0-9]{3}" 
+            "habitatPercentage"         : "" 
         }
     
         self.data = {

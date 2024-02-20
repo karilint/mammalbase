@@ -52,7 +52,9 @@ def wrapper(request, validator, importer, path):
                 success_rows += 1
 
         if success_rows == 0:
-            message = "0 rows of data were imported"
+            message = "0 rows of data were imported. Erros: "
+            for error in importing_errors:
+                message = message + error
         elif len(importing_errors) > 0 and success_rows > 0:
             message = str(success_rows) + " rows of data were imported successfully with some errors in these rows: "
 

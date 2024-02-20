@@ -305,6 +305,8 @@ class Validation():
         """Validate verbatim scientific name field"""
         # Your validation logic here
         # Example:
+
+
         if not data.get(field_name):
             return self.return_no_field_message(field_name, 'verbatim scientific name')
         # Additional validation logic...
@@ -320,9 +322,12 @@ class Validation():
 
         if gender == 'nan':
             return ""
-        if gender != '22' or gender != '23' or gender.capitalize() != str(choicevalue[0].caption):
+        if len(choicevalue) == 0:
             return self.return_no_field_message(field_name, 'sex')
-        return ""
+        if gender.capitalize() == str(choicevalue[0].caption):
+            return ""
+        else:
+            return self.return_no_field_message(field_name, 'sex')
 
     def validate_measurement_value(self, data, field_name, field_rules):
         """Validate measurement value field"""
