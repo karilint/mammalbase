@@ -50,7 +50,7 @@ class OccurrencesImporter(BaseImporter):
             if life_stage == "nan":
                 life_stage = None
             else:
-                life_stage, created = ChoiceValue.objects.get_or_create(choice_set="Lifestage", caption=gender.capitalize())
+                life_stage, created = ChoiceValue.objects.get_or_create(choice_set="Lifestage", caption=life_stage.capitalize())
             
             obj, created = Occurrence.objects.get_or_create(source_reference=reference, event=new_event, source_location=new_source_location, source_entity=verbatimScientificname,
                                                        organism_quantity=getattr(row, 'organismQuantity'), organism_quantity_type=getattr(row, 'organismQuantityType'), gender=gender, 
