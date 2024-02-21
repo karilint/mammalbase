@@ -690,15 +690,13 @@ class SourceMeasurementValue(BaseModel):
     # Used to calculate the quality of the measurement data
     def calculate_data_quality_score_for_measurement(self):
         score = 0
-        #1 taxon quality ??? Might not be done the right way need to confirm this
-        txn = self.source_entity.entity.name
-        print(txn)
-        if txn == 'Species' or txn == 'Subspecies':
+        #1 weight of taxon quality
+        taxon = self.source_entity.entity.name
+        if taxon == 'Species' or taxon == 'Subspecies':
             score += 1
 
         #2 weight of having a reported citation of the data
         citation = self.cited_reference
-        print(citation)
         if citation == 'Original study':
             score += 2
         elif citation != None:
@@ -706,7 +704,6 @@ class SourceMeasurementValue(BaseModel):
 
         #3 weight of source quality in the diet
         source_type = self.source_entity.reference.master_reference.type
-        print(source_type)
         if source_type == 'journal-article':
             score += 3
         elif source_type == 'book':
@@ -715,9 +712,7 @@ class SourceMeasurementValue(BaseModel):
             score += 1
 
         #4 weight of having a described method in the method
-        method = self.source_attribute.method
-        print(method)
-        if method:
+        if self.source_attribute.method:
             score += 1
 
         #5 weight of having individual count
