@@ -81,6 +81,9 @@ class Validation():
         
         elif rule == "gender":
             rule_error = self.validate_gender(data, field_name, field_rules)
+
+        elif rule == "lifeStage":
+            rule_error = self.validate_life_stage(data, field_name, field_rules)
         
         elif rule.startswith("in"):
             rule_error = self.validate_in_fields(data,field_name, rule)
@@ -329,6 +332,23 @@ class Validation():
         else:
             return self.return_no_field_message(field_name, 'sex')
 
+    def validate_life_stage(self, data, field_name, field_rules):
+        """Validate life stage"""
+        life_stage = str(data[field_name])
+        print("lifestage checker: " + life_stage)
+
+        # Change the first letter to uppercase
+        choicevalue = ChoiceValue.objects.filter(choice_set="Lifestage", caption=life_stage.capitalize())
+
+        if  life_stage == str(data[field_name]) == 'nan':
+            return ""
+        if len(life_stage) == 0:
+            return self.return_no_field_message(field_name, 'lifestage')
+        if life_stage.capitalize() == str(choicevalue[0].caption):
+            return ""
+        else:
+            return self.return_no_field_message(field_name, 'lifestage')
+
     def validate_measurement_value(self, data, field_name, field_rules):
         """Validate measurement value field"""
         if not data.get(field_name):
@@ -519,7 +539,8 @@ class Validation():
             "size":"'%s' has invalid value for size rule",
             "website":"'%s' must be a valid Website URL",
             "no_field":"No field named '%s' to validate for %s rule",
-            "sex": "%s has invalid value"
+            "sex": "%s has invalid value",
+            "lifestage": "%s has invalid value"
         }
     
     def get_custom_error_messages(self):

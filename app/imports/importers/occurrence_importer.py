@@ -55,11 +55,7 @@ class OccurrencesImporter(BaseImporter):
             if created:
                 return True
             else:
-                importing_errors.append("Existing Occurrence found " + str(row) + "\n\n")
                 return False
-        except Exception as error:
-            importing_errors.append(str(error) + "\n\n")
-            return False
      
     
 
