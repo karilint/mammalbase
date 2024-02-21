@@ -118,7 +118,7 @@ def write_queries_to_file(
         for row in query_set.values_list(*fields):
             na_row=[]
             for column in row:
-                # Columns without value shuld me marked as 'NA' in ETS
+                # Columns without value should me marked as 'NA' in ETS
                 na_row.append('NA' if column in ('', None) else column)
             rows_to_export.add(tuple(na_row))
 
