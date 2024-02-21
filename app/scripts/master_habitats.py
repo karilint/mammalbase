@@ -24,7 +24,7 @@ habitats = {}
 for index, row in olson_df.iterrows():
     prev_habitat = None
     for i in range(len(row)-1):
-        name = str(row.iloc[i])
+        name = row.iloc[i]
         header = olson_df.columns[i]
         if pd.notna(name) and name.strip():
             if name not in habitats:
