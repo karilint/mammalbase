@@ -54,6 +54,15 @@ def wrapper(request, validator, importer, path):
 
 
 def validate(df, validator):
+    """Validate rows in tsv-file.
+
+    Args:
+        df (Pandas): Pandas-object
+        validator (Occurrence-validation): validation object for occurrences
+
+    Returns:
+        list: possible validation errors
+    """
     importing_errors = []
     headers = list(df.columns.values)
     data = validator.data
@@ -72,6 +81,15 @@ def validate(df, validator):
 
 
 def row_importer(df, importer):
+    """Import validated rows to db.
+
+    Args:
+        df (Pandas): Pandas-object
+        importer (Occurrence_importer): importer object for occurrences
+
+    Returns:
+        int: how many rows was impoerted
+    """
     success_rows = 0
 
     for row in df.itertuples(index=False):
