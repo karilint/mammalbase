@@ -14,7 +14,7 @@ from .importers.occurrence_importer import OccurrencesImporter
 from .validation_lib.occurrence_validation import Occurrence_validation
 from .validation_lib.diet_set_validation import Diet_set_validation
 from .validation_lib.ets_validation import Ets_validation
-#from .validation_lib.proximate_analysis import Proximate_analysis_validation
+from .validation_lib.proximate_analysis_validation import Proximate_analysis_validation
 from .views_wrapper import wrapper
 
 
@@ -44,7 +44,7 @@ def import_proximate_analysis(request):
 	Returns:
 		HTTP-response: html-template
 	"""
-	#validator = Proximate_analysis_validation()
+	validator = Proximate_analysis_validation()
 	#importer = ProximateAnalysisImporter()
 	path = "import_proximate_analysis"
 

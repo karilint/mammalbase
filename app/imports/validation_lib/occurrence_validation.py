@@ -17,7 +17,7 @@ class Occurrence_validation(Validation):
             "organismQuantity"          : "digits", 
             "organismQuantityType"      : "", 
             "sex"                       : "gender", 
-            "lifeStage"                 : "alpha", 
+            "lifeStage"                 : "lifeStage", 
             "verbatimEventDate"         : "", 
             "occurrenceRemarks"         : "", 
             "verbatimLocality"          : "max:250", 

@@ -24,50 +24,56 @@ def wrapper(request, validator, importer, path):
         print(f"import/{path}.html")
         return render(request, f"import/{path}.html")
     
-    try:
-        csv_file = request.FILES["csv_file"]
-        df = pd.read_csv(csv_file, sep='\t')
+    csv_file = request.FILES["csv_file"]
+    df = pd.read_csv(csv_file, sep='\t')
+    try: 
+        errors = validate(df, validator)
+        if len(errors) > 0:
+            for error in errors:
+                message.error(error)
+            return HttpResponseRedirect(reverse(path))
 
-        importing_errors = []
-        success_rows = 0
-        message = None
+        rows_imported = row_importer(df, importer)
+        if rows_imported > 0:
+            message = "File imported successfully. "+ str(rows_imported)+ " rows of data were imported."
+            return message
 
-        headers = list(df.columns.values)
-        data = validator.data
-
-        for row in df.itertuples(index=False):
-            for i, x in enumerate(row):
-                data[headers[i]] = x
-
-            isvalid = validator.is_valid(data, validator.rules)
-            errors = validator.errors
-
-            if not isvalid:
-                messages.error(request,"Unable to upload file. "+ str(errors))
-                return HttpResponseRedirect(reverse(path))
-
-            created = importer.importRow(row, importing_errors)
-
-            if created:
-                success_rows += 1
-
-        if success_rows == 0:
-            message = "0 rows of data were imported. Erros: "
-            for error in importing_errors:
-                message = message + error
-        elif len(importing_errors) > 0 and success_rows > 0:
-            message = str(success_rows) + " rows of data were imported successfully with some errors in these rows: "
-
-            for error in importing_errors:
-                message = message + error
         else:
-            message = "File imported successfully. "+ str(df.shape[0])+ " rows of data were imported."
-
-        messages.add_message(request, 50, message, extra_tags="import-message")
-        messages.add_message(request, 50, df.to_html(), extra_tags="show-data")
-        return HttpResponseRedirect(reverse(path))
+            message = "File failed to import. "+ str(rows_imported)+ " rows of data were imported."
+            return message
 
     except Exception as e:
-        logging.getLogger("error_logger").error("Unable to upload file due to a coding error. "+repr(e))
+        logging.getLogger("error_logger").error("Unable to upload file due to error. "+repr(e))
+        print(e)
         messages.error(request, "Unable to upload file. "+repr(e))
         return HttpResponseRedirect(reverse(path))
+
+
+
+def validate(df, validator):
+    importing_errors = []
+    headers = list(df.columns.values)
+    data = validator.data
+    for row in df.itertuples(index=False):
+        for i, x in enumerate(row):
+            data[headers[i]] = x
+
+        check_valid = validator.is_valid(data, validator.rules)
+        errors = validator.errors
+
+        if not check_valid:
+            for x in errors:
+                importing_errors.append("Error on row: " + str(row) + " Error: " + (x))
+
+        return importing_errors
+
+
+def row_importer(df, importer):
+    success_rows = 0
+
+    for row in df.itertuples(index=False):
+        created = importer.importRow(row)
+
+        if created:
+            success_rows += 1
+    return success_rows
