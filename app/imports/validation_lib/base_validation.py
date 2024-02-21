@@ -76,6 +76,9 @@ class Validation():
         elif rule == "verbatimLongitude":
             rule_error = self.validate_verbatim_longitude(data, field_name)
 
+        elif rule == "coordinate":
+            rule_error = self.validate_coordinate(data, field_name, field_rules)
+
         elif rule == "verbatimEventDate":
             rule_error = self.validate_verbatim_eventdate(data, field_name)
         
@@ -122,6 +125,12 @@ class Validation():
         # Add more elif blocks for each additional rule you want to handle
         
         return rule_error
+    
+    def validate_coordinate(self, data, field_name, field_rules):
+        print("value: " + str(data[field_name]))
+        print("field rules: " + str(field_rules))
+
+        return []
     
     def validate_verbatim_coordinates(self, data, field_name):
         """Validate verbatimCoordinates

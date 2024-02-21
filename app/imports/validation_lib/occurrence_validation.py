@@ -24,7 +24,7 @@ class Occurrence_validation(Validation):
             "verbatimElevation"         : "max:250", 
             "verbatimDepth"             : "max:250", 
             "verbatimCoordinates"       : "verbatimCoordinates", 
-            "verbatimLatitude"          : "", 
+            "verbatimLatitude"          : "coordinate", 
             "verbatimLongitude"         : "", 
             "verbatimCoordinateSystem"  : "in:decimal degrees,degrees minutes,degrees decimal seconds,UTM,nan", 
             "verbatimSRS"               : "", 
