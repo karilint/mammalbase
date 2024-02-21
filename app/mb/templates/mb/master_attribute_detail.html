@@ -38,6 +38,10 @@
       <td class="w3-threequarter">{{ master_attribute.remarks|default_if_none:"-" }}</td>
     </tr>
     <tr>
+      <th class="w3-quarter">Attribute Group:</th>
+      <td class="w3-threequarter">{{ attribute_group }}</td>
+    </tr>
+    <tr>
       <th class="w3-quarter">Reference:</th>
       <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="{% url 'master_reference-detail' pk=master_attribute.reference.id %}">{{ master_attribute.reference }}<span class="fa fa-link w3-small"></span></a></td>
     </tr>
@@ -93,6 +97,7 @@
     <thead>
       <tr>
         <th>Source Trait</th>
+        <th>Method</th>
         <th>Reference</th>
       </tr>
     </thead>
@@ -105,6 +110,7 @@
         {% else %}
           <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ sa.source_attribute }} <span class="fa fa-link w3-small"></span></a></td>
         {% endif %}
+        <td class="mb-private-internal" title="sa.source_attribute.method|safe">{{ sa.source_attribute.method |default_if_none:"-" }}</td>
         <td title="{{ sa.source_attribute.reference|safe }}">{{ sa.source_attribute.reference|truncatechars:50|safe }}</td>
       </tr>
       {% endfor %}
