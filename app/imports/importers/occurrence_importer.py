@@ -10,7 +10,7 @@ class OccurrencesImporter(BaseImporter):
     
     
     @transaction.atomic
-    def importRow(self, row, importing_errors):
+    def importRow(self, row):
         """Put data of row to database.
 
         Args:
@@ -22,30 +22,26 @@ class OccurrencesImporter(BaseImporter):
         """
         
         # Common assignments
-        try:
-            author = self.get_author(getattr(row, 'author'))
-            reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
-            entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
-            verbatimScientificname = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
-        except Exception as e:
-            # We don't add anything if we encounter an error
-            importing_errors.append(str(row) + "\n\n")
-            return False
+        
+        author = self.get_author(getattr(row, 'author'))
+        reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
+        entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
+        verbatimScientificname = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
         
        
         created = None
-        try:
-            # Create source location model
-            new_source_location = self.get_or_create_source_location(getattr(row, 'verbatimLocality'), reference, author)
-            new_event, created = Event.objects.get_or_create(verbatim_event_date=getattr(row, 'verbatimEventDate'))
-            
-            gender = str(getattr(row, 'sex'))
-            life_stage = str(getattr(row, 'lifeStage'))
+        
+        # Create source location model
+        new_source_location = self.get_or_create_source_location(getattr(row, 'verbatimLocality'), reference, author)
+        new_event, created = Event.objects.get_or_create(verbatim_event_date=getattr(row, 'verbatimEventDate'))
+        
+        gender = str(getattr(row, 'sex'))
+        life_stage = str(getattr(row, 'lifeStage'))
 
-            if gender == "nan":
-                gender = None
-            else:
-                gender, created = ChoiceValue.objects.get_or_create(choice_set="Gender", caption=gender.capitalize())
+        if gender == "nan":
+            gender = None
+        else:
+            gender, created = ChoiceValue.objects.get_or_create(choice_set="Gender", caption=gender.capitalize())
 
             if life_stage == "nan":
                 life_stage = None
