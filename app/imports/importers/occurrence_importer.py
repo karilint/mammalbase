@@ -10,7 +10,7 @@ class OccurrencesImporter(BaseImporter):
     
     
     @transaction.atomic
-    def importRow(self, row, importing_errors):
+    def importRow(self, row):
         """Put data of row to database.
 
         Args:

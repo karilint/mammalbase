@@ -35,12 +35,15 @@ def wrapper(request, validator, importer, path):
 
         rows_imported = row_importer(df, importer)
         if rows_imported > 0:
-            message = "File imported successfully. "+ str(rows_imported)+ " rows of data were imported."
-            return message
+            message = f"File imported successfully. {rows_imported} rows of data were imported."
+            messages.add_message(request, 50, message, extra_tags="import-message")
+            messages.add_message(request, 50, df.to_html(), extra_tags="show-data")
+            return HttpResponseRedirect(reverse(path))
 
         else:
-            message = "File failed to import. "+ str(rows_imported)+ " rows of data were imported."
-            return message
+            message = f"File failed to import. {rows_imported} rows of data were imported."
+            messages.error(request, message)
+            return HttpResponseRedirect(reverse(path))
 
     except Exception as e:
         logging.getLogger("error_logger").error("Unable to upload file due to error. "+repr(e))
