@@ -18,23 +18,36 @@ olson_reference = importer.get_or_create_master_reference(citation="Olson, D. M.
 olson_path = os.path.join(csv_dir, "biomes_olson_1983.csv")
 olson_df = pd.read_csv(olson_path)
 
+added_biomes = set()
+habitats = {}
+
 for index, row in olson_df.iterrows():
     prev_habitat = None
     for i in range(len(row)-1):
-        name = row.iloc[i]
-        eco_code = row.iloc[-1]
+        name = str(row.iloc[i])
+        header = olson_df.columns[i]
         if pd.notna(name) and name.strip():
-            habitat, created = MasterHabitat.objects.get_or_create(
-                reference=olson_reference,
-                eco_code=eco_code,
-                name=name,
-            )
+            if name not in habitats:
+                if i == len(row)-2:
+                    eco_code = row.iloc[-1]
+                else:
+                    eco_code = None
+                key = (name, eco_code)
+                if key not in habitats:
+                    habitat = MasterHabitat.objects.create(
+                        name=name,
+                        reference=olson_reference,
+                        parent=prev_habitat,
+                        code=eco_code,
+                        group=header
+                    )
+                    habitats[key] = habitat
+                else:
+                    habitat = habitats[key]
 
-        if created:
-            habitat.parent = prev_habitat
-            habitat.save()
-
-        prev_habitat = habitat
+            prev_habitat = habitat
+        else:
+            prev_habitat = None
 
 wwf_path = os.path.join(csv_dir, "biomes_wwf.csv")
 wwf_df = pd.read_csv(wwf_path)
@@ -45,7 +58,7 @@ for index, row in wwf_df.iterrows():
 
     habitat, created = MasterHabitat.objects.get_or_create(
                 reference=olson_reference,
-                biome_code=biome_code,
+                code=biome_code,
                 name=name,
             )
 
@@ -62,7 +75,7 @@ for index, row in holdridge_df.iterrows():
 
     habitat, created = MasterHabitat.objects.get_or_create(
                 reference=holdridge_reference,
-                iiasa_code=iiasa_code,
+                code=iiasa_code,
                 name=name,
             )
 

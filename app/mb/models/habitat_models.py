@@ -50,6 +50,12 @@ class MasterHabitat(BaseModel):
         null=True,
         help_text='Enter the eco/biome/IIASA code of the Master Habitat'
         )
+    group = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the gourp or category of the Master Habitat"
+        )
     
     class Meta:
       ordering = ['name']
