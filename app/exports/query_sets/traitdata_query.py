@@ -18,6 +18,10 @@ def traitdata_query(measurement_choices):
             Q(source_attribute__master_attribute__unit__is_active=False)
     )
 
+    nominal_non_active = (
+            Q(source_choiceset_option__source_attribute__master_attribute__unit__is_active=False)
+    )
+
     query = base.exclude(non_active).annotate(
         trait_id=Concat(
             Value('https://www.mammalbase.net/ma/'),
@@ -63,7 +67,7 @@ def traitdata_query(measurement_choices):
         'source_attribute__master_attribute__name'
     )
     
-    nominal_query = SourceChoiceSetOptionValue.objects.annotate(
+    nominal_query = SourceChoiceSetOptionValue.objects.exclude(nominal_non_active).annotate(
         trait_id=Concat(
             Value('https://www.mammalbase.net/ma/'),
             'source_choiceset_option__source_attribute__master_attribute__id',

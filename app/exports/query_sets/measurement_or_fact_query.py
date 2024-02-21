@@ -21,7 +21,7 @@ def measurement_or_fact_query(
     Description:
     MOF query is function that defines the query and the fields to be later
     processed to the the measurement_or_fact_<choice>.tsv file according to
-    the ETS standard: https://ecologicaltraitdata.github.io/ETS/.
+    the ETS standard: https://ecologicaltraitdata.github.ico/ETS/.
     Utilizes the base_query. Values that are not yet in the models are set
     to 'NA'. References are determined by whether the user is
     a data_admin/data_contributor or other user. Returned query and fields
@@ -37,6 +37,12 @@ def measurement_or_fact_query(
         | Q(source_entity__reference__is_active=False)
         | Q(source_entity__reference__master_reference__is_active=False)
         | Q(source_statistic__is_active=False)
+    )
+
+    nominal_non_active = (
+          Q(source_entity__master_entity__entity__is_active=False)
+        | Q(source_entity__reference__is_active=False)
+        | Q(source_entity__reference__master_reference__is_active=False)
     )
 
     now = datetime.now(tz=timezone(timedelta(hours=2)))
@@ -69,9 +75,9 @@ def measurement_or_fact_query(
                 default = mb_reference
         )
 
-    nominal_query = SourceChoiceSetOptionValue.objects.annotate(
+    nominal_query = SourceChoiceSetOptionValue.objects.exclude(nominal_non_active).annotate(
         entity_id=Concat(
-            Value('http://localhost:8000/sav/'),
+            Value('https://www.mammalbase.net/sav/'),
             'id',
             Value('/'),
             output_field=CharField()
