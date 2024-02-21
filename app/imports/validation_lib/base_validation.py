@@ -335,11 +335,12 @@ class Validation():
         if gender == 'nan':
             return ""
         if len(choicevalue) == 0:
-            return self.return_no_field_message(field_name, 'sex')
+            self.errors.append(self.return_no_field_message(field_name, 'sex'))
         if gender.capitalize() == str(choicevalue[0].caption):
-            return ""
+            return 
         else:
-            return self.return_no_field_message(field_name, 'sex')
+            self.errors.append(self.return_no_field_message(field_name, 'sex'))
+            return 
 
     def validate_life_stage(self, data, field_name, field_rules):
         """Validate life stage"""
@@ -352,10 +353,12 @@ class Validation():
         if  life_stage == str(data[field_name]) == 'nan':
             return ""
         if len(life_stage) == 0:
+            self.errors.append("Sex in not valid")
             return self.return_no_field_message(field_name, 'lifestage')
         if life_stage.capitalize() == str(choicevalue[0].caption):
             return ""
         else:
+            self.errors.append("Sex in not valid")
             return self.return_no_field_message(field_name, 'lifestage')
 
     def validate_measurement_value(self, data, field_name, field_rules):
