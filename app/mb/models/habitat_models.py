@@ -45,20 +45,10 @@ class MasterHabitat(BaseModel):
         max_length=250,
         help_text="Enter the Name of the Master Habitat"
         )
-    eco_code = models.PositiveSmallIntegerField(
+    code = models.PositiveSmallIntegerField(
         blank=True,
         null=True,
-        help_text='Enter the eco code of the Master Habitat'
-        )
-    biome_code = models.PositiveSmallIntegerField(
-        blank=True,
-        null=True,
-        help_text='Enter the biome code of the Master Habitat'
-        )
-    iiasa_code = models.PositiveSmallIntegerField(
-        blank=True,
-        null=True,
-        help_text='Enter the IIASA code of the Master Habitat'
+        help_text='Enter the eco/biome/IIASA code of the Master Habitat'
         )
     
     class Meta:
