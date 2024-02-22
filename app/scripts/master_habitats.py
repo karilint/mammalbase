@@ -14,7 +14,7 @@ user = User.objects.get(username=username)
 
 csv_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'habitat_csv')
 
-olson_reference = importer.get_or_create_master_reference(citation="Olson, D. M., Dinerstein, E., Wikramanayake, E. D., Burgess, N. D., Powell, G. V. N., Underwood, E. C., D'Amico, J. A., Itoua, I., Strand, H. E., Morrison, J. C., Loucks, C. J., Allnutt, T. F., Ricketts, T. H., Kura, Y., Lamoreux, J. F., Wettengel, W. W., Hedao, P., Kassem, K. R. 2001. Terrestrial ecoregions of the world: a new map of life on Earth. Bioscience 51(11):933-938.", author=user)
+olson_reference = importer.get_or_create_master_reference(citation="Olson, J S, Watts, J A, and Allison, L J. Carbon in live vegetation of major world ecosystems. United States: N. p., 1983. Web.", author=user)
 olson_path = os.path.join(csv_dir, "biomes_olson_1983.csv")
 olson_df = pd.read_csv(olson_path)
 
@@ -49,6 +49,7 @@ for index, row in olson_df.iterrows():
         else:
             prev_habitat = None
 
+wwf_reference = importer.get_or_create_master_reference(citation="Olson, D. M., Dinerstein, E., Wikramanayake, E. D., Burgess, N. D., Powell, G. V. N., Underwood, E. C., D'Amico, J. A., Itoua, I., Strand, H. E., Morrison, J. C., Loucks, C. J., Allnutt, T. F., Ricketts, T. H., Kura, Y., Lamoreux, J. F., Wettengel, W. W., Hedao, P., Kassem, K. R. 2001. Terrestrial ecoregions of the world: a new map of life on Earth. Bioscience 51(11):933-938.", author=user)
 wwf_path = os.path.join(csv_dir, "biomes_wwf.csv")
 wwf_df = pd.read_csv(wwf_path)
 
@@ -57,7 +58,7 @@ for index, row in wwf_df.iterrows():
     name = row.iloc[1]
 
     habitat, created = MasterHabitat.objects.get_or_create(
-                reference=olson_reference,
+                reference=wwf_reference,
                 code=biome_code,
                 name=name,
             )
