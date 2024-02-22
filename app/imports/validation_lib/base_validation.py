@@ -330,14 +330,14 @@ class Validation():
         choicevalue = ChoiceValue.objects.filter(choice_set="Gender", caption=gender.capitalize())
 
         if gender == 'nan':
-            return errs
+            return  errs
         if len(choicevalue) == 0:
-            errs.append(self.return_no_field_message(field_name, 'sex'))
+            errs.append(self.errors.append(self.return_no_field_message(field_name, 'sex')))
             return errs
         if gender.capitalize() == str(choicevalue[0].caption):
             return errs
         else:
-            errs.append(self.return_no_field_message(field_name, 'sex'))
+            errs.append(self.errors.append(self.return_no_field_message(field_name, 'sex')))
             return errs
 
     def validate_life_stage(self, data, field_name, field_rules):
@@ -351,7 +351,7 @@ class Validation():
 
         if  life_stage == 'nan':
             return errs
-        if len(choicevalue) == 0:
+        if len(life_stage) == 0:
             errs.append(self.return_no_field_message(field_name, 'lifestage'))
             return errs
         if life_stage.capitalize() == str(choicevalue[0].caption):
@@ -549,3 +549,25 @@ class Validation():
             # Add more error messages here as needed
         }
     
+    def get_custom_error_messages(self):
+        """Dictionary for custom error messages.
+
+        Returns:
+            dictionary: list of all possible error messages.
+        """
+        return {
+            "_comment": "You did not provide any field named <feld_name> in your data dictionary",
+            "field_name.rule":"You did not provide any field named field_name in your data dictionary",
+            "month_day.regex":"You did not provide any field named month_day in your data dictionary",
+            "phone.max":"You did not provide any field named phone in your data dictionary",
+            "month_day.required":"You did not provide any field named month_day in your data dictionary",
+            "new_password_confirmation.same":"You did not provide any field named %s in your data dictionary",
+            "phone.no_field":"You did not provide any field named phone in your data dictionary",
+            "birthday.date_format":"You did not provide any field named birthday in your data dictionary",
+            "new_password.alpha":"field new_password can only have alphabet values",
+            "host.no_field":"You did not provide any field named host in your data dictionary",
+            "email.no_field":"You did not provide any field named email in your data dictionary",
+            "nationality.no_field":"You did not provide any field named nationality in your data dictionary",
+            "active.no_field":"You did not provide any field named active in your data dictionary",
+            "age.no_field":"You did not provide any field named age in your data dictionary"
+        }
