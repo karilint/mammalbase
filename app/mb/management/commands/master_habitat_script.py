@@ -54,10 +54,8 @@ class Command(BaseCommand):
                             habitats[key] = habitat
                         else:
                             habitat = habitats[key]
-
-                    prev_habitat = habitat
-                else:
-                    prev_habitat = None
+                    if habitat is not None:
+                        prev_habitat = habitat
     
     def add_wwf_biomes(self):
         wwf_reference = self.importer.get_or_create_master_reference(citation="Olson, D. M., Dinerstein, E., Wikramanayake, E. D., Burgess, N. D., Powell, G. V. N., Underwood, E. C., D'Amico, J. A., Itoua, I., Strand, H. E., Morrison, J. C., Loucks, C. J., Allnutt, T. F., Ricketts, T. H., Kura, Y., Lamoreux, J. F., Wettengel, W. W., Hedao, P., Kassem, K. R. 2001. Terrestrial ecoregions of the world: a new map of life on Earth. Bioscience 51(11):933-938.", author=self.user)
