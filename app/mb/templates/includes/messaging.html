@@ -16,10 +16,25 @@
 			  <p>{{message}}</p>
 			</div> 
 		{% elif message.tags == 'error'%}
-			<div class="w3-panel w3-red">
-			  <h3>Error!</h3>
-			  <p>{{message}}</p>
-			</div> 
+		<div class="w3-panel w3-red">
+			<h3>Error!</h3>
+			<p hidden id="message">{{message}}</p>
+			<script>
+				document.addEventListener("DOMContentLoaded", function() {
+					var messageElement = document.getElementById("message");
+					var messageText = messageElement.textContent;
+					var parts = messageText.split('|');
+					
+					// Assuming you want to display each part in a separate paragraph
+					parts.forEach(function(part) {
+						var newParagraph = document.createElement('p');
+						newParagraph.textContent = part;
+						messageElement.parentNode.insertBefore(newParagraph, messageElement.nextSibling);
+					});
+				});
+			</script>
+		</div>
+		
 		{% elif message.tags == 'import-message'%}
 		<div class="w3-panel w3-green">
 		  <h3>Data import successful</h3>
