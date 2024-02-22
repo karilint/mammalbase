@@ -1867,6 +1867,20 @@ def tsn_search(request):
                 item = item[1]
                 return_data[item["tsn"]] = item
         return JsonResponse(return_data, safe=False, status=200 )
+    
+@login_required
+#@permission_required('mb.edit_source_reference', raise_exception=True) #muokkaa mb.
+def trait_match(request):
+    #source_reference = get_object_or_404(SourceReference, pk=pk, is_active=1)
+
+    #if not user_is_data_admin_or_owner(request.user, source_reference):
+    #    raise PermissionDenied
+
+    #if request.method == "POST":
+    #    pass
+    #else:
+    #    form = SourceReferenceForm(instance=source_reference)
+    return render(request, 'mb/trait_match.html')
 
 def view_proximate_analysis_table_list(request):
     f = ViewProximateAnalysisTableFilter(request.GET, queryset=ViewProximateAnalysisTable.objects.all().select_related())

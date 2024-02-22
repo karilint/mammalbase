@@ -127,6 +127,9 @@ urlpatterns = [
     path('tsn/<int:tsn>/edit/', views.tsn_edit, name='tsn-edit'),
     path('tsn/new', views.tsn_new, name='tsn-new'),
     path('tsn/search', views.tsn_search, name='tsn-search'),
+
+    path('traitmatch/', views.trait_match, name="trait-match"),
+    
     path('exports/', include('exports.urls')),
 ]
 
