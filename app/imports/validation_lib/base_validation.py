@@ -330,14 +330,14 @@ class Validation():
         choicevalue = ChoiceValue.objects.filter(choice_set="Gender", caption=gender.capitalize())
 
         if gender == 'nan':
-            return  errs
+            return errs
         if len(choicevalue) == 0:
-            errs.append(self.errors.append(self.return_no_field_message(field_name, 'sex')))
+            errs.append(self.return_no_field_message(field_name, 'sex'))
             return errs
         if gender.capitalize() == str(choicevalue[0].caption):
             return errs
         else:
-            errs.append(self.errors.append(self.return_no_field_message(field_name, 'sex')))
+            errs.append(self.return_no_field_message(field_name, 'sex'))
             return errs
 
     def validate_life_stage(self, data, field_name, field_rules):
@@ -351,7 +351,7 @@ class Validation():
 
         if  life_stage == 'nan':
             return errs
-        if len(life_stage) == 0:
+        if len(choicevalue) == 0:
             errs.append(self.return_no_field_message(field_name, 'lifestage'))
             return errs
         if life_stage.capitalize() == str(choicevalue[0].caption):
