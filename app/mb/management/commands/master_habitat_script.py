@@ -1,7 +1,7 @@
 import os
 import pandas as pd
-from ...models.habitat_models import MasterHabitat
-from ..imports.importers.base_importer import BaseImporter
+from mb.models.habitat_models import MasterHabitat
+from imports.importers.base_importer import BaseImporter
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 
