@@ -38,6 +38,16 @@
         color: red;
         padding-left:0%;
       }
+      .w3-dropdown-hover > .w3-button::after {
+        content: "";
+        border: solid transparent;
+        border-width: 6px;
+        border-top-color: #030101;
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
       {% block style %}
       {% endblock %}
     </style>
@@ -119,7 +129,15 @@
           <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'source_reference-list'%}">Data Sources</a>
           <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'source_attribute-list'%}">Source Traits</a>
           <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'data_check-detail'%}">Data Inconsistencies</a>
-          <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'trait-match'%}">Match Tool</a>
+          
+          <div class="w3-dropdown-hover">
+            <button class="w3-button">Match Tools</button>
+            <div class="w3-dropdown-content w3-bar-block w3-border">
+              <a href="{% url 'trait-match'%}" class="w3-bar-item w3-button">Trait Match</a>
+              <a href="#" class="w3-bar-item w3-button">Location Match</a>
+              <a href="#" class="w3-bar-item w3-button">Habitat Match</a>
+            </div>
+          </div>
         {% endif %}
         <h4 class="w3-bar-item"><strong>User: {{ user.get_username }}</strong></h4>
         <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'account_logout' %}?next={% url 'index' %}">Logout</a>
