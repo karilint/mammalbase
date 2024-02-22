@@ -26,11 +26,13 @@ def wrapper(request, validator, importer, path):
     
     csv_file = request.FILES["csv_file"]
     df = pd.read_csv(csv_file, sep='\t')
-    try: 
+    try:   
+        print("Start validating")
         errors = validate(df, validator)
+        print(str(errors))
         if len(errors) > 0:
             for error in errors:
-                message.error(error)
+                messages.error(request, error)
             return HttpResponseRedirect(reverse(path))
 
         rows_imported = row_importer(df, importer)
@@ -66,18 +68,24 @@ def validate(df, validator):
     importing_errors = []
     headers = list(df.columns.values)
     data = validator.data
+    print("Datta loaded")
     for row in df.itertuples(index=False):
         for i, x in enumerate(row):
             data[headers[i]] = x
 
-        check_valid = validator.is_valid(data, validator.rules)
+        isvalid = validator.is_valid(data, validator.rules)
+        print("is data valid?" + str(isvalid))
         errors = validator.errors
-
-        if not check_valid:
+        print("Errors erroring")
+        print(str(errors))
+        if not isvalid:
+            print("Start loop")
             for x in errors:
                 importing_errors.append("Error on row: " + str(row) + " Error: " + (x))
-
-        return importing_errors
+            return importing_errors
+        print("Starting again")
+    print("Return empty list")
+    return []
 
 
 def row_importer(df, importer):

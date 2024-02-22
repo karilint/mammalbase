@@ -131,8 +131,6 @@ class Validation():
         print("value: " + str(data[field_name]))
         print("field rules: " + str(field_rules))
 
-
-
         return []
     
     def validate_verbatim_coordinates(self, data, field_name):
@@ -266,12 +264,6 @@ class Validation():
         return errs
 
     def validate_in_fields(self, data, field_name, rule):
-        # if coordinate system, set it
-        if str(field_name) == "verbatimCoordinateSystem":
-            print("set coordinate system")
-            self.coordinate_system = str(data[field_name])
-            return []
-
         """Used for validating fields for some number of values to allow, returns a list of error messages"""
         #retrieve the value for that in rule
         ls = rule.split(':')[1].split(',')
@@ -344,7 +336,7 @@ class Validation():
         choicevalue = ChoiceValue.objects.filter(choice_set="Gender", caption=gender.capitalize())
 
         if gender == 'nan':
-            return 
+            return  errs
         if len(choicevalue) == 0:
             errs.append(self.errors.append(self.return_no_field_message(field_name, 'sex')))
             return errs
@@ -364,7 +356,7 @@ class Validation():
         choicevalue = ChoiceValue.objects.filter(choice_set="Lifestage", caption=life_stage.capitalize())
 
         if  life_stage == 'nan':
-            return 
+            return errs
         if len(life_stage) == 0:
             errs.append(self.return_no_field_message(field_name, 'lifestage'))
             return errs
