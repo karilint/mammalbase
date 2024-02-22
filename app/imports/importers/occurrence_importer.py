@@ -20,28 +20,26 @@ class OccurrencesImporter(BaseImporter):
         Returns:
             bool: True if import is successded, otherwise False.
         """
-        print("Aloitus")
         # Common assignments
         author = self.get_author(getattr(row, 'author'))
         reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
         entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
         verbatimScientificname = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
-        print("Aloitus 2")
-        
+
         created = None
         
         # Create source location model
         new_source_location = self.get_or_create_source_location(getattr(row, 'verbatimLocality'), reference, author)
         new_event, created = Event.objects.get_or_create(verbatim_event_date=getattr(row, 'verbatimEventDate'))
-        print("Aloitus 3")
+
         gender = str(getattr(row, 'sex'))
-        print(f"{gender}")
+
         life_stage = str(getattr(row, 'lifeStage'))
-        print(f"{life_stage}")  
+
         if gender == "nan" or gender == "":
             gender = None
         else:
-            print("Mnee elseen")
+
             gender, created = ChoiceValue.objects.get_or_create(choice_set="Gender", caption=gender.capitalize())
 
         if life_stage == "nan" or life_stage == "":
