@@ -1869,17 +1869,9 @@ def tsn_search(request):
         return JsonResponse(return_data, safe=False, status=200 )
     
 @login_required
-#@permission_required('mb.edit_source_reference', raise_exception=True) #muokkaa mb.
+#@permission_required('mb.tähänjotain', raise_exception=True) #muokkaa mb.
 def trait_match(request):
-    #source_reference = get_object_or_404(SourceReference, pk=pk, is_active=1)
-
-    #if not user_is_data_admin_or_owner(request.user, source_reference):
-    #    raise PermissionDenied
-
-    #if request.method == "POST":
-    #    pass
-    #else:
-    #    form = SourceReferenceForm(instance=source_reference)
+    #TODO
     return render(request, 'mb/trait_match.html')
 
 def view_proximate_analysis_table_list(request):
