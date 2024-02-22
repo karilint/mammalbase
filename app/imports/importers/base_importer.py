@@ -53,7 +53,7 @@ class BaseImporter:
             uri = item.get('uri', '')
             year = item.get('published', {}).get('date-parts', [[None]])[0][0]
             container_title = item.get('container-title', [''])[0]
-            volume = item.get('volume', '')
+            volume = item.get('volume', None)
             issue = item.get('issue', '')
             page = item.get('page', '')
             ref_type = item.get('type', '')
