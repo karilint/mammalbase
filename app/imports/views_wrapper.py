@@ -30,7 +30,7 @@ def wrapper(request, validator, importer, path):
         errors = validate(df, validator)
         if len(errors) > 0:
             for error in errors:
-                message.error(error)
+                messages.error(request, error)
             return HttpResponseRedirect(reverse(path))
 
         rows_imported = row_importer(df, importer)
