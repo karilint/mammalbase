@@ -81,7 +81,10 @@ def validate(df, validator):
         if not isvalid:
             for x in errors:
                 importing_errors.append("Error on row: "+ str(index) + ". Error: " + (x))
-            return importing_errors
+            
+    if len(importing_errors) > 0:
+        print(importing_errors)
+        return importing_errors
     return []
 
 

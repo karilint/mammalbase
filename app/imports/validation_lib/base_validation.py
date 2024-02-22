@@ -30,7 +30,7 @@ class Validation():
 
     def validate(self, data, rules, custom_messages=None):
         """Validate the 'data' according to the 'rules' given, returns a list of errors named 'errors'"""
-
+        self.errors = []
         if custom_messages:
             self.custom_error_messages = custom_messages
         
