@@ -58,9 +58,6 @@ class Validation():
 
         if rule == "boolean":
             rule_error = self.validate_boolean_fields(data, field_name)
-
-        elif rule == "date":
-            rule_error = self.validate_date_fields(data, field_name, field_rules)
         
         elif rule == "author":
             rule_error = self.validate_author_fields(data, field_name)
@@ -91,9 +88,6 @@ class Validation():
         
         elif rule.startswith("in"):
             rule_error = self.validate_in_fields(data,field_name, rule)
-        
-        elif rule == "sequence":
-            rule_error = self.validate_sequence_fields(data, field_name, field_rules)
         
         elif rule == "measurementValue":
             rule_error = self.validate_measurement_value(data, field_name, field_rules)
@@ -532,53 +526,26 @@ class Validation():
             dictionary: list of all possible error messages.
         """
         return {
-            "after": "'%s' is an invalid after date",
-            "alpha":"'%s' can have only alphabets",
-            "alpha_num":"'%s' can have only alphabets or numbers",        
-            "before":"'%s' is an invalid before date ",
-            "between":"'%s' has an invalid value for between field",
-            "boolean":"'%s' has invalid value for boolean field",
-            "confirmed":"'%s' must have a pair field",
-            "date":"'%s' value does not match date format",
-            "digits":"'%s' must be an integer",
-            "different":"'%s' has invalid value for same rule ",
-            "email":"'%s' must be a valid email address",
-            "in":"'%s' has invalid value for in rule",
-            "ip":"'%s' must be a valid IP address",
-            "max":"The maximum value for the field '%s' is invalid",
-            "min":"The minimum value for the field '%s' is invalid",
-            "not_in":"'%s' has invalid value for not_in rule",
-            "present":"The data dictionary must have a nullable field name '%s'",
-            "phone":"'%s' must be a valid Phone Number",
-            "regex":"'%s' field does not match the RE ",
-            "required":"'%s' must be filled",
-            "same":"'%s' has invalid value for same rule",
-            "size":"'%s' has invalid value for size rule",
-            "website":"'%s' must be a valid Website URL",
-            "no_field":"No field named '%s' to validate for %s rule",
-            "sex": "%s has invalid value",
-            "lifestage": "%s has invalid value"
+            "boolean": "'%s' has invalid value for boolean field",
+            "required": "'%s' must be filled",
+            "alpha": "'%s' can have only alphabets",
+            "digits": "'%s' must be an integer",
+            "max": "The maximum value for the field '%s' is invalid",
+            "min": "The minimum value for the field '%s' is invalid",
+            "regex": "'%s' field does not match the RE",
+            "in": "'%s' has invalid value for in rule",
+            "author": "'%s' has invalid value for author field",
+            "verbatimScientificName": "'%s' has invalid value for verbatimScientificName field",
+            "verbatimLatitude": "'%s' has invalid value for verbatimLatitude field",
+            "verbatimLongitude": "'%s' has invalid value for verbatimLongitude field",
+            "coordinate": "'%s' has invalid value for coordinate field",
+            "verbatimEventDate": "'%s' has invalid value for verbatimEventDate field",
+            "gender": "'%s' has invalid value for gender field",
+            "lifeStage": "'%s' has invalid value for lifeStage field",
+            "measurementValue": "'%s' has invalid value for measurementValue field",
+            "in_db": "'%s' has invalid value for in_db field",
+            "nameYear": "'%s' has invalid value for nameYear field",
+            "verbatimCoordinates": "'%s' has invalid value for verbatimCoordinates field",
+            # Add more error messages here as needed
         }
     
-    def get_custom_error_messages(self):
-        """Dictionary for custom error messages.
-
-        Returns:
-            dictionary: list of all possible error messages.
-        """
-        return {
-            "_comment": "You did not provide any field named <feld_name> in your data dictionary",
-            "field_name.rule":"You did not provide any field named field_name in your data dictionary",
-            "month_day.regex":"You did not provide any field named month_day in your data dictionary",
-            "phone.max":"You did not provide any field named phone in your data dictionary",
-            "month_day.required":"You did not provide any field named month_day in your data dictionary",
-            "new_password_confirmation.same":"You did not provide any field named %s in your data dictionary",
-            "phone.no_field":"You did not provide any field named phone in your data dictionary",
-            "birthday.date_format":"You did not provide any field named birthday in your data dictionary",
-            "new_password.alpha":"field new_password can only have alphabet values",
-            "host.no_field":"You did not provide any field named host in your data dictionary",
-            "email.no_field":"You did not provide any field named email in your data dictionary",
-            "nationality.no_field":"You did not provide any field named nationality in your data dictionary",
-            "active.no_field":"You did not provide any field named active in your data dictionary",
-            "age.no_field":"You did not provide any field named age in your data dictionary"
-        }
