@@ -26,6 +26,7 @@ class Validation():
         self.custom_error_messages = {}
         # List to store the error messages in
         self.errors = []
+        self.coordinate_system = None
 
     def validate(self, data, rules, custom_messages=None):
         """Validate the 'data' according to the 'rules' given, returns a list of errors named 'errors'"""
@@ -129,6 +130,8 @@ class Validation():
     def validate_coordinate(self, data, field_name, field_rules):
         print("value: " + str(data[field_name]))
         print("field rules: " + str(field_rules))
+
+
 
         return []
     
@@ -263,6 +266,12 @@ class Validation():
         return errs
 
     def validate_in_fields(self, data, field_name, rule):
+        # if coordinate system, set it
+        if str(field_name) == "verbatimCoordinateSystem":
+            print("set coordinate system")
+            self.coordinate_system = str(data[field_name])
+            return []
+
         """Used for validating fields for some number of values to allow, returns a list of error messages"""
         #retrieve the value for that in rule
         ls = rule.split(':')[1].split(',')
@@ -329,37 +338,41 @@ class Validation():
         """Validate gender field"""
         gender = str(data[field_name])
 
+        errs = []
+
         # Change the first letter to uppercase
         choicevalue = ChoiceValue.objects.filter(choice_set="Gender", caption=gender.capitalize())
 
         if gender == 'nan':
-            return ""
+            return 
         if len(choicevalue) == 0:
-            self.errors.append(self.return_no_field_message(field_name, 'sex'))
+            errs.append(self.errors.append(self.return_no_field_message(field_name, 'sex')))
+            return errs
         if gender.capitalize() == str(choicevalue[0].caption):
-            return 
+            return errs
         else:
-            self.errors.append(self.return_no_field_message(field_name, 'sex'))
-            return 
+            errs.append(self.errors.append(self.return_no_field_message(field_name, 'sex')))
+            return errs
 
     def validate_life_stage(self, data, field_name, field_rules):
         """Validate life stage"""
         life_stage = str(data[field_name])
-        print("lifestage checker: " + life_stage)
+
+        errs = []
 
         # Change the first letter to uppercase
         choicevalue = ChoiceValue.objects.filter(choice_set="Lifestage", caption=life_stage.capitalize())
 
-        if  life_stage == str(data[field_name]) == 'nan':
-            return ""
+        if  life_stage == 'nan':
+            return 
         if len(life_stage) == 0:
-            self.errors.append("Sex in not valid")
-            return self.return_no_field_message(field_name, 'lifestage')
+            errs.append(self.return_no_field_message(field_name, 'lifestage'))
+            return errs
         if life_stage.capitalize() == str(choicevalue[0].caption):
-            return ""
+            return errs
         else:
-            self.errors.append("Sex in not valid")
-            return self.return_no_field_message(field_name, 'lifestage')
+            errs.append(self.return_no_field_message(field_name, 'lifestage'))
+            return errs
 
     def validate_measurement_value(self, data, field_name, field_rules):
         """Validate measurement value field"""
