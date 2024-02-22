@@ -10,8 +10,7 @@ class Command(BaseCommand):
     def __init__(self):
         self.importer = BaseImporter()
         self.csv_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'habitat_csv')
-        username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
-        self.user = User.objects.get(username=username)
+        self.user = User.objects.get(username='admin')
         
     def handle(self, *args, **options):
         print("Adding Olson biomes...")
@@ -49,7 +48,8 @@ class Command(BaseCommand):
                                 reference=olson_reference,
                                 parent=prev_habitat,
                                 code=eco_code,
-                                group=header
+                                group=header,
+                                created_by=self.user
                             )
                             habitats[key] = habitat
                         else:
@@ -72,6 +72,7 @@ class Command(BaseCommand):
                         reference=wwf_reference,
                         code=biome_code,
                         name=name,
+                        created_by=self.user
                     )
 
             if created:
@@ -90,6 +91,7 @@ class Command(BaseCommand):
                         reference=holdridge_reference,
                         code=iiasa_code,
                         name=name,
+                        created_by=self.user
                     )
 
             if created:
