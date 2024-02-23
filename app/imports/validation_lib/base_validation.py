@@ -323,7 +323,6 @@ class Validation():
     def validate_gender(self, data, field_name, field_rules):
         """Validate gender field"""
         gender = str(data[field_name])
-        print("gender: " + gender)
 
         errs = []
 
@@ -344,7 +343,6 @@ class Validation():
     def validate_life_stage(self, data, field_name, field_rules):
         """Validate life stage"""
         life_stage = str(data[field_name])
-        print("life stage: " + life_stage)
 
         errs = []
 
