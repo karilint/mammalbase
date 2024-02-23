@@ -26,7 +26,7 @@ class Occurrence_validation(Validation):
             "verbatimCoordinates"       : "", 
             "verbatimLatitude"          : "", 
             "verbatimLongitude"         : "", 
-            "verbatimCoordinateSystem"  : "in:decimal degrees,degrees minutes,degrees decimal seconds,UTM,nan", 
+            "verbatimCoordinateSystem"  : "coordinateSystem", 
             "verbatimSRS"               : "", 
             "author"                    : "required|author", 
             "associatedReferences"      : "", 

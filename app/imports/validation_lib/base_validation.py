@@ -26,7 +26,6 @@ class Validation():
         self.custom_error_messages = {}
         # List to store the error messages in
         self.errors = []
-        self.coordinate_system = None
 
     def validate(self, data, rules, custom_messages=None):
         """Validate the 'data' according to the 'rules' given, returns a list of errors named 'errors'"""
@@ -74,9 +73,6 @@ class Validation():
         elif rule == "verbatimLongitude":
             rule_error = self.validate_verbatim_longitude(data, field_name)
 
-        elif rule == "coordinate":
-            rule_error = self.validate_coordinate(data, field_name, field_rules)
-
         elif rule == "verbatimEventDate":
             rule_error = self.validate_verbatim_eventdate(data, field_name)
         
@@ -100,6 +96,9 @@ class Validation():
             
         elif rule == "digits":
             rule_error = self.validate_digit_fields(data,field_name)
+        
+        elif rule == "coordinateSystem":
+            rule_error = self.validate_coordinateSystem_fields(data, field_name, field_rules)
 
         elif rule.startswith("max"):
             rule_error = self.validate_max_fields(data,field_name,rule)
@@ -121,27 +120,43 @@ class Validation():
         
         return rule_error
     
-    def validate_coordinate(self, data, field_name, field_rules):
-        print("value: " + str(data[field_name]))
-        print("field rules: " + str(field_rules))
+    def coordinate_format(self, coords, dict):
+        for key, regex in dict.items():
+            if re.match(regex, coords):
+                return key
+        return "No match found"
 
-        return []
-    
-    def validate_verbatim_coordinates(self, data, field_name):
-        """Validate verbatimCoordinates
-
-        Args:
-            data (python-dictionary): Generaged dictionary from tsv-file.
-            field_name (str): field name
-
-        Returns:
-            list: Possible validation errors in list. Otherwise empty list if valdion is correct.
-        """
+    def validate_coordinateSystem_fields(self, data, field_name, field_rules):
         errs = []
+        if str(data[field_name]) == 'nan':
+            if (str(data["verbatimLatitude"]) != "nan" or str(data["verbatimLongitude"]) != "nan"):
+                errs.append(self.return_field_message(field_name,"boolean"))
+                return errs
+            return []
+        
+        
+        dict = {
+            "decimal degrees": r'^[-+]?\d{1,3}(?:.\d+)?,\s[-+]?\d{1,3}(?:.\d+)?$',
+            "degrees minutes": r'^[-+]?\d{1,3}°\d{1,2}(?:\.\d+)?\'\s*[NS],\s*[-+]?\d{1,3}°\d{1,2}(?:\.\d+)?\'\s*[EW]$',
+            "degrees decimals": r'^[-+]?\d{1,3}°\d{1,2}\'\d{1,2}(?:\.\d+)?\"\s*[NS],\s*[-+]?\d{1,3}°\d{1,2}\'\d{1,2}(?:\.\d+)?\"\s*[EW]$',
+            "UTM": r'^\d{1,2}[NSZT]\s+\d{1,9}(?:.\d+)?m[WE]\s+\d{1,9}(?:.\d+)?m[NS]$',
+        }
+        
+        coordSystem = str(data[field_name]).lower()
+        latitude = str(data["verbatimLatitude"])
+        longitude = str(data["verbatimLongitude"])
+        utm = str(data["verbatimCoordinates"])
+        coords = f"{latitude}, {longitude}"
 
-        #before matching remove all whitespaces from str(data[field_name])
+        if str(data[field_name]) == "UTM":
+            value = str(self.coordinate_format(utm, dict)).lower()
+        else:
+            value = str(self.coordinate_format(coords, dict)).lower()
 
+        if value != coordSystem:
+            errs.append(self.return_field_message(field_name,"boolean"))
         return errs
+    
     
     def validate_verbatim_eventdate(self, data, field_name):
         """Validate verbatimEventDate
@@ -154,11 +169,7 @@ class Validation():
             list: Possible validation errors in list. Otherwise empty list if valdion is correct.
         """
         return []
-    def validate_verbatim_latitude(self, data, field_name):
-        return []
-    
-    def validate_verbatim_longitude(self, data, field_name):
-        return []
+
 
     def validate_boolean_fields(self, data, field_name):
         """Validate boolean values.
@@ -540,7 +551,7 @@ class Validation():
             "verbatimLongitude": "'%s' has invalid value for verbatimLongitude field",
             "coordinate": "'%s' has invalid value for coordinate field",
             "verbatimEventDate": "'%s' has invalid value for verbatimEventDate field",
-            "gender": "'%s' has invalid value for gender field",
+            "gender": "'%s' has invalid value for sex field",
             "lifeStage": "'%s' has invalid value for lifeStage field",
             "measurementValue": "'%s' has invalid value for measurementValue field",
             "in_db": "'%s' has invalid value for in_db field",
