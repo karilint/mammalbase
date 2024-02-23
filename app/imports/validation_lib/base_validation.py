@@ -323,41 +323,43 @@ class Validation():
     def validate_gender(self, data, field_name, field_rules):
         """Validate gender field"""
         gender = str(data[field_name])
+        print("gender: " + gender)
 
         errs = []
 
         # Change the first letter to uppercase
         choicevalue = ChoiceValue.objects.filter(choice_set="Gender", caption=gender.capitalize())
 
-        if gender == 'nan':
-            return  errs
+        if gender == 'nan' or gender == "":
+            return errs
         if len(choicevalue) == 0:
-            errs.append(self.errors.append(self.return_no_field_message(field_name, 'sex')))
+            errs.append(self.return_field_message(field_name, 'gender'))
             return errs
         if gender.capitalize() == str(choicevalue[0].caption):
             return errs
         else:
-            errs.append(self.errors.append(self.return_no_field_message(field_name, 'sex')))
+            errs.append(self.return_field_message(field_name, 'gender'))
             return errs
 
     def validate_life_stage(self, data, field_name, field_rules):
         """Validate life stage"""
         life_stage = str(data[field_name])
+        print("life stage: " + life_stage)
 
         errs = []
 
         # Change the first letter to uppercase
         choicevalue = ChoiceValue.objects.filter(choice_set="Lifestage", caption=life_stage.capitalize())
 
-        if  life_stage == 'nan':
+        if life_stage == 'nan' or life_stage == "":
             return errs
-        if len(life_stage) == 0:
-            errs.append(self.return_no_field_message(field_name, 'lifestage'))
+        if len(choicevalue) == 0:
+            errs.append(self.return_field_message(field_name, 'lifeStage'))
             return errs
         if life_stage.capitalize() == str(choicevalue[0].caption):
             return errs
         else:
-            errs.append(self.return_no_field_message(field_name, 'lifestage'))
+            errs.append(self.return_field_message(field_name, 'lifeStage'))
             return errs
 
     def validate_measurement_value(self, data, field_name, field_rules):

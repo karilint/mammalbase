@@ -74,7 +74,6 @@ def validate(df, validator):
         index += 1
         for i, x in enumerate(row):
             data[headers[i]] = x
-            print(data)
 
         isvalid = validator.is_valid(data, validator.rules)
         errors = validator.errors
