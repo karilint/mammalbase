@@ -95,6 +95,7 @@ INSTALLED_APPS = [
     'exports',
     "django_celery_results",
     "celery_progress",
+    "matchtools"
 ]
 
 SITE_ID = 1
