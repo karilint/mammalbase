@@ -1868,12 +1868,6 @@ def tsn_search(request):
                 return_data[item["tsn"]] = item
         return JsonResponse(return_data, safe=False, status=200 )
     
-@login_required
-#@permission_required('mb.tähänjotain', raise_exception=True) #muokkaa mb.
-def trait_match(request):
-    #TODO
-    return render(request, 'mb/trait_match.html')
-
 def view_proximate_analysis_table_list(request):
     f = ViewProximateAnalysisTableFilter(request.GET, queryset=ViewProximateAnalysisTable.objects.all().select_related())
 
