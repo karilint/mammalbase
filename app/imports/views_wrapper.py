@@ -33,9 +33,6 @@ def wrapper(request, validator, importer, path):
             messages.error(request, error_messages)
             return HttpResponseRedirect(reverse(path))
 
-
-
-
         rows_imported = row_importer(df, importer)
         if rows_imported > 0:
             message = f"File imported successfully. {rows_imported} rows of data were imported."
@@ -53,8 +50,6 @@ def wrapper(request, validator, importer, path):
         print(e)
         messages.error(request, "Unable to upload file. "+repr(e))
         return HttpResponseRedirect(reverse(path))
-
-
 
 def validate(df, validator):
     """Validate rows in tsv-file.
