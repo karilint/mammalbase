@@ -344,7 +344,7 @@ class Validation():
 
 
         if not data.get(field_name):
-            return self.return_no_field_message(field_name, 'verbatim scientific name')
+            return self.return_field_message(field_name, 'verbatim scientific name')
         # Additional validation logic...
         return ""  # No error message if validation passes
 

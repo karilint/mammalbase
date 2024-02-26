@@ -5,7 +5,7 @@ class Occurrence_validation(Validation):
 
     def __init__(self):
         """
-        Rules for occurrence validation.
+        Rules for occurrence validation. Empty string in rules means that field do not have a validation.
         """
         super().__init__()
 
