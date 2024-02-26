@@ -22,6 +22,13 @@ def traitlist_query(measurement_choices):
     nominal_non_active = (
               Q(source_choiceset_option__source_attribute__master_attribute__unit__is_active=False)
             | Q(source_choiceset_option__source_attribute__master_attribute__reference__is_active=False)
+            | Q(source_choiceset_option__source_attribute__master_attribute__id=None)
+            | Q(source_choiceset_option__source_attribute__master_attribute__name='- Checked, Unlinked -')
+            | Q(source_choiceset_option__source_attribute__master_attribute__name__exact='')
+            | Q(source_entity__master_entity__name__exact='')
+            | Q(source_entity__master_entity__id__isnull=True)
+            | Q(source_choiceset_option__source_attribute__reference__status=1)
+            | Q(source_choiceset_option__source_attribute__reference__status=3)
     )
 
     query = base.exclude(non_active).annotate(
