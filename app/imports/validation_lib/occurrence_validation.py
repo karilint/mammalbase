@@ -5,7 +5,7 @@ class Occurrence_validation(Validation):
 
     def __init__(self):
         """
-        Rules for occurrence validation.
+        Rules for occurrence validation. Empty string in rules means that field do not have a validation.
         """
         super().__init__()
 
@@ -26,7 +26,7 @@ class Occurrence_validation(Validation):
             "verbatimCoordinates"       : "", 
             "verbatimLatitude"          : "", 
             "verbatimLongitude"         : "", 
-            "verbatimCoordinateSystem"  : "in:decimal degrees,degrees minutes,degrees decimal seconds,UTM,nan", 
+            "verbatimCoordinateSystem"  : "coordinateSystem", 
             "verbatimSRS"               : "", 
             "author"                    : "required|author", 
             "associatedReferences"      : "", 

@@ -49,7 +49,6 @@ def import_proximate_analysis(request):
 	path = "import_proximate_analysis"
 
 	#return wrapper(request, validator, importer, path)
-	
 
 @login_required
 def import_ets(request):

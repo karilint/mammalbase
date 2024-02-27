@@ -26,7 +26,6 @@ class Validation():
         self.custom_error_messages = {}
         # List to store the error messages in
         self.errors = []
-        self.coordinate_system = None
 
     def validate(self, data, rules, custom_messages=None):
         """Validate the 'data' according to the 'rules' given, returns a list of errors named 'errors'"""
@@ -74,9 +73,6 @@ class Validation():
         elif rule == "verbatimLongitude":
             rule_error = self.validate_verbatim_longitude(data, field_name)
 
-        elif rule == "coordinate":
-            rule_error = self.validate_coordinate(data, field_name, field_rules)
-
         elif rule == "verbatimEventDate":
             rule_error = self.validate_verbatim_eventdate(data, field_name)
         
@@ -100,6 +96,9 @@ class Validation():
             
         elif rule == "digits":
             rule_error = self.validate_digit_fields(data,field_name)
+        
+        elif rule == "coordinateSystem":
+            rule_error = self.validate_coordinateSystem_fields(data, field_name, field_rules)
 
         elif rule.startswith("max"):
             rule_error = self.validate_max_fields(data,field_name,rule)
@@ -121,27 +120,63 @@ class Validation():
         
         return rule_error
     
-    def validate_coordinate(self, data, field_name, field_rules):
-        print("value: " + str(data[field_name]))
-        print("field rules: " + str(field_rules))
-    
-        return []
-    
-    def validate_verbatim_coordinates(self, data, field_name):
-        """Validate verbatimCoordinates
+
+    def coordinate_format(self, coords, dict):
+        """
 
         Args:
-            data (python-dictionary): Generaged dictionary from tsv-file.
+            coords (str): Coordinates in string object.
+            dict (Python-dictionary): Dictionary of coordinate formats in regex.
+
+        Returns:
+            str: returns coordinate system which matches one of the samples in dict. Otherwise 'No match found'
+        """
+        for key, regex in dict.items():
+            if re.match(regex, coords):
+                return key
+        return "No match found"
+
+    def validate_coordinateSystem_fields(self, data, field_name, field_rules):
+        """Validate the coordinates according to the given coordinate system.
+
+
+        Args:
+            data (dictionary): Generaged dictionary from tsv-file.
             field_name (str): field name
 
         Returns:
             list: Possible validation errors in list. Otherwise empty list if valdion is correct.
         """
         errs = []
+        if str(data[field_name]) == 'nan':
+            if (str(data["verbatimLatitude"]) != "nan" or str(data["verbatimLongitude"]) != "nan"):
+                errs.append(self.return_field_message(field_name,"boolean"))
+                return errs
+            return []
+        
+        
+        dict = {
+            "decimal degrees": r'^[-+]?\d{1,3}(?:.\dgit s+)?,\s[-+]?\d{1,3}(?:.\d+)?$',
+            "degrees minutes": r'^[-+]?\d{1,3}°\d{1,2}(?:\.\d+)?\'\s*[NS],\s*[-+]?\d{1,3}°\d{1,2}(?:\.\d+)?\'\s*[EW]$',
+            "degrees decimals": r'^[-+]?\d{1,3}°\d{1,2}\'\d{1,2}(?:\.\d+)?\"\s*[NS],\s*[-+]?\d{1,3}°\d{1,2}\'\d{1,2}(?:\.\d+)?\"\s*[EW]$',
+            "UTM": r'^\d{1,2}[NSZT]\s+\d{1,9}(?:.\d+)?m[WE]\s+\d{1,9}(?:.\d+)?m[NS]$',
+        }
+        
+        coordSystem = str(data[field_name]).lower()
+        latitude = str(data["verbatimLatitude"])
+        longitude = str(data["verbatimLongitude"])
+        utm = str(data["verbatimCoordinates"])
+        coords = f"{latitude}, {longitude}"
 
-        #before matching remove all whitespaces from str(data[field_name])
+        if str(data[field_name]) == "UTM":
+            value = str(self.coordinate_format(utm, dict)).lower()
+        else:
+            value = str(self.coordinate_format(coords, dict)).lower()
 
+        if value != coordSystem:
+            errs.append(self.return_field_message(field_name,"boolean"))
         return errs
+    
     
     def validate_verbatim_eventdate(self, data, field_name):
         """Validate verbatimEventDate
@@ -154,11 +189,7 @@ class Validation():
             list: Possible validation errors in list. Otherwise empty list if valdion is correct.
         """
         return []
-    def validate_verbatim_latitude(self, data, field_name):
-        return []
-    
-    def validate_verbatim_longitude(self, data, field_name):
-        return []
+
 
     def validate_boolean_fields(self, data, field_name):
         """Validate boolean values.
@@ -175,7 +206,7 @@ class Validation():
             if data[field_name] != (True or False):
                 errs.append(self.return_field_message(field_name,"boolean"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name,'boolean'))
+            errs.append(self.return_field_message(field_name,'boolean'))
 
         return errs  
 
@@ -187,7 +218,7 @@ class Validation():
             if not isinstance(float(data[field_name]),(int, float)) or data[field_name] == "nan":
                 errs.append(self.return_field_message(field_name,"digits"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name,'digits'))
+            errs.append(self.return_field_message(field_name,'digits'))
         return errs
     
     def validate_nameYear_fields(self, data, field_name):
@@ -207,7 +238,7 @@ class Validation():
             if not re.match(name_year_pattern, data[field_name]) or data[field_name].count('(') != data[field_name].count(')'):
                 errs.append(self.return_field_message(field_name, "invalid name and year format"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name, 'integer'))
+            errs.append(self.return_field_message(field_name, 'integer'))
         return errs
 
     def validate_date(self, data, field_name):
@@ -241,7 +272,7 @@ class Validation():
                             except ValueError:
                                 errs.append(self.return_field_message(field_name, "invalid date format"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name, 'required'))
+            errs.append(self.return_field_message(field_name, 'required'))
 
         return errs 
     
@@ -253,7 +284,7 @@ class Validation():
             if not re.match("^[a-zA-Z\s]+$",str(data[field_name])) and str(data[field_name]) != "nan":
                 errs.append(self.return_field_message(field_name,"alpha"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name,'alpha'))
+            errs.append(self.return_field_message(field_name,'alpha'))
         
         return errs
 
@@ -267,7 +298,7 @@ class Validation():
             if str(data[field_name]) not in ls:
                 errs.append(self.return_field_message(field_name, "in"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name,'in'))
+            errs.append(self.return_field_message(field_name,'in'))
         return errs
 
     def validate_author_fields(self, data, field_name):
@@ -292,7 +323,7 @@ class Validation():
                 if len(parts) != 4 or not all(part.isdigit() and len(part) == 4 for part in parts):
                     errs.append(self.return_field_message(field_name, "invalid author format"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name, 'required'))
+            errs.append(self.return_field_message(field_name, 'required'))
 
         return errs
 
@@ -304,7 +335,7 @@ class Validation():
             if str(data[field_name]) == "" or str(data[field_name]) == "nan":
                 errs.append(self.return_field_message(field_name,"required"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name,'required'))
+            errs.append(self.return_field_message(field_name,'required'))
 
         return errs     
 
@@ -315,7 +346,7 @@ class Validation():
 
 
         if not data.get(field_name):
-            return self.return_no_field_message(field_name, 'verbatim scientific name')
+            return self.return_field_message(field_name, 'verbatim scientific name')
         # Additional validation logic...
         return ""  # No error message if validation passes
 
@@ -363,7 +394,7 @@ class Validation():
     def validate_measurement_value(self, data, field_name, field_rules):
         """Validate measurement value field"""
         if not data.get(field_name):
-            return self.return_no_field_message(field_name, 'measurement value')
+            return self.return_field_message(field_name, 'measurement value')
         measurement_value = data[field_name]
         try:
             measurement_value = int(measurement_value)
@@ -388,7 +419,7 @@ class Validation():
         errs = []
 
         if not model.objects.filter(**{field_rules[1]: data[field_name]}).exists():
-            errs.append(self.return_no_field_message(field_name,'in_db'))
+            errs.append(self.return_field_message(field_name,'in_db'))
         return errs
 
 
@@ -413,7 +444,7 @@ class Validation():
             if data[field_name] != specific_value:
                 errs.append(self.return_field_message(field_name, "specific", specific_value))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name, 'specific'))
+            errs.append(self.return_field_message(field_name, 'specific'))
 
         return errs
 
@@ -432,7 +463,7 @@ class Validation():
                 if len(str(data[field_name])) > max_value:
                     errs.append(self.return_field_message(field_name,"max"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name,'maximum'))
+            errs.append(self.return_field_message(field_name,'maximum'))
 
         return errs
 
@@ -450,7 +481,7 @@ class Validation():
                 if len(str(data[field_name])) < min_value:
                     errs.append(self.return_field_message(field_name,"min"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name,'minimum'))
+            errs.append(self.return_field_message(field_name,'minimum'))
 
         return errs
 
@@ -475,7 +506,7 @@ class Validation():
         try:
             result = comp_re.match(field_value)
         except KeyError:
-            errs.append(self.return_no_field_message(field_value,rule_name))
+            errs.append(self.return_field_message(field_value,rule_name))
             result = "error"
 
         return errs,result
