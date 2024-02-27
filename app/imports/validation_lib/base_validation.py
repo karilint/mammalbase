@@ -172,7 +172,7 @@ class Validation():
             value = str(self.coordinate_format(coords, dict)).lower()
 
         if value != coordSystem:
-            errs.append(self.return_field_message(field_name,"boolean"))
+            errs.append(self.return_field_message(field_name,"verbatimCoordinateSystem"))
         return errs
     
     
@@ -567,7 +567,7 @@ class Validation():
             "verbatimScientificName": "'%s' has invalid value for verbatimScientificName field",
             "verbatimLatitude": "'%s' has invalid value for verbatimLatitude field",
             "verbatimLongitude": "'%s' has invalid value for verbatimLongitude field",
-            "coordinate": "'%s' has invalid value for coordinate field",
+            "verbatimCoordinateSystem": "'%s' has invalid value for verbatimCoordinateSystem field",
             "verbatimEventDate": "'%s' has invalid value for verbatimEventDate field",
             "gender": "'%s' has invalid value for sex field",
             "lifeStage": "'%s' has invalid value for lifeStage field",
