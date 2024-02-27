@@ -124,7 +124,7 @@ class Validation():
     def validate_coordinate(self, data, field_name, field_rules):
         print("value: " + str(data[field_name]))
         print("field rules: " + str(field_rules))
-
+    
         return []
     
     def validate_verbatim_coordinates(self, data, field_name):
@@ -540,7 +540,7 @@ class Validation():
             "verbatimLongitude": "'%s' has invalid value for verbatimLongitude field",
             "coordinate": "'%s' has invalid value for coordinate field",
             "verbatimEventDate": "'%s' has invalid value for verbatimEventDate field",
-            "gender": "'%s' has invalid value for gender field",
+            "gender": "'%s' has invalid value for sex field",
             "lifeStage": "'%s' has invalid value for lifeStage field",
             "measurementValue": "'%s' has invalid value for measurementValue field",
             "in_db": "'%s' has invalid value for in_db field",
