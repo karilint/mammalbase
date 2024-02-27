@@ -76,7 +76,7 @@ class HabitatRelation(BaseModel):
         """
         Returns the url to access a particular Source Habitat instance.
         """
-        return reverse('attribute-relation-detail', args=[str(self.id)])
+        return reverse('habitat-relation-detail', args=[str(self.id)])
 
     def __str__(self):
         """
