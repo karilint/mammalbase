@@ -13,7 +13,7 @@ class SourceLocation(BaseModel):
         max_length=250,
         help_text="Enter the Name of the Source Location"
         )
-    verbatim_eleveation = models.CharField(
+    verbatim_elevation = models.CharField(
         max_length=250,
         blank=True,
         null=True,
