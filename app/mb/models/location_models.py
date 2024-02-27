@@ -84,12 +84,103 @@ class MasterLocation(BaseModel):
         max_length=250, 
         help_text="Enter the Name of the Master Location"
         )
-    tgn = models.PositiveSmallIntegerField(
-        default=0, 
+    locationID = models.CharField(
+        max_length=250,
         blank=True,
-        null=True, 
-        help_text='Enter Thesaurus of Geographic Names id'
+        null=True,
+        help_text="Enter the locationID of the Master Location"
         )
+    higherGeographyID = models.ForeignKey(
+        'self',
+        null = True,
+        blank = True,
+        on_delete = models.CASCADE
+    )
+    continent = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the continent of the Master Location"
+        )
+    country = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the country of the Master Location"
+        )
+    countryCode = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        help_text="Enter the country code of the Master Location"
+        )
+    stateProvince = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the state province of the Master Location"
+        )
+    county = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the county of the Master Location"
+        )
+    municipality = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the municipality of the Master Location"
+        )
+    locality = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the locality of the Master Location"
+        )
+    minimumElevationInMeters = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the minimum elevation in meters of the Master Location"
+        )
+    maximumElevationInMeters = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the maximum elevation in meters of the Master Location"
+        )
+    locationAccordingTo = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the information about the source of this location information of the Master Location"
+        )
+    locationRemarks = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the location remarks of the Master Location"
+        )
+    decimalLatitude = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the decimal latitude of the Master Location"
+        )
+    decimalLongitude = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the decimal longitude of the Master Location"
+        )
+    geodeticDatum = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the geodetic datum of the Master Location"
+        )
+
 
     class Meta:
         ordering = ['name']
