@@ -197,4 +197,21 @@ class MasterLocation(BaseModel):
         """
         return '%s' % (self.name)
     
+class LocationRelation(BaseModel):
+    source_location = models.ForeignKey('SourceLocation', on_delete=models.CASCADE)
+    master_location = models.ForeignKey('MasterLocation', on_delete=models.CASCADE)
 
+    class Meta:
+      unique_together = ('source_location', 'master_location',)
+
+    def get_absolute_url(self):
+        """
+        Returns the url to access a particular Source Location instance.
+        """
+        return reverse('location-relation-detail', args=[str(self.id)])
+
+    def __str__(self):
+        """
+        String for representing the Model object
+        """
+        return '{0} ({1}) {2}'.format(self.source_location.name,self.master_location.name,self.master_location.reference)
