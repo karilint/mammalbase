@@ -5,11 +5,6 @@ class SourceHabitat(BaseModel):
     """
     Model representing a habitat associated with an Occurrence.
     """
-    master_habitat = models.ManyToManyField(
-        'MasterHabitat',
-        through='HabitatRelation',
-        through_fields=('source_habitat', 'master_habitat')
-    )
     source_reference = models.ForeignKey(
         'SourceReference',
         on_delete = models.CASCADE,
@@ -38,9 +33,6 @@ class MasterHabitat(BaseModel):
         blank = True,
         on_delete = models.CASCADE
     )
-    source_habitat = models.ManyToManyField(
-        'SourceHabitat',
-        )
     name = models.CharField(
         max_length=250,
         help_text="Enter the Name of the Master Habitat"
