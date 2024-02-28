@@ -73,8 +73,63 @@ class ValidationTest(TestCase):
     def test_scientificNameAuthorship(self):
         self.assertEqual(True, True)
 
-    def test_taxonRank(self):
-        self.assertEqual(True, True)
+    def test_true_taxonRank(self):
+        validator = Occurrence_validation()
+        samples = ["Subspecies", "Varietas", "Forma","Species","Genus","Nothogenus","Nothospecies","Nothosubspecies","Family","nan"]
+        datas = []
+        valids = []
+
+        for sample in samples:
+            data = {
+                "taxonRank" : str(sample)
+            }
+            datas.append(data)
+        
+        for data in datas:
+            value = None
+            try:
+                value = validator.is_valid(data, validator.rules)
+            except KeyError as error:
+                continue
+            valids.append(value)
+        
+        isvalid = True
+        for valid in valids:
+            if valid == False:
+                isvalid = False
+                break
+
+        self.assertEqual(isvalid, True)
+
+    def test_false_taxonRank(self):
+        validator = Occurrence_validation()
+        samples = ["abc120def", "string without year 2023" , "another example" , "random string 12345", ""]
+        datas = []
+        valids = []
+
+        for sample in samples:
+            data = {
+                "taxonRank" : str(sample)
+            }
+            datas.append(data)
+        
+        for data in datas:
+            value = None
+            try:
+                value = validator.is_valid(data, validator.rules)
+            except KeyError as error:
+                continue
+            valids.append(value)
+
+        isvalid = True
+
+        try:
+            isvalid = valids.index(True)
+        except ValueError as error:
+            isvalid = False
+
+        self.assertEqual(isvalid, False)
+    
 
     def test_organismQuantity(self):
         self.assertEqual(True, True)
@@ -174,7 +229,49 @@ class ValidationTest(TestCase):
         except ValueError as error:
             isvalid = False
 
-        self.assertEqual(isvalid, False)        
+        self.assertEqual(isvalid, False)     
+
+    def test_organismQuantity(self):
+        self.assertEqual(True, True)
+
+    def test_organismQuantityType(self):
+        self.assertEqual(True, True)
+
+    def test_sex(self):
+        self.assertEqual(True, True)
+
+    def test_lifeStage(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimEventDate(self):
+        self.assertEqual(True, True)
+
+    def test_occurrenceRemarks(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimLocality(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimElevation(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimDepth(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimCoordinates(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimLatitude(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimLongitude(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimCoordinateSystem(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimSRS(self):
+        self.assertEqual(True, True)
 
     def test_associatedReferences(self):
         self.assertEqual(True, True)
