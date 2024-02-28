@@ -4,14 +4,15 @@ import pandas as pd
 import requests
 from mb.models.models import SourceReference, MasterReference, EntityClass, SourceEntity, EntityRelation, MasterEntity, TimePeriod, SourceMethod, ChoiceValue
 from mb.models.location_models import SourceLocation
-from mb.models.habitat_models import SourceHabitat
-from ..tools import make_harvard_citation_journalarticle
+from ..tools import make_harvard_citation_journalarticle, messages
 from datetime import timedelta
 from config.settings import ITIS_CACHE
 from requests_cache import CachedSession
 import itis.views as itis
 import json
 from django.contrib.auth.models import User
+import logging
+
 class BaseImporter:
     """
     Base class for all importers
@@ -78,23 +79,6 @@ class BaseImporter:
             print(f"Error: {e}")
             return None
     
-    # TÄMÄ ON VIRHEELLINEN! MasterReferencellä ei ole kenttää source_reference
-    #def get_or_create_master_reference(self, source_reference: SourceReference, author: User):
-        """
-        Return MasterReference object for the given source_reference
-        """
-        
-        """
-        master_reference = MasterReference.objects.filter(source_reference=source_reference)
-        if master_reference.count() == 1:
-            return master_reference[0]
-        else:
-            new_master_reference = self.get_master_reference_from_cross_ref(source_reference.citation, author)
-            if new_master_reference:                                                                                                                          
-                return new_master_reference
-            else:
-                return None
-        """
     def get_or_create_master_reference(self, citation: str, author: User):
         """
         Return MasterReference object for the given source_reference
@@ -110,7 +94,9 @@ class BaseImporter:
                 return None
     
     def get_or_create_source_reference(self, citation: str, author: User):
-        # here add a real validation for citation and author
+        """
+        Return new or exists source reference.
+        """
         if (citation.lower() == "nan" or citation == None) or (str(author).lower() == "nan" or author == None):
             raise Exception("SourceReference is not valid!")
 
@@ -124,7 +110,6 @@ class BaseImporter:
         master_reference = self.get_or_create_master_reference(citation, author)
         new_reference.master_reference = master_reference
         new_reference.save()
-        print("uusi master reference luotu " + str(new_reference))
 
         return new_reference
         
@@ -240,7 +225,7 @@ class BaseImporter:
         try:
             source_location = SourceLocation.objects.filter(name__iexact=location, reference=source_reference)
         except Exception as error:
-            print("virhe" + str(error))
+            raise Exception(str(error))
         if source_location.count() == 1:
             return source_location[0]
         else:
@@ -273,6 +258,9 @@ class BaseImporter:
             return new_source_method
         
     def get_choicevalue(self, gender: str):
+        """
+        Return choice value.
+        """
         if gender == 'nan':
             return None
         if gender != '22' or gender != '23':
