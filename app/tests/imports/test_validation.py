@@ -118,8 +118,63 @@ class ValidationTest(TestCase):
     def test_verbatimSRS(self):
         self.assertEqual(True, True)
 
-    def test_author(self):
-        self.assertEqual(True, True)
+    def test_true_author(self):
+        validator = Occurrence_validation()
+        samples = ["1234-1234-1234-1234", "0000-0000-0000-0000", "0009-0001-0507-9139"]
+        datas = []
+        valids = []
+
+        for sample in samples:
+            data = {
+                "author" : str(sample)
+            }
+            datas.append(data)
+        
+        for data in datas:
+            value = None
+            try:
+                value = validator.is_valid(data, validator.rules)
+            except KeyError as error:
+                continue
+            valids.append(value)
+
+        isvalid = True
+
+        for valid in valids:
+            if valid == False:
+                isvalid = False
+                break
+
+        self.assertEqual(isvalid, True)
+
+    def test_false_author(self):
+        validator = Occurrence_validation()
+        samples = ["kissa", "XXXX-XXXX-XXXX-XXXX", "1234-1234-1234-XXXX"]
+        datas = []
+        valids = []
+
+        for sample in samples:
+            data = {
+                "author" : str(sample)
+            }
+            datas.append(data)
+        
+        for data in datas:
+            value = None
+            try:
+                value = validator.is_valid(data, validator.rules)
+            except KeyError as error:
+                continue
+            valids.append(value)
+
+        isvalid = True
+
+        try:
+            isvalid = valids.index(True)
+        except ValueError as error:
+            isvalid = False
+
+        self.assertEqual(isvalid, False)        
 
     def test_associatedReferences(self):
         self.assertEqual(True, True)
