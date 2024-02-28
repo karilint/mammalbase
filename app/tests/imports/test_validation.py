@@ -7,6 +7,8 @@ from ...imports.validation_lib.base_validation import Validation
 #@skip("Don't want to test")
 class ValidationTest(TestCase):
     #TODO: refaktoroi yhdeksi funktioksi jota kutsutaan test-funktioista
+    def reference_wrapper(self):
+        pass
 
     def test_true_references(self):
         validator = Occurrence_validation()
