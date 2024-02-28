@@ -120,6 +120,7 @@ class Validation():
         
         return rule_error
     
+
     def coordinate_format(self, coords, dict):
         """
 
@@ -137,6 +138,7 @@ class Validation():
 
     def validate_coordinateSystem_fields(self, data, field_name, field_rules):
         """Validate the coordinates according to the given coordinate system.
+
 
         Args:
             data (dictionary): Generaged dictionary from tsv-file.
