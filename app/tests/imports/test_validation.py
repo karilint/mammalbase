@@ -71,8 +71,62 @@ class ValidationTest(TestCase):
     def test_scientificNameAuthorship(self):
         self.assertEqual(True, True)
 
-    def test_taxonRank(self):
-        self.assertEqual(True, True)
+    def test_true_taxonRank(self):
+        validator = Occurrence_validation()
+        samples = ["Subspecies", "Varietas", "Forma","Species","Genus","Nothogenus","Nothospecies","Nothosubspecies","Family","nan"]
+        datas = []
+        valids = []
+
+        for sample in samples:
+            data = {
+                "taxonRank" : str(sample)
+            }
+            datas.append(data)
+        
+        for data in datas:
+            value = None
+            try:
+                value = validator.is_valid(data, validator.rules)
+            except KeyError as error:
+                continue
+            valids.append(value)
+        
+        isvalid = True
+        for valid in valids:
+            if valid == False:
+                isvalid = False
+                break
+
+        self.assertEqual(isvalid, True)
+
+    def test_false_taxonRank(self):
+        validator = Occurrence_validation()
+        samples = ["abc120def", "string without year 2023" , "another example" , "random string 12345", ""]
+        datas = []
+        valids = []
+
+        for sample in samples:
+            data = {
+                "taxonRank" : str(sample)
+            }
+            datas.append(data)
+        
+        for data in datas:
+            value = None
+            try:
+                value = validator.is_valid(data, validator.rules)
+            except KeyError as error:
+                continue
+            valids.append(value)
+
+        isvalid = True
+
+        try:
+            isvalid = valids.index(True)
+        except ValueError as error:
+            isvalid = False
+
+        self.assertEqual(isvalid, False)
 
     def test_organismQuantity(self):
         self.assertEqual(True, True)
