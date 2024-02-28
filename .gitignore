@@ -160,8 +160,8 @@ cython_debug/
 # response cache
 *_cache.sqlite
 
-# keep habitat csv files
-!app/mb/management/commands/habitat_csv/*.csv
-
 # Editor backups
 *~
+
+# keep habitat csv files
+!app/mb/management/commands/habitat_csv/*.csv
