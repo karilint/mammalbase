@@ -280,6 +280,11 @@ class MasterChoiceSetOption(BaseModel):
         'MasterAttribute',
         on_delete = models.CASCADE,
         )
+    source_choiceset_option = models.ManyToManyField(
+        'SourceChoiceSetOption',
+        through='ChoiceSetOptionRelation',
+        through_fields=('master_choiceset_option', 'source_choiceset_option')
+    )
     display_order = models.PositiveSmallIntegerField(default=10, help_text='Display order on choises')
     name = models.CharField(max_length=250, help_text="Enter the Name of the Master Attribute")
     description = models.TextField(blank=True, null=True, max_length=1500, help_text="Enter description for the Master Choice Set Option")
@@ -494,6 +499,11 @@ class SourceChoiceSetOption(BaseModel):
         'SourceAttribute',
         on_delete = models.CASCADE,
         )
+    master_choiceset_option = models.ManyToManyField(
+        'MasterChoiceSetOption',
+        through='ChoiceSetOptionRelation',
+        through_fields=('source_choiceset_option', 'master_choiceset_option')
+    )
     display_order = models.PositiveSmallIntegerField(default=10, help_text='Display order on choises')
     name = models.CharField(max_length=250, help_text="Enter the Source Choice Set Option")
     description = models.TextField(blank=True, null=True, max_length=500, help_text="Enter the description for the Source Choice Set Option")
