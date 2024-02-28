@@ -150,13 +150,14 @@ class Validation():
         errs = []
         if str(data[field_name]) == 'nan':
             if (str(data["verbatimLatitude"]) != "nan" or str(data["verbatimLongitude"]) != "nan"):
-                errs.append(self.return_field_message(field_name,"boolean"))
+                errs.append(self.return_field_message(field_name,"verbatimCoordinateSystem"))
                 return errs
             return []
         
         
         dict = {
-            "decimal degrees": r'^[-+]?\d{1,3}(?:.\dgit s+)?,\s[-+]?\d{1,3}(?:.\d+)?$',
+            #"decimal degrees": r'^[-+]?\d{1,3}(?:.\dgit s+)?,\s[-+]?\d{1,3}(?:.\d+)?$',
+            "decimal degrees" : r'^(-?\d{1,2}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)$',
             "degrees minutes": r'^[-+]?\d{1,3}°\d{1,2}(?:\.\d+)?\'\s*[NS],\s*[-+]?\d{1,3}°\d{1,2}(?:\.\d+)?\'\s*[EW]$',
             "degrees decimals": r'^[-+]?\d{1,3}°\d{1,2}\'\d{1,2}(?:\.\d+)?\"\s*[NS],\s*[-+]?\d{1,3}°\d{1,2}\'\d{1,2}(?:\.\d+)?\"\s*[EW]$',
             "UTM": r'^\d{1,2}[NSZT]\s+\d{1,9}(?:.\d+)?m[WE]\s+\d{1,9}(?:.\d+)?m[NS]$',
