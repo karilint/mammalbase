@@ -77,7 +77,7 @@ def validate(df, validator):
                 importing_errors.append("Error on row: "+ str(index) + ". Error: " + (x))
             
     if len(importing_errors) > 0:
-        return importing_errors[::-1]
+        return importing_errors
     return []
 
 

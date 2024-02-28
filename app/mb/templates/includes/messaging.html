@@ -23,7 +23,7 @@
 				document.addEventListener("DOMContentLoaded", function() {
 					var messageElement = document.getElementById("message");
 					var messageText = messageElement.textContent;
-					var parts = messageText.split('|');
+					var parts = messageText.split('|').reverse();
 					
 					// Assuming you want to display each part in a separate paragraph
 					parts.forEach(function(part) {
