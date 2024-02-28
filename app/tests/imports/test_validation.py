@@ -1,8 +1,137 @@
 from django.test import TestCase
 from unittest import skip
 import pandas as pd
-@skip("Don't want to test")
+from ...imports.validation_lib.occurrence_validation import Occurrence_validation
+from ...imports.validation_lib.base_validation import Validation
+
+#@skip("Don't want to test")
 class ValidationTest(TestCase):
+    #TODO: refaktoroi yhdeksi funktioksi jota kutsutaan test-funktioista
+
+    def test_true_references(self):
+        validator = Occurrence_validation()
+        samples = ["abc123def456ghi789jklm", "pqrstuvwxy2023zab567cd", "e1f2g3h4i52025jklmnopqrs", "uvwxyz1234a567b890c2021", "d1e2f3g4h52026ijklmno"]
+        datas = []
+        valids = []
+
+        for sample in samples:
+            data = {
+                "references" : str(sample)
+            }
+            datas.append(data)
+        
+        for data in datas:
+            value = None
+            try:
+                value = validator.is_valid(data, validator.rules)
+            except KeyError as error:
+                continue
+            valids.append(value)
+        
+        isvalid = True
+        for valid in valids:
+            if valid == False:
+                isvalid = False
+                break
+
+        self.assertEqual(isvalid, True)
+    
+    def test_false_references(self):
+        validator = Occurrence_validation()
+        samples = ["abc120def", "string without year 2023" , "another example" , "random string 12345", "short text"]
+        datas = []
+        valids = []
+
+        for sample in samples:
+            data = {
+                "references" : str(sample)
+            }
+            datas.append(data)
+        
+        for data in datas:
+            value = None
+            try:
+                value = validator.is_valid(data, validator.rules)
+            except KeyError as error:
+                continue
+            valids.append(value)
+
+        isvalid = True
+
+        try:
+            isvalid = valids.index(True)
+        except ValueError as error:
+            isvalid = False
+
+        self.assertEqual(isvalid, False)
+
+    def test_verbatimScientificName(self):
+        self.assertEqual(True, True)
+
+    def test_scientificNameAuthorship(self):
+        self.assertEqual(True, True)
+
+    def test_taxonRank(self):
+        self.assertEqual(True, True)
+
+    def test_organismQuantity(self):
+        self.assertEqual(True, True)
+
+    def test_organismQuantityType(self):
+        self.assertEqual(True, True)
+
+    def test_sex(self):
+        self.assertEqual(True, True)
+
+    def test_lifeStage(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimEventDate(self):
+        self.assertEqual(True, True)
+
+    def test_occurrenceRemarks(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimLocality(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimElevation(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimDepth(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimCoordinates(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimLatitude(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimLongitude(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimCoordinateSystem(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimSRS(self):
+        self.assertEqual(True, True)
+
+    def test_author(self):
+        self.assertEqual(True, True)
+
+    def test_associatedReferences(self):
+        self.assertEqual(True, True)
+
+    def test_samplingProtocol(self):
+        self.assertEqual(True, True)
+
+    def test_habitatType(self):
+        self.assertEqual(True, True)
+
+    def test_habitatPercentage(self):
+        self.assertEqual(True, True)
+
+    """
     def test_check_headers_ds(self):
         self.assertEqual(self.check.check_headers_ds(self.file), True)
     
@@ -430,3 +559,4 @@ class ValidationTest(TestCase):
     def test_false_vlo_check_lengths(self):
         df = pd.DataFrame.from_dict({'verbatimLongitude':['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']})
         self.assertEqual(self.check.check_lengths(df), False)
+    """

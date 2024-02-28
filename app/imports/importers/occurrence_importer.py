@@ -11,45 +11,50 @@ class OccurrencesImporter(BaseImporter):
     
     
     @transaction.atomic
-    def importRow(self, row, headers, importing_errors):
-        
-        # Common assignments
-        try:
-            author = self.get_author(getattr(row, 'author'))
-            reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
-            entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
-            verbatimScientificname = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
-            source_habitat = self.get_or_create_source_habitat(getattr(row, 'habitatType'),getattr(row, 'habitatPercentage'), reference, author)
-        except Exception as e:
-            """
-            We don't add anything if we encounter an error.
-            """
-            importing_errors.append(str(row) + "\n\n")
-            print("tapahtui virhe: " + str(e))
-            return False
-        
-       
-        created = None
-        try:
-            #create source location model
-            new_source_location = self.get_or_create_source_location(getattr(row, 'verbatimLocality'), reference, author)
-            print("source location created " + str(new_source_location))
-            new_event, created = Event.objects.get_or_create(verbatim_event_date=getattr(row, 'verbatimEventDate'), source_habitat=source_habitat)
-            print("new event created: " + str(new_event))
+    def importRow(self, row):
+        """Put data of row to database.
 
-            obj, created = Occurrence.objects.get_or_create(source_reference=reference, event=new_event, source_location=new_source_location, source_entity=verbatimScientificname,
-                                                       organism_quantity=getattr(row, 'organismQuantity'), organism_quantity_type=getattr(row, 'organismQuantityType'), gender=self.get_choicevalue(getattr(row, 'sex')), 
-                                                       life_stage=self.get_choicevalue(getattr(row, 'lifeStage')),
-                                                       occurrence_remarks=getattr(row, 'occurrenceRemarks'), associated_references=getattr(row, 'associatedReferences'))
-            if created:
-                print("New Occurrence created " + str(obj))
-            else:
-                print("Existing Occurrence found")
-                importing_errors.append("Existing Occurrence found " + str(row) + "\n\n")
-                return False
+        Args:
+            row (Pandas): row of tsv
+            importing_errors (list): list to possible errors
+
+        Returns:
+            bool: True if import is successded, otherwise False.
+        """
+        # Common assignments
+        author = self.get_author(getattr(row, 'author'))
+        reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
+        entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
+        verbatimScientificname = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+
+        created = None
+        
+        # Create source location model
+        new_source_location = self.get_or_create_source_location(getattr(row, 'verbatimLocality'), reference, author)
+        new_event, created = Event.objects.get_or_create(verbatim_event_date=getattr(row, 'verbatimEventDate'))
+
+        gender = str(getattr(row, 'sex'))
+
+        life_stage = str(getattr(row, 'lifeStage'))
+
+        if gender == "nan" or gender == "":
+            gender = None
+        else:
+
+            gender, created = ChoiceValue.objects.get_or_create(choice_set="Gender", caption=gender.capitalize())
+
+        if life_stage == "nan" or life_stage == "":
+            life_stage = None
+        else:
+            life_stage, created = ChoiceValue.objects.get_or_create(choice_set="Lifestage", caption=life_stage.capitalize())
+        
+        obj, created = Occurrence.objects.get_or_create(source_reference=reference, event=new_event, source_location=new_source_location, source_entity=verbatimScientificname,
+                                                    organism_quantity=getattr(row, 'organismQuantity'), organism_quantity_type=getattr(row, 'organismQuantityType'), gender=gender, 
+                                                    life_stage=life_stage,
+                                                    occurrence_remarks=getattr(row, 'occurrenceRemarks'), associated_references=getattr(row, 'associatedReferences'))
+        if created:
             return True
-        except Exception as error:
-            print("error in importing: " + str(error))
+        else:
             return False
 
 OccurrencesImpoter = OccurrencesImporter()
