@@ -158,14 +158,50 @@ class ValidationTest(TestCase):
     def test_verbatimCoordinates(self):
         self.assertEqual(True, True)
 
-    def test_verbatimLatitude(self):
-        self.assertEqual(True, True)
+    def setUp(self):
+        # Initialize your class or any other setup required
+        self.instance = Validation()
 
-    def test_verbatimLongitude(self):
-        self.assertEqual(True, True)
+    def test_coordinate_format(self):
+        test_dict = self.instance.coords_dict
 
-    def test_verbatimCoordinateSystem(self):
-        self.assertEqual(True, True)
+        # Test cases for coordinate_format
+        latitude = "12.3456"
+        longitude = "-78.9012"
+        coords = f"{latitude}, {longitude}" 
+        self.assertEqual(self.instance.coordinate_format(coords, test_dict), "decimal degrees")
+
+        latitude = "12°34.567'N"
+        longitude = "78°90.123'W"
+        coords = f"{latitude}, {longitude}" 
+        self.assertEqual(self.instance.coordinate_format(coords, test_dict), "degrees minutes")
+
+        latitude = "12°34'56.789\" N"
+        longitude = "78°90'12.345\" W"
+        coords = f"{latitude}, {longitude}" 
+        self.assertEqual(self.instance.coordinate_format(coords, test_dict), "degrees decimals")
+        self.assertEqual(self.instance.coordinate_format("32S 485146mE 4037735mN", test_dict), "UTM")
+        self.assertEqual(self.instance.coordinate_format("Invalid Coordinate", test_dict), "No match found")
+
+
+    def test_validate_coordinateSystem_fields(self):
+        # Mock data for testing
+        mock_data = {
+            "field_name": "decimal degrees",
+            "verbatimLatitude": "40.7128",
+            "verbatimLongitude": "-74.0060",
+            "verbatimCoordinates": "32S 485146mE 4037735mN"
+        }
+        mock_data2 = {
+            "field_name": "decimal degrees",
+            "verbatimLatitude": "40.7128",
+            "verbatimLongitude": "-74.0060",
+            "verbatimCoordinates": "nan"
+        }
+        # Test cases for validate_coordinateSystem_fields
+        self.assertNotEqual(self.instance.validate_coordinateSystem_fields(mock_data, "field_name", {}), [])
+        self.assertEqual(self.instance.validate_coordinateSystem_fields(mock_data2, "field_name", {}), [])
+        
 
     def test_verbatimSRS(self):
         self.assertEqual(True, True)

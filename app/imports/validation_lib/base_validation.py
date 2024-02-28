@@ -26,6 +26,12 @@ class Validation():
         self.custom_error_messages = {}
         # List to store the error messages in
         self.errors = []
+        self.coords_dict = {
+            "decimal degrees" : r'^(-?\d{1,2}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)$',
+            "degrees minutes": r'^[-+]?\d{1,3}°\d{1,2}(?:\.\d+)?\'\s*[NS],\s*[-+]?\d{1,3}°\d{1,2}(?:\.\d+)?\'\s*[EW]$',
+            "degrees decimals": r'^[-+]?\d{1,3}°\d{1,2}\'\d{1,2}(?:\.\d+)?\"\s*[NS],\s*[-+]?\d{1,3}°\d{1,2}\'\d{1,2}(?:\.\d+)?\"\s*[EW]$',
+            "UTM": r'^\d{1,2}[NSZT]\s+\d{1,9}(?:.\d+)?m[WE]\s+\d{1,9}(?:.\d+)?m[NS]$',
+        }
 
     def validate(self, data, rules, custom_messages=None):
         """Validate the 'data' according to the 'rules' given, returns a list of errors named 'errors'"""
@@ -154,14 +160,11 @@ class Validation():
                 return errs
             return []
         
+        if str(data["verbatimCoordinates"]) != "nan" and (str(data["verbatimLatitude"]) != "nan" or str(data["verbatimLongitude"]) != "nan"):
+            errs.append(self.return_field_message(field_name,"verbatimCoordinateSystem"))
+            return errs
         
-        dict = {
-            #"decimal degrees": r'^[-+]?\d{1,3}(?:.\dgit s+)?,\s[-+]?\d{1,3}(?:.\d+)?$',
-            "decimal degrees" : r'^(-?\d{1,2}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)$',
-            "degrees minutes": r'^[-+]?\d{1,3}°\d{1,2}(?:\.\d+)?\'\s*[NS],\s*[-+]?\d{1,3}°\d{1,2}(?:\.\d+)?\'\s*[EW]$',
-            "degrees decimals": r'^[-+]?\d{1,3}°\d{1,2}\'\d{1,2}(?:\.\d+)?\"\s*[NS],\s*[-+]?\d{1,3}°\d{1,2}\'\d{1,2}(?:\.\d+)?\"\s*[EW]$',
-            "UTM": r'^\d{1,2}[NSZT]\s+\d{1,9}(?:.\d+)?m[WE]\s+\d{1,9}(?:.\d+)?m[NS]$',
-        }
+        dict = self.coords_dict
         
         coordSystem = str(data[field_name]).lower()
         latitude = str(data["verbatimLatitude"])
