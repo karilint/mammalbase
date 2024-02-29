@@ -55,8 +55,5 @@ class OccurrencesImporter(BaseImporter):
             return True
         else:
             return False
-     
-    
-
 
 OccurrencesImpoter = OccurrencesImporter()

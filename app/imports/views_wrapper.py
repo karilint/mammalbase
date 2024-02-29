@@ -24,9 +24,10 @@ def wrapper(request, validator, importer, path):
         print(f"import/{path}.html")
         return render(request, f"import/{path}.html")
     
-    csv_file = request.FILES["csv_file"]
-    df = pd.read_csv(csv_file, sep='\t')
-    try:   
+    
+    try: 
+        csv_file = request.FILES["csv_file"]
+        df = pd.read_csv(csv_file, sep='\t')
         errors = validate(df, validator)
         if errors:
             error_messages = "|".join(map(str, errors))
