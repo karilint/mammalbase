@@ -267,21 +267,3 @@ class BaseImporter:
             return None
         choicevalue = ChoiceValue.objects.filter(pk=gender)
         return choicevalue[0]
-    
-    def get_or_create_source_habitat(self, habitat_type: str, habitat_percentage: str, source_reference: SourceReference, author: User):
-        """
-        Return SourceHabitat object for the given habitat_type or create a new one
-        """
-        source_habitat = SourceHabitat.objects.filter(habitat_type__iexact=habitat_type)
-        if source_habitat.count() == 1:
-            return source_habitat[0]
-        else:
-            new_source_habitat = SourceHabitat(habitat_type=habitat_type, habitat_percentage=habitat_percentage, source_reference=source_reference, created_by=author)
-            new_source_habitat.save()
-            return new_source_habitat
-            
-        
-        
-        
-
-    

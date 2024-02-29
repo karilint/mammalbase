@@ -7,8 +7,6 @@ from mb.models.occurrence_models import Occurrence, Event
 from mb.models.habitat_models import SourceHabitat
 
 class OccurrencesImporter(BaseImporter):
-
-    
     
     @transaction.atomic
     def importRow(self, row):
@@ -26,12 +24,13 @@ class OccurrencesImporter(BaseImporter):
         reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
         entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
         verbatimScientificname = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+        habitat, created = SourceHabitat.objects.get_or_create(habitat_type=getattr(row, 'habitatType'), habitat_percentage=getattr(row, 'habitatPercentage'), source_reference=reference, created_by=author)
 
         created = None
         
         # Create source location model
         new_source_location = self.get_or_create_source_location(getattr(row, 'verbatimLocality'), reference, author)
-        new_event, created = Event.objects.get_or_create(verbatim_event_date=getattr(row, 'verbatimEventDate'))
+        new_event, created = Event.objects.get_or_create(verbatim_event_date=getattr(row, 'verbatimEventDate'), source_habitat=habitat)
 
         gender = str(getattr(row, 'sex'))
 
