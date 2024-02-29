@@ -186,7 +186,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='historicalsourcelocation',
-            name='verbatim_eleveation',
+            name='verbatim_elevation',
             field=models.CharField(blank=True, help_text='The original textual description of the verbatim elevation.', max_length=250, null=True),
         ),
         migrations.AddField(
@@ -356,7 +356,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='sourcelocation',
-            name='verbatim_eleveation',
+            name='verbatim_elevation',
             field=models.CharField(blank=True, help_text='The original textual description of the verbatim elevation.', max_length=250, null=True),
         ),
         migrations.AddField(
