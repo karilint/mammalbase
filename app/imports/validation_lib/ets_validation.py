@@ -16,16 +16,12 @@ class Ets_validation(Validation):
             "verbatimTraitName": "max:250",
             "verbatimTraitUnit": "max:25",
             "individualCount": "digits",
-            "measurementValue_min": "",
-            "measurementValue_max": "",
             "dispersion": "max:250",
             "statisticalMethod": "max:250",
             "verbatimTraitValue": "",
             "sex": "in:male,female,nan",
             "lifeStage": "alpha",
             "measurementMethod": "alpha",
-            "measurementRemarks": "",
-            "measurementAccuracy": "",
             "measurementDeterminedBy": "",
             "verbatimLocality": "max:250",
             "author": "required|author",
@@ -56,10 +52,3 @@ class Ets_validation(Validation):
             "author": "",
             "associatedReferences": ""
         }
-
-    
-
-
-
-    # diet set
-    # BARK, BLOOD, BONES, BUD, CARRION, EGGS, EXUDATES, FECES, FLOWER, FRUIT, LARVAE, LEAF, MINERAL, NECTAR/JUICE, NONE, POLLEN, ROOT, SEED, SHOOT, STEM, UNKNOWN, WHOLE
