@@ -7,7 +7,7 @@ from ...imports.validation_lib.base_validation import Validation
 #@skip("Don't want to test")
 class ValidationTest(TestCase):
     def wrapper_for_true_values(self, sample_cases, field_name):
-        validator = Occurrence_validation()
+        instance = Occurrence_validation()
         samples = sample_cases
         datas = []
         valids = []
@@ -21,7 +21,7 @@ class ValidationTest(TestCase):
         for data in datas:
             value = None
             try:
-                value = validator.is_valid(data, validator.rules)
+                value = instance.is_valid(data, instance.rules)
             except KeyError as error:
                 continue
             valids.append(value)
@@ -40,7 +40,7 @@ class ValidationTest(TestCase):
         self.assertTrue(ret_val)
     
     def test_false_references(self):
-        validator = Occurrence_validation()
+        instance = Occurrence_validation()
         samples = ["abc120def", "string without year 2023" , "another example" , "random string 12345", "short text"]
         datas = []
         valids = []
@@ -54,7 +54,7 @@ class ValidationTest(TestCase):
         for data in datas:
             value = None
             try:
-                value = validator.is_valid(data, validator.rules)
+                value = instance.is_valid(data, instance.rules)
             except KeyError as error:
                 continue
             valids.append(value)
@@ -80,7 +80,7 @@ class ValidationTest(TestCase):
         self.assertTrue(ret_val)
 
     def test_false_taxonRank(self):
-        validator = Occurrence_validation()
+        instance = Occurrence_validation()
         samples = ["abc120def", "string without year 2023" , "another example" , "random string 12345", ""]
         datas = []
         valids = []
@@ -94,7 +94,7 @@ class ValidationTest(TestCase):
         for data in datas:
             value = None
             try:
-                value = validator.is_valid(data, validator.rules)
+                value = instance.is_valid(data, instance.rules)
             except KeyError as error:
                 continue
             valids.append(value)
@@ -182,6 +182,62 @@ class ValidationTest(TestCase):
         self.assertNotEqual(self.instance.validate_coordinateSystem_fields(mock_data, "field_name", {}), [])
         self.assertEqual(self.instance.validate_coordinateSystem_fields(mock_data2, "field_name", {}), [])
         
+    def test_boolean_validation(self):
+        data = {"field1": True}  # Provide data with boolean field
+        rules = {"field1": "boolean"}  # Rule to validate boolean field
+        errors = self.instance.validate(data, rules)
+        self.assertEqual(errors, [])  # No errors expected for a valid boolean field
+
+        data["field1"] = "invalid"  # Invalid boolean value
+        errors = self.instance.validate(data, rules)
+        self.assertNotEqual(errors, [])  # Error expected for invalid boolean field
+
+    def test_validate_author_fields(self):
+        # Test case 1: Missing author field
+
+        required_error = "'author' must be filled"
+        author_valid_error = "'author' field must follow the following format: 0000-0000-0000-0000"
+
+        data = {}  # Empty dictionary
+        errors = self.instance.validate_author_fields(data, 'author')
+        self.assertEqual(errors, [required_error])
+
+        # Test case 2: Invalid author format
+        data = {'author': '1234-5678-9012-345'}  # Invalid format
+        errors = self.instance.validate_author_fields(data, 'author')
+        self.assertEqual(errors, [author_valid_error])
+
+        # Test case 3: Valid author format
+        data = {'author': '1234-5678-9012-3456'}  # Valid format
+        errors = self.instance.validate_author_fields(data, 'author')
+        self.assertEqual(errors, [])
+
+        # Test case 4: Valid author format with non-numeric characters
+        data = {'author': 'abcd-efgh-ijkl-mnop'}  # Valid format with non-numeric characters
+        errors = self.instance.validate_author_fields(data, 'author')
+        self.assertEqual(errors, [author_valid_error])
+
+        # Test case 5: Valid author format with correct length but missing '-'
+        data = {'author': '1234567890123456789'}  # Missing '-'
+        errors = self.instance.validate_author_fields(data, 'author')
+        self.assertEqual(errors, [author_valid_error])
+
+
+    def test_required_validation(self):
+        data = {"required_field": "some_value"}  # Field is provided
+        rules = {"required_field": "required"}  # Rule to validate required field
+        errors = self.instance.validate(data, rules)
+        self.assertEqual(errors, [])  # No errors expected for provided field
+
+        data["required_field"] = ""  # Field is empty
+        errors = self.instance.validate(data, rules)
+        self.assertNotEqual(errors, [])  # Error expected for empty required field
+
+        del data["required_field"]  # Field is missing
+        errors = self.instance.validate(data, rules)
+        self.assertNotEqual(errors, [])  # Error expected for missing required field
+
+
 
     def test_verbatimSRS(self):
         self.assertEqual(True, True)

@@ -321,11 +321,11 @@ class Validation():
             if not author:
                 errs.append(self.return_field_message(field_name, "required"))
             elif len(author) != 19 or author[4] != '-' or author[9] != '-' or author[14] != '-':
-                errs.append(self.return_field_message(field_name, "invalid author format"))
+                errs.append(self.return_field_message(field_name, "author"))
             else:
                 parts = author.split('-')
                 if len(parts) != 4 or not all(part.isdigit() and len(part) == 4 for part in parts):
-                    errs.append(self.return_field_message(field_name, "invalid author format"))
+                    errs.append(self.return_field_message(field_name, "author"))
         except KeyError:
             errs.append(self.return_field_message(field_name, 'required'))
 
@@ -565,11 +565,11 @@ class Validation():
             "required": "'%s' must be filled",
             "alpha": "'%s' can have only alphabets",
             "digits": "'%s' must be an integer",
+            "author": "'%s' field must follow the following format: 0000-0000-0000-0000",
             "max": "The maximum value for the field '%s' is invalid",
             "min": "The minimum value for the field '%s' is invalid",
             "regex": "'%s' field does not match the RE",
             "in": "'%s' has invalid value for in rule",
-            "author": "'%s' has invalid value for author field",
             "verbatimScientificName": "'%s' has invalid value for verbatimScientificName field",
             "verbatimLatitude": "'%s' has invalid value for verbatimLatitude field",
             "verbatimLongitude": "'%s' has invalid value for verbatimLongitude field",
