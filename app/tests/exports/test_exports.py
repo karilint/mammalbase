@@ -1,11 +1,12 @@
 import os
 
 from django.test import TestCase
+from django.db import models, connection
 
 from mb.models.models import EntityClass, MasterEntity
-from exports.tasks import export_zip_file, replace_na
+from exports.tasks import export_zip_file
 from exports.models import ExportFile
-from tests.exports.utils.test_export_file_writer import TestExportFileWriter
+from .utils.test_export_file_writer import TestExportFileWriter
 
 class ExportZipFileTestCase(TestCase):
     def setUp(self):
@@ -29,17 +30,21 @@ class ExportZipFileTestCase(TestCase):
             'Scientific name',
         ]
         self.export_args = {
-            'email_receiver': self.email,
-            'queries': [{
-                'file_name': self.file_name,
-                'fields': list(zip(self.fields, self.headers)),
-                'query_set': self.query
-            }],
+            'email_recipient': self.email,
+            'export_list': [
+                {
+                    'file_name': self.file_name,
+                    'queries_and_fields': [(
+                        self.query,
+                        list(zip(self.fields, self.headers))
+                    )],
+                }
+            ],
             'export_file_id': export_file_id
         }
 
     def test_export_zip_file_fails_on_empty_email(self):
-        self.export_args['email_receiver'] = ''
+        self.export_args['email_recipient'] = ''
         self.assertRaises(
             ValueError,
             export_zip_file,
@@ -52,7 +57,7 @@ class ExportZipFileTestCase(TestCase):
         )
 
     def test_export_zip_file_fails_on_empty_query_list(self):
-        self.export_args['queries'] = []
+        self.export_args['export_list'] = []
         self.assertRaises(
             ValueError,
             export_zip_file,
@@ -64,8 +69,39 @@ class ExportZipFileTestCase(TestCase):
             os.getcwd()
         )
 
-    def test_export_zip_file_fails_on_empty_fields_list(self):
-        self.export_args['queries'][0]['fields'] = []
+    def test_export_zip_file_fails_on_empty_queries_and_fields(self):
+        self.export_args['export_list'][0]['queries_and_fields'] = []
+        self.assertRaises(
+            ValueError,
+            export_zip_file,
+            **self.export_args,
+            file_writer=self.test_writer,
+        )
+        self.assertEqual(
+            self.current_dir,
+            os.getcwd()
+        )
+
+    def test_export_zip_file_fails_on_query_with_no_fields(self):
+        self.export_args['export_list'][0]['queries_and_fields'] = [
+            (self.query,[])
+        ]
+        self.assertRaises(
+            ValueError,
+            export_zip_file,
+            **self.export_args,
+            file_writer=self.test_writer,
+        )
+        self.assertEqual(
+            self.current_dir,
+            os.getcwd()
+        )
+
+    def test_export_zip_file_fails_on_mismatched_fields(self):
+        self.export_args['export_list'][0]['queries_and_fields'] = [
+            (self.query,[self.fields]),
+            (self.query,[('f1', 'F1'), ('f2', 'F2'),('f3', 'F3')])
+        ]
         self.assertRaises(
             ValueError,
             export_zip_file,
@@ -78,7 +114,7 @@ class ExportZipFileTestCase(TestCase):
         )
 
     def test_export_zip_file_fails_on_empty_file_name(self):
-        self.export_args['queries'][0]['file_name'] = ''
+        self.export_args['export_list'][0]['file_name'] = ''
         self.assertRaises(
             ValueError,
             export_zip_file,
@@ -92,39 +128,54 @@ class ExportZipFileTestCase(TestCase):
 
 
     def test_export_zip_file_writes_correct_lines(self):
-        animals = ['Norsu', 'Mirri', 'Sifaka']
-        for animal in animals:
-            EntityClass(name=animal).save()
+        class ExportTestClass(models.Model):
+            animal = models.CharField(max_length=255)
+            afraid = models.CharField(max_length=255)
+            age = models.IntegerField(blank=True, null=True)
+            class Meta:
+                managed = False
+                db_table = "test_export_zip_file"
+                app_label = "test"
+        with connection.schema_editor() as schema_editor:
+            prev_state = schema_editor.connection.in_atomic_block
+            schema_editor.connection.in_atomic_block = False
+            schema_editor.create_model(ExportTestClass)
+            schema_editor.connection.in_atomic_block = prev_state
+        data = [
+            ('Norsu', 'Hiiri', 12),
+            ('Mirri', 'Vesi', None),
+            ('Sifaka', '', 3),
+        ]
+        excepted_output = [
+            ('Name', 'Afraid', 'Age'),
+            ('Norsu', 'Hiiri', 12),
+            ('Mirri', 'Vesi', 'NA'),
+            ('Sifaka', 'NA', 3)
+        ]
+        for animal, afraid, age in data:
+            ExportTestClass(animal=animal, afraid=afraid, age=age).save()
         export_zip_file(
-            email_receiver='testi@testi.fi',
-            queries=[{
-                'file_name': 'entity_class',
-                'fields': [('name', 'Name')],
-                'query_set': EntityClass.objects.all()
-            }],
+            email_recipient='testi@testi.fi',
+            export_list=[
+                {
+                    'file_name': 'entity_class',
+                    'queries_and_fields': [(
+                        ExportTestClass.objects.all(),
+                        [
+                            ('animal', 'Name'),
+                            ('afraid', 'Afraid'),
+                            ('age', 'Age')
+                        ]
+                    )]
+                }
+            ],
             export_file_id=123,
             file_writer=self.test_writer
         )
-        first_column_items = []
-        for row in self.test_writer.files[0][1]:
-            first_column_items.append(row[0])
-        self.assertIn('Name', first_column_items)
-        self.assertTrue(all(x in first_column_items for x in animals))
-
-
-    def test_replace_na_replaces_empty_string_with_na(self):
-        values = [('', 'test'), ('value', '')]
-        result = replace_na(values)
-        self.assertEqual(result, [('NA', 'test'), ('value', 'NA')])
-
-
-    def test_replace_na_doesnt_replace_white_space_with_na(self):
-        values = [(' ', 'test'), ('value', ' ')]
-        result = replace_na(values)
-        self.assertEqual(result, [(' ', 'test'), ('value', ' ')])
-
-
-    def test_replace_na_doesnt_replace_zero_with_na(self):
-        values = [('0', 'test'), ('value', 0)]
-        result = replace_na(values)
-        self.assertEqual(result, [('0', 'test'), ('value', 0)])
+        # header line first
+        self.assertEqual(self.test_writer.files[0][1][0],excepted_output[0])
+        # data order can be what ever long as everything is there
+        for row, expected_row in zip(
+                sorted(self.test_writer.files[0][1]),
+                sorted(excepted_output)):
+            self.assertEqual(row, expected_row)

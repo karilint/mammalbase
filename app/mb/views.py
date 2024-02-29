@@ -575,7 +575,8 @@ class master_attribute_delete(UserPassesTestMixin, DeleteView):
 
 def master_attribute_detail(request, pk):
     master_attribute = get_object_or_404(MasterAttribute, pk=pk, is_active=1)
-    return render(request, 'mb/master_attribute_detail.html', {'master_attribute': master_attribute})
+    attribute_group = master_attribute.groups.first()
+    return render(request, 'mb/master_attribute_detail.html', {'master_attribute': master_attribute, 'attribute_group' : attribute_group})
 
 @login_required
 @permission_required('mb.edit_master_attribute', raise_exception=True)
@@ -607,6 +608,9 @@ def master_attribute_list(request):
         page_obj = paginator.page(1)
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
+
+    for x in page_obj:
+        vars(x)['group']=x.groups.first()
 
     return render(
         request,
