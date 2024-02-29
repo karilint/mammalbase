@@ -167,7 +167,7 @@ class BaseImporter:
             master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity.entity_id,reference_id=4)
             if master_entity_result:
                return EntityRelation(master_entity=master_entity_result[0],
-                                source_entity=source_entity.id,
+                                source_entity=source_entity,
                                 relation_id=1,
                                 data_status_id=5,
                                 relation_status_id=1,
