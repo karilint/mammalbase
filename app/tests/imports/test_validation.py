@@ -6,17 +6,15 @@ from ...imports.validation_lib.base_validation import Validation
 
 #@skip("Don't want to test")
 class ValidationTest(TestCase):
-    #TODO: refaktoroi yhdeksi funktioksi jota kutsutaan test-funktioista
-
-    def test_true_references(self):
+    def wrapper_for_true_values(self, sample_cases, field_name):
         validator = Occurrence_validation()
-        samples = ["abc123def456ghi789jklm", "pqrstuvwxy2023zab567cd", "e1f2g3h4i52025jklmnopqrs", "uvwxyz1234a567b890c2021", "d1e2f3g4h52026ijklmno"]
+        samples = sample_cases
         datas = []
         valids = []
 
         for sample in samples:
             data = {
-                "references" : str(sample)
+                field_name : str(sample)
             }
             datas.append(data)
         
@@ -34,7 +32,12 @@ class ValidationTest(TestCase):
                 isvalid = False
                 break
 
-        self.assertEqual(isvalid, True)
+        return isvalid == True
+
+    def test_true_references(self):
+        samples = ["abc123def456ghi789jklm", "pqrstuvwxy2023zab567cd", "e1f2g3h4i52025jklmnopqrs", "uvwxyz1234a567b890c2021", "d1e2f3g4h52026ijklmno"]
+        ret_val = self.wrapper_for_true_values(samples, "references")
+        self.assertTrue(ret_val)
     
     def test_false_references(self):
         validator = Occurrence_validation()
@@ -72,32 +75,9 @@ class ValidationTest(TestCase):
         self.assertEqual(True, True)
 
     def test_true_taxonRank(self):
-        validator = Occurrence_validation()
         samples = ["Subspecies", "Varietas", "Forma","Species","Genus","Nothogenus","Nothospecies","Nothosubspecies","Family","nan"]
-        datas = []
-        valids = []
-
-        for sample in samples:
-            data = {
-                "taxonRank" : str(sample)
-            }
-            datas.append(data)
-        
-        for data in datas:
-            value = None
-            try:
-                value = validator.is_valid(data, validator.rules)
-            except KeyError as error:
-                continue
-            valids.append(value)
-        
-        isvalid = True
-        for valid in valids:
-            if valid == False:
-                isvalid = False
-                break
-
-        self.assertEqual(isvalid, True)
+        ret_val = self.wrapper_for_true_values(samples, "taxonRank")
+        self.assertTrue(ret_val)
 
     def test_false_taxonRank(self):
         validator = Occurrence_validation()
