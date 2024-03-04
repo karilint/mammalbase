@@ -1,10 +1,24 @@
-from imports.importers.base_importer import BaseImporter
-from ..tools import messages, possible_nan_to_none, possible_nan_to_zero
-from mb.models.models import SourceAttribute, SourceReference, SourceEntity, SourceMethod, SourceUnit, ChoiceValue, SourceStatistic, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceMeasurementValue
 from django.db import transaction
 from django.contrib.auth.models import User
-from mb.models.occurrence_models import Occurrence, Event
-from mb.models.habitat_models import SourceHabitat
+
+from mb.models import (
+    SourceAttribute,
+    SourceReference,
+    SourceEntity,
+    SourceMethod,
+    SourceUnit,
+    ChoiceValue,
+    SourceStatistic,
+    SourceChoiceSetOption,
+    SourceChoiceSetOptionValue,
+    SourceMeasurementValue,
+    
+    Occurrence,
+    Event,
+    
+    SourceHabitat)
+from imports.tools import messages, possible_nan_to_none, possible_nan_to_zero
+from .base_importer import BaseImporter
 
 class OccurrencesImporter(BaseImporter):
     

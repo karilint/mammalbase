@@ -1,7 +1,7 @@
-from imports.importers.base_importer import BaseImporter
 from django.db import transaction
-from mb.models.models import DietSet, DietSetItem
-from ..tools import possible_nan_to_none, possible_nan_to_zero
+from mb.models import DietSet, DietSetItem
+from imports.tools import possible_nan_to_none, possible_nan_to_zero
+from .base_importer import BaseImporter
 
 class DietImporter(BaseImporter):
     
