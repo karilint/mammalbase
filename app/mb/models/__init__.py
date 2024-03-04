@@ -3,20 +3,6 @@ from .base_model import (
     ActiveManager,
     BaseModel)
 
-from .habitat_models import (
-    SourceHabitat,
-    MasterHabitat,
-    HabitatRelation)
-
-from .location_models import (
-    SourceLocation,
-    MasterLocation,
-    LocationRelation)
-
-from .occurrence_models import (
-    Occurrence,
-    Event)
-
 from .models import (
     AttributeRelation,
     ChoiceValue,
@@ -51,3 +37,17 @@ from .models import (
     ProximateAnalysisItem,
     ViewMasterTraitValue,
     ViewProximateAnalysisTable)
+
+from .habitat_models import (
+    SourceHabitat,
+    MasterHabitat,
+    HabitatRelation)
+
+from .location_models import (
+    SourceLocation,
+    MasterLocation,
+    LocationRelation)
+
+from .occurrence_models import (
+    Occurrence,
+    Event)

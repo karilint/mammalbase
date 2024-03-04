@@ -1,5 +1,6 @@
 from django.db import models
 from .base_model import BaseModel
+from .models import SourceReference, MasterReference
 
 class SourceHabitat(BaseModel):
     """
