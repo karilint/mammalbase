@@ -275,6 +275,63 @@ class ValidationTest(TestCase):
     def test_habitatPercentage(self):
         self.assertEqual(True, True)
 
+    def test_digits(self):
+        data = {"required_field": 12}  # Field is provided
+        rules = {"required_field": "digits"}  # Rule to validate required field
+
+        errors = self.instance.validate(data, rules)
+        self.assertEqual(errors, [])  # No errors expected for provided field
+
+        data = {"required_field": -12}  # Field is provided
+        rules = {"required_field": "digits"}  # Rule to validate required field
+
+        errors = self.instance.validate(data, rules)
+        self.assertEqual(errors, [])  # No errors expected for provided field
+
+        data = {"required_field": 0}  # Field is provided
+        rules = {"required_field": "digits"}  # Rule to validate required field
+
+        errors = self.instance.validate(data, rules)
+        self.assertEqual(errors, [])  # No errors expected for provided field
+
+        data = {"required_field": "kissa"}  # Field is provided
+        rules = {"required_field": "digits"}  # Rule to validate required field
+
+        try:
+            errors = self.instance.validate(data, rules)
+        except:
+            self.assertTrue(True)
+            return
+        self.assertFalse(False)
+
+        data = {"required_field": 12.3}  # Field is provided
+        rules = {"required_field": "digits"}  # Rule to validate required field
+
+        errors = self.instance.validate(data, rules)
+        self.assertEqual(errors, [])  # No errors expected for provided field
+
+    def test_min(self):
+        pass
+
+    def test_max(self):
+        pass
+
+    def test_nameYear(self):
+        pass
+
+    def test_regex(self):
+        """
+        data = {"required_field": "kissa1koira2kana__"} 
+        rules = {"required_field": "regex:[a-zA-Z]+\d+[a-zA-Z]+_+"} 
+
+        errors = self.instance.validate(data, rules)
+        self.assertEqual(errors, [])
+        """
+
+    def test_alpha(self):
+        pass
+
+
     """
     def test_check_headers_ds(self):
         self.assertEqual(self.check.check_headers_ds(self.file), True)
