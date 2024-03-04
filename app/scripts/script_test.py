@@ -1,7 +1,9 @@
 # exec(open('scripts\\script_test.py').read())
 # exec(open('scripts/script_test.py').read())
 
-from mb.models import *
+from mb.models import (
+	EntityRelation,
+	MasterEntity)
 import pandas as pd
 import io
 

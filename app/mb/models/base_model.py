@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models.query import QuerySet
+
 from django_userforeignkey.models.fields import UserForeignKey
 from simple_history.models import HistoricalRecords
 

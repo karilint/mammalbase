@@ -73,27 +73,34 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.sites',
     'django.contrib.staticfiles',
-#    'django_userforeignkey',
+
+    'django_userforeignkey',
     'django_select2',
-#    'rest_framework',
+
     'simple_history',
-    'main.apps.MainConfig',
-    'imports',
-    'itis',
-#    'tdwg',
-    'mb.apps.MbConfig',
-    'tdwg.apps.TdwgConfig',
-    'debug_toolbar',
-#    'django_extensions', #for Jupyter and Scripts
-#    'crispy_forms',
+
+    "django_celery_results",
+    "celery_progress",
+
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.orcid',
-#    'users.apps.UsersConfig',
+
+    'debug_toolbar',
+
+    'main.apps.MainConfig',
+    'mb.apps.MbConfig',
+    'tdwg.apps.TdwgConfig',
+
+    'imports',
+    'itis',
     'exports',
-    "django_celery_results",
-    "celery_progress",
+
+#    'django_extensions', #for Jupyter and Scripts
+#    'crispy_forms',
+#    'users.apps.UsersConfig',
+#    'rest_framework',
 ]
 
 SITE_ID = 1
