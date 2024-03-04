@@ -59,11 +59,11 @@ from .models import (
     TimePeriod,
     ViewMasterTraitValue,
     ViewProximateAnalysisTable)
-from imports.views import (
-    import_diet_set,
-    import_ets,
-    import_proximate_analysis,
-    import_occurrences)
+#from imports.views import ( # double import in url.py
+#    import_diet_set,
+#    import_ets,
+#    import_proximate_analysis,
+#    import_occurrences)
 from imports.tools import * # FIX
 from itis.models import TaxonomicUnits
 from itis.views import * # FIX
