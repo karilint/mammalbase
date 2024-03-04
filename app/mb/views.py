@@ -1,10 +1,12 @@
 import datetime, json
-from decimal import *
+from decimal import * # TODO: fix star imports!
 from django.core.exceptions import PermissionDenied
 from django.db import connection, transaction
 from django.db.models import Count, Max, F
-from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.decorators import (
+    login_required, permission_required)
+from django.contrib.auth.mixins import (
+    PermissionRequiredMixin, UserPassesTestMixin)
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -12,6 +14,21 @@ from django.views import generic
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.http import JsonResponse
+
+import requests
+from requests_cache import CachedSession
+
+from plotly import (
+    express as plotly_express,
+    offline as plotly_offline)
+from pandas import DataFrame as PandasDataFrame
+
+from config.settings import ITIS_CACHE
+from imports.tools import (
+    create_return_data,
+    create_tsn,
+    generate_standard_values_pa)
+from itis.models import TaxonomicUnits
 from .filters import (
     DietSetFilter,
     FoodItemFilter,
@@ -26,16 +43,32 @@ from .filters import (
     TaxonomicUnitsFilter,
     TimePeriodFilter,
     ViewProximateAnalysisTableFilter)
-from .forms import (AttributeRelationForm, ChoiceSetOptionRelationForm
-    , DietSetForm, DietSetItemForm, EntityRelationForm, FoodItemForm, MasterEntityForm
-    , MasterAttributeForm, MasterAttributeChoicesetOptionForm
-    , MasterChoiceSetOptionForm, MasterReferenceForm, OrderingForm
-    , ProximateAnalysisForm, ProximateAnalysisItemForm
-    , SourceAttributeForm, SourceAttributeChoicesetOptionForm
-    , SourceChoiceSetOptionForm, SourceChoiceSetOptionValueForm, SourceEntityForm
-    , SourceEntityRelationForm, SourceMeasurementValueForm
-    , SourceReferenceAttributeForm, SourceReferenceForm
-    , TaxonomicUnitsForm, TimePeriodForm)
+from .forms import (
+    AttributeRelationForm,
+    ChoiceSetOptionRelationForm,
+    DietSetForm,
+    DietSetItemForm,
+    EntityRelationForm,
+    FoodItemForm,
+    MasterEntityForm,
+    MasterAttributeForm,
+    MasterAttributeChoicesetOptionForm,
+    MasterChoiceSetOptionForm,
+    MasterReferenceForm,
+    OrderingForm,
+    ProximateAnalysisForm,
+    ProximateAnalysisItemForm,
+    SourceAttributeForm,
+    SourceAttributeChoicesetOptionForm,
+    SourceChoiceSetOptionForm,
+    SourceChoiceSetOptionValueForm,
+    SourceEntityForm,
+    SourceEntityRelationForm,
+    SourceMeasurementValueForm,
+    SourceReferenceAttributeForm,
+    SourceReferenceForm,
+    TaxonomicUnitsForm,
+    TimePeriodForm)
 from .models import (
     AttributeRelation,
     ChoiceSetOptionRelation,
@@ -59,30 +92,7 @@ from .models import (
     TimePeriod,
     ViewMasterTraitValue,
     ViewProximateAnalysisTable)
-#from imports.views import ( # double import in url.py
-#    import_diet_set,
-#    import_ets,
-#    import_proximate_analysis,
-#    import_occurrences)
-from imports.tools import * # FIX
-from itis.models import TaxonomicUnits
-from itis.views import * # FIX
-from requests_cache import CachedSession
-from config.settings import ITIS_CACHE
-# from ratelimit.decorators import ratelimit
 
-import requests
-
-#for ternary plots
-import plotly.express as px
-import plotly.graph_objects as go
-from plotly.offline import plot
-
-#import base64
-#from io import BytesIO
-import numpy as np
-import pandas as pd
-# end
 
 # Error Pages
 # https://blog.khophi.co/get-django-custom-error-views-right-first-time/
@@ -881,8 +891,8 @@ def master_entity_detail(request, pk):
         cp_ee = 0.0
 
     data = [[cf_ash, nfe, cp_ee]]
-    df = pd.DataFrame(data,columns=['CF+ASH','NFE','CP+EE'])
-    fig = px.scatter_ternary(df, a="CF+ASH", b="NFE", c="CP+EE")
+    df = PandasDataFrame(data,columns=['CF+ASH','NFE','CP+EE'])
+    fig = plotly_express.scatter_ternary(df, a="CF+ASH", b="NFE", c="CP+EE")
 
 # Animalivory
     t = [0.0, 0.0, 0.1, 0.2, 0.2]
@@ -911,7 +921,7 @@ def master_entity_detail(request, pk):
     fig.add_scatterternary(a=t, b=l, c=r, name="",
                             mode='lines', fill="toself", text="Omnivory", showlegend=False)
 
-    plot_div = plot(fig, output_type='div', include_plotlyjs=False, show_link=False, link_text="")
+    plot_div = plotly_offline(fig, output_type='div', include_plotlyjs=False, show_link=False, link_text="")
 
     return render(request, 'mb/master_entity_detail.html', {'master_entity': master_entity, 'measurements': measurements, 'diets': diets, 'ternary':ternary, 'plot_div': plot_div,})
 
