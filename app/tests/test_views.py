@@ -29,11 +29,10 @@ from mb.models import (
     DietSet,
     FoodItem,
     DietSetItem,
-    TaxonomicUnits,
     ChoiceValue,
     MasterEntity,
     SourceLocation)
-from itis.models import Kingdom, TaxonUnitTypes
+from itis.models import Kingdom, TaxonUnitTypes, TaxonomicUnits
 from imports.checker import Check
 import imports.views as views
 import imports.tools as tools
