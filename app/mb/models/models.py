@@ -6,7 +6,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from itis.models import TaxonomicUnits
 from tdwg.models import Taxon as TdwgTaxon
 from .base_model import BaseModel
-from .habitat_models import SourceHabitat, MasterHabitat
 
 
 # For doi validation
