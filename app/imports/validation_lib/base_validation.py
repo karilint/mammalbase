@@ -142,7 +142,7 @@ class Validation():
                 return key
         return "No match found"
 
-    def validate_coordinateSystem_fields(self, data, field_name, field_rules):
+    def validate_coordinateSystem_fields(self, data, field_name):
         """Validate the coordinates according to the given coordinate system.
 
 
@@ -207,7 +207,7 @@ class Validation():
         """
         errs = []
         try:
-            if data[field_name] != (True or False):
+            if data[field_name] not in [True, False]:
                 errs.append(self.return_field_message(field_name,"boolean"))
         except KeyError:
             errs.append(self.return_field_message(field_name,'boolean'))
