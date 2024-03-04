@@ -4,8 +4,8 @@ import pandas as pd
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.urls import reverse
- 
-from utils.views import render	# MB Utils
+from django.shortcuts import render
+
 from .tools import messages
  
 def wrapper(request, validator, importer, path):
