@@ -12,11 +12,20 @@ from django.views import generic
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.http import JsonResponse
-from .filters import (DietSetFilter, FoodItemFilter
-    , MasterAttributeFilter, MasterEntityFilter, MasterReferenceFilter
-    , ProximateAnalysisFilter, ProximateAnalysisItemFilter
-    , SourceAttributeFilter, SourceEntityFilter, SourceReferenceFilter
-    , TaxonomicUnitsFilter, TimePeriodFilter, ViewProximateAnalysisTableFilter)
+from .filters import (
+    DietSetFilter,
+    FoodItemFilter,
+    MasterAttributeFilter,
+    MasterEntityFilter,
+    MasterReferenceFilter,
+    ProximateAnalysisFilter,
+    ProximateAnalysisItemFilter,
+    SourceAttributeFilter,
+    SourceEntityFilter,
+    SourceReferenceFilter,
+    TaxonomicUnitsFilter,
+    TimePeriodFilter,
+    ViewProximateAnalysisTableFilter)
 from .forms import (AttributeRelationForm, ChoiceSetOptionRelationForm
     , DietSetForm, DietSetItemForm, EntityRelationForm, FoodItemForm, MasterEntityForm
     , MasterAttributeForm, MasterAttributeChoicesetOptionForm
@@ -27,17 +36,37 @@ from .forms import (AttributeRelationForm, ChoiceSetOptionRelationForm
     , SourceEntityRelationForm, SourceMeasurementValueForm
     , SourceReferenceAttributeForm, SourceReferenceForm
     , TaxonomicUnitsForm, TimePeriodForm)
-from .models.models import (AttributeRelation, ChoiceSetOptionRelation, DietSet
-    , DietSetItem, EntityRelation, FoodItem
-    , MasterAttribute, MasterChoiceSetOption, MasterEntity, MasterReference
-    , ProximateAnalysis, ProximateAnalysisItem
-    , RelationClass
-    , SourceAttribute, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceEntity
-    , SourceMeasurementValue, SourceReference, TimePeriod, ViewMasterTraitValue, ViewProximateAnalysisTable)
-from imports.views import import_diet_set, import_ets, import_proximate_analysis, import_occurrences
-from imports.tools import *
+from .models import (
+    AttributeRelation,
+    ChoiceSetOptionRelation,
+    DietSet,
+    DietSetItem,
+    EntityRelation,
+    FoodItem,
+    MasterAttribute,
+    MasterChoiceSetOption,
+    MasterEntity,
+    MasterReference,
+    ProximateAnalysis,
+    ProximateAnalysisItem,
+    RelationClass,
+    SourceAttribute,
+    SourceChoiceSetOption,
+    SourceChoiceSetOptionValue,
+    SourceEntity,
+    SourceMeasurementValue,
+    SourceReference,
+    TimePeriod,
+    ViewMasterTraitValue,
+    ViewProximateAnalysisTable)
+from imports.views import (
+    import_diet_set,
+    import_ets,
+    import_proximate_analysis,
+    import_occurrences)
+from imports.tools import * # FIX
 from itis.models import TaxonomicUnits
-from itis.views import *
+from itis.views import * # FIX
 from requests_cache import CachedSession
 from config.settings import ITIS_CACHE
 # from ratelimit.decorators import ratelimit
