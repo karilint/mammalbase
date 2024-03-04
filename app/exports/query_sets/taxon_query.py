@@ -1,7 +1,8 @@
 from django.db.models import Value, CharField, Q
 from django.db.models.functions import Concat
+
+from mb.models import SourceChoiceSetOptionValue
 from .base_query import base_query
-from mb.models.models import SourceChoiceSetOptionValue
 
 
 def taxon_query(measurement_choices):

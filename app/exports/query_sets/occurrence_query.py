@@ -1,7 +1,7 @@
 from django.db.models import Value, Case, When, CharField, Q
-from .base_query import base_query
-from mb.models.models import SourceChoiceSetOptionValue
 
+from mb.models import SourceChoiceSetOptionValue
+from .base_query import base_query
 
 def occurrence_query(measurement_choices):
     """
