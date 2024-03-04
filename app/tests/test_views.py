@@ -1,28 +1,42 @@
+import pandas as pd
+import tempfile, csv, os
+import pandas as pd
+import json
+import requests_mock
+import tempfile, csv, os
+from unittest import skip
+
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.contrib.messages import get_messages
-import tempfile, csv, os
-from allauth.socialaccount.models import SocialAccount
-import imports.views as views
-import pandas as pd
 from django.test import TestCase
 from django.test.client import RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from allauth.socialaccount.models import SocialAccount
-from mb.models.models import EntityClass, MasterReference, SourceAttribute, SourceEntity, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue, MasterEntity
-from mb.models.location_models import SourceLocation
+
+from mb.models import (
+    EntityClass,
+    MasterReference,
+    SourceAttribute,
+    SourceEntity,
+    SourceMethod,
+    SourceReference,
+    SourceStatistic,
+    TimePeriod,
+    DietSet,
+    FoodItem,
+    DietSetItem,
+    TaxonomicUnits,
+    ChoiceValue,
+    MasterEntity,
+    SourceLocation)
 from itis.models import Kingdom, TaxonUnitTypes
 from imports.checker import Check
+import imports.views as views
 import imports.tools as tools
-import tempfile, csv, os
-import pandas as pd
-import json
-import requests_mock
-from unittest import skip
-
 
 class ImportViewTests(TestCase):
     def setUp(self):
