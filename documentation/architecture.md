@@ -13,7 +13,6 @@ The project directory structure is as follows:
     - `scripts/`: Scripts used in the application.
     - `tdwg/`: TDWG (Taxonomic Databases Working Group) related files.
     - `tests/`: Unit tests for the application.
-    - `utils/`: Utility functions and classes.
 - `documentation/`: Contains markdown files with documentation about the application, its architecture, testing, environment variables, etc.
 - `nginx/`: Configuration files for the Nginx server.
 
@@ -61,10 +60,6 @@ The `tdwg` directory contains Taxon model that follows TDWG (Taxonomic Databases
 ### Tests
 
 The `tests` directory contains unit tests for the application. The tests are divided into several folders, each of which contains tests for a specific part of the application.
-
-### Utils
-
-Looks like old unused code.
 
 ### Documentation
 
