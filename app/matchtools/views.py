@@ -2,30 +2,22 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, permission_required
 from mb.models.models import SourceAttribute, AttributeRelation
 from django.db.models import Q
-import re
-
+from fuzzywuzzy import fuzz, process
+import time
 
 @login_required
 # @permission_required('matchtool.trait_match', raise_exception=True)
 def trait_match(request):
     """Match source attributes to master attributes."""
-    unlinked_attributes = SourceAttribute.objects.filter(
-        Q(master_attribute=None) | Q(master_attribute__name='- Checked, Unlinked -'))
-
     relations = AttributeRelation.objects.exclude(
-        master_attribute__name='- Checked, Unlinked -')
+        master_attribute__is_active=False
+    ).select_related('source_attribute', 'master_attribute').values('source_attribute__name', 'master_attribute__name')
 
-    for source_attribute in unlinked_attributes:
-        matching_relations = relations.filter(
-            Q(master_attribute__name=source_attribute.name) |
-            Q(source_attribute__name=source_attribute.name) |
-            Q(source_attribute__name__contains=source_attribute.name) |
-            Q(master_attribute__name__contains=source_attribute.name)
-        )
-        if matching_relations:
-            master_attribute = matching_relations[0].master_attribute
-            print(source_attribute.name, master_attribute.name)
-            
+    for source in SourceAttribute.objects.filter(master_attribute=None):
+        matches = process.extractOne(source.name, [(item['source_attribute__name'], item['master_attribute__name'])
+                                     for item in relations], score_cutoff=80, scorer=fuzz.token_set_ratio)
+
+        if matches:
+            print(source.name, matches[0], matches[1])
+
     return render(request, 'matchtool/trait_match.html')
-
-
