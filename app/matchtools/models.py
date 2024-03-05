@@ -1,3 +1,7 @@
 from django.db import models
 
-# Create your models here.
+class WordCount(BaseModel):
+    word = models.ForeignKey('Word', on_delete=models.CASCADE)
+    master_attribute = models.ForeignKey('MasterAttribute', on_delete=models.CASCADE)
+    count = models.IntegerField()
+

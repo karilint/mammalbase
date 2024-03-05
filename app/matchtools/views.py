@@ -1,6 +1,7 @@
 import difflib
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, permission_required
+from app.matchtools.models import WordCount
 from mb.models.models import SourceAttribute, AttributeRelation
 from django.db.models import Q
 from fuzzywuzzy import fuzz, process
@@ -18,6 +19,14 @@ def trait_match(request):
     for source in SourceAttribute.objects.filter(master_attribute=None):
         matches = process.extractOne(source.name, [(item['source_attribute__name'], item['master_attribute__name'])
                                      for item in relations], score_cutoff=80, scorer=fuzz.token_set_ratio)
+        
+    for source_attribute in relations: # Tällä käydään läpi olemassaolevat relaatiot ja luodaan sanataulukko
+        words = source_attribute.name.split(" ")
+        for word in words:
+            joku = WordCount.objects.filter(
+                Q(word = word)
+            )
+            #if joku != None: 
 
         if matches:
             print(source.name, matches[0], matches[1])
