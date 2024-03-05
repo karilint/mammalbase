@@ -4,7 +4,6 @@ import pandas as pd
 import requests
 from mb.models.models import SourceReference, MasterReference, EntityClass, SourceEntity, EntityRelation, MasterEntity, TimePeriod, SourceMethod, ChoiceValue
 from mb.models.location_models import SourceLocation
-from ..tools import make_harvard_citation_journalarticle, messages
 from datetime import timedelta
 from config.settings import ITIS_CACHE
 from requests_cache import CachedSession
@@ -21,6 +20,17 @@ class BaseImporter:
     @transaction.atomic
     def importRow(self, row : pd.Series):
         pass
+
+    def make_harvard_citation_journalarticle(title, d, authors, year, container_title, volume, issue, page):
+        citation = ""
+        for a in authors:
+            if authors.index(a) == len(authors) - 1:
+                citation += str(a)
+            else:
+                citation += str(a) + ", "
+        
+        citation += " " + str(year) + ". " + str(title) + ". " + str(container_title) + ". " + str(volume) + "(" + str(issue) + "), pp." + str(page) + ". Available at: " + str(d) + "." 
+        return citation
     
     def get_author(self, social_id: str):
         """
