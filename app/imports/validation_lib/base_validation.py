@@ -11,10 +11,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 """
 
 
-import re, datetime, sys
-from mb.models.models import ChoiceValue, SourceReference
+import sys
+import re
+import datetime
 from django.apps import apps
 
+from mb.models import ChoiceValue, SourceReference
 
 class Validation():
 

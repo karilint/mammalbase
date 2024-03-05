@@ -1,7 +1,8 @@
-from django.db.models import Subquery, OuterRef, F, Q, Case, When, CharField, Value
+from django.db.models import (
+    Subquery, OuterRef, F, Q, Case, When, CharField, Value)
 from django.db.models.functions import Concat
-from mb.models.models import SourceMeasurementValue
-from mb.models.models import UnitConversion
+
+from mb.models import SourceMeasurementValue, UnitConversion
 
 
 def base_query(measurement_choices):

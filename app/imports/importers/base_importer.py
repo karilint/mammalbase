@@ -1,16 +1,26 @@
 import re
 from django.db import transaction
+from django.contrib.auth.models import User
 import pandas as pd
 import requests
-from mb.models.models import SourceReference, MasterReference, EntityClass, SourceEntity, EntityRelation, MasterEntity, TimePeriod, SourceMethod, ChoiceValue
-from mb.models.location_models import SourceLocation
-from ..tools import make_harvard_citation_journalarticle, messages
+from mb.models import (
+    SourceReference,
+    MasterReference,
+    EntityClass,
+    SourceEntity,
+    EntityRelation,
+    MasterEntity,
+    TimePeriod,
+    SourceMethod,
+    ChoiceValue,
+    
+    SourceLocation)
+from imports.tools import make_harvard_citation_journalarticle, messages
 from datetime import timedelta
 from config.settings import ITIS_CACHE
 from requests_cache import CachedSession
 import itis.views as itis
 import json
-from django.contrib.auth.models import User
 import logging
 
 class BaseImporter:

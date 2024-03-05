@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
@@ -7,7 +6,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from itis.models import TaxonomicUnits
 from tdwg.models import Taxon as TdwgTaxon
 from .base_model import BaseModel
-from .habitat_models import SourceHabitat, MasterHabitat
 
 
 # For doi validation
