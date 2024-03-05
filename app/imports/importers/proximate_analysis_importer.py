@@ -1,6 +1,6 @@
 from imports.importers.base_importer import BaseImporter
 from ..tools import messages, possible_nan_to_none, possible_nan_to_zero
-from mb.models.models import SourceAttribute, SourceReference, SourceEntity, SourceMethod, SourceUnit, ChoiceValue, SourceStatistic, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceMeasurementValue
+from mb.models.models import SourceAttribute, SourceReference, SourceEntity, SourceMethod, SourceUnit, ChoiceValue, SourceStatistic, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceMeasurementValue, ProximateAnalysis
 from django.db import transaction
 from django.contrib.auth.models import User
 from mb.models.occurrence_models import Occurrence, Event
@@ -20,35 +20,12 @@ class ProximateAnalysisImporter(BaseImporter):
             bool: True if import is successded, otherwise False.
         """
 
-        print("row: " + str(row))
         author = self.get_author(getattr(row, 'author'))
-        """
-        attribute_dict = {
-            "reference" : get_sourcereference_citation(getattr(row, 'references'), author),
-            "method" : None,
-            "location" : None,
-            "study_time" : None,
-            "cited_reference" : None
-        }
-        """
         source_reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
         source_method = self.get_or_create_source_method(getattr(row, "measurementMethod"), source_reference, author)
         source_location = self.get_or_create_source_location(getattr(row, "verbatimLocality"), source_reference, author)
-        study_time = getattr(row, "verbatimEventDate")
-        cited_reference = getattr(row, "associatedReferences")
-
-        """
-        pa = None
-        pa_old = ProximateAnalysis.objects.filter(**attribute_dict)
-        if len(pa_old) > 0:
-            pa = pa_old[0]
-        else:
-            pa = ProximateAnalysis(**attribute_dict)
-            pa.save()
-        create_proximate_analysis_item(row, pa, attribute_dict["location"], attribute_dict["cited_reference"], headers)
-        """
-
-        created = True
+        
+        obj, created = ProximateAnalysis.objects.get_or_create(method=source_method, reference=source_reference, location=source_location, cited_reference=str(getattr(row, "associatedReferences")), study_time=str(getattr(row, "verbatimEventDate"))) 
         
         if created:
             return True
