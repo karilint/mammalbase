@@ -41,7 +41,7 @@ class Proximate_analysis_validation(Validation):
             "verbatimTraitValue__nitrogen_free_extract" : "max:250",   
             "dispersion__nitrogen_free_extract"         : "",
             "measurementMethod__nitrogen_free_extract"  : "",
-            "associatedReferences"                      : "max:500|regex:.*([1-2][0-9]{3}"
+            "associatedReferences"                      : "max:500|regex:.*([1-2][0-9]{3})or(Original study)"
         }
     
         self.data = {

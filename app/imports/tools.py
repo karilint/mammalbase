@@ -27,6 +27,17 @@ from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 import itis.views as itis
 from config.settings import ITIS_CACHE
 
+def make_harvard_citation_journalarticle(title, d, authors, year, container_title, volume, issue, page):
+    citation = ""
+    for a in authors:
+        if authors.index(a) == len(authors) - 1:
+            citation += str(a)
+        else:
+            citation += str(a) + ", "
+    
+    citation += " " + str(year) + ". " + str(title) + ". " + str(container_title) + ". " + str(volume) + "(" + str(issue) + "), pp." + str(page) + ". Available at: " + str(d) + "." 
+    return citation
+
 def create_return_data(tsn, scientific_name, status='valid'):
     hierarchy = None
     classification_path = ""

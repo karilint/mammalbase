@@ -13,8 +13,6 @@ def wrapper(request, validator, importer, path):
  
     Args:
         request (_type_): HTTP-request
-        validator (Occurrence_validation): Occurrence_validation object.
-        importer (OccurrencesImporter): OccurrenceImporter object
         path (str): The path of the html template to be returned.
  
     Returns:
@@ -60,7 +58,6 @@ def validate(df, validator):
  
     Args:
         df (Pandas): Pandas-object
-        validator (Occurrence-validation): validation object for occurrences
  
     Returns:
         list: possible validation errors
@@ -90,7 +87,6 @@ def row_importer(df, importer):
  
     Args:
         df (Pandas): Pandas-object
-        importer (Occurrence_importer): importer object for occurrences
  
     Returns:
         int: how many rows was impoerted

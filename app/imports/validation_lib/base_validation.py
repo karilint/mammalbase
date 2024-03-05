@@ -426,6 +426,8 @@ class Validation():
     def validate_regex_fields(self, data, field_name, rule):
         """Used for validating field data to match a regular expression, returns a list of error messages"""
 
+        rule = rule.replace("or", "|")
+
         regex = str(rule.split(':')[1])
         errs,result = self.match_regular_expression(regex,str(data[field_name]),"regex")
 
