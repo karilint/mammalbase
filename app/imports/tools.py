@@ -27,47 +27,6 @@ from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 import itis.views as itis
 from config.settings import ITIS_CACHE
 
-
-        
-def get_author(social_id):
-    author = User.objects.filter(socialaccount__uid=social_id)[0]
-    return author
-
-def get_sourcereference_citation(reference, author):
-    sr_old = SourceReference.objects.filter(citation__iexact=reference)
-    if len(sr_old) > 0:
-        return sr_old[0]
-    new_reference = SourceReference(citation=reference, status=1, created_by=author)
-    print(new_reference)
-    new_reference.save()
-    response_data = get_referencedata_from_crossref(reference)
-    create_masterreference(reference, response_data, new_reference, author)
-    return new_reference
-
-def get_sourcemethod(method, ref, author):
-    if method == 'nan':
-        return None
-    sr_old = SourceMethod.objects.filter(reference=ref, name__iexact=method)
-    if len(sr_old) > 0:
-        return sr_old[0]
-
-    new_sourcemethod = SourceMethod(reference=ref, name=method, created_by=author)
-    print(new_sourcemethod)
-    new_sourcemethod.save()
-    return new_sourcemethod
-
-def get_sourcelocation(location, ref, author):
-    if location == 'nan':
-        return None
-    sl_old = SourceLocation.objects.filter(name__iexact=location, reference=ref)
-    if len(sl_old) > 0:
-        return sl_old[0]
-
-    new_sourcelocation = SourceLocation(reference=ref, name=location, created_by=author)
-    print(new_sourcelocation)
-    new_sourcelocation.save()
-    return new_sourcelocation
-
 def create_return_data(tsn, scientific_name, status='valid'):
     hierarchy = None
     classification_path = ""
@@ -94,29 +53,6 @@ def get_accepted_tsn(tsn):
     scientific_name = response["acceptedNames"][0]["acceptedName"]
     return_data = create_return_data(accepted_tsn, scientific_name)
     
-    return return_data
-
-
-def get_fooditem_json(food):
-    query = food.lower().capitalize().replace(' ', '%20')
-    url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
-    try:
-        session = CachedSession(ITIS_CACHE, expire_after=timedelta(days=30), stale_if_error=True)
-        file = session.get(url)
-        data = file.text
-    except (ConnectionError, UnicodeError):
-        return {'data': [{}]}
-    try:
-        taxon_data = json.loads(data)['itisTerms'][0]
-    except UnicodeDecodeError:
-        taxon_data = json.loads(data.decode('utf-8', 'ignore'))['itisTerms'][0]
-    return_data = {}
-    if taxon_data and taxon_data['scientificName'].lower() == food.lower():
-        tsn = taxon_data['tsn']
-        scientific_name = taxon_data['scientificName']
-        return_data = create_return_data(tsn, scientific_name, status=taxon_data['nameUsage'])
-    else:
-        return {'data': [{}]}
     return return_data
 
 def create_tsn(results, tsn):
@@ -159,25 +95,6 @@ def create_tsn(results, tsn):
 
     return taxonomic_unit
 
-
-
-def create_fooditem(results, food_upper, part):
-    tsn = int(results['data'][0]['results'][0]['taxon_id'])
-    taxonomic_unit = create_tsn(results, tsn)
-    
-    name = food_upper
-    if part not in {'nan', None}:
-        part = ChoiceValue.objects.filter(caption=part)[0]
-    else:
-        part = None
-    food_item = FoodItem(name=name, part=part, tsn=taxonomic_unit, pa_tsn=taxonomic_unit, is_cultivar=0)
-    food_item_exists = FoodItem.objects.filter(name__iexact=name)
-    if len(food_item_exists) > 0:
-        return food_item_exists[0]
-    print(food_item)
-    food_item.save()
-    return food_item
-
 def generate_rank_id(food):
     associated_taxa = re.sub(r'\W+', ' ', food).split(' ')
     for item in associated_taxa:
@@ -203,26 +120,6 @@ def generate_rank_id(food):
             break
     return rank_id
 
-def get_fooditem(food, part):
-    food_upper = food.upper()
-    food_item = FoodItem.objects.filter(name__iexact=food_upper)
-    
-    if len(food_item) > 0:
-        return food_item[0]
-    
-    rank_id = generate_rank_id(food)
-
-    if len(rank_id) == 0:
-        if part not in {'nan', None}:
-            part = ChoiceValue.objects.filter(caption=part.upper())[0]
-        else:
-            part = None
-        food_item = FoodItem(name=food_upper, part=part, tsn=None, pa_tsn=None, is_cultivar=0)
-        print(food_item)
-        food_item.save()
-        return food_item
-    return create_fooditem(rank_id[max(rank_id)], food_upper, part)
-
 def possible_nan_to_zero(size):
     if size != size or size == 'nan':
         return 0
@@ -242,19 +139,6 @@ def trim_df(df):
         for header in headers:
             df.at[i, header] = trim(str(df.at[i, header]))
 
-# Search citation from CrossrefApi: https://api.crossref.org/swagger-ui/index.htm
-# Please do not make any unnessecary queries: https://www.crossref.org/documentation/retrieve-metadata/rest-api/tips-for-using-the-crossref-rest-api/
-def get_referencedata_from_crossref(citation): # pragma: no cover
-    c = citation.replace(" ", "%20")
-    url = 'https://api.crossref.org/works?query.bibliographic=%22'+c+'%22&mailto=kari.lintulaakso@helsinki.fi&rows=2'
-    try:
-        x = requests.get(url, timeout=300)
-        y = x.json()
-        return y
-    except requests.exceptions.RequestException as e:
-        print('Error: ', e)
-        return None
-
 def title_matches_citation(title, source_citation):
     # https://stackoverflow.com/questions/9662346/python-code-to-remove-html-tags-from-a-string
     title_without_html = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', title)
@@ -265,99 +149,6 @@ def title_matches_citation(title, source_citation):
     if title_without_space.lower() not in source_citation_without_space.lower():
         return False
     return True
-
-def create_masterreference(source_citation, response_data, sr, user_author):
-    try:
-        if response_data['message']['total-results'] == 0:
-            return False
-        doi = None
-        uri = None
-        year = None
-        container_title = None
-        volume = None
-        issue = None
-        page = None
-        citation = None
-        ref_type = None
-        x = response_data['message']['items'][0]
-        fields = []
-        for field_name in x:
-            fields.append(field_name)
-        if 'title' not in fields:
-            return False
-        if not title_matches_citation(x['title'][0], source_citation):
-            return False
-        title = re.sub('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});', '', x['title'][0])
-        if 'author' not in fields:
-            return False
-        authors = []
-        for a in x['author']:
-            author = a['family'] + ", " + a['given'][0] + "."
-            authors.append(author)
-        first_author = x['author'][0]['family'] + ", " + x['author'][0]['given'][0] + "."
-        if 'DOI' in fields:
-            doi = x['DOI']
-        if 'uri' in fields:
-            uri = x['uri']
-        if 'published' in fields:
-            year = x['published']['date-parts'][0][0]
-        if 'container-title' in fields:
-            container_title = x['container-title'][0]
-        if 'volume' in fields:
-            volume = x['volume']
-        if 'issue' in fields:
-            issue = x['issue']
-        if 'page' in fields:
-            page = x['page']
-        if 'type' in fields:
-            ref_type = x['type']
-            if ref_type == 'journal-article':
-                citation = make_harvard_citation_journalarticle(title, doi, authors, year, container_title, volume, issue, page)
-            else:
-                citation = ""
-                for a in authors:
-                    if authors.index(a) == len(authors) - 1:
-                        citation += str(a)
-                    else:
-                        citation += str(a) + ", "
-                citation += " " + str(year) + ". " + str(title) + ". Available at: " + str(doi) + "."
-
-        mr = MasterReference(
-            type=ref_type,
-            doi=doi,
-            uri=uri,
-            first_author=first_author,
-            year=year,
-            title=title,
-            container_title=container_title,
-            volume=volume,
-            issue=issue,
-            page=page,
-            citation=citation,
-            created_by=user_author
-        )
-        print(mr)
-        mr.save()
-        sr.master_reference = mr
-        print(sr)
-        sr.save()
-        return True
-    except DatabaseError as db_err:
-        raise db_err
-    except Exception as e:
-        return False
-
-
-def make_harvard_citation_journalarticle(title, d, authors, year, container_title, volume, issue, page):
-    citation = ""
-    for a in authors:
-        if authors.index(a) == len(authors) - 1:
-            citation += str(a)
-        else:
-            citation += str(a) + ", "
-    
-    citation += " " + str(year) + ". " + str(title) + ". " + str(container_title) + ". " + str(volume) + "(" + str(issue) + "), pp." + str(page) + ". Available at: " + str(d) + "." 
-    return citation
 
 @transaction.atomic
 def create_proximate_analysis(row, df):

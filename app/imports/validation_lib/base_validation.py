@@ -569,7 +569,7 @@ class Validation():
             "verbatimScientificName": "'%s' has invalid value for verbatimScientificName field",
             "verbatimLatitude": "'%s' has invalid value for verbatimLatitude field",
             "verbatimLongitude": "'%s' has invalid value for verbatimLongitude field",
-             "verbatimCoordinateSystem": "'%s' has invalid value for verbatimCoordinates field. |Please use one of the following formats: | Decimal Degrees Coordinates: \"12.3456, -78.9012””, | Degrees Minutes Coordinates: \"12°34.567' N, 78°90.123' W\", | Degrees Decimal Seconds Coordinates: \"12°34'56.789\" N, 78°90'12.345\" W\", | UTM Coordinates: \"12S 123456mE 1234567mN\"|----------------------------------------------------------------------------------------------------------------------------------",
+            "verbatimCoordinateSystem": "'%s' has invalid value for verbatimCoordinates field. |Please use one of the following formats: | Decimal Degrees Coordinates: \"12.3456, -78.9012””, | Degrees Minutes Coordinates: \"12°34.567' N, 78°90.123' W\", | Degrees Decimal Seconds Coordinates: \"12°34'56.789\" N, 78°90'12.345\" W\", | UTM Coordinates: \"12S 123456mE 1234567mN\"|----------------------------------------------------------------------------------------------------------------------------------",
             "verbatimEventDate": "'%s' has invalid value for verbatimEventDate field",
             "gender": "'%s' has invalid value for sex field",
             "lifeStage": "'%s' has invalid value for lifeStage field",
