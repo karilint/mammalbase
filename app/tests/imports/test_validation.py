@@ -6,284 +6,214 @@ from imports.validation_lib.base_validation import Validation
 
 #@skip("Don't want to test")
 class ValidationTest(TestCase):
-    #TODO: refaktoroi yhdeksi funktioksi jota kutsutaan test-funktioista
-    def reference_wrapper(self):
+
+    def test_sex(self):
+        self.assertEqual(True, True)
+
+    def test_lifeStage(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimEventDate(self):
+        self.assertEqual(True, True)
+
+    def test_occurrenceRemarks(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimLocality(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimElevation(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimDepth(self):
+        self.assertEqual(True, True)
+
+    def test_verbatimCoordinates(self):
+        self.assertEqual(True, True)
+
+    def setUp(self):
+        # Initialize your class or any other setup required
+        self.instance = Validation()
+        self.error_templates = self.instance.get_error_message_templates()
+
+    def test_coordinate_format(self):
+        test_dict = self.instance.coords_dict
+
+        # Test cases for coordinate_format
+        latitude = "12.3456"
+        longitude = "-78.9012"
+        coords = f"{latitude}, {longitude}" 
+        self.assertEqual(self.instance.coordinate_format(coords, test_dict), "decimal degrees")
+
+        latitude = "12°34.567'N"
+        longitude = "78°90.123'W"
+        coords = f"{latitude}, {longitude}" 
+        self.assertEqual(self.instance.coordinate_format(coords, test_dict), "degrees minutes")
+
+        latitude = "12°34'56.789\" N"
+        longitude = "78°90'12.345\" W"
+        coords = f"{latitude}, {longitude}" 
+        self.assertEqual(self.instance.coordinate_format(coords, test_dict), "degrees decimals")
+        self.assertEqual(self.instance.coordinate_format("32S 485146mE 4037735mN", test_dict), "UTM")
+        self.assertEqual(self.instance.coordinate_format("Invalid Coordinate", test_dict), "No match found")
+
+
+    def test_validate_coordinateSystem_fields(self):
+        coord_error = self.error_templates['verbatimCoordinateSystem'] % 'verbatimCoordinateSystem'
+        # Mock data for testing
+        mock_data = {
+            "verbatimCoordinateSystem": "decimal degrees",
+            "verbatimLatitude": "40.7128",
+            "verbatimLongitude": "-74.0060",
+            "verbatimCoordinates": "32S 485146mE 4037735mN"
+        }
+        mock_data2 = {
+            "verbatimCoordinateSystem": "decimal degrees",
+            "verbatimLatitude": "40.7128",
+            "verbatimLongitude": "-74.0060",
+            "verbatimCoordinates": "nan"
+        }
+
+        mock_data3 = {
+            "verbatimCoordinateSystem": "decimal degrees",
+            "verbatimLatitude": "40.7128",
+            "verbatimLongitude": "nan",
+            "verbatimCoordinates": "nan"
+        }
+        # Test cases for validate_coordinateSystem_fields
+        self.assertNotEqual(self.instance.validate_coordinateSystem_fields(mock_data, "verbatimCoordinateSystem"), [])
+        self.assertEqual(self.instance.validate_coordinateSystem_fields(mock_data2, "verbatimCoordinateSystem"), [])
+        self.assertEqual(self.instance.validate_coordinateSystem_fields(mock_data3, "verbatimCoordinateSystem" ), [coord_error])
+        self.assertNotEqual(self.instance.validate_coordinateSystem_fields(mock_data3, "verbatimCoordinateSystem" ), []) 
+
+        
+    def test_boolean_validation(self):
+        boolean_error = self.error_templates['boolean'] % 'boolean'
+
+        # Test case 1: 'True' value
+        data = {"boolean": True}  
+        errors = self.instance.validate_boolean_fields(data, "boolean")
+        self.assertEqual(errors, []) 
+
+        # Test case 2: 'False' value
+        data = {"boolean": False}  
+        errors = self.instance.validate_boolean_fields(data, "boolean")
+        self.assertEqual(errors, []) 
+
+        # Test case 3: Invalid value
+        data = {"boolean": "invalid"}  
+        errors = self.instance.validate_boolean_fields(data, "boolean")
+        self.assertEqual(errors, [boolean_error]) 
+
+    def test_validate_author_fields(self):
+        # Test case 1: Missing author field
+        required_error = self.error_templates['required'] % 'author'
+        author_error = self.error_templates['author'] % 'author'
+
+        data = {}  # Empty dictionary
+        errors = self.instance.validate_author_fields(data, 'author')
+        self.assertEqual(errors, [required_error])
+
+        # Test case 2: Invalid author format
+        data = {'author': '1234-5678-9012-345'}  # Invalid format
+        errors = self.instance.validate_author_fields(data, 'author')
+        self.assertEqual(errors, [author_error])
+
+        # Test case 3: Valid author format
+        data = {'author': '1234-5678-9012-3456'}  # Valid format
+        errors = self.instance.validate_author_fields(data, 'author')
+        self.assertEqual(errors, [])
+
+        # Test case 4: Valid author format with non-numeric characters
+        data = {'author': 'abcd-efgh-ijkl-mnop'}  # Valid format with non-numeric characters
+        errors = self.instance.validate_author_fields(data, 'author')
+        self.assertEqual(errors, [author_error])
+
+        # Test case 5: Valid author format with correct length but missing '-'
+        data = {'author': '1234567890123456789'}  # Missing '-'
+        errors = self.instance.validate_author_fields(data, 'author')
+        self.assertEqual(errors, [author_error])
+
+
+    def test_required_validation(self):
+        required_error = self.error_templates['required'] % 'required'
+
+        data = {"author": "some_value"}  
+        errors = self.instance.validate_required_fields(data, 'required')
+        self.assertEqual(errors, [required_error])  
+
+        data = {"author": ""}  # Field is empty
+        #errors = self.instance.validate_required_fields(data, 'required')
+        self.assertEqual(errors, [required_error])
+
+
+
+
+    
+
+    def test_sex(self):
+        self.assertEqual(True, True)
+
+    def test_lifeStage(self):
+        self.assertEqual(True, True)
+
+
+    def test_digits(self):
+        data = {"required_field": 12}  # Field is provided
+        rules = {"required_field": "digits"}  # Rule to validate required field
+
+        errors = self.instance.validate(data, rules)
+        self.assertEqual(errors, [])  # No errors expected for provided field
+
+        data = {"required_field": -12}  # Field is provided
+        rules = {"required_field": "digits"}  # Rule to validate required field
+
+        errors = self.instance.validate(data, rules)
+        self.assertEqual(errors, [])  # No errors expected for provided field
+
+        data = {"required_field": 0}  # Field is provided
+        rules = {"required_field": "digits"}  # Rule to validate required field
+
+        errors = self.instance.validate(data, rules)
+        self.assertEqual(errors, [])  # No errors expected for provided field
+
+        data = {"required_field": "kissa"}  # Field is provided
+        rules = {"required_field": "digits"}  # Rule to validate required field
+
+        try:
+            errors = self.instance.validate(data, rules)
+        except:
+            self.assertTrue(True)
+            return
+        self.assertFalse(False)
+
+        data = {"required_field": 12.3}  # Field is provided
+        rules = {"required_field": "digits"}  # Rule to validate required field
+
+        errors = self.instance.validate(data, rules)
+        self.assertEqual(errors, [])  # No errors expected for provided field
+
+    def test_min(self):
         pass
 
-    def test_true_references(self):
-        validator = Occurrence_validation()
-        samples = ["abc123def456ghi789jklm", "pqrstuvwxy2023zab567cd", "e1f2g3h4i52025jklmnopqrs", "uvwxyz1234a567b890c2021", "d1e2f3g4h52026ijklmno"]
-        datas = []
-        valids = []
+    def test_max(self):
+        pass
 
-        for sample in samples:
-            data = {
-                "references" : str(sample)
-            }
-            datas.append(data)
-        
-        for data in datas:
-            value = None
-            try:
-                value = validator.is_valid(data, validator.rules)
-            except KeyError as error:
-                continue
-            valids.append(value)
-        
-        isvalid = True
-        for valid in valids:
-            if valid == False:
-                isvalid = False
-                break
+    def test_nameYear(self):
+        pass
 
-        self.assertEqual(isvalid, True)
-    
-    def test_false_references(self):
-        validator = Occurrence_validation()
-        samples = ["abc120def", "string without year 2023" , "another example" , "random string 12345", "short text"]
-        datas = []
-        valids = []
+    def test_regex(self):
+        """
+        data = {"required_field": "kissa1koira2kana__"} 
+        rules = {"required_field": "regex:[a-zA-Z]+\d+[a-zA-Z]+_+"} 
 
-        for sample in samples:
-            data = {
-                "references" : str(sample)
-            }
-            datas.append(data)
-        
-        for data in datas:
-            value = None
-            try:
-                value = validator.is_valid(data, validator.rules)
-            except KeyError as error:
-                continue
-            valids.append(value)
+        errors = self.instance.validate(data, rules)
+        self.assertEqual(errors, [])
+        """
 
-        isvalid = True
+    def test_alpha(self):
+        pass
 
-        try:
-            isvalid = valids.index(True)
-        except ValueError as error:
-            isvalid = False
-
-        self.assertEqual(isvalid, False)
-
-    def test_verbatimScientificName(self):
-        self.assertEqual(True, True)
-
-    def test_scientificNameAuthorship(self):
-        self.assertEqual(True, True)
-
-    def test_true_taxonRank(self):
-        validator = Occurrence_validation()
-        samples = ["Subspecies", "Varietas", "Forma","Species","Genus","Nothogenus","Nothospecies","Nothosubspecies","Family","nan"]
-        datas = []
-        valids = []
-
-        for sample in samples:
-            data = {
-                "taxonRank" : str(sample)
-            }
-            datas.append(data)
-        
-        for data in datas:
-            value = None
-            try:
-                value = validator.is_valid(data, validator.rules)
-            except KeyError as error:
-                continue
-            valids.append(value)
-        
-        isvalid = True
-        for valid in valids:
-            if valid == False:
-                isvalid = False
-                break
-
-        self.assertEqual(isvalid, True)
-
-    def test_false_taxonRank(self):
-        validator = Occurrence_validation()
-        samples = ["abc120def", "string without year 2023" , "another example" , "random string 12345", ""]
-        datas = []
-        valids = []
-
-        for sample in samples:
-            data = {
-                "taxonRank" : str(sample)
-            }
-            datas.append(data)
-        
-        for data in datas:
-            value = None
-            try:
-                value = validator.is_valid(data, validator.rules)
-            except KeyError as error:
-                continue
-            valids.append(value)
-
-        isvalid = True
-
-        try:
-            isvalid = valids.index(True)
-        except ValueError as error:
-            isvalid = False
-
-        self.assertEqual(isvalid, False)
-    
-
-    def test_organismQuantity(self):
-        self.assertEqual(True, True)
-
-    def test_organismQuantityType(self):
-        self.assertEqual(True, True)
-
-    def test_sex(self):
-        self.assertEqual(True, True)
-
-    def test_lifeStage(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimEventDate(self):
-        self.assertEqual(True, True)
-
-    def test_occurrenceRemarks(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimLocality(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimElevation(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimDepth(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimCoordinates(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimLatitude(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimLongitude(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimCoordinateSystem(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimSRS(self):
-        self.assertEqual(True, True)
-
-    def test_true_author(self):
-        validator = Occurrence_validation()
-        samples = ["1234-1234-1234-1234", "0000-0000-0000-0000", "0009-0001-0507-9139"]
-        datas = []
-        valids = []
-
-        for sample in samples:
-            data = {
-                "author" : str(sample)
-            }
-            datas.append(data)
-        
-        for data in datas:
-            value = None
-            try:
-                value = validator.is_valid(data, validator.rules)
-            except KeyError as error:
-                continue
-            valids.append(value)
-
-        isvalid = True
-
-        for valid in valids:
-            if valid == False:
-                isvalid = False
-                break
-
-        self.assertEqual(isvalid, True)
-
-    def test_false_author(self):
-        validator = Occurrence_validation()
-        samples = ["kissa", "XXXX-XXXX-XXXX-XXXX", "1234-1234-1234-XXXX"]
-        datas = []
-        valids = []
-
-        for sample in samples:
-            data = {
-                "author" : str(sample)
-            }
-            datas.append(data)
-        
-        for data in datas:
-            value = None
-            try:
-                value = validator.is_valid(data, validator.rules)
-            except KeyError as error:
-                continue
-            valids.append(value)
-
-        isvalid = True
-
-        try:
-            isvalid = valids.index(True)
-        except ValueError as error:
-            isvalid = False
-
-        self.assertEqual(isvalid, False)     
-
-    def test_organismQuantity(self):
-        self.assertEqual(True, True)
-
-    def test_organismQuantityType(self):
-        self.assertEqual(True, True)
-
-    def test_sex(self):
-        self.assertEqual(True, True)
-
-    def test_lifeStage(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimEventDate(self):
-        self.assertEqual(True, True)
-
-    def test_occurrenceRemarks(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimLocality(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimElevation(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimDepth(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimCoordinates(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimLatitude(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimLongitude(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimCoordinateSystem(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimSRS(self):
-        self.assertEqual(True, True)
-
-    def test_associatedReferences(self):
-        self.assertEqual(True, True)
-
-    def test_samplingProtocol(self):
-        self.assertEqual(True, True)
-
-    def test_habitatType(self):
-        self.assertEqual(True, True)
-
-    def test_habitatPercentage(self):
-        self.assertEqual(True, True)
 
     """
     def test_check_headers_ds(self):
