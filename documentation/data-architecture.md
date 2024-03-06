@@ -1,6 +1,6 @@
 # Data architecture
 
-The application uses a `MarianDB` database to store data. The database tables are managed by Django's ORM. The application is divided into several subapplications, each of which contains files related to a specific feature of the application. 
+The application uses a `MariaDB` database to store data. The database tables are managed by Django's ORM. The application is divided into several subapplications, each of which contains files related to a specific feature of the application. 
 
 Most of the models are defined in the `mb` directory. The `mb` directory contains main files related to the main MammalBase application. All the `models` related to MammalBase are defined in this directory.
 
