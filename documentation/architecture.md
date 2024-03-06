@@ -8,8 +8,8 @@ The project directory structure is as follows:
     - `exports/`: Files related to exporting data.
     - `imports/`: Files related to importing data.
     - `itis/`: ITIS (Integrated Taxonomic Information System) related files.
-    - `main/`: Main application files.
-    - `mb/`: Main application files.
+    - `main/`: User authentication, user profiles, and other general application features.
+    - `mb/`: Main mammalbase application files.
     - `scripts/`: Scripts used in the application.
     - `tdwg/`: TDWG (Taxonomic Databases Working Group) related files.
     - `tests/`: Unit tests for the application.
