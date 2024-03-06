@@ -1,16 +1,26 @@
 import re
 from django.db import transaction
+from django.contrib.auth.models import User
 import pandas as pd
 import requests
-from mb.models.models import SourceReference, MasterReference, EntityClass, SourceEntity, EntityRelation, MasterEntity, TimePeriod, SourceMethod, ChoiceValue
-from mb.models.location_models import SourceLocation
-from ..tools import make_harvard_citation_journalarticle, messages
+from mb.models import (
+    SourceReference,
+    MasterReference,
+    EntityClass,
+    SourceEntity,
+    EntityRelation,
+    MasterEntity,
+    TimePeriod,
+    SourceMethod,
+    ChoiceValue,
+    
+    SourceLocation)
+from imports.tools import make_harvard_citation_journalarticle, messages
 from datetime import timedelta
 from config.settings import ITIS_CACHE
 from requests_cache import CachedSession
 import itis.views as itis
 import json
-from django.contrib.auth.models import User
 import logging
 
 class BaseImporter:
@@ -54,7 +64,7 @@ class BaseImporter:
             uri = item.get('uri', '')
             year = item.get('published', {}).get('date-parts', [[None]])[0][0]
             container_title = item.get('container-title', [''])[0]
-            volume = item.get('volume', '')
+            volume = item.get('volume', None)
             issue = item.get('issue', '')
             page = item.get('page', '')
             ref_type = item.get('type', '')
@@ -124,7 +134,7 @@ class BaseImporter:
             new_entity_class = EntityClass(name=taxon_rank, created_by=author)
             new_entity_class.save()
             return new_entity_class
-        
+    
     def get_or_create_source_entity(self, name: str, source_reference: SourceReference, entity_class: EntityClass, author: User):
         """
         Return SourceEntity object for the given name or create a new one
@@ -167,7 +177,7 @@ class BaseImporter:
             master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity.entity_id,reference_id=4)
             if master_entity_result:
                return EntityRelation(master_entity=master_entity_result[0],
-                                source_entity=source_entity.id,
+                                source_entity=source_entity,
                                 relation_id=1,
                                 data_status_id=5,
                                 relation_status_id=1,
@@ -267,9 +277,3 @@ class BaseImporter:
             return None
         choicevalue = ChoiceValue.objects.filter(pk=gender)
         return choicevalue[0]
-            
-        
-        
-        
-
-    

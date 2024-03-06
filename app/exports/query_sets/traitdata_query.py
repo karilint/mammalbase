@@ -1,7 +1,9 @@
 from django.db.models.functions import Concat
 from django.db.models import CharField, Value, F, Case, When, Q
-from ..custom_db_functions import Round2
-from exports.query_sets.measurements.base_query import base_query
+
+from mb.models import SourceChoiceSetOptionValue
+from .custom_db_functions import Round2
+from .base_query import base_query
 
 
 def traitdata_query(measurement_choices):
@@ -61,6 +63,30 @@ def traitdata_query(measurement_choices):
     ).order_by(
         'source_attribute__master_attribute__name'
     )
+    
+    nominal_query = SourceChoiceSetOptionValue.objects.annotate(
+        trait_id=Concat(
+            Value('https://www.mammalbase.net/ma/'),
+            'source_choiceset_option__source_attribute__master_attribute__id',
+            Value('/'),
+            output_field=CharField()
+        ),
+        trait_value=F('source_choiceset_option__master_choiceset_option__name'),
+        verbatim_trait_value=F('source_choiceset_option__name'),
+        trait_unit=Value('NA'),
+        verbatim_trait_unit=Value('NA'),
+        taxon_id=Concat(
+            Value('https://www.mammalbase.net/me/'),
+            'source_entity__master_entity__id',
+            Value('/'),
+            output_field=CharField()
+        ),
+        measurement_id=Value('NA'),
+        occurrence_id=Value('NA'),
+        warnings=Value('NA'),
+    ).order_by(
+        'source_choiceset_option__source_attribute__master_attribute__name'
+    )
 
     fields = [
         ('trait_id', 'traitID'),
@@ -78,4 +104,26 @@ def traitdata_query(measurement_choices):
         ('warnings', 'warnings'),
     ]
 
-    return query, fields
+    nominal_fields = [
+        ('trait_id', 'traitID'),
+        ('source_entity__master_entity__name', 'scientificName'),
+        ('source_choiceset_option__source_attribute__master_attribute__name', 'traitName'),
+        ('trait_value', 'traitValue'),
+        ('trait_unit', 'traitUnit'),
+        ('source_entity__name', 'verbatimScientificName'),
+        ('source_choiceset_option__source_attribute__name', 'verbatimTraitName'),
+        ('verbatim_trait_value', 'verbatimTraitValue'),
+        ('verbatim_trait_unit', 'verbatimTraitUnit'),
+        ('taxon_id', 'taxonID'),
+        ('measurement_id', 'measurementID'),
+        ('occurrence_id', 'occurrenceID'),
+        ('warnings', 'warnings'),
+    ]
+    queries = []
+    if "Nominal traits" in measurement_choices:
+        queries.append((nominal_query, nominal_fields))
+    
+    if "Cranial measurements" in measurement_choices or "External measurements" in measurement_choices:
+        queries.append((query, fields))
+
+    return queries

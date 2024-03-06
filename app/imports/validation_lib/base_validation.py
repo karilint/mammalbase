@@ -11,10 +11,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 """
 
 
-import re, datetime, sys
-from mb.models.models import ChoiceValue, SourceReference
+import sys
+import re
+import datetime
 from django.apps import apps
 
+from mb.models import ChoiceValue, SourceReference
 
 class Validation():
 
@@ -69,24 +71,9 @@ class Validation():
 
         elif rule == "required":
             rule_error = self.validate_required_fields(data, field_name)
-        
-        elif rule == "verbatimScientificName":
-            rule_error = self.validate_verbatim_scientific_name(data, field_name, field_rules)
-
-        elif rule == "verbatimLatitude":
-            rule_error = self.validate_verbatim_latitude(data, field_name)
-
-        elif rule == "verbatimLongitude":
-            rule_error = self.validate_verbatim_longitude(data, field_name)
 
         elif rule == "verbatimEventDate":
             rule_error = self.validate_verbatim_eventdate(data, field_name)
-        
-        elif rule == "gender":
-            rule_error = self.validate_gender(data, field_name, field_rules)
-
-        elif rule == "lifeStage":
-            rule_error = self.validate_life_stage(data, field_name, field_rules)
         
         elif rule.startswith("in"):
             rule_error = self.validate_in_fields(data,field_name, rule)
@@ -102,9 +89,12 @@ class Validation():
             
         elif rule == "digits":
             rule_error = self.validate_digit_fields(data,field_name)
+
+        elif rule.startswith("choiceValue"):
+            rule_error = self.validate_choice_value(data, field_name, rule)
         
         elif rule == "coordinateSystem":
-            rule_error = self.validate_coordinateSystem_fields(data, field_name, field_rules)
+            rule_error = self.validate_coordinateSystem_fields(data, field_name)
 
         elif rule.startswith("max"):
             rule_error = self.validate_max_fields(data,field_name,rule)
@@ -117,9 +107,6 @@ class Validation():
         
         elif rule.startswith("regex"):
             rule_error = self.validate_regex_fields(data,field_name, rule)
-
-        elif rule.startswith("verbatimCoordinates"):
-            rule_error = self.validate_verbatim_coordinates(data, field_name)
 
         
         # Add more elif blocks for each additional rule you want to handle
@@ -245,40 +232,7 @@ class Validation():
             errs.append(self.return_field_message(field_name, 'integer'))
         return errs
 
-    def validate_date(self, data, field_name):
-        """Validate date
-
-        Args:
-            data (python-dictionary): Generaged dictionary from tsv-file.
-            field_name (str): field name
-
-        Returns:
-            list: Possible validation errors in list. Otherwise empty list if validaion is correct.
-        """
-        errs = []
-        try:
-            date_str = data[field_name]
-            # Attempt to parse the date using known formats
-            try:
-                datetime.datetime.strptime(date_str, "%d.%m.%Y")  # European style: dd.mm.yyyy
-            except ValueError:
-                try:
-                    datetime.datetime.strptime(date_str, "%m.%d.%Y")  # US style: mm.dd.yyyy
-                except ValueError:
-                    try:
-                        datetime.datetime.strptime(date_str, "%B %Y")  # Month Year format
-                    except ValueError:
-                        try:
-                            datetime.datetime.strptime(date_str, "%Y")  # Year only format
-                        except ValueError:
-                            try:
-                                datetime.datetime.strptime(date_str, "%B")  # Month only format
-                            except ValueError:
-                                errs.append(self.return_field_message(field_name, "invalid date format"))
-        except KeyError:
-            errs.append(self.return_field_message(field_name, 'required'))
-
-        return errs 
+    
     
     def validate_alpha_fields(self, data, field_name):
         """Used for validating fields for alphabets only, returns a list of error messages"""
@@ -343,57 +297,21 @@ class Validation():
 
         return errs     
 
-    def validate_verbatim_scientific_name(self, data, field_name, field_rules):
-        """Validate verbatim scientific name field"""
-        # Your validation logic here
-        # Example:
-
-
-        if not data.get(field_name):
-            return self.return_field_message(field_name, 'verbatim scientific name')
-        # Additional validation logic...
-        return ""  # No error message if validation passes
-
-
-    def validate_gender(self, data, field_name, field_rules):
-        """Validate gender field"""
-        gender = str(data[field_name])
+    def validate_choice_value(self, data, field_name, rule):
+        """Validate a choice field"""
+        field_value = str(data[field_name])
 
         errs = []
+        choice_set = str(rule.split(':')[1])
 
-        # Change the first letter to uppercase
-        choicevalue = ChoiceValue.objects.filter(choice_set="Gender", caption=gender.capitalize())
+        choicevalue = ChoiceValue.objects.filter(choice_set=choice_set.capitalize(), caption=field_value.capitalize())
 
-        if gender == 'nan' or gender == "":
+        if field_value == 'nan' or field_value == "":
             return errs
-        if len(choicevalue) == 0:
-            errs.append(self.return_field_message(field_name, 'gender'))
-            return errs
-        if gender.capitalize() == str(choicevalue[0].caption):
-            return errs
-        else:
-            errs.append(self.return_field_message(field_name, 'gender'))
-            return errs
+        if len(choicevalue) == 0 or field_value.capitalize() != str(choicevalue[0].caption):
+            errs.append(self.return_field_message(field_name, choice_set.lower()))
+        return errs
 
-    def validate_life_stage(self, data, field_name, field_rules):
-        """Validate life stage"""
-        life_stage = str(data[field_name])
-
-        errs = []
-
-        # Change the first letter to uppercase
-        choicevalue = ChoiceValue.objects.filter(choice_set="Lifestage", caption=life_stage.capitalize())
-
-        if life_stage == 'nan' or life_stage == "":
-            return errs
-        if len(choicevalue) == 0:
-            errs.append(self.return_field_message(field_name, 'lifeStage'))
-            return errs
-        if life_stage.capitalize() == str(choicevalue[0].caption):
-            return errs
-        else:
-            errs.append(self.return_field_message(field_name, 'lifeStage'))
-            return errs
 
     def validate_measurement_value(self, data, field_name, field_rules):
         """Validate measurement value field"""
@@ -576,7 +494,7 @@ class Validation():
              "verbatimCoordinateSystem": "'%s' has invalid value for verbatimCoordinates field. |Please use one of the following formats: | Decimal Degrees Coordinates: \"12.3456, -78.9012””, | Degrees Minutes Coordinates: \"12°34.567' N, 78°90.123' W\", | Degrees Decimal Seconds Coordinates: \"12°34'56.789\" N, 78°90'12.345\" W\", | UTM Coordinates: \"12S 123456mE 1234567mN\"|----------------------------------------------------------------------------------------------------------------------------------",
             "verbatimEventDate": "'%s' has invalid value for verbatimEventDate field",
             "gender": "'%s' has invalid value for sex field",
-            "lifeStage": "'%s' has invalid value for lifeStage field",
+            "lifestage": "'%s' has invalid value for lifestage field",
             "measurementValue": "'%s' has invalid value for measurementValue field",
             "in_db": "'%s' has invalid value for in_db field",
             "nameYear": "'%s' has invalid value for nameYear field",
