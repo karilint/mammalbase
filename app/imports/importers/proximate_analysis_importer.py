@@ -31,4 +31,3 @@ class ProximateAnalysisImporter(BaseImporter):
         else:
             return False
 
-ProximateAnalysisImport = ProximateAnalysisImporter()
