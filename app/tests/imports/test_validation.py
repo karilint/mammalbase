@@ -7,35 +7,114 @@ from imports.validation_lib.base_validation import Validation
 #@skip("Don't want to test")
 class ValidationTest(TestCase):
 
-    def test_sex(self):
-        self.assertEqual(True, True)
-
-    def test_lifeStage(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimEventDate(self):
-        self.assertEqual(True, True)
-
-    def test_occurrenceRemarks(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimLocality(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimElevation(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimDepth(self):
-        self.assertEqual(True, True)
-
-    def test_verbatimCoordinates(self):
-        self.assertEqual(True, True)
 
     def setUp(self):
         # Initialize your class or any other setup required
         self.instance = Validation()
         self.error_templates = self.instance.get_error_message_templates()
 
+    def test_boolean_validation(self):
+        boolean_error = self.error_templates['boolean'] % 'boolean'
+
+        # Test case 1: 'True' value
+        data = {"boolean": True}  
+        errors = self.instance.validate_boolean_fields(data, "boolean")
+        self.assertEqual(errors, []) 
+
+        # Test case 2: 'False' value
+        data = {"boolean": False}  
+        errors = self.instance.validate_boolean_fields(data, "boolean")
+        self.assertEqual(errors, []) 
+
+        # Test case 3: Invalid value
+        data = {"boolean": "invalid"}  
+        errors = self.instance.validate_boolean_fields(data, "boolean")
+        self.assertEqual(errors, [boolean_error]) 
+
+    def test_validate_author_fields(self):
+        # Test case 1: Missing author field
+        required_error = self.error_templates['required'] % 'author'
+        author_error = self.error_templates['author'] % 'author'
+
+        data = {}  # Empty dictionary
+        errors = self.instance.validate_author_fields(data, 'author')
+        self.assertEqual(errors, [required_error])
+
+        # Test case 2: Invalid author format
+        data = {'author': '1234-5678-9012-345'}  # Invalid format
+        errors = self.instance.validate_author_fields(data, 'author')
+        self.assertEqual(errors, [author_error])
+
+        # Test case 3: Valid author format
+        data = {'author': '1234-5678-9012-3456'}  # Valid format
+        errors = self.instance.validate_author_fields(data, 'author')
+        self.assertEqual(errors, [])
+
+        # Test case 4: Valid author format with non-numeric characters
+        data = {'author': 'abcd-efgh-ijkl-mnop'}  # Valid format with non-numeric characters
+        errors = self.instance.validate_author_fields(data, 'author')
+        self.assertEqual(errors, [author_error])
+
+        # Test case 5: Valid author format with correct length but missing '-'
+        data = {'author': '1234567890123456789'}  # Missing '-'
+        errors = self.instance.validate_author_fields(data, 'author')
+        self.assertEqual(errors, [author_error])
+
+    def test_required_validation(self):
+        required_error = self.error_templates['required'] % 'required'
+
+        data = {"author": "some_value"}  
+        errors = self.instance.validate_required_fields(data, 'required')
+        self.assertEqual(errors, [required_error])  
+
+        data = {"author": ""}  # Field is empty
+        errors = self.instance.validate_required_fields(data, 'required')
+        self.assertEqual(errors, [required_error])
+
+    def test_in_fields(self):
+        required_error = self.error_templates['in'] % 'in'
+        # Test case 1, found in list
+        data = {"in": "Species"}
+        rule = "in:Subspecies,Varietas,Forma,Species,Genus,Nothogenus,Nothospecies,Nothosubspecies,Family,nan"
+        error = self.instance.validate_in_fields(data, "in", rule)
+        self.assertEqual(error, [])
+
+        # Test case 2, not in list
+        data = {"in": "cies"}
+        rule = "in:Subspecies,Varietas,Forma,Species,Genus,Nothogenus,Nothospecies,Nothosubspecies,Family,nan"
+        error = self.instance.validate_in_fields(data, "in", rule)
+        self.assertEqual(error, [required_error])
+    
+    def test_alpha(self):
+        required_error = self.error_templates["alpha"] % 'alpha'
+
+        # Test case 1: not alphabets only
+        data = {"alpha": "abc123"}
+        error =self.instance.validate_alpha_fields(data, "alpha")
+        self.assertEqual(error, [required_error])
+
+        # Test case 2: valid
+        data = {"alpha": "abcDEF"}
+        error =self.instance.validate_alpha_fields(data, "alpha")
+        self.assertEqual(error, [])
+
+    def test_digits(self):
+        required_error = self.error_templates["digits"] % 'digits'
+
+        # Test case 1: not digits only
+        data = {"digits": "abcDEF"}
+        error =self.instance.validate_digit_fields(data, "digits")
+        self.assertEqual(error, [required_error])
+
+        # Test case 2: valid
+        data = {"digits": "123456"}
+        error =self.instance.validate_digit_fields(data, "digits")
+        self.assertEqual(error, [])
+
+    def test_choice_value(self):
+        pass
+
+        
     def test_coordinate_format(self):
         test_dict = self.instance.coords_dict
 
@@ -86,112 +165,6 @@ class ValidationTest(TestCase):
         self.assertEqual(self.instance.validate_coordinateSystem_fields(mock_data3, "verbatimCoordinateSystem" ), [coord_error])
         self.assertNotEqual(self.instance.validate_coordinateSystem_fields(mock_data3, "verbatimCoordinateSystem" ), []) 
 
-        
-    def test_boolean_validation(self):
-        boolean_error = self.error_templates['boolean'] % 'boolean'
-
-        # Test case 1: 'True' value
-        data = {"boolean": True}  
-        errors = self.instance.validate_boolean_fields(data, "boolean")
-        self.assertEqual(errors, []) 
-
-        # Test case 2: 'False' value
-        data = {"boolean": False}  
-        errors = self.instance.validate_boolean_fields(data, "boolean")
-        self.assertEqual(errors, []) 
-
-        # Test case 3: Invalid value
-        data = {"boolean": "invalid"}  
-        errors = self.instance.validate_boolean_fields(data, "boolean")
-        self.assertEqual(errors, [boolean_error]) 
-
-    def test_validate_author_fields(self):
-        # Test case 1: Missing author field
-        required_error = self.error_templates['required'] % 'author'
-        author_error = self.error_templates['author'] % 'author'
-
-        data = {}  # Empty dictionary
-        errors = self.instance.validate_author_fields(data, 'author')
-        self.assertEqual(errors, [required_error])
-
-        # Test case 2: Invalid author format
-        data = {'author': '1234-5678-9012-345'}  # Invalid format
-        errors = self.instance.validate_author_fields(data, 'author')
-        self.assertEqual(errors, [author_error])
-
-        # Test case 3: Valid author format
-        data = {'author': '1234-5678-9012-3456'}  # Valid format
-        errors = self.instance.validate_author_fields(data, 'author')
-        self.assertEqual(errors, [])
-
-        # Test case 4: Valid author format with non-numeric characters
-        data = {'author': 'abcd-efgh-ijkl-mnop'}  # Valid format with non-numeric characters
-        errors = self.instance.validate_author_fields(data, 'author')
-        self.assertEqual(errors, [author_error])
-
-        # Test case 5: Valid author format with correct length but missing '-'
-        data = {'author': '1234567890123456789'}  # Missing '-'
-        errors = self.instance.validate_author_fields(data, 'author')
-        self.assertEqual(errors, [author_error])
-
-
-    def test_required_validation(self):
-        required_error = self.error_templates['required'] % 'required'
-
-        data = {"author": "some_value"}  
-        errors = self.instance.validate_required_fields(data, 'required')
-        self.assertEqual(errors, [required_error])  
-
-        data = {"author": ""}  # Field is empty
-        #errors = self.instance.validate_required_fields(data, 'required')
-        self.assertEqual(errors, [required_error])
-
-
-
-
-    
-
-    def test_sex(self):
-        self.assertEqual(True, True)
-
-    def test_lifeStage(self):
-        self.assertEqual(True, True)
-
-
-    def test_digits(self):
-        data = {"required_field": 12}  # Field is provided
-        rules = {"required_field": "digits"}  # Rule to validate required field
-
-        errors = self.instance.validate(data, rules)
-        self.assertEqual(errors, [])  # No errors expected for provided field
-
-        data = {"required_field": -12}  # Field is provided
-        rules = {"required_field": "digits"}  # Rule to validate required field
-
-        errors = self.instance.validate(data, rules)
-        self.assertEqual(errors, [])  # No errors expected for provided field
-
-        data = {"required_field": 0}  # Field is provided
-        rules = {"required_field": "digits"}  # Rule to validate required field
-
-        errors = self.instance.validate(data, rules)
-        self.assertEqual(errors, [])  # No errors expected for provided field
-
-        data = {"required_field": "kissa"}  # Field is provided
-        rules = {"required_field": "digits"}  # Rule to validate required field
-
-        try:
-            errors = self.instance.validate(data, rules)
-        except:
-            self.assertTrue(True)
-            return
-        self.assertFalse(False)
-
-        data = {"required_field": 12.3}  # Field is provided
-        rules = {"required_field": "digits"}  # Rule to validate required field
-
-        errors = self.instance.validate(data, rules)
-        self.assertEqual(errors, [])  # No errors expected for provided field
 
     def test_min(self):
         pass

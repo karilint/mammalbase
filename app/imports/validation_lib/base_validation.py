@@ -63,31 +63,25 @@ class Validation():
 
         rule_error = ""
 
-        if rule == "boolean":
+        if rule == "boolean": #Testattu
             rule_error = self.validate_boolean_fields(data, field_name)
         
-        elif rule == "author":
+        elif rule == "author": #Testattu
             rule_error = self.validate_author_fields(data, field_name)
 
-        elif rule == "required":
+        elif rule == "required": #Testattu
             rule_error = self.validate_required_fields(data, field_name)
-
-        elif rule == "verbatimEventDate":
-            rule_error = self.validate_verbatim_eventdate(data, field_name)
         
-        elif rule.startswith("in"):
+        elif rule.startswith("in"): #Testattu
             rule_error = self.validate_in_fields(data,field_name, rule)
         
-        elif rule == "measurementValue":
-            rule_error = self.validate_measurement_value(data, field_name, field_rules)
-        
-        elif rule == "alpha":
+        elif rule == "alpha": #Testattu
             rule_error = self.validate_alpha_fields(data,field_name)
 
         elif rule.startswith("in_db"):
             rule_error = self.validate_in_db(data, field_name, field_rules)
             
-        elif rule == "digits":
+        elif rule == "digits": #Testattu
             rule_error = self.validate_digit_fields(data,field_name)
 
         elif rule.startswith("choiceValue"):
@@ -168,18 +162,6 @@ class Validation():
             errs.append(self.return_field_message(field_name,"verbatimCoordinateSystem"))
         return errs
     
-    
-    def validate_verbatim_eventdate(self, data, field_name):
-        """Validate verbatimEventDate
-
-        Args:
-            data (python-dictionary): Generaged dictionary from tsv-file.
-            field_name (str): field name
-
-        Returns:
-            list: Possible validation errors in list. Otherwise empty list if valdion is correct.
-        """
-        return []
 
 
     def validate_boolean_fields(self, data, field_name):
@@ -206,9 +188,11 @@ class Validation():
         errs = []
 
         try:
-            if not isinstance(float(data[field_name]),(int, float)) or data[field_name] == "nan":
+            if not isinstance(float(data[field_name]),(int, float)) or data[field_name] == "nan" or data[field_name] == "":
                 errs.append(self.return_field_message(field_name,"digits"))
         except KeyError:
+            errs.append(self.return_field_message(field_name,'digits'))
+        except ValueError:
             errs.append(self.return_field_message(field_name,'digits'))
         return errs
     
@@ -312,20 +296,6 @@ class Validation():
             errs.append(self.return_field_message(field_name, choice_set.lower()))
         return errs
 
-
-    def validate_measurement_value(self, data, field_name, field_rules):
-        """Validate measurement value field"""
-        if not data.get(field_name):
-            return self.return_field_message(field_name, 'measurement value')
-        measurement_value = data[field_name]
-        try:
-            measurement_value = int(measurement_value)
-            if measurement_value < 1:
-                return self.return_field_message(field_name, "measurement value must be non-negative or 0")
-        except ValueError:
-            return self.return_field_message(field_name, "measurement value must be an integer")
-
-        return ""
 
     def validate_in_db(self, data, field_name, field_rules):
         """Validate in db.
