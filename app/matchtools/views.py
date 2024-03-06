@@ -20,13 +20,18 @@ def trait_match(request):
         matches = process.extractOne(source.name, [(item['source_attribute__name'], item['master_attribute__name'])
                                      for item in relations], score_cutoff=80, scorer=fuzz.token_set_ratio)
         
-    for source_attribute in relations: # Tällä käydään läpi olemassaolevat relaatiot ja luodaan sanataulukko
-        words = source_attribute.name.split(" ")
-        for word in words:
+    for attribute in relations: # Tällä käydään läpi olemassaolevat relaatiot ja luodaan sanataulukko
+        master = attribute['master_attribute__mane']
+        sources = attribute['source_attribute__name'].split(" ")
+        for source in sources:
             joku = WordCount.objects.filter(
-                Q(word = word)
+                Q(word = source)
             )
-            #if joku != None: 
+            if joku != None: 
+                WordCount.object.create(
+                    word = source,
+                    master_attribute = master
+                )
 
         if matches:
             print(source.name, matches[0], matches[1])
