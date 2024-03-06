@@ -9,7 +9,7 @@ import time
 
 
 @login_required
-# @permission_required('matchtool.trait_match', raise_exception=True)
+@permission_required('matchtool.trait_match', raise_exception=True)
 def trait_match(request):
     """Match source attributes to master attributes."""
     relations = AttributeRelation.objects.exclude(
