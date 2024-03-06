@@ -277,3 +277,13 @@ class BaseImporter:
             return None
         choicevalue = ChoiceValue.objects.filter(pk=gender)
         return choicevalue[0]
+    
+    def possible_nan_to_zero(self, size):
+        if size != size or size == 'nan':
+            return 0
+        return size
+
+    def possible_nan_to_none(self, possible):
+        if possible != possible or possible == 'nan':
+            return None
+        return possible

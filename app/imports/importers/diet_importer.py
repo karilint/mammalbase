@@ -1,7 +1,6 @@
 from imports.importers.base_importer import BaseImporter
 from django.db import transaction
 from mb.models.models import DietSet, DietSetItem
-from ..tools import possible_nan_to_none, possible_nan_to_zero
 
 class DietImporter(BaseImporter):
     
@@ -17,11 +16,11 @@ class DietImporter(BaseImporter):
         
         column_functions = {
             'sex': self.get_choicevalue,
-            'individualCount': possible_nan_to_zero,
-            'associatedReferences': possible_nan_to_none,
+            'individualCount': self.possible_nan_to_zero,
+            'associatedReferences': self.possible_nan_to_none,
             'samplingEffort': lambda val: self.get_or_create_time_period(val, reference, author),
             'measurementMethod': lambda val: self.get_or_create_source_method(val, reference, author),
-            'verbatimEventDate': possible_nan_to_none,
+            'verbatimEventDate': self.possible_nan_to_none,
             'verbatimLocality': lambda val: self.get_or_create_source_location(val, reference, author),
         }
         

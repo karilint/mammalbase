@@ -120,15 +120,6 @@ def generate_rank_id(food):
             break
     return rank_id
 
-def possible_nan_to_zero(size):
-    if size != size or size == 'nan':
-        return 0
-    return size
-
-def possible_nan_to_none(possible):
-    if possible != possible or possible == 'nan':
-        return None
-    return possible
 
 def trim(text:str):
     return " ".join(text.split())

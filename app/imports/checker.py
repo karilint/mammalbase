@@ -4,7 +4,6 @@ import pandas as pd
 from allauth.socialaccount.models import SocialAccount
 from django.contrib import messages
 from mb.models.models import SourceReference
-from .tools import possible_nan_to_zero, generate_rank_id
 
 
 
