@@ -1,5 +1,5 @@
 from django.test import TestCase
-from app.imports.importers.base_importer import BaseImporter
+from imports.importers.base_importer import BaseImporter
 
 class BaseImporterTest(TestCase):
     def setUp(self):

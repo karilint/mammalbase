@@ -11,10 +11,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 """
 
 
-import re, datetime, sys
-from mb.models.models import ChoiceValue, SourceReference
+import sys
+import re
+import datetime
 from django.apps import apps
 
+from mb.models import ChoiceValue, SourceReference
 
 class Validation():
 
@@ -29,7 +31,7 @@ class Validation():
 
     def validate(self, data, rules, custom_messages=None):
         """Validate the 'data' according to the 'rules' given, returns a list of errors named 'errors'"""
-
+        self.errors = []
         if custom_messages:
             self.custom_error_messages = custom_messages
         
@@ -57,9 +59,6 @@ class Validation():
 
         if rule == "boolean":
             rule_error = self.validate_boolean_fields(data, field_name)
-
-        elif rule == "date":
-            rule_error = self.validate_date_fields(data, field_name, field_rules)
         
         elif rule == "author":
             rule_error = self.validate_author_fields(data, field_name)
@@ -81,12 +80,12 @@ class Validation():
         
         elif rule == "gender":
             rule_error = self.validate_gender(data, field_name, field_rules)
+
+        elif rule == "lifeStage":
+            rule_error = self.validate_life_stage(data, field_name, field_rules)
         
         elif rule.startswith("in"):
             rule_error = self.validate_in_fields(data,field_name, rule)
-        
-        elif rule == "sequence":
-            rule_error = self.validate_sequence_fields(data, field_name, field_rules)
         
         elif rule == "measurementValue":
             rule_error = self.validate_measurement_value(data, field_name, field_rules)
@@ -99,6 +98,9 @@ class Validation():
             
         elif rule == "digits":
             rule_error = self.validate_digit_fields(data,field_name)
+        
+        elif rule == "coordinateSystem":
+            rule_error = self.validate_coordinateSystem_fields(data, field_name, field_rules)
 
         elif rule.startswith("max"):
             rule_error = self.validate_max_fields(data,field_name,rule)
@@ -120,21 +122,63 @@ class Validation():
         
         return rule_error
     
-    def validate_verbatim_coordinates(self, data, field_name):
-        """Validate verbatimCoordinates
+
+    def coordinate_format(self, coords, dict):
+        """
 
         Args:
-            data (python-dictionary): Generaged dictionary from tsv-file.
+            coords (str): Coordinates in string object.
+            dict (Python-dictionary): Dictionary of coordinate formats in regex.
+
+        Returns:
+            str: returns coordinate system which matches one of the samples in dict. Otherwise 'No match found'
+        """
+        for key, regex in dict.items():
+            if re.match(regex, coords):
+                return key
+        return "No match found"
+
+    def validate_coordinateSystem_fields(self, data, field_name, field_rules):
+        """Validate the coordinates according to the given coordinate system.
+
+
+        Args:
+            data (dictionary): Generaged dictionary from tsv-file.
             field_name (str): field name
 
         Returns:
             list: Possible validation errors in list. Otherwise empty list if valdion is correct.
         """
         errs = []
+        if str(data[field_name]) == 'nan':
+            if (str(data["verbatimLatitude"]) != "nan" or str(data["verbatimLongitude"]) != "nan"):
+                errs.append(self.return_field_message(field_name,"verbatimCoordinateSystem"))
+                return errs
+            return []
+        
+        
+        dict = {
+            "decimal degrees" : r'^(-?\d{1,2}(?:\.\d+)?),\s*(-?\d{1,3}(?:\.\d+)?)$',
+            "degrees minutes": r'^[-+]?\d{1,3}°\d{1,2}(?:\.\d+)?\'\s*[NS],\s*[-+]?\d{1,3}°\d{1,2}(?:\.\d+)?\'\s*[EW]$',
+            "degrees decimals": r'^[-+]?\d{1,3}°\d{1,2}\'\d{1,2}(?:\.\d+)?\"\s*[NS],\s*[-+]?\d{1,3}°\d{1,2}\'\d{1,2}(?:\.\d+)?\"\s*[EW]$',
+            "UTM": r'^\d{1,2}[NSZT]\s+\d{1,9}(?:.\d+)?m[WE]\s+\d{1,9}(?:.\d+)?m[NS]$',
+        }
+        
+        coordSystem = str(data[field_name]).lower()
+        latitude = str(data["verbatimLatitude"])
+        longitude = str(data["verbatimLongitude"])
+        utm = str(data["verbatimCoordinates"])
+        coords = f"{latitude}, {longitude}"
 
-        #before matching remove all whitespaces from str(data[field_name])
+        if str(data[field_name]) == "UTM":
+            value = str(self.coordinate_format(utm, dict)).lower()
+        else:
+            value = str(self.coordinate_format(coords, dict)).lower()
 
+        if value != coordSystem:
+            errs.append(self.return_field_message(field_name,"verbatimCoordinateSystem"))
         return errs
+    
     
     def validate_verbatim_eventdate(self, data, field_name):
         """Validate verbatimEventDate
@@ -147,11 +191,7 @@ class Validation():
             list: Possible validation errors in list. Otherwise empty list if valdion is correct.
         """
         return []
-    def validate_verbatim_latitude(self, data, field_name):
-        return []
-    
-    def validate_verbatim_longitude(self, data, field_name):
-        return []
+
 
     def validate_boolean_fields(self, data, field_name):
         """Validate boolean values.
@@ -168,7 +208,7 @@ class Validation():
             if data[field_name] != (True or False):
                 errs.append(self.return_field_message(field_name,"boolean"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name,'boolean'))
+            errs.append(self.return_field_message(field_name,'boolean'))
 
         return errs  
 
@@ -180,7 +220,7 @@ class Validation():
             if not isinstance(float(data[field_name]),(int, float)) or data[field_name] == "nan":
                 errs.append(self.return_field_message(field_name,"digits"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name,'digits'))
+            errs.append(self.return_field_message(field_name,'digits'))
         return errs
     
     def validate_nameYear_fields(self, data, field_name):
@@ -200,7 +240,7 @@ class Validation():
             if not re.match(name_year_pattern, data[field_name]) or data[field_name].count('(') != data[field_name].count(')'):
                 errs.append(self.return_field_message(field_name, "invalid name and year format"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name, 'integer'))
+            errs.append(self.return_field_message(field_name, 'integer'))
         return errs
 
     def validate_date(self, data, field_name):
@@ -234,7 +274,7 @@ class Validation():
                             except ValueError:
                                 errs.append(self.return_field_message(field_name, "invalid date format"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name, 'required'))
+            errs.append(self.return_field_message(field_name, 'required'))
 
         return errs 
     
@@ -246,7 +286,7 @@ class Validation():
             if not re.match("^[a-zA-Z\s]+$",str(data[field_name])) and str(data[field_name]) != "nan":
                 errs.append(self.return_field_message(field_name,"alpha"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name,'alpha'))
+            errs.append(self.return_field_message(field_name,'alpha'))
         
         return errs
 
@@ -260,7 +300,7 @@ class Validation():
             if str(data[field_name]) not in ls:
                 errs.append(self.return_field_message(field_name, "in"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name,'in'))
+            errs.append(self.return_field_message(field_name,'in'))
         return errs
 
     def validate_author_fields(self, data, field_name):
@@ -285,7 +325,7 @@ class Validation():
                 if len(parts) != 4 or not all(part.isdigit() and len(part) == 4 for part in parts):
                     errs.append(self.return_field_message(field_name, "invalid author format"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name, 'required'))
+            errs.append(self.return_field_message(field_name, 'required'))
 
         return errs
 
@@ -297,7 +337,7 @@ class Validation():
             if str(data[field_name]) == "" or str(data[field_name]) == "nan":
                 errs.append(self.return_field_message(field_name,"required"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name,'required'))
+            errs.append(self.return_field_message(field_name,'required'))
 
         return errs     
 
@@ -308,7 +348,7 @@ class Validation():
 
 
         if not data.get(field_name):
-            return self.return_no_field_message(field_name, 'verbatim scientific name')
+            return self.return_field_message(field_name, 'verbatim scientific name')
         # Additional validation logic...
         return ""  # No error message if validation passes
 
@@ -317,22 +357,46 @@ class Validation():
         """Validate gender field"""
         gender = str(data[field_name])
 
+        errs = []
+
         # Change the first letter to uppercase
         choicevalue = ChoiceValue.objects.filter(choice_set="Gender", caption=gender.capitalize())
 
-        if gender == 'nan':
-            return ""
+        if gender == 'nan' or gender == "":
+            return errs
         if len(choicevalue) == 0:
-            return self.return_no_field_message(field_name, 'sex')
+            errs.append(self.return_field_message(field_name, 'gender'))
+            return errs
         if gender.capitalize() == str(choicevalue[0].caption):
-            return ""
+            return errs
         else:
-            return self.return_no_field_message(field_name, 'sex')
+            errs.append(self.return_field_message(field_name, 'gender'))
+            return errs
+
+    def validate_life_stage(self, data, field_name, field_rules):
+        """Validate life stage"""
+        life_stage = str(data[field_name])
+
+        errs = []
+
+        # Change the first letter to uppercase
+        choicevalue = ChoiceValue.objects.filter(choice_set="Lifestage", caption=life_stage.capitalize())
+
+        if life_stage == 'nan' or life_stage == "":
+            return errs
+        if len(choicevalue) == 0:
+            errs.append(self.return_field_message(field_name, 'lifeStage'))
+            return errs
+        if life_stage.capitalize() == str(choicevalue[0].caption):
+            return errs
+        else:
+            errs.append(self.return_field_message(field_name, 'lifeStage'))
+            return errs
 
     def validate_measurement_value(self, data, field_name, field_rules):
         """Validate measurement value field"""
         if not data.get(field_name):
-            return self.return_no_field_message(field_name, 'measurement value')
+            return self.return_field_message(field_name, 'measurement value')
         measurement_value = data[field_name]
         try:
             measurement_value = int(measurement_value)
@@ -357,7 +421,7 @@ class Validation():
         errs = []
 
         if not model.objects.filter(**{field_rules[1]: data[field_name]}).exists():
-            errs.append(self.return_no_field_message(field_name,'in_db'))
+            errs.append(self.return_field_message(field_name,'in_db'))
         return errs
 
 
@@ -382,7 +446,7 @@ class Validation():
             if data[field_name] != specific_value:
                 errs.append(self.return_field_message(field_name, "specific", specific_value))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name, 'specific'))
+            errs.append(self.return_field_message(field_name, 'specific'))
 
         return errs
 
@@ -401,7 +465,7 @@ class Validation():
                 if len(str(data[field_name])) > max_value:
                     errs.append(self.return_field_message(field_name,"max"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name,'maximum'))
+            errs.append(self.return_field_message(field_name,'maximum'))
 
         return errs
 
@@ -419,7 +483,7 @@ class Validation():
                 if len(str(data[field_name])) < min_value:
                     errs.append(self.return_field_message(field_name,"min"))
         except KeyError:
-            errs.append(self.return_no_field_message(field_name,'minimum'))
+            errs.append(self.return_field_message(field_name,'minimum'))
 
         return errs
 
@@ -444,7 +508,7 @@ class Validation():
         try:
             result = comp_re.match(field_value)
         except KeyError:
-            errs.append(self.return_no_field_message(field_value,rule_name))
+            errs.append(self.return_field_message(field_value,rule_name))
             result = "error"
 
         return errs,result
@@ -495,31 +559,27 @@ class Validation():
             dictionary: list of all possible error messages.
         """
         return {
-            "after": "'%s' is an invalid after date",
-            "alpha":"'%s' can have only alphabets",
-            "alpha_num":"'%s' can have only alphabets or numbers",        
-            "before":"'%s' is an invalid before date ",
-            "between":"'%s' has an invalid value for between field",
-            "boolean":"'%s' has invalid value for boolean field",
-            "confirmed":"'%s' must have a pair field",
-            "date":"'%s' value does not match date format",
-            "digits":"'%s' must be an integer",
-            "different":"'%s' has invalid value for same rule ",
-            "email":"'%s' must be a valid email address",
-            "in":"'%s' has invalid value for in rule",
-            "ip":"'%s' must be a valid IP address",
-            "max":"The maximum value for the field '%s' is invalid",
-            "min":"The minimum value for the field '%s' is invalid",
-            "not_in":"'%s' has invalid value for not_in rule",
-            "present":"The data dictionary must have a nullable field name '%s'",
-            "phone":"'%s' must be a valid Phone Number",
-            "regex":"'%s' field does not match the RE ",
-            "required":"'%s' must be filled",
-            "same":"'%s' has invalid value for same rule",
-            "size":"'%s' has invalid value for size rule",
-            "website":"'%s' must be a valid Website URL",
-            "no_field":"No field named '%s' to validate for %s rule",
-            "sex": "%s has invalid value"
+            "boolean": "'%s' has invalid value for boolean field",
+            "required": "'%s' must be filled",
+            "alpha": "'%s' can have only alphabets",
+            "digits": "'%s' must be an integer",
+            "max": "The maximum value for the field '%s' is invalid",
+            "min": "The minimum value for the field '%s' is invalid",
+            "regex": "'%s' field does not match the RE",
+            "in": "'%s' has invalid value for in rule",
+            "author": "'%s' has invalid value for author field",
+            "verbatimScientificName": "'%s' has invalid value for verbatimScientificName field",
+            "verbatimLatitude": "'%s' has invalid value for verbatimLatitude field",
+            "verbatimLongitude": "'%s' has invalid value for verbatimLongitude field",
+             "verbatimCoordinateSystem": "'%s' has invalid value for verbatimCoordinates field. |Please use one of the following formats: | Decimal Degrees Coordinates: \"12.3456, -78.9012””, | Degrees Minutes Coordinates: \"12°34.567' N, 78°90.123' W\", | Degrees Decimal Seconds Coordinates: \"12°34'56.789\" N, 78°90'12.345\" W\", | UTM Coordinates: \"12S 123456mE 1234567mN\"|----------------------------------------------------------------------------------------------------------------------------------",
+            "verbatimEventDate": "'%s' has invalid value for verbatimEventDate field",
+            "gender": "'%s' has invalid value for sex field",
+            "lifeStage": "'%s' has invalid value for lifeStage field",
+            "measurementValue": "'%s' has invalid value for measurementValue field",
+            "in_db": "'%s' has invalid value for in_db field",
+            "nameYear": "'%s' has invalid value for nameYear field",
+            "verbatimCoordinates": "'%s' has invalid value for verbatimCoordinates field",
+            # Add more error messages here as needed
         }
     
     def get_custom_error_messages(self):

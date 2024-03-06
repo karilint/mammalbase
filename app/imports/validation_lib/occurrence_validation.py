@@ -5,34 +5,22 @@ class Occurrence_validation(Validation):
 
     def __init__(self):
         """
-        Rules for occurrence validation.
+        Rules for occurrence validation. Empty string in rules means that field do not have a validation.
         """
         super().__init__()
 
         self.rules = {
             "references"                : "required|min:10|max:500|regex:.*([1-2][0-9]{3})", 
             "verbatimScientificName"    : "required|alpha", 
-            "scientificNameAuthorship"  : "", 
             "taxonRank"                 : "in:Subspecies,Varietas,Forma,Species,Genus,Nothogenus,Nothospecies,Nothosubspecies,Family,nan", 
             "organismQuantity"          : "digits", 
-            "organismQuantityType"      : "", 
             "sex"                       : "gender", 
-            "lifeStage"                 : "alpha", 
-            "verbatimEventDate"         : "", 
-            "occurrenceRemarks"         : "", 
+            "lifeStage"                 : "lifeStage", 
             "verbatimLocality"          : "max:250", 
             "verbatimElevation"         : "max:250", 
             "verbatimDepth"             : "max:250", 
-            "verbatimCoordinates"       : "verbatimCoordinates", 
-            "verbatimLatitude"          : "", 
-            "verbatimLongitude"         : "", 
-            "verbatimCoordinateSystem"  : "in:decimal degrees,degrees minutes,degrees decimal seconds,UTM,nan", 
-            "verbatimSRS"               : "", 
+            "verbatimCoordinateSystem"  : "coordinateSystem", 
             "author"                    : "required|author", 
-            "associatedReferences"      : "", 
-            "samplingProtocol"          : "", 
-            "habitatType"               : "", 
-            "habitatPercentage"         : "" 
         }
     
         self.data = {
