@@ -1,9 +1,10 @@
 from django.db.models.functions import Now, Concat, TruncYear
-from django.db.models import Value, Subquery, OuterRef, CharField, Case, When, Exists, Q
+from django.db.models import (
+    Value, Subquery, OuterRef, CharField, Case, When, Exists, Q)
 from allauth.socialaccount.models import SocialAccount
 from datetime import timezone, datetime, timedelta
-from mb.models.models import SourceChoiceSetOptionValue
 
+from mb.models import SourceChoiceSetOptionValue
 from .base_query import base_query
 
 def metadata_query(measurement_choices):

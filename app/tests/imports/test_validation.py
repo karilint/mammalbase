@@ -1,8 +1,8 @@
 from django.test import TestCase
 from unittest import skip
 import pandas as pd
-from ...imports.validation_lib.occurrence_validation import Occurrence_validation
-from ...imports.validation_lib.base_validation import Validation
+from imports.validation_lib.occurrence_validation import Occurrence_validation
+from imports.validation_lib.base_validation import Validation
 
 #@skip("Don't want to test")
 class ValidationTest(TestCase):

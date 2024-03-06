@@ -17,14 +17,43 @@ from django.contrib.auth.models import User
 from allauth.socialaccount.models import SocialAccount
 from requests_cache import CachedSession
 
-from mb.models.models import ChoiceValue, DietSet, EntityClass, MasterReference, SourceAttribute, SourceChoiceSetOptionValue
-from mb.models.models import SourceChoiceSetOption, SourceEntity, SourceMeasurementValue, SourceMethod
-from mb.models.location_models import SourceLocation
-from mb.models.models import SourceReference, SourceStatistic, SourceUnit, TimePeriod, DietSetItem, FoodItem ,EntityRelation
-from mb.models.models import MasterEntity, ProximateAnalysisItem, ProximateAnalysis
-from mb.models.occurrence_models import *
+from mb.models import (
+    ChoiceValue,
+    DietSet,
+    EntityClass,
+    MasterReference,
+    SourceAttribute,
+
+    SourceChoiceSetOptionValue,
+    SourceChoiceSetOption,
+    SourceEntity,
+    SourceMeasurementValue,
+    SourceMethod,
+
+    SourceLocation,
+
+    SourceReference,
+    SourceStatistic,
+    SourceUnit,
+    TimePeriod,
+    DietSetItem,
+    FoodItem,
+    EntityRelation,
+
+    MasterEntity,
+    ProximateAnalysisItem,
+    ProximateAnalysis,
+
+    Occurrence,
+    Event)
+
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
-import itis.views as itis
+from itis.tools import (
+    getFullHierarchyFromTSN as itis_getFullHierarchyFromTSN,
+    hierarchyToString as itis_hierarchyToString,
+    GetAcceptedNamesfromTSN as itis_GetAcceptedNamesfromTSN,
+    getTaxonomicRankNameFromTSN as itis_getTaxonomicRankNameFromTSN,
+    SynonymLinks as itis_SynonymLinks)
 from config.settings import ITIS_CACHE
 
 
@@ -74,10 +103,10 @@ def create_return_data(tsn, scientific_name, status='valid'):
     classification_path_ids = ""
     classification_path_ranks = ""
     if status in {'valid', 'accepted'}:
-        hierarchy = itis.getFullHierarchyFromTSN(tsn)
-        classification_path = itis.hierarchyToString(scientific_name, hierarchy, 'hierarchyList', 'taxonName')
-        classification_path_ids = itis.hierarchyToString(tsn, hierarchy, 'hierarchyList', 'tsn', stop_index=classification_path.count("-"))
-        classification_path_ranks = itis.hierarchyToString('Species', hierarchy, 'hierarchyList', 'rankName', stop_index=classification_path.count("-"))
+        hierarchy = itis_getFullHierarchyFromTSN(tsn)
+        classification_path = itis_hierarchyToString(scientific_name, hierarchy, 'hierarchyList', 'taxonName')
+        classification_path_ids = itis_hierarchyToString(tsn, hierarchy, 'hierarchyList', 'tsn', stop_index=classification_path.count("-"))
+        classification_path_ranks = itis_hierarchyToString('Species', hierarchy, 'hierarchyList', 'rankName', stop_index=classification_path.count("-"))
     return_data = {
         'taxon_id': tsn,
         'canonical_form': scientific_name,
@@ -89,7 +118,7 @@ def create_return_data(tsn, scientific_name, status='valid'):
     return {'data': [{'results': [return_data]}]}
 
 def get_accepted_tsn(tsn):
-    response = itis.GetAcceptedNamesfromTSN(tsn)
+    response = itis_GetAcceptedNamesfromTSN(tsn)
     accepted_tsn = response["acceptedNames"][0]["acceptedTsn"]
     scientific_name = response["acceptedNames"][0]["acceptedName"]
     return_data = create_return_data(accepted_tsn, scientific_name)
@@ -143,9 +172,9 @@ def create_tsn(results, tsn):
     if results['data'][0]['results'][0]['taxonomic_status'] in ("invalid", "not accepted"):
         accepted_results = get_accepted_tsn(tsn)
         accepted_taxonomic_unit = create_tsn(accepted_results, int(accepted_results['data'][0]['results'][0]['taxon_id']))
-        sl_qs = itis.SynonymLinks.objects.all().filter(tsn = tsn)
+        sl_qs = itis_SynonymLinks.objects.all().filter(tsn = tsn)
         if len(sl_qs) == 0:
-            sl = itis.SynonymLinks(tsn = taxonomic_unit, tsn_accepted = accepted_taxonomic_unit, tsn_accepted_name = accepted_taxonomic_unit.completename)
+            sl = itis_SynonymLinks(tsn = taxonomic_unit, tsn_accepted = accepted_taxonomic_unit, tsn_accepted_name = accepted_taxonomic_unit.completename)
             print(sl)
             sl.save()
         else:
@@ -196,7 +225,7 @@ def generate_rank_id(food):
             tail += 1
         results = get_fooditem_json(query)
         if len(results['data'][0]) > 0:
-            rank = int(itis.getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
+            rank = int(itis_getTaxonomicRankNameFromTSN(results['data'][0]['results'][0]['taxon_id'])['rankId'])
             rank_id[rank] = results
             break
         if head >= len(associated_taxa):
