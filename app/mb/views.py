@@ -1109,7 +1109,8 @@ def proximate_analysis_item_edit(request, pk):
         form = ProximateAnalysisItemForm(request.POST, instance=proximate_analysis_item)
         if form.is_valid():
             proximate_analysis_item = form.save(commit=False)
-            std_values = generate_standard_values_pa(form.cleaned_data)
+            bi = BaseImporter()
+            std_values = bi.generate_standard_values_pa(form.cleaned_data)
             proximate_analysis_item.cp_std = std_values['cp_std']
             proximate_analysis_item.ee_std = std_values['ee_std']
             proximate_analysis_item.cf_std = std_values['cf_std']
@@ -1845,7 +1846,8 @@ def tsn_search(request):
 
         return_data = bi.create_return_data(tsn_data["tsn"], tsn_data["scientificName"], status=tsn_data["nameUsage"])
 
-        create_tsn(return_data, tsn_data["tsn"])
+        bi = BaseImporter()
+        bi.create_tsn(return_data, tsn_data["tsn"])
         return JsonResponse("recieved", safe=False, status=201)
 
     elif request.method == "GET":

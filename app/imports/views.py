@@ -6,8 +6,6 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 
 from utils.views import render	# MB Utils
-from .tools import messages, create_proximate_analysis
-from .checker import Check
 from .importers.diet_importer import DietImporter
 from .importers.ets_importer import EtsImporter
 from .importers.occurrence_importer import OccurrencesImporter

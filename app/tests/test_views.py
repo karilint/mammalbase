@@ -15,8 +15,6 @@ from allauth.socialaccount.models import SocialAccount
 from mb.models.models import EntityClass, MasterReference, SourceAttribute, SourceEntity, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue, MasterEntity
 from mb.models.location_models import SourceLocation
 from itis.models import Kingdom, TaxonUnitTypes
-from imports.checker import Check
-import imports.tools as tools
 import tempfile, csv, os
 import pandas as pd
 import json
