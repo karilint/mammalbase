@@ -1,8 +1,8 @@
 import difflib
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, permission_required
-from app.matchtools.models import WordCount
-from mb.models.models import SourceAttribute, AttributeRelation
+from .models import WordCount
+from mb.models import SourceAttribute, AttributeRelation
 from django.db.models import Q
 from fuzzywuzzy import fuzz, process
 import time
@@ -21,17 +21,24 @@ def trait_match(request):
                                      for item in relations], score_cutoff=80, scorer=fuzz.token_set_ratio)
         
     for attribute in relations: # Tällä käydään läpi olemassaolevat relaatiot ja luodaan sanataulukko
-        master = attribute['master_attribute__mane']
-        sources = attribute['source_attribute__name'].split(" ")
+        master = attribute['master_attribute__name']
+        sources = attribute['source_attribute__name'].split()
         for source in sources:
-            joku = WordCount.objects.filter(
-                Q(word = source)
+            found_word = WordCount.objects.filter(
+                Q(word = source) & Q(master_attribute = master)
             )
-            if joku != None: 
+            if found_word == None: #jos sanaa ei löydy luodaan uusi solu siihen kohtaan TODO: tee jotain "tyhjille" soluille, kun lasketaan todennäköisyydet
                 WordCount.object.create(
                     word = source,
-                    master_attribute = master
+                    master_attribute = master,
+                    count = 1
                 )
+            else: #Jos sana löytyy, lisätään sanojen määrää yhdellä
+                current_count = found_word['count']
+                WordCount.objects.filter(
+                Q(word = source) & Q(master_attribute = master)
+            ).update(count = current_count + 1)
+
 
         if matches:
             print(source.name, matches[0], matches[1])
