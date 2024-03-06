@@ -13,7 +13,7 @@ class SourceLocation(BaseModel):
         max_length=250,
         help_text="Enter the Name of the Source Location"
         )
-    verbatim_eleveation = models.CharField(
+    verbatim_elevation = models.CharField(
         max_length=250,
         blank=True,
         null=True,
@@ -84,12 +84,103 @@ class MasterLocation(BaseModel):
         max_length=250, 
         help_text="Enter the Name of the Master Location"
         )
-    tgn = models.PositiveSmallIntegerField(
-        default=0, 
+    locationID = models.CharField(
+        max_length=250,
         blank=True,
-        null=True, 
-        help_text='Enter Thesaurus of Geographic Names id'
+        null=True,
+        help_text="Enter the locationID of the Master Location"
         )
+    higherGeographyID = models.ForeignKey(
+        'self',
+        null = True,
+        blank = True,
+        on_delete = models.CASCADE
+    )
+    continent = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the continent of the Master Location"
+        )
+    country = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the country of the Master Location"
+        )
+    countryCode = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        help_text="Enter the country code of the Master Location"
+        )
+    stateProvince = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the state province of the Master Location"
+        )
+    county = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the county of the Master Location"
+        )
+    municipality = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the municipality of the Master Location"
+        )
+    locality = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the locality of the Master Location"
+        )
+    minimumElevationInMeters = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the minimum elevation in meters of the Master Location"
+        )
+    maximumElevationInMeters = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the maximum elevation in meters of the Master Location"
+        )
+    locationAccordingTo = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the information about the source of this location information of the Master Location"
+        )
+    locationRemarks = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the location remarks of the Master Location"
+        )
+    decimalLatitude = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the decimal latitude of the Master Location"
+        )
+    decimalLongitude = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the decimal longitude of the Master Location"
+        )
+    geodeticDatum = models.CharField(
+        max_length=250,
+        blank=True,
+        null=True,
+        help_text="Enter the geodetic datum of the Master Location"
+        )
+
 
     class Meta:
         ordering = ['name']
@@ -106,4 +197,21 @@ class MasterLocation(BaseModel):
         """
         return '%s' % (self.name)
     
+class LocationRelation(BaseModel):
+    source_location = models.ForeignKey('SourceLocation', on_delete=models.CASCADE)
+    master_location = models.ForeignKey('MasterLocation', on_delete=models.CASCADE)
 
+    class Meta:
+      unique_together = ('source_location', 'master_location',)
+
+    def get_absolute_url(self):
+        """
+        Returns the url to access a particular Source Location instance.
+        """
+        return reverse('location-relation-detail', args=[str(self.id)])
+
+    def __str__(self):
+        """
+        String for representing the Model object
+        """
+        return '{0} ({1}) {2}'.format(self.source_location.name,self.master_location.name,self.master_location.reference)

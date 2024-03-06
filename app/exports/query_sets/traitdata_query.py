@@ -1,8 +1,9 @@
 from django.db.models.functions import Concat
 from django.db.models import CharField, Value, F, Case, When, Q
+
+from mb.models import SourceChoiceSetOptionValue
 from .custom_db_functions import Round2
 from .base_query import base_query
-from mb.models.models import SourceChoiceSetOptionValue
 
 
 def traitdata_query(measurement_choices):
