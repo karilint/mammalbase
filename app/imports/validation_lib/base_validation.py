@@ -221,6 +221,9 @@ class Validation():
                 errs.append(self.return_field_message(field_name,"digits"))
         except KeyError:
             errs.append(self.return_field_message(field_name,'digits'))
+            
+        except ValueError:
+            errs.append(self.return_field_message(field_name,"digits"))
         return errs
     
     def validate_nameYear_fields(self, data, field_name):
