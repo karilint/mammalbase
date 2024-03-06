@@ -62,30 +62,29 @@ class ValidationTest(TestCase):
         coord_error = self.error_templates['verbatimCoordinateSystem'] % 'verbatimCoordinateSystem'
         # Mock data for testing
         mock_data = {
-            "field_name": "decimal degrees",
+            "verbatimCoordinateSystem": "decimal degrees",
             "verbatimLatitude": "40.7128",
             "verbatimLongitude": "-74.0060",
             "verbatimCoordinates": "32S 485146mE 4037735mN"
         }
         mock_data2 = {
-            "field_name": "decimal degrees",
+            "verbatimCoordinateSystem": "decimal degrees",
             "verbatimLatitude": "40.7128",
             "verbatimLongitude": "-74.0060",
             "verbatimCoordinates": "nan"
         }
 
         mock_data3 = {
-            "field_name": "decimal degrees",
+            "verbatimCoordinateSystem": "decimal degrees",
             "verbatimLatitude": "40.7128",
             "verbatimLongitude": "nan",
             "verbatimCoordinates": "nan"
         }
         # Test cases for validate_coordinateSystem_fields
-        self.assertNotEqual(self.instance.validate_coordinateSystem_fields(mock_data, "field_name"), [])
-        self.assertEqual(self.instance.validate_coordinateSystem_fields(mock_data2, "field_name"), [])
-
-        errors = self.instance.validate_coordinateSystem_fields(mock_data3, "verbatimCoordinateSystem") #???
-        self.assertEqual(errors,[coord_error])
+        self.assertNotEqual(self.instance.validate_coordinateSystem_fields(mock_data, "verbatimCoordinateSystem"), [])
+        self.assertEqual(self.instance.validate_coordinateSystem_fields(mock_data2, "verbatimCoordinateSystem"), [])
+        self.assertEqual(self.instance.validate_coordinateSystem_fields(mock_data3, "verbatimCoordinateSystem" ), [coord_error])
+        self.assertNotEqual(self.instance.validate_coordinateSystem_fields(mock_data3, "verbatimCoordinateSystem" ), []) 
 
         
     def test_boolean_validation(self):

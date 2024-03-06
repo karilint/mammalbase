@@ -148,7 +148,7 @@ class Validation():
             return []
         
         if str(data["verbatimCoordinates"]) != "nan" and (str(data["verbatimLatitude"]) != "nan" or str(data["verbatimLongitude"]) != "nan"):
-            errs.append(self.return_field_message(field_name,"verbatimCoordinateSystem"))
+            errs.append(self.return_field_message(field_name,"required"))
             return errs
         
         dict = self.coords_dict
