@@ -3,14 +3,24 @@
 # for example if you want to paginate them, you can do that.
 # They are in f.qs
 import django_filters
-from .models.models import (DietSet, EntityClass, FoodItem
-    , MasterAttribute, MasterEntity, MasterReference
-    , ProximateAnalysis, ProximateAnalysisItem
-    , SourceAttribute, SourceEntity, SourceReference, TimePeriod
-    , ViewMasterTraitValue, ViewProximateAnalysisTable)
-from itis.models import TaxonomicUnits
 from django.contrib.auth.models import User
 from django_filters import rest_framework as filters
+from .models import (
+    DietSet,
+    EntityClass,
+    FoodItem,
+    MasterAttribute,
+    MasterEntity,
+    MasterReference,
+    ProximateAnalysis,
+    ProximateAnalysisItem,
+    SourceAttribute,
+    SourceEntity,
+    SourceReference,
+    TimePeriod,
+    ViewMasterTraitValue,
+    ViewProximateAnalysisTable)
+from itis.models import TaxonomicUnits
 
 class DietSetFilter(django_filters.FilterSet):
     taxon__name = django_filters.CharFilter(lookup_expr='icontains', label='Taxon contains')

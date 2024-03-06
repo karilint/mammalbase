@@ -12,27 +12,15 @@ class Occurrence_validation(Validation):
         self.rules = {
             "references"                : "required|min:10|max:500|regex:.*([1-2][0-9]{3})", 
             "verbatimScientificName"    : "required|alpha", 
-            "scientificNameAuthorship"  : "", 
             "taxonRank"                 : "in:Subspecies,Varietas,Forma,Species,Genus,Nothogenus,Nothospecies,Nothosubspecies,Family,nan", 
             "organismQuantity"          : "digits", 
-            "organismQuantityType"      : "", 
-            "sex"                       : "gender", 
-            "lifeStage"                 : "lifeStage", 
-            "verbatimEventDate"         : "", 
-            "occurrenceRemarks"         : "", 
+            "sex"                       : "choiceValue:gender", 
+            "lifeStage"                 : "choiceValue:lifestage", 
             "verbatimLocality"          : "max:250", 
             "verbatimElevation"         : "max:250", 
             "verbatimDepth"             : "max:250", 
-            "verbatimCoordinates"       : "", 
-            "verbatimLatitude"          : "", 
-            "verbatimLongitude"         : "", 
             "verbatimCoordinateSystem"  : "coordinateSystem", 
-            "verbatimSRS"               : "", 
             "author"                    : "required|author", 
-            "associatedReferences"      : "", 
-            "samplingProtocol"          : "", 
-            "habitatType"               : "", 
-            "habitatPercentage"         : "" 
         }
     
         self.data = {

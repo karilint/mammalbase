@@ -1,13 +1,26 @@
-from imports.importers.base_importer import BaseImporter
-from ..tools import messages, possible_nan_to_none, possible_nan_to_zero
-from mb.models.models import SourceAttribute, SourceReference, SourceEntity, SourceMethod, SourceUnit, ChoiceValue, SourceStatistic, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceMeasurementValue
 from django.db import transaction
 from django.contrib.auth.models import User
-from mb.models.occurrence_models import Occurrence, Event
+
+from mb.models import (
+    SourceAttribute,
+    SourceReference,
+    SourceEntity,
+    SourceMethod,
+    SourceUnit,
+    ChoiceValue,
+    SourceStatistic,
+    SourceChoiceSetOption,
+    SourceChoiceSetOptionValue,
+    SourceMeasurementValue,
+    
+    Occurrence,
+    Event,
+    
+    SourceHabitat)
+from imports.tools import messages, possible_nan_to_none, possible_nan_to_zero
+from .base_importer import BaseImporter
 
 class OccurrencesImporter(BaseImporter):
-
-    
     
     @transaction.atomic
     def importRow(self, row):
@@ -25,12 +38,13 @@ class OccurrencesImporter(BaseImporter):
         reference = self.get_or_create_source_reference(getattr(row, 'references'), author)
         entityclass = self.get_or_create_entity_class(getattr(row, 'taxonRank'), author)
         verbatimScientificname = self.get_or_create_source_entity(getattr(row, 'verbatimScientificName'), reference, entityclass, author)
+        habitat, created = SourceHabitat.objects.get_or_create(habitat_type=getattr(row, 'habitatType'), habitat_percentage=getattr(row, 'habitatPercentage'), source_reference=reference, created_by=author)
 
         created = None
         
         # Create source location model
         new_source_location = self.get_or_create_source_location(getattr(row, 'verbatimLocality'), reference, author)
-        new_event, created = Event.objects.get_or_create(verbatim_event_date=getattr(row, 'verbatimEventDate'))
+        new_event, created = Event.objects.get_or_create(verbatim_event_date=getattr(row, 'verbatimEventDate'), source_habitat=habitat)
 
         gender = str(getattr(row, 'sex'))
 
@@ -55,8 +69,5 @@ class OccurrencesImporter(BaseImporter):
             return True
         else:
             return False
-     
-    
-
 
 OccurrencesImpoter = OccurrencesImporter()
