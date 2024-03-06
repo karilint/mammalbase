@@ -1,5 +1,4 @@
 from imports.importers.base_importer import BaseImporter
-from ..tools import possible_nan_to_none, possible_nan_to_zero
 from mb.models.models import SourceAttribute, SourceReference, SourceEntity, SourceMethod, SourceUnit, ChoiceValue, SourceStatistic, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceMeasurementValue
 from django.db import transaction
 from django.contrib.auth.models import User
@@ -15,7 +14,7 @@ class EtsImporter(BaseImporter):
         # entityclass = get_entityclass('Taxon', author)
         # attribute = get_sourceattribute(name, reference, entityclass, method, 2, author)
         # if 'verbatimTraitValue' in headers:
-        #     vt_value = possible_nan_to_none(getattr(row, 'verbatimTraitValue'))
+        #     vt_value =self.possible_nan_to_none(getattr(row, 'verbatimTraitValue'))
         # else:
         #     vt_value = None
         # choicesetoption = get_sourcechoicesetoption(vt_value, attribute, author)
@@ -29,7 +28,7 @@ class EtsImporter(BaseImporter):
             getattr(row, 'taxonRank'), author)
         source_entity = self.get_or_create_source_entity(
             getattr(row, 'verbatimScientificName'), source_reference, entity_class, author)
-        name = possible_nan_to_none(getattr(row, 'verbatimTraitName'))
+        name = self.possible_nan_to_none(getattr(row, 'verbatimTraitName'))
         source_method = self.get_or_create_source_method(
             getattr(row, 'measurementMethod'), source_reference, author)
         source_attribute = self.get_or_create_source_attribute(
@@ -39,21 +38,21 @@ class EtsImporter(BaseImporter):
             verbatim_trait_unit, author)
 
         column_functions = {
-            'verbatimTraitUnit': possible_nan_to_none,
-            'verbatimTraitValue': possible_nan_to_zero,
+            'verbatimTraitUnit':self.possible_nan_to_none,
+            'verbatimTraitValue':self.possible_nan_to_zero,
             'sex': self.get_choicevalue_ets(getattr(row, 'sex'), 'Gender', author),
-            'measurementRemarks': possible_nan_to_none,
-            'associatedReferences': possible_nan_to_none,
-            'verbatimEventDate': possible_nan_to_none,
+            'measurementRemarks':self.possible_nan_to_none,
+            'associatedReferences':self.possible_nan_to_none,
+            'verbatimEventDate':self.possible_nan_to_none,
             'verbatimLocality': lambda val: self.get_or_create_source_location(val, source_reference, author),
             'statisticalMethod': self.get_or_create_source_statistic(getattr(row, 'statisticalMethod'), source_reference, author),
-            'measurementValue_min': possible_nan_to_zero,
-            'measurementValue_max': possible_nan_to_zero,
-            'dispersion': possible_nan_to_zero,
+            'measurementValue_min':self.possible_nan_to_zero,
+            'measurementValue_max':self.possible_nan_to_zero,
+            'dispersion':self.possible_nan_to_zero,
             'lifeStage': self.get_choicevalue_ets(getattr(row, 'lifeStage'), 'Lifestage', author),
-            'measurementDeterminedBy': possible_nan_to_none,
-            'measurementAccuracy': possible_nan_to_none,
-            'individualCount': possible_nan_to_zero,
+            'measurementDeterminedBy':self.possible_nan_to_none,
+            'measurementAccuracy':self.possible_nan_to_none,
+            'individualCount':self.possible_nan_to_zero,
         }
 
         # Dictionary comprehension for conditional assignments

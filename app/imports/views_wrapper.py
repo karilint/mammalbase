@@ -6,7 +6,10 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
  
 from utils.views import render	# MB Utils
-from .tools import messages
+from .importers.base_importer import BaseImporter
+from .importers.base_importer import messages
+
+bi = BaseImporter()
  
 def wrapper(request, validator, importer, path):
     """Wrapper for differnt viewers. 
