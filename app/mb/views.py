@@ -35,7 +35,7 @@ from .models.models import (AttributeRelation, ChoiceSetOptionRelation, DietSet
     , SourceAttribute, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceEntity
     , SourceMeasurementValue, SourceReference, TimePeriod, ViewMasterTraitValue, ViewProximateAnalysisTable)
 from imports.views import import_diet_set, import_ets, import_proximate_analysis, import_occurrences
-from imports.tools import *
+from imports.importers.base_importer import BaseImporter
 from itis.models import TaxonomicUnits
 from itis.views import *
 from requests_cache import CachedSession
@@ -1841,7 +1841,9 @@ def tsn_search(request):
 
         tsn_data = json.loads(request.POST.get("tsn_data"))
 
-        return_data = create_return_data(tsn_data["tsn"], tsn_data["scientificName"], status=tsn_data["nameUsage"])
+        bi=BaseImporter()
+
+        return_data = bi.create_return_data(tsn_data["tsn"], tsn_data["scientificName"], status=tsn_data["nameUsage"])
 
         create_tsn(return_data, tsn_data["tsn"])
         return JsonResponse("recieved", safe=False, status=201)
