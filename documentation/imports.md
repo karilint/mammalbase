@@ -21,17 +21,18 @@ The files that handels Import Tools are located behind _app/imports_-directory. 
 
 ```mermaid
 graph TD;
-    User has selected TSV-FILE to import-->Views.py handles the request;
-    Views.py handles the request-->It also initialize the validator and importer;
-    It also initialize the validator and importer-->After these operations we call views wrapper;
-    After these operations we call views wrapper-->Views wrapper validates TSV-FILE line by line;
-    Views wrapper validates TSV-FILE line by line-->If the validator detects format error in the file;
-    If the validator detects format error in the file-->It returns to user specific information of the error;
-    If the validator detects format error in the file-->IF all the lines are validated successfully;
-    IF all the lines are validated successfully-->System starts to import the data to the database;
-    System starts to import the data to the database-->The importing scripts are located behind imports-directory;
-    The importing scripts are located behind imports-directory-->Every importing data has their own importer;
-    Every importing data has their own importer-->The importer adds possible source locations and references is needed;
+    "User has selected TSV-FILE to import" --> "Views.py handles the request";
+    "Views.py handles the request" --> "It also initialize the validator and importer";
+    "It also initialize the validator and importer" --> "After these operations we call views wrapper";
+    "After these operations we call views wrapper" --> "Views wrapper validates TSV-FILE line by line";
+    "Views wrapper validates TSV-FILE line by line" --> "If the validator detects format error in the file";
+    "If the validator detects format error in the file" --> "It returns to user specific information of the error";
+    "If the validator detects format error in the file" --> "IF all the lines are validated successfully";
+    "IF all the lines are validated successfully" --> "System starts to import the data to the database";
+    "System starts to import the data to the database" --> "The importing scripts are located behind imports-directory";
+    "The importing scripts are located behind imports-directory" --> "Every importing data has their own importer";
+    "Every importing data has their own importer" --> "The importer adds possible source locations and references is needed";
+
 
 
 ```
