@@ -84,20 +84,17 @@ class Validation():
         elif rule == "digits": #Testattu
             rule_error = self.validate_digit_fields(data,field_name)
 
-        elif rule.startswith("choiceValue"):
+        elif rule.startswith("choiceValue"): #Testattu
             rule_error = self.validate_choice_value(data, field_name, rule)
         
-        elif rule == "coordinateSystem":
+        elif rule == "coordinateSystem": #Testattu
             rule_error = self.validate_coordinateSystem_fields(data, field_name)
 
-        elif rule.startswith("max"):
+        elif rule.startswith("max"): #Testattu
             rule_error = self.validate_max_fields(data,field_name,rule)
 
-        elif rule.startswith("min"):
+        elif rule.startswith("min"): # Testattu
             rule_error = self.validate_min_fields(data,field_name,rule)
-        
-        elif rule.startswith("nameYear"):
-            rule_error = self.validate_nameYear_fields(data,field_name)
         
         elif rule.startswith("regex"):
             rule_error = self.validate_regex_fields(data,field_name, rule)
@@ -297,7 +294,7 @@ class Validation():
         return errs
 
 
-    def validate_in_db(self, data, field_name, field_rules):
+    def validate_in_db(self, data, field_name, field_rules): #Not tested
         """Validate in db.
 
         Args:
@@ -326,19 +323,6 @@ class Validation():
             errs.append(self.return_field_message(field_name,"regex"))
         return errs
 
-    def validate_lengths_fields(self, data, field_name, field_rules):
-        """Validate lengths field"""
-
-        # Retrieve the specific value for that rule
-        specific_value = field_rules.split(':')[1]
-        errs = []
-        try:
-            if data[field_name] != specific_value:
-                errs.append(self.return_field_message(field_name, "specific", specific_value))
-        except KeyError:
-            errs.append(self.return_field_message(field_name, 'specific'))
-
-        return errs
 
     def validate_max_fields(self, data, field_name, rule):
         """Used for validating fields for a maximum integer value, returns a list of error messages"""
@@ -355,7 +339,7 @@ class Validation():
                 if len(str(data[field_name])) > max_value:
                     errs.append(self.return_field_message(field_name,"max"))
         except KeyError:
-            errs.append(self.return_field_message(field_name,'maximum'))
+            errs.append(self.return_field_message(field_name,'max'))
 
         return errs
 
@@ -373,7 +357,7 @@ class Validation():
                 if len(str(data[field_name])) < min_value:
                     errs.append(self.return_field_message(field_name,"min"))
         except KeyError:
-            errs.append(self.return_field_message(field_name,'minimum'))
+            errs.append(self.return_field_message(field_name,'min'))
 
         return errs
 
