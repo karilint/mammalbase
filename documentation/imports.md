@@ -21,5 +21,5 @@ The files that handels Import Tools are located behind _app/imports_-directory. 
 
 ```mermaid
 flowchart LR;
-  User has selected tsv-file to import-->Views.py handles the request. It also initialize the validator and importer. After these operations we call views wrapper
+  USer has selected tsv-file to import-->Views.py handles the request. It also initialize the validator and importer. After these operations we call views wrapper
 ```
