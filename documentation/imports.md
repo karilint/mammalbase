@@ -20,6 +20,17 @@ The files that handels Import Tools are located behind _app/imports_-directory. 
 
 
 ```mermaid
-flowchart LR;
-  USER HAS SELECTED TSV-FILE TO IMPORT-->VIEWS.PY HANDLES THE REQUEST. IT ALSO INITIALIZE THE VALIDATOR AND IMPORTER. AFTER THESE OPERATIONS WE CALL VIEWS WRAPPER --> VIEWS WRAPPER VALIDATES TSV-FILE LINE BY LINE. IF THE VALIDATOR DETECTS FORMAT ERROR IN THE FILE, IT RETURNS TO USER SPECIFIC INFORMATION OF THE ERROR. --> IF ALL THE LINES ARE VALIDATED SUCCESSFULLY, SYSTEM STARTS TO IMPORT THE DATA TO THE DATABASE. THE IMPORTING SCRIPTS ARE LOCATED BEHIND IMPORTS-DIRECTORY. EVERY IMPORTING DATA HAS THEIR OWN IMPORTER (OCCURRENCES, ETS...). THE IMPORTER ADDS POSSIBLE SOURCE LOCATIONS AND REFERENCES IS NEEDED.
+graph TD;
+    User_has_selected_TSV-FILE_to_import-->Views.py_handles_the_request;
+    Views.py_handles_the_request-->It_also_initialize_the_validator_and_importer;
+    It_also_initialize_the_validator_and_importer-->After_these_operations_we_call_views_wrapper;
+    After_these_operations_we_call_views_wrapper-->Views_wrapper_validates_TSV-FILE_line_by_line;
+    Views_wrapper_validates_TSV-FILE_line_by_line-->If_the_validator_detects_format_error_in_the_file;
+    If_the_validator_detects_format_error_in_the_file-->It_returns_to_user_specific_information_of_the_error;
+    If_the_validator_detects_format_error_in_the_file-->IF_all_the_lines_are_validated_successfully;
+    IF_all_the_lines_are_validated_successfully-->System_starts_to_import_the_data_to_the_database;
+    System_starts_to_import_the_data_to_the_database-->The_importing_scripts_are_located_behind_imports-directory;
+    The_importing_scripts_are_located_behind_imports-directory-->Every_importing_data_has_their_own_importer;
+    Every_importing_data_has_their_own_importer-->The_importer_adds_possible_source_locations_and_references_is_needed;
+
 ```
