@@ -21,17 +21,18 @@ The files that handels Import Tools are located behind _app/imports_-directory. 
 
 ```mermaid
 graph TD;
-    "User has selected TSV-FILE to import" --> "Views.py handles the request";
-    "Views.py handles the request" --> "It also initialize the validator and importer";
-    "It also initialize the validator and importer" --> "After these operations we call views wrapper";
-    "After these operations we call views wrapper" --> "Views wrapper validates TSV-FILE line by line";
-    "Views wrapper validates TSV-FILE line by line" --> "If the validator detects format error in the file";
-    "If the validator detects format error in the file" --> "It returns to user specific information of the error";
-    "If the validator detects format error in the file" --> "IF all the lines are validated successfully";
-    "IF all the lines are validated successfully" --> "System starts to import the data to the database";
-    "System starts to import the data to the database" --> "The importing scripts are located behind imports-directory";
-    "The importing scripts are located behind imports-directory" --> "Every importing data has their own importer";
-    "Every importing data has their own importer" --> "The importer adds possible source locations and references is needed";
+    User&nbsp;has&nbsp;selected&nbsp;TSV-FILE&nbsp;to&nbsp;import --> Views.py&nbsp;handles&nbsp;the&nbsp;request;
+    Views.py&nbsp;handles&nbsp;the&nbsp;request --> It&nbsp;also&nbsp;initialize&nbsp;the&nbsp;validator&nbsp;and&nbsp;importer;
+    It&nbsp;also&nbsp;initialize&nbsp;the&nbsp;validator&nbsp;and&nbsp;importer --> After&nbsp;these&nbsp;operations&nbsp;we&nbsp;call&nbsp;views&nbsp;wrapper;
+    After&nbsp;these&nbsp;operations&nbsp;we&nbsp;call&nbsp;views&nbsp;wrapper --> Views&nbsp;wrapper&nbsp;validates&nbsp;TSV-FILE&nbsp;line&nbsp;by&nbsp;line;
+    Views&nbsp;wrapper&nbsp;validates&nbsp;TSV-FILE&nbsp;line&nbsp;by&nbsp;line --> If&nbsp;the&nbsp;validator&nbsp;detects&nbsp;format&nbsp;error&nbsp;in&nbsp;the&nbsp;file;
+    If&nbsp;the&nbsp;validator&nbsp;detects&nbsp;format&nbsp;error&nbsp;in&nbsp;the&nbsp;file --> It&nbsp;returns&nbsp;to&nbsp;user&nbsp;specific&nbsp;information&nbsp;of&nbsp;the&nbsp;error;
+    If&nbsp;the&nbsp;validator&nbsp;detects&nbsp;format&nbsp;error&nbsp;in&nbsp;the&nbsp;file --> IF&nbsp;all&nbsp;the&nbsp;lines&nbsp;are&nbsp;validated&nbsp;successfully;
+    IF&nbsp;all&nbsp;the&nbsp;lines&nbsp;are&nbsp;validated&nbsp;successfully --> System&nbsp;starts&nbsp;to&nbsp;import&nbsp;the&nbsp;data&nbsp;to&nbsp;the&nbsp;database;
+    System&nbsp;starts&nbsp;to&nbsp;import&nbsp;the&nbsp;data&nbsp;to&nbsp;the&nbsp;database --> The&nbsp;importing&nbsp;scripts&nbsp;are&nbsp;located&nbsp;behind&nbsp;imports-directory;
+    The&nbsp;importing&nbsp;scripts&nbsp;are&nbsp;located&nbsp;behind&nbsp;imports-directory --> Every&nbsp;importing&nbsp;data&nbsp;has&nbsp;their&nbsp;own&nbsp;importer;
+    Every&nbsp;importing&nbsp;data&nbsp;has&nbsp;their&nbsp;own&nbsp;importer --> The&nbsp;importer&nbsp;adds&nbsp;possible&nbsp;source&nbsp;locations&nbsp;and&nbsp;references&nbsp;is&nbsp;needed;
+
 
 
 
