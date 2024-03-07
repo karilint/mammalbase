@@ -20,8 +20,6 @@ The files that handels Import Tools are located behind _app/imports_-directory. 
 
 
 ```mermaid
-  graph TD;
-      A[User has selected tsv-file to import.]-->B;
-      B[Views.py handles the request. It also initialize the validator and importer. After these operations we call views wrapper.]-->C;
-      C[Views wrapper validates tsv-file line by line. If the validator detects format error in the file, it returns to user specific information of the error.]-->D[If all the lines are validated successfully, system starts to import the data to the database. The importing scripts are located behind imports-directory. Every importing data has their own importer (occurrences, ets...). The importer adds possible Source Locations and References is needed.];
+  flowchart LR;
+      User has selected tsv-file to import.] --> Views.py handles the request. It also initialize the validator and importer. After these operations we call views wrapper --> Views wrapper validates tsv-file line by line. If the validator detects format error in the file, it returns to user specific information of the error. --> If all the lines are validated successfully, system starts to import the data to the database. The importing scripts are located behind imports-directory. Every importing data has their own importer (occurrences, ets...). The importer adds possible Source Locations and References is needed.
 ```
