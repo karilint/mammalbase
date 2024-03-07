@@ -21,17 +21,18 @@ The files that handels Import Tools are located behind _app/imports_-directory. 
 
 ```mermaid
 graph TD;
-    User&nbsp;has&nbsp;selected&nbsp;TSV-FILE&nbsp;to&nbsp;import --> Views.py&nbsp;handles&nbsp;the&nbsp;request;
-    Views.py&nbsp;handles&nbsp;the&nbsp;request --> It&nbsp;also&nbsp;initialize&nbsp;the&nbsp;validator&nbsp;and&nbsp;importer;
-    It&nbsp;also&nbsp;initialize&nbsp;the&nbsp;validator&nbsp;and&nbsp;importer --> After&nbsp;these&nbsp;operations&nbsp;we&nbsp;call&nbsp;views&nbsp;wrapper;
-    After&nbsp;these&nbsp;operations&nbsp;we&nbsp;call&nbsp;views&nbsp;wrapper --> Views&nbsp;wrapper&nbsp;validates&nbsp;TSV-FILE&nbsp;line&nbsp;by&nbsp;line;
-    Views&nbsp;wrapper&nbsp;validates&nbsp;TSV-FILE&nbsp;line&nbsp;by&nbsp;line --> If&nbsp;the&nbsp;validator&nbsp;detects&nbsp;format&nbsp;error&nbsp;in&nbsp;the&nbsp;file;
-    If&nbsp;the&nbsp;validator&nbsp;detects&nbsp;format&nbsp;error&nbsp;in&nbsp;the&nbsp;file --> It&nbsp;returns&nbsp;to&nbsp;user&nbsp;specific&nbsp;information&nbsp;of&nbsp;the&nbsp;error;
-    If&nbsp;the&nbsp;validator&nbsp;detects&nbsp;format&nbsp;error&nbsp;in&nbsp;the&nbsp;file --> IF&nbsp;all&nbsp;the&nbsp;lines&nbsp;are&nbsp;validated&nbsp;successfully;
-    IF&nbsp;all&nbsp;the&nbsp;lines&nbsp;are&nbsp;validated&nbsp;successfully --> System&nbsp;starts&nbsp;to&nbsp;import&nbsp;the&nbsp;data&nbsp;to&nbsp;the&nbsp;database;
-    System&nbsp;starts&nbsp;to&nbsp;import&nbsp;the&nbsp;data&nbsp;to&nbsp;the&nbsp;database --> The&nbsp;importing&nbsp;scripts&nbsp;are&nbsp;located&nbsp;behind&nbsp;imports-directory;
-    The&nbsp;importing&nbsp;scripts&nbsp;are&nbsp;located&nbsp;behind&nbsp;imports-directory --> Every&nbsp;importing&nbsp;data&nbsp;has&nbsp;their&nbsp;own&nbsp;importer;
-    Every&nbsp;importing&nbsp;data&nbsp;has&nbsp;their&nbsp;own&nbsp;importer --> The&nbsp;importer&nbsp;adds&nbsp;possible&nbsp;source&nbsp;locations&nbsp;and&nbsp;references&nbsp;is&nbsp;needed;
+    A["User has selected TSV-FILE to import"] --> B["Views.py handles the request"];
+    B --> C["It also initialize the validator and importer"];
+    C --> D["After these operations we call views wrapper"];
+    D --> E["Views wrapper validates TSV-FILE line by line"];
+    E --> F["If the validator detects format error in the file"];
+    F --> G["It returns to user specific information of the error"];
+    F --> H["IF all the lines are validated successfully"];
+    H --> I["System starts to import the data to the database"];
+    I --> J["The importing scripts are located behind imports-directory"];
+    J --> K["Every importing data has their own importer"];
+    K --> L["The importer adds possible source locations and references is needed"];
+
 
 
 
