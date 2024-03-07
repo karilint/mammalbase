@@ -243,6 +243,16 @@ class ValidationTest(TestCase):
         error =self.instance.validate_max_fields(data, "max", rule)
         self.assertEqual(error, [])
 
+    def test_regex(self):
+            required_error = self.error_templates['regex'] % 'regex'
+            # Test case 1: valid regex
+            data = {"regex": "abcdef1001"} 
+            rules = "regex:.*([1-2][0-9]{3})"
+            errors = self.instance.validate_regex_fields(data,"regex", rules)
+            self.assertEqual(errors, [])
 
-    
-
+            # Test case 2:
+            data = {"regex": "abcdef"} 
+            rules = "regex:.*([1-2][0-9]{3})"
+            errors = self.instance.validate_regex_fields(data,"regex", rules)
+            self.assertEqual(errors, [required_error])
