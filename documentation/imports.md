@@ -21,5 +21,5 @@ The files that handels Import Tools are located behind _app/imports_-directory. 
 
 ```mermaid
 flowchart LR;
-  A-->B
+  ABBA-->BABBA
 ```
