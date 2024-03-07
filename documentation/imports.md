@@ -6,7 +6,17 @@ The Import Tool is a feature designed to streamline the process of importing dat
 
 ## Usage
 
+Users can upload their .tsv files using the provided web form. The system checks the validity of the uploaded .tsv file to ensure that it meets the required format and data integrity standards.
+If the validation process completes successfully, the system proceeds to import the data from the .tsv file into the database.
+Upon successful import, a confirmation message is displayed to the user on the web page, indicating that the import process has been completed successfully.
+
 ## Data Validation
 
+TODO:
+
 ## Architecture
+
+The files that handels Import Tools are located behind _app/imports_-directory. The directory contains for example the validation-library that handels data validation. Top level description for Import Tool is describe below:
+
+
 
