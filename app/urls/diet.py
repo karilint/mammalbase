@@ -1,6 +1,7 @@
-""" mb.urls.diet - URLs accosiated with diets
-    imported by mb.urls.__init__ as part of mb.urls subpackage
+""" urls.diet - URLs accosiated with diets
+    imported by urls.__init__ as part of urls subpackage
 """
+
 from django.urls import path, include
 
 from mb.views import (
