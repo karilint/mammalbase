@@ -247,13 +247,12 @@ CELERY_BEAT_SCHEDULE = {
 
 
 # Email configuration
-SENDGRID_API_KEY = environ.get('SENDGRID_API_KEY')
+EMAIL_HOST_PASSWORD = environ.get('SENDGRID_API_KEY')
 EMAIL_BACKEND = environ.get(
     'EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend'
 )
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_HOST_USER = 'apikey' # this is exactly the value 'apikey'
-EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = environ.get('DEFAULT_FROM_EMAIL')
@@ -262,10 +261,9 @@ DEFAULT_FROM_EMAIL = environ.get('DEFAULT_FROM_EMAIL')
 
 if DEBUG:
 
-    """ Django Debug Toolbar
-        https://django-debug-toolbar.readthedocs.io/
-    """
-    
+    # Django Debug Toolbar
+    # https://django-debug-toolbar.readthedocs.io/
+
     import socket
     hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
     INTERNAL_IPS = [ip[:-1] + '1' for ip in ips] + ['127.0.0.1', '10.0.2.2']
@@ -287,4 +285,3 @@ if DEBUG:
         'debug_toolbar.panels.logging.LoggingPanel',
         'debug_toolbar.panels.redirects.RedirectsPanel',
     ]
-

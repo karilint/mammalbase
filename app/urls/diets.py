@@ -2,7 +2,7 @@
     imported by urls.__init__ as part of urls subpackage
 """
 
-from django.urls import path, include
+from django.urls import path
 
 from mb.views import (
     index_diet,

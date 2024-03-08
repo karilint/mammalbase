@@ -40,6 +40,8 @@ if DEBUG:
     urlpatterns += [ path('', include('urls.debug_toolbar')) ]
     urlpatterns += static_url(MEDIA_URL, document_root=MEDIA_ROOT)
 
+# https://docs.djangoproject.com/en/5.0/ref/urls/#handler400
+# pylint: disable = invalid-name
 handler404 = 'main.views.not_found'
 handler500 = 'main.views.server_error'
 handler403 = 'main.views.permission_denied'

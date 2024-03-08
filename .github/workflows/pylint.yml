@@ -1,4 +1,4 @@
-name: Pylint
+name: Pylint (NOT FAILING YET)
 on: push
 
 jobs:
