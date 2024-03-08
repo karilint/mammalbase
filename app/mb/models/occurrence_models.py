@@ -65,7 +65,6 @@ class Occurrence(BaseModel):
         null=True,
         help_text="References to other sources of information about the Occurrence."
         )
-
     
 class Event(BaseModel):
     """
@@ -88,25 +87,4 @@ class Event(BaseModel):
         blank=True,
         null=True,
         help_text="The verbatim original representation of the date and time information for an Event."
-        )
-
-class SourceHabitat(BaseModel):
-    """
-    Model representing a habitat associated with an Occurrence.
-    """
-    source_reference = models.ForeignKey(
-        'SourceReference',
-        on_delete = models.CASCADE,
-        )
-    habitat_type = models.CharField(
-        max_length=250,
-        blank=True,
-        null=True,
-        help_text="Enter the Name of the Source Habitat"
-        )
-    habitat_percentage = models.CharField(
-        max_length=250,
-        blank=True,
-        null=True,
-        help_text="Enter the Percentage of the Source Habitat"
         )

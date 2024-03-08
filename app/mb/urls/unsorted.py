@@ -1,32 +1,26 @@
-from django.conf import settings
 from django.conf.urls import url
 from django.urls import path, re_path, include
-from . import views
-from mb.views import (
+
+from mb import views
+from imports.views import (
     import_diet_set,
     import_ets,
     import_proximate_analysis,
-    import_occurrences
-)
-import debug_toolbar
+    import_occurrences)
+
 #from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
-#    path('rnames/', views.name_list, name='name_list'),
-#    path('rnames/name/<int:pk>/', views.name_detail, name='name_detail'),
-#    path('rnames/name/new', views.name_new, name='name_new'),
-#    path('rnames/name/<int:pk>/edit/', views.name_edit, name='name_edit'),
-#    path('rnames/qualifier/<int:pk>/', views.qualifier_detail, name='qualifier-detail'),
-#    path('mb/names/', views.MasterReferenceListView.as_view(), name='names'),
-    path('__debug__/', include(debug_toolbar.urls)),
-#    path('select2/', include('django_select2.urls')),
-    path('', views.index, name='index'),
-    path('mb', views.index, name='index'),
+    # path('rnames/', views.name_list, name='name_list'),
+    # path('rnames/name/<int:pk>/', views.name_detail, name='name_detail'),
+    # path('rnames/name/new', views.name_new, name='name_new'),
+    # path('rnames/name/<int:pk>/edit/', views.name_edit, name='name_edit'),
+    # path('rnames/qualifier/<int:pk>/', views.qualifier_detail, name='qualifier-detail'),
+    # path('mb/names/', views.MasterReferenceListView.as_view(), name='names'),
+    # path('select2/', include('django_select2.urls')),
     path('im', views.index_mammals, name='index_mammals'),
     path('ipa', views.index_proximate_analysis, name='index_proximate_analysis'),
     path('ids', views.index_diet, name='index_diet'),
-    path('index_about', views.index_about, name='index_about'),
-    path('about_history', views.about_history, name='about_history'),
     path('ar/<int:pk>/', views.attribute_relation_detail, name='attribute_relation-detail'),
     path('ar/<int:pk>/delete/', views.attribute_relation_delete.as_view(), name='attribute_relation-delete'),
     path('ar/<int:pk>/edit/', views.attribute_relation_edit, name='attribute_relation-edit'),
@@ -52,7 +46,7 @@ urlpatterns = [
     path('fi/<int:pk>/', views.food_item_detail, name='food_item-detail'),
     path('fi/<int:pk>/delete/', views.food_item_delete.as_view(), name='food_item-delete'),
     path('fi/<int:pk>/edit/', views.food_item_edit, name='food_item-edit'),
-#    path('import/ds', import_diet_set, name='diet_set-import'),
+    # path('import/ds', import_diet_set, name='diet_set-import'),
     path('import/diet_set', import_diet_set, name='import_diet_set'),
     path('import/ets', import_ets, name='import_ets'),
     path('import/occurrences', import_occurrences, name='import_occurrences'),
@@ -70,7 +64,7 @@ urlpatterns = [
     path('me/<int:pk>/delete/', views.master_entity_delete.as_view(), name='master_entity-delete'),
     path('me/<int:pk>/edit/', views.master_entity_edit, name='master_entity-edit'),
     path('mer/', views.master_entity_reference_list, name='master_entity_reference-list'),
-#    path('mr/', views.master_reference_list, name='master_reference-list'),
+    # path('mr/', views.master_reference_list, name='master_reference-list'),
     path('mr/<int:pk>/', views.master_reference_detail, name='master_reference-detail'),
     path('mr/<int:pk>/delete/', views.master_reference_delete.as_view(), name='master_reference-delete'),
     path('mr/<int:pk>/edit/', views.master_reference_edit, name='master_reference-edit'),
@@ -99,7 +93,7 @@ urlpatterns = [
     path('sav/<int:pk>/delete/', views.source_choiceset_option_value_delete.as_view(), name='source_choiceset_option_value-delete'),
     path('sav/<int:pk>/edit/', views.source_choiceset_option_value_edit, name='source_choiceset_option_value-edit'),
     path('sav/<int:se>/<int:sac>/new', views.source_choiceset_option_value_new, name='source_choiceset_option_value-new'),
-	path('save-group-ordering', views.save_new_ordering, name='save-group-ordering'),
+    path('save-group-ordering', views.save_new_ordering, name='save-group-ordering'),
     path('se/', views.source_entity_list, name='source_entity-list'),
     path('se/<int:pk>/', views.source_entity_detail, name='source_entity-detail'),
     path('se/<int:pk>/delete/', views.source_entity_delete.as_view(), name='source_entity-delete'),
@@ -127,6 +121,4 @@ urlpatterns = [
     path('tsn/<int:tsn>/edit/', views.tsn_edit, name='tsn-edit'),
     path('tsn/new', views.tsn_new, name='tsn-new'),
     path('tsn/search', views.tsn_search, name='tsn-search'),
-    path('exports/', include('exports.urls')),
 ]
-

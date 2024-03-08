@@ -1,16 +1,28 @@
 import re
 from django.db import transaction
+from django.contrib.auth.models import User
 import pandas as pd
 import requests
-from mb.models.models import SourceReference, MasterReference, EntityClass, SourceEntity, EntityRelation, MasterEntity, TimePeriod, SourceMethod, ChoiceValue
-from mb.models.location_models import SourceLocation
-from ..tools import make_harvard_citation_journalarticle
+from mb.models import (
+    SourceReference,
+    MasterReference,
+    EntityClass,
+    SourceEntity,
+    EntityRelation,
+    MasterEntity,
+    TimePeriod,
+    SourceMethod,
+    ChoiceValue,
+    
+    SourceLocation)
+from imports.tools import make_harvard_citation_journalarticle, messages
 from datetime import timedelta
 from config.settings import ITIS_CACHE
 from requests_cache import CachedSession
 import itis.views as itis
 import json
-from django.contrib.auth.models import User
+import logging
+
 class BaseImporter:
     """
     Base class for all importers
@@ -52,7 +64,7 @@ class BaseImporter:
             uri = item.get('uri', '')
             year = item.get('published', {}).get('date-parts', [[None]])[0][0]
             container_title = item.get('container-title', [''])[0]
-            volume = item.get('volume', '')
+            volume = item.get('volume', None)
             issue = item.get('issue', '')
             page = item.get('page', '')
             ref_type = item.get('type', '')
@@ -77,23 +89,6 @@ class BaseImporter:
             print(f"Error: {e}")
             return None
     
-    # TÄMÄ ON VIRHEELLINEN! MasterReferencellä ei ole kenttää source_reference
-    #def get_or_create_master_reference(self, source_reference: SourceReference, author: User):
-        """
-        Return MasterReference object for the given source_reference
-        """
-        
-        """
-        master_reference = MasterReference.objects.filter(source_reference=source_reference)
-        if master_reference.count() == 1:
-            return master_reference[0]
-        else:
-            new_master_reference = self.get_master_reference_from_cross_ref(source_reference.citation, author)
-            if new_master_reference:                                                                                                                          
-                return new_master_reference
-            else:
-                return None
-        """
     def get_or_create_master_reference(self, citation: str, author: User):
         """
         Return MasterReference object for the given source_reference
@@ -109,7 +104,9 @@ class BaseImporter:
                 return None
     
     def get_or_create_source_reference(self, citation: str, author: User):
-        # here add a real validation for citation and author
+        """
+        Return new or exists source reference.
+        """
         if (citation.lower() == "nan" or citation == None) or (str(author).lower() == "nan" or author == None):
             raise Exception("SourceReference is not valid!")
 
@@ -123,7 +120,6 @@ class BaseImporter:
         master_reference = self.get_or_create_master_reference(citation, author)
         new_reference.master_reference = master_reference
         new_reference.save()
-        print("uusi master reference luotu " + str(new_reference))
 
         return new_reference
         
@@ -138,7 +134,7 @@ class BaseImporter:
             new_entity_class = EntityClass(name=taxon_rank, created_by=author)
             new_entity_class.save()
             return new_entity_class
-        
+    
     def get_or_create_source_entity(self, name: str, source_reference: SourceReference, entity_class: EntityClass, author: User):
         """
         Return SourceEntity object for the given name or create a new one
@@ -181,7 +177,7 @@ class BaseImporter:
             master_entity_result = MasterEntity.objects.filter(name=canonical_form, entity_id=source_entity.entity_id,reference_id=4)
             if master_entity_result:
                return EntityRelation(master_entity=master_entity_result[0],
-                                source_entity=source_entity.id,
+                                source_entity=source_entity,
                                 relation_id=1,
                                 data_status_id=5,
                                 relation_status_id=1,
@@ -239,7 +235,7 @@ class BaseImporter:
         try:
             source_location = SourceLocation.objects.filter(name__iexact=location, reference=source_reference)
         except Exception as error:
-            print("virhe" + str(error))
+            raise Exception(str(error))
         if source_location.count() == 1:
             return source_location[0]
         else:
@@ -272,15 +268,12 @@ class BaseImporter:
             return new_source_method
         
     def get_choicevalue(self, gender: str):
+        """
+        Return choice value.
+        """
         if gender == 'nan':
             return None
         if gender != '22' or gender != '23':
             return None
         choicevalue = ChoiceValue.objects.filter(pk=gender)
         return choicevalue[0]
-            
-        
-        
-        
-
-    
