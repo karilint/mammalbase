@@ -18,9 +18,8 @@ from django.http import JsonResponse
 import requests
 from requests_cache import CachedSession
 
-from plotly import (
-    express as plotly_express,
-    offline as plotly_offline)
+from plotly import express as plotly_express
+from plotly.offline import plot as plotly_offline_plot
 from pandas import DataFrame as PandasDataFrame
 
 from config.settings import ITIS_CACHE
@@ -29,7 +28,7 @@ from imports.tools import (
     create_tsn,
     generate_standard_values_pa)
 from itis.models import TaxonomicUnits
-from .filters import (
+from mb.filters import (
     DietSetFilter,
     FoodItemFilter,
     MasterAttributeFilter,
@@ -43,7 +42,7 @@ from .filters import (
     TaxonomicUnitsFilter,
     TimePeriodFilter,
     ViewProximateAnalysisTableFilter)
-from .forms import (
+from mb.forms import (
     AttributeRelationForm,
     ChoiceSetOptionRelationForm,
     DietSetForm,
@@ -69,7 +68,7 @@ from .forms import (
     SourceReferenceForm,
     TaxonomicUnitsForm,
     TimePeriodForm)
-from .models import (
+from mb.models import (
     AttributeRelation,
     ChoiceSetOptionRelation,
     DietSet,
@@ -921,7 +920,7 @@ def master_entity_detail(request, pk):
     fig.add_scatterternary(a=t, b=l, c=r, name="",
                             mode='lines', fill="toself", text="Omnivory", showlegend=False)
 
-    plot_div = plotly_offline(fig, output_type='div', include_plotlyjs=False, show_link=False, link_text="")
+    plot_div = plotly_offline_plot(fig, output_type='div', include_plotlyjs=False, show_link=False, link_text="")
 
     return render(request, 'mb/master_entity_detail.html', {'master_entity': master_entity, 'measurements': measurements, 'diets': diets, 'ternary':ternary, 'plot_div': plot_div,})
 
