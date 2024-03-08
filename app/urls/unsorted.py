@@ -1,3 +1,7 @@
+""" urls.unsorted - URLs yet to be sorted out
+    Ideally this file is non existing
+    imported by urls.__init__ as part of urls subpackage
+"""
 from django.conf.urls import url
 from django.urls import path, re_path, include
 

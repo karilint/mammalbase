@@ -21,11 +21,12 @@ from django.conf import settings
 from django.conf.urls.static import static as static_url
 from django.urls import path, include
 
+from config.settings import DEBUG, MEDIA_URL, MEDIA_ROOT
+
 
 urlpatterns = [
     path('', include('urls.root')),
     path('', include('urls.diets')),
-    path('', include('urls.debug_toolbar')),
     path('', include('urls.unsorted')),
     path('import/', include('urls.imports')),
     path('exports/', include('urls.exports')),
@@ -35,10 +36,9 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static_url(
-            settings.MEDIA_URL,
-            document_root=settings.MEDIA_ROOT)
+if DEBUG:
+    urlpatterns += [ path('', include('urls.debug_toolbar')) ]
+    urlpatterns += static_url(MEDIA_URL, document_root=MEDIA_ROOT)
 
 handler404 = 'main.views.not_found'
 handler500 = 'main.views.server_error'
