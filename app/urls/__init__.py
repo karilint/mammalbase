@@ -23,8 +23,8 @@ from django.urls import path, include
 
 
 urlpatterns = [
-    path('', include('urls.main')),
-    path('', include('urls.diet')),
+    path('', include('urls.root')),
+    path('', include('urls.diets')),
     path('', include('urls.debug_toolbar')),
     path('', include('urls.unsorted')),
     path('import/', include('urls.imports')),

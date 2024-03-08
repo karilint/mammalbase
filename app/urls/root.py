@@ -1,3 +1,7 @@
+""" urls.root - URLs directry under root of server
+    for example landing page, about, history etc
+    imported by urls.__init__ as part of urls subpackage
+"""
 from django.urls import path
 
 from mb.views import (

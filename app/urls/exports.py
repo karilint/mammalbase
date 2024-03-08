@@ -1,4 +1,4 @@
-""" urls.exports - URLs accosiated with exporting data
+""" urls.exports - URLs under exports/ accosiated with exporting data
     imported by urls.__init__ as part of urls subpackage
 """
 
