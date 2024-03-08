@@ -1,0 +1,3 @@
+[MASTER]
+# Migrations are created automatically and syntax is what it is
+ignore-paths=.*/migrations/.*
