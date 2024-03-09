@@ -96,6 +96,7 @@ INSTALLED_APPS = [
     'imports',
     'itis',
     'exports',
+    'matchtools'
 
 #    'django_extensions', #for Jupyter and Scripts
 #    'crispy_forms',

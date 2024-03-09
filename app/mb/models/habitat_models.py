@@ -23,6 +23,9 @@ class SourceHabitat(BaseModel):
         )
     
 class MasterHabitat(BaseModel):
+    """
+    The MasterHabitat model represents a master habitat in the database.
+    """
     reference = models.ForeignKey(
         'MasterReference',
         on_delete = models.CASCADE,
@@ -46,7 +49,7 @@ class MasterHabitat(BaseModel):
         max_length=250,
         blank=True,
         null=True,
-        help_text="Enter the gourp or category of the Master Habitat"
+        help_text="Enter the group or category of the Master Habitat"
         )
     
     class Meta:
