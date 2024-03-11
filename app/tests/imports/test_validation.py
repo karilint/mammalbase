@@ -5,7 +5,6 @@ from imports.validation_lib.occurrence_validation import Occurrence_validation
 from imports.validation_lib.base_validation import Validation
 from mb.models.models import ChoiceValue
 
-#@skip("Don't want to test")
 class ValidationTest(TestCase):
 
 
@@ -13,6 +12,29 @@ class ValidationTest(TestCase):
         # Initialize your class or any other setup required
         self.instance = Validation()
         self.error_templates = self.instance.get_error_message_templates()
+
+    def test_choicevalue(self):
+        choicevalue_error = self.error_templates['gender'] % 'sex'
+
+        # Test case 1: Gender is Male
+        gender, created = ChoiceValue.objects.get_or_create(choice_set="Gender", caption="Male")
+
+        if created == False:
+            raise("Exception in creating MOC data (ChoiceValue: Gender and Male)")
+        
+        data = {"sex": "male"}  
+        errors = self.instance.validate_choice_value(data, "sex", "choiceValue:gender")
+        self.assertEqual(errors, [])
+
+        # Test case 2: Gender is polkuauto
+        if created == False:
+            raise("Exception in creating MOC data (ChoiceValue: Gender and Male)")
+        
+        data = {"sex": "polkuauto"}  
+        errors = self.instance.validate_choice_value(data, "sex", "choiceValue:gender")
+        self.assertEqual(errors, [choicevalue_error])
+
+
 
     def test_boolean_validation(self):
         boolean_error = self.error_templates['boolean'] % 'boolean'
