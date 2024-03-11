@@ -26,10 +26,7 @@ class ValidationTest(TestCase):
         errors = self.instance.validate_choice_value(data, "sex", "choiceValue:gender")
         self.assertEqual(errors, [])
 
-        # Test case 2: Gender is polkuauto
-        if created == False:
-            raise("Exception in creating MOC data (ChoiceValue: Gender and Male)")
-        
+        # Test case 2: Gender is polkuauto        
         data = {"sex": "polkuauto"}  
         errors = self.instance.validate_choice_value(data, "sex", "choiceValue:gender")
         self.assertEqual(errors, [choicevalue_error])
