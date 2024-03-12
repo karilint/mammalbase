@@ -38,3 +38,13 @@ graph TD;
 
 
 ```
+
+### More accureated description
+
+The import feature assumes that the data has been fully validated before importing. When using Mammalbase, validation actually occurs before exporting data to the database.
+
+Each importer inherits from the so-called base importer (base_importer.py). BaseImporter contains methods needed for importing various types of data into the database. These methods, for example, make necessary references to existing database entries or create new ones if needed. The elements to be created are usually such that they cannot be directly imported as they are from the tsv file. Therefore, the structure of the database is not nearly identical to the structure of the tsv file.
+
+#### Occurrences importer
+
+#### Proximate analysis importer
