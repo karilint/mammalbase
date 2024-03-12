@@ -39,12 +39,10 @@ graph TD;
 
 ```
 
-### More accureated description
+### More accureated description of Import Tool
 
 The import feature assumes that the data has been fully validated before importing. When using Mammalbase, validation actually occurs before exporting data to the database.
 
-Each importer inherits from the so-called base importer (base_importer.py). BaseImporter contains methods needed for importing various types of data into the database. These methods, for example, make necessary references to existing database entries or create new ones if needed. The elements to be created are usually such that they cannot be directly imported as they are from the tsv file. Therefore, the structure of the database is not nearly identical to the structure of the tsv file.
+Each importer inherits from the so-called base importer (base_importer.py). BaseImporter contains methods needed for importing various types of data into the database. These methods, for example, make necessary references to existing database entries or create new ones if needed. The elements to be created are usually such that they cannot be directly imported as they are from the tsv file. Therefore, the structure of the database is not nearly identical to the structure of the tsv file. 
 
-#### Occurrences importer
-
-#### Proximate analysis importer
+Each importer (Occurrences, ETS, etc.) adds one line from the tsv file to the database. After a successful addition, the value True is returned (False in case of failure), and the line is added to the database. First, models are created for those entries that cannot be directly added from the tsv file (such as SourceLocation and SourceHabitat, etc.). Finally, the created reference models and strings are added to the database using Django's get_or_create method.
