@@ -1,7 +1,7 @@
-from django.urls import path
+# from django.urls import path
 
-from . import views
+# from . import views
 
-urlpatterns = [
-    path('tm/', views.trait_match, name="trait-match"),
-]
+# urlpatterns = [
+#     path('tm/', views.trait_match, name="trait-match"),
+# ]

@@ -30,7 +30,8 @@ urlpatterns = [
     path('', include('urls.unsorted')),
     path('import/', include('urls.imports')),
     path('exports/', include('urls.exports')),
-
+    path('matchtools/', include('urls.matchtools')),
+    
     path('admin/', admin.site.urls),
     path('select2/', include('django_select2.urls')),
     path('accounts/', include('allauth.urls')),
