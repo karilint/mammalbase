@@ -19,7 +19,7 @@ class Occurrence_validation(Validation):
             "verbatimLocality"          : "max:250", 
             "verbatimElevation"         : "max:250", 
             "verbatimDepth"             : "max:250", 
-            "verbatimCoordinateSystem"  : "coordinateSystem", 
+            "verbatimCoordinateSystem"  : "coordinateSystem:verbatimLatitude,verbatimLongitude,verbatimCoordinates", 
             "author"                    : "required|author", 
         }
     

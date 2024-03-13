@@ -1,3 +1,4 @@
+from imports.importers.base_importer import BaseImporter
 from django.db import transaction
 from django.contrib.auth.models import User
 
@@ -70,4 +71,3 @@ class OccurrencesImporter(BaseImporter):
         else:
             return False
 
-OccurrencesImpoter = OccurrencesImporter()
