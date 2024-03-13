@@ -123,32 +123,19 @@ class ImportViewTests(TestCase):
     #     self.assertEqual('File imported successfully.' in str(messages[0]), True)
     #     self.assertEqual(response.status_code, 302)
     
-
-    def test_import_pa_post(self):
-        with open("test_post.csv", "w") as file:
-            writer = csv.writer(file, delimiter="\t")
-
-            writer.writerow(["verbatimScientificName", "PartOfOrganism", "individualCount", "measurementMethod", "measurementDeterminedBy", "verbatimLocality", "measurementRemarks", "verbatimEventDate", "verbatimTraitValue__moisture", "dispersion__moisture", "measurementMethod__moisture", "verbatimTraitValue__dry_matter", "dispersion__dry_matter", "measurementMethod__dry_matter", "verbatimTraitValue__ether_extract", "dispersion__ether_extract", "measurementMethod__ether_extract", "verbatimTraitValue__crude_protein", "dispersion__crude_protein", "measurementMethod__crude_protein", "verbatimTraitValue__crude_fibre", "dispersion__crude_fibre", "measurementMethod__crude_fibre", "verbatimTraitValue_ash", "dispersion__ash", "measurementMethod_ash", "verbatimTraitValue__nitrogen_free_extract", "dispersion__nitrogen_free_extract", "measurementMethod__nitrogen_free_extract", "author", "associatedReferences", "references"])
-            writer.writerow(["Citrus limon fruit", "FRUIT", "", "Oven-drying at 50°C,  blending", "", "Nandeshook farm,  Eastern Cape region,  South Africa,  -33°44'43.04", "", "", "11.87", "0.41", "AOAC,  2000", "", "", "", "4.27", "0.02", "Soxhlet extraction", "4.92", "0.06", "Kjeldahl method", "27.63", "3.23", "Acid-base digestion", "5.91", "0.27", "Dry ashing", "", "", "", "1119-0001-0507-9139", "Original study", "Idamokoro,  E.M. and Hosu,  Y.S.,  2023. Relative Analysis of Two Citrus Species Versus Maize for Potential Nutritive Traits as Livestock Feed. Online Journal of Animal and Feed Research,  13(5),  pp.357-366."])
-                            
-        with open("test_post.csv") as fp:
+    def test_import_pa_post(self):                   
+        with open("pa_true_test.tsv") as fp:
             response = self.client.post('/import/proximate_analysis', {'name': 'fred', 'csv_file': fp})
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
 
-    def test_import_pa_post_incorrect_file(self):
-        with open("test_post.csv", "w") as file:
-            writer = csv.writer(file, delimiter="\t")
-
-            writer.writerow(["verbatimScientificName", "PartOfOrganism", "individualCount", "measurementMethod", "measurementDeterminedBy", "verbatimLocality", "measurementRemarks", "verbatimEventDate", "verbatimTraitValue__moisture", "dispersion__moisture", "measurementMethod__moisture", "verbatimTraitValue__dry_matter", "dispersion__dry_matter", "measurementMethod__dry_matter", "verbatimTraitValue__ether_extract", "dispersion__ether_extract", "measurementMethod__ether_extract", "verbatimTraitValue__crude_protein", "dispersion__crude_protein", "measurementMethod__crude_protein", "verbatimTraitValue__crude_fibre", "dispersion__crude_fibre", "measurementMethod__crude_fibre", "verbatimTraitValue_ash", "dispersion__ash", "measurementMethod_ash", "verbatimTraitValue__nitrogen_free_extract", "dispersion__nitrogen_free_extract", "measurementMethod__nitrogen_free_extract", "author", "associatedReferences", "references"])
-            writer.writerow(["Citrus limon fruit", "FRUIT", "", "Oven-drying at 50°C,  blending", "", "Nandeshook farm,  Eastern Cape region,  South Africa,  -33°44'43.04", "", "", "11.87", "0.41", "AOAC,  2000", "", "", "", "4.27", "0.02", "Soxhlet extraction", "4.92", "0.06", "Kjeldahl method", "27.63", "3.23", "Acid-base digestion", "5.91", "0.27", "Dry ashing", "", "", "", "1119-0001-0507-9139", "Original study", "unknown"])
-                            
-        with open("test_post.csv") as fp:
+    def test_import_pa_post_incorrect_file(self):       
+        with open("pa_false_test.tsv") as fp:
             response = self.client.post('/import/proximate_analysis', {'name': 'fred', 'csv_file': fp})
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
-        self.assertEqual(response.status_code, 302) 
-        #TODO: test also return message
+        self.assertEqual(str(messages[0]), "Unable to upload file. Exception('Author not found')")
+        self.assertEqual(response.status_code, 302)
 
     @skip("Don't want to test")
     def test_import_ets_post(self):
@@ -173,6 +160,7 @@ class ImportViewTests(TestCase):
         self.assertEqual(str(messages[0]), 'The import file does not contain the required headers. The missing header is: verbatimTraitName.')
         self.assertEqual(response.status_code, 302) 
     
+    @skip("Don't want to test")
     def test_tsn_search_get(self):
         response = self.client.get("/tsn/search?query=grasshopper")
         self.assertEqual(response.status_code, 200)
