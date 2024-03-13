@@ -40,6 +40,7 @@ from itis.models import TaxonomicUnits
 from itis.views import *
 from requests_cache import CachedSession
 from config.settings import ITIS_CACHE
+from itis.utils import create_return_data
 # from ratelimit.decorators import ratelimit
 
 import requests
@@ -1842,9 +1843,7 @@ def tsn_search(request):
 
         tsn_data = json.loads(request.POST.get("tsn_data"))
 
-        bi=BaseImporter()
-
-        return_data = bi.create_return_data(tsn_data["tsn"], tsn_data["scientificName"], status=tsn_data["nameUsage"])
+        return_data = create_return_data(tsn_data["tsn"], tsn_data["scientificName"], status=tsn_data["nameUsage"])
 
         bi = BaseImporter()
         bi.create_tsn(return_data, tsn_data["tsn"])

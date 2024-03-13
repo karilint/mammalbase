@@ -293,27 +293,6 @@ class BaseImporter:
             return None
         return possible
     
-
-    def create_return_data(self, tsn, scientific_name, status='valid'):
-        hierarchy = None
-        classification_path = ""
-        classification_path_ids = ""
-        classification_path_ranks = ""
-        if status in {'valid', 'accepted'}:
-            hierarchy = itis.getFullHierarchyFromTSN(tsn)
-            classification_path = itis.hierarchyToString(scientific_name, hierarchy, 'hierarchyList', 'taxonName')
-            classification_path_ids = itis.hierarchyToString(tsn, hierarchy, 'hierarchyList', 'tsn', stop_index=classification_path.count("-"))
-            classification_path_ranks = itis.hierarchyToString('Species', hierarchy, 'hierarchyList', 'rankName', stop_index=classification_path.count("-"))
-            return_data = {
-                'taxon_id': tsn,
-                'canonical_form': scientific_name,
-                'classification_path_ids': classification_path_ids,
-                'classification_path': classification_path,
-                'classification_path_ranks': classification_path_ranks,
-                'taxonomic_status':status
-            }
-        return {'data': [{'results': [return_data]}]}
-
     def create_tsn(self, results, tsn):
         taxonomic_unit = TaxonomicUnits.objects.filter(tsn=tsn)
         if len(taxonomic_unit)==0:
@@ -407,47 +386,6 @@ class BaseImporter:
             return False
         return True
 
-    def generate_standard_values_pa(self, items):
-        standard_items = items
-        remarks_text = "CP+EE+CF+NFE+ASH = 100"
-        # Sum of reported values excluding dry matter and moisture
-        item_sum = Decimal(0.0)
-        for item in items.keys():
-            if "reported" in item and "dm" not in item and "moisture" not in item and items[item] is not None:
-                item_sum += Decimal(items[item])
-        
-        # If reported values sum to 1000 instead of 100 then divide sum by 10
-        sum_to_thousand = False
-        if abs(item_sum - Decimal(100)) > abs(item_sum - Decimal(1000)):
-            sum_to_thousand = True
-            remarks_text = "CP+EE+CF+NFE+ASH = 1000"
-            item_sum /= Decimal(10)
-
-        # If the sum of reported values is closer to 100 when moisture is included then add moisture to the sum
-        if items["moisture_reported"] is not None:
-            if sum_to_thousand and abs(Decimal(100) - (item_sum + (Decimal(items["moisture_reported"]) / Decimal(10)))) < abs(Decimal(100) - item_sum):
-                item_sum += Decimal(items["moisture_reported"]) / Decimal(10)
-                remarks_text = "Moisture+CP+EE+CF+NFE+ASH = 1000"
-            elif abs(Decimal(100) - (item_sum + Decimal(items["moisture_reported"]))) < abs(Decimal(100) - item_sum):
-                item_sum += Decimal(items["moisture_reported"])
-                remarks_text = "Moisture+CP+EE+CF+NFE+ASH = 100"
-        elif items["dm_reported"] is not None:
-            if abs(item_sum - Decimal(items["dm_reported"])) < Decimal(0.001):
-                remarks_text = "CP+EE+CF+NFE+ASH = DM"
-        
-        for item in list(items.keys()):
-            if "reported" not in item or "dm" in item or "moisture" in item:
-                continue
-            elif items[item] is None:
-                standard_items[item.replace("reported","std")] = None
-            elif sum_to_thousand:
-                standard_items[item.replace("reported","std")] = ((Decimal(items[item]) / Decimal(10)) / item_sum) * Decimal(100)
-            else:
-                standard_items[item.replace("reported","std")] = (Decimal(items[item]) / item_sum) * Decimal(100)
-
-        standard_items["remarks"] = remarks_text
-        standard_items["transformation"] = "Original value / (CP+EE+CF+ASH+NFE) * 100"
-        
-        return standard_items
+    
 
 
