@@ -1,7 +1,7 @@
 from django import forms
-from mb.models import SourceAttribute
+from mb.models import AttributeRelation
 
-class SourceAttributeForm(forms.ModelForm):
+class AttributeRelationForm(forms.ModelForm):
     class Meta:
-        model = SourceAttribute
-        fields = ['name']
+        model = AttributeRelation
+        fields = ['source_attribute', 'master_attribute']
