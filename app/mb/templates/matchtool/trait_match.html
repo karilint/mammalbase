@@ -15,7 +15,12 @@
     <h2>Trait Match Tool</h2>
   </header>
 
-  <p>lomakkeet ja logiikka todo</p>
+  <form method="post" action="">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save Changes</button>
+    <a href="{% url 'trait-match' %}">Next Unmatched</a>
+  </form>
 </section>
 
 {% endblock %}
