@@ -238,7 +238,15 @@ CELERY_RESULT_BACKEND = "django-db"
 CELERY_BEAT_SCHEDULE = {
     "update_db_from_itis" : {
         "task": "mb.tasks.update_db_from_itis",
-        "schedule": timedelta(days=30),
+        "schedule": timedelta(days = 30),
+        "args":(),
+        "options": {
+        }
+    },
+    
+    "update_dqs_in_db" : {
+        "task": "mb.tasks.update_dqs",
+        "schedule": timedelta(days = 30),
         "args":(),
         "options": {
         }
