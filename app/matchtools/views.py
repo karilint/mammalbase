@@ -8,7 +8,7 @@ import re
 
 
 @login_required
-# @permission_required('matchtool.trait_match', raise_exception=True)
+@permission_required('matchtool.trait_match', raise_exception=True)
 def trait_match(request):
     """Match source attributes to master attributes."""
     relations = MasterAttribute.objects.exclude(is_active=False).values_list('name', 'source_attribute__name')
