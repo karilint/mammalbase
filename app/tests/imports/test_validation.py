@@ -3,7 +3,7 @@ from unittest import skip
 import pandas as pd
 from imports.validation_lib.occurrence_validation import Occurrence_validation
 from imports.validation_lib.base_validation import Validation
-from mb.models.models import ChoiceValue
+from mb.models import ChoiceValue
 
 class ValidationTest(TestCase):
 
