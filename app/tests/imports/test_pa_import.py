@@ -44,4 +44,3 @@ class ProximateAnalysisImporterTest(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), "Unable to upload file. Exception('Author not found')")
         self.assertEqual(response.status_code, 302)
-    pass
