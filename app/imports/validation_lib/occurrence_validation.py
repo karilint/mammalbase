@@ -14,12 +14,12 @@ class Occurrence_validation(Validation):
             "verbatimScientificName"    : "required|alpha", 
             "taxonRank"                 : "in:Subspecies,Varietas,Forma,Species,Genus,Nothogenus,Nothospecies,Nothosubspecies,Family,nan", 
             "organismQuantity"          : "digits", 
-            "sex"                       : "gender", 
-            "lifeStage"                 : "lifeStage", 
+            "sex"                       : "choiceValue:gender", 
+            "lifeStage"                 : "choiceValue:lifestage", 
             "verbatimLocality"          : "max:250", 
             "verbatimElevation"         : "max:250", 
             "verbatimDepth"             : "max:250", 
-            "verbatimCoordinateSystem"  : "coordinateSystem", 
+            "verbatimCoordinateSystem"  : "coordinateSystem:verbatimLatitude,verbatimLongitude,verbatimCoordinates", 
             "author"                    : "required|author", 
         }
     
