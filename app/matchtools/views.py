@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, permission_required
 # from .models import WordCount
-from mb.models import SourceAttribute, AttributeRelation, MasterAttribute
+from mb.models import SourceAttribute, MasterAttribute
 from django.db.models import Q
 from fuzzywuzzy import fuzz, process
 import re
