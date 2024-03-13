@@ -12,7 +12,35 @@ Upon successful import, a confirmation message is displayed to the user on the w
 
 ## Data Validation
 
-TODO:
+Validation are done by using 'laravel' method. Laravel method origins from php.
+
+For each importer, one creates file. e.g "occurrence_validation.py". where you construct rules for each wanted field in data dictionary.
+
+Example: 
+![](https://github.com/karilint/mammalbase/documentation/images/validation_example.png
+
+Data dictionary includes all fields the datatable.
+Data rules include all fields that needs to be validated.
+
+Base validation file includes subfunction that can be used in rules fields.
+
+Currently it includes:
+
+- boolean: Validates if the field contains a boolean value.
+- author: Validates if the field contains author-related information.
+- required: Validates if the field is required and must not be empty.
+- ChoiceValue: Validates if the field contains values from specific table
+- in: Validates if the field value is within a specified range or set. 
+- alpha: Validates if the field contains alphabetic characters only.
+- in_db: Validates if the field value exists in a specified database.
+- digits: Validates if the field contains digit characters only.
+- coordinateSystem: Validates if the field contains coordinate system-related information. Field must include following fields in the current order separated by ',' : 	verbatimLatitude,verbatimLongitude,verbatimCoordinates
+- max: Validates if the field value is less than or equal to a specified maximum.
+- min: Validates if the field value is greater than or equal to a specified minimum.
+- regex: Validates if the field value matches a specified regular expression pattern.
+
+Rules that require values. e.g min can be written min:20 meaning minium value is 20.
+
 
 ## Architecture
 
