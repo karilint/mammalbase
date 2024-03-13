@@ -7,7 +7,7 @@ from django.db.models import QuerySet
 from itis.models import TaxonomicUnits
 import itis.views as itis
 import sys
-from mb.models.models import SourceMeasurementValue, DietSet
+from mb.models import SourceMeasurementValue, DietSet
 
 
 class bcolors:
