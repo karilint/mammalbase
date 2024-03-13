@@ -3,11 +3,13 @@ from django.conf.urls import url
 from django.urls import path, re_path, include
 
 from . import views
+from matchtools.views import location_matchtool
 from imports.views import (
     import_diet_set,
     import_ets,
     import_proximate_analysis,
-    import_occurrences)
+    import_occurrences,
+    )
 
 import debug_toolbar
 #from rest_framework.urlpatterns import format_suffix_patterns
@@ -129,5 +131,6 @@ urlpatterns = [
     path('tsn/new', views.tsn_new, name='tsn-new'),
     path('tsn/search', views.tsn_search, name='tsn-search'),
     path('exports/', include('exports.urls')),
+    path('lm/', location_matchtool, name='location-matchtool')
 ]
 
