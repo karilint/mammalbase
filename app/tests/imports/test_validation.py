@@ -162,6 +162,7 @@ class ValidationTest(TestCase):
 
     def test_validate_coordinateSystem_fields(self):
         coord_error = self.error_templates['verbatimCoordinateSystem'] % 'verbatimCoordinateSystem'
+        rule = "coordinateSystem:VerbatimLatitude,VerbatimLongitude,VerbatimCoordinates"
         # Mock data for testing
         mock_data = {
             "verbatimCoordinateSystem": "decimal degrees",
@@ -183,10 +184,10 @@ class ValidationTest(TestCase):
             "verbatimCoordinates": "nan"
         }
         # Test cases for validate_coordinateSystem_fields
-        self.assertNotEqual(self.instance.validate_coordinateSystem_fields(mock_data, "verbatimCoordinateSystem"), [])
-        self.assertEqual(self.instance.validate_coordinateSystem_fields(mock_data2, "verbatimCoordinateSystem"), [])
-        self.assertEqual(self.instance.validate_coordinateSystem_fields(mock_data3, "verbatimCoordinateSystem" ), [coord_error])
-        self.assertNotEqual(self.instance.validate_coordinateSystem_fields(mock_data3, "verbatimCoordinateSystem" ), []) 
+        self.assertNotEqual(self.instance.validate_coordinateSystem_fields(mock_data, "verbatimCoordinateSystem",rule), [])
+        self.assertEqual(self.instance.validate_coordinateSystem_fields(mock_data2, "verbatimCoordinateSystem",rule), [])
+        self.assertEqual(self.instance.validate_coordinateSystem_fields(mock_data3, "verbatimCoordinateSystem", rule), [coord_error])
+        self.assertNotEqual(self.instance.validate_coordinateSystem_fields(mock_data3, "verbatimCoordinateSystem",rule ), []) 
 
 
     def test_min(self):

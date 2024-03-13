@@ -120,7 +120,7 @@ class Validation():
                 return key
         return "No match found"
 
-    def validate_coordinateSystem_fields(self, data, field_name):
+    def validate_coordinateSystem_fields(self, data, field_name, rule):
         """Validate the coordinates according to the given coordinate system.
 
 
@@ -131,23 +131,33 @@ class Validation():
         Returns:
             list: Possible validation errors in list. Otherwise empty list if valdion is correct.
         """
+        ls = rule.split(':')[1].split(',')
+        lati = str(ls[0])
+        lati = lati[0].lower() + lati[1:]
+
+        longi = str(ls[1])
+        longi = longi[0].lower() + longi[1:]
+
+        coord = str(ls[2])
+        coord = coord[0].lower() + coord[1:]
+
         errs = []
         if str(data[field_name]) == 'nan':
-            if (str(data["verbatimLatitude"]) != "nan" or str(data["verbatimLongitude"]) != "nan"):
+            if (str(data[lati]) != "nan" or str(data[longi]) != "nan"):
                 errs.append(self.return_field_message(field_name,"verbatimCoordinateSystem"))
                 return errs
             return []
         
-        if str(data["verbatimCoordinates"]) != "nan" and (str(data["verbatimLatitude"]) != "nan" or str(data["verbatimLongitude"]) != "nan"):
+        if str(data[coord]) != "nan" and (str(data[lati]) != "nan" or str(data[longi]) != "nan"):
             errs.append(self.return_field_message(field_name,"required"))
             return errs
         
         dict = self.coords_dict
         
         coordSystem = str(data[field_name]).lower()
-        latitude = str(data["verbatimLatitude"])
-        longitude = str(data["verbatimLongitude"])
-        utm = str(data["verbatimCoordinates"])
+        latitude = str(data[lati])
+        longitude = str(data[longi])
+        utm = str(data[coord])
         coords = f"{latitude}, {longitude}"
 
         if str(data[field_name]) == "UTM":
