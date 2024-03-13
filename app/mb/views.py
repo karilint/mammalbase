@@ -40,7 +40,7 @@ from itis.models import TaxonomicUnits
 from itis.views import *
 from requests_cache import CachedSession
 from config.settings import ITIS_CACHE
-from itis.utils import create_return_data
+from itis.utils import create_return_data, create_tsn
 # from ratelimit.decorators import ratelimit
 
 import requests
@@ -1845,8 +1845,7 @@ def tsn_search(request):
 
         return_data = create_return_data(tsn_data["tsn"], tsn_data["scientificName"], status=tsn_data["nameUsage"])
 
-        bi = BaseImporter()
-        bi.create_tsn(return_data, tsn_data["tsn"])
+        create_tsn(return_data, tsn_data["tsn"])
         return JsonResponse("recieved", safe=False, status=201)
 
     elif request.method == "GET":
