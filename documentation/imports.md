@@ -12,11 +12,11 @@ Upon successful import, a confirmation message is displayed to the user on the w
 
 ## Data Validation
 
-Validation are done by using 'laravel' method. Laravel method origins from php.
+Validations are done by using 'laravel' framework method. Laravel method origins from php.
 
 For each importer, one creates file. e.g "occurrence_validation.py". where you construct rules for each wanted field in data dictionary.
 
-Example: 
+Example:  
 ![](https://github.com/karilint/mammalbase/blob/import_toolsin_dokumentaatio/documentation/images/validation_example.png)
 
 Data dictionary includes all fields the datatable.
@@ -35,8 +35,8 @@ Currently it includes:
 - in_db: Validates if the field value exists in a specified database.
 - digits: Validates if the field contains digit characters only.
 - coordinateSystem: Validates if the field contains coordinate system-related information. Field must include following fields in the current order separated by ',' : 	verbatimLatitude,verbatimLongitude,verbatimCoordinates
-- max: Validates if the field value is less than or equal to a specified maximum.
-- min: Validates if the field value is greater than or equal to a specified minimum.
+- max: Validates if the field value is less than or equal to a specified maximum. Integers are measured as numbers and strings as length of string.
+- min: Validates if the field value is greater than or equal to a specified minimum. Integers are measured as numbers and strings as length of string.
 - regex: Validates if the field value matches a specified regular expression pattern.
 
 Rules that require values. e.g min can be written min:20 meaning minium value is 20.
