@@ -16,6 +16,7 @@ def taxon_query(measurement_choices):
 
     non_active = (
             Q(source_entity__master_entity__entity__is_active=False)
+          | Q(source_entity__master_entity__id=None)
     )
 
     query = base.exclude(non_active).annotate(

@@ -1,7 +1,7 @@
-from django.db.models import Value, CharField, Q, Case, When, F
+from django.db.models import Value, CharField, Q, Case, When, F, Aggregate
 from django.db.models.functions import Concat, Replace
 
-from mb.models import SourceChoiceSetOptionValue, MasterChoiceSetOption
+from mb.models import SourceChoiceSetOptionValue, MasterAttribute
 from .base_query import base_query
 
 
@@ -65,6 +65,7 @@ def traitlist_query(measurement_choices):
         ),
         narrowerTerm=Value('NA'),
         relatedTerm=Value('NA'),
+        #factorLevels=GroupConcat('source_choiceset_option__master_choiceset_option__name'),
         broaderTerm=Value('NA'),
         expectedUnit=Value('NA'),
         max_allowed_value=Value('NA'),
@@ -99,7 +100,7 @@ def traitlist_query(measurement_choices):
         ('relatedTerm', 'relatedTerm'),
         ('source_choiceset_option__source_attribute__master_attribute__value_type', 'valueType'),
         ('expectedUnit', 'expectedUnit'),
-        ('source_choiceset_option__master_choiceset_option__name', 'factorLevels'),
+        #('factorLevels', 'factorLevels'),
         ('max_allowed_value', 'maxAllowedValue'),
         ('min_allowed_value', 'minAllowedValue'),
         ('source_choiceset_option__source_attribute__master_attribute__description', 'traitDescription'),
