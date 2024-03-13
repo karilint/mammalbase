@@ -13,6 +13,7 @@ The project directory structure is as follows:
     - `scripts/`: Scripts used in the application.
     - `tdwg/`: TDWG (Taxonomic Databases Working Group) related files.
     - `tests/`: Unit tests for the application.
+    - `urls/`: URL handling is centralized here. paths, subpath includes, etc
 - `documentation/`: Contains markdown files with documentation about the application, its architecture, testing, environment variables, etc.
 - `nginx/`: Configuration files for the Nginx server.
 
@@ -22,7 +23,7 @@ The `app` directory contains the main django application files. The application 
 
 ### Config
 
-The `config` directory contains configuration files for the application. The `settings.py` file contains the main settings for the application, such as database settings, installed apps, middleware, etc. The `urls.py` file contains the URL patterns for the application.
+The `config` directory contains configuration files for the application. The `settings.py` file contains the main settings for the application, such as database settings, installed apps, middleware, etc.
 
 ### Exports
 
@@ -61,14 +62,19 @@ The `tdwg` directory contains Taxon model that follows TDWG (Taxonomic Databases
 
 The `tests` directory contains unit tests for the application. The tests are divided into several folders, each of which contains tests for a specific part of the application.
 
-### Documentation
+### Urls
+
+This subpackage contains all URL related information. All the urls and their
+view counterparts are listed in the submodules starting from `__init__.py`.
+
+## Documentation
 
 The `documentation` directory contains markdown files with documentation about the application.
 
-### Nginx
+## Nginx
 
 The `nginx` directory contains configuration files for the Nginx server.
 
-### .github
+## .github
 
 The `.github` directory contains GitHub-specific files, such as workflows for GitHub Actions.
