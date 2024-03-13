@@ -21,7 +21,8 @@ import json
 import requests_mock
 from unittest import skip
 
-class EtsImporterTest(TestCase):
+
+class ProximateAnalysisImporterTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_superuser(username='Testi')
@@ -29,15 +30,15 @@ class EtsImporterTest(TestCase):
         self.accountuser = SocialAccount.objects.create(uid='1111-1111-2222-222X', user_id=self.user.pk)
         self.reference1 = SourceReference.objects.create(citation='Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
         self.reference2 = SourceReference.objects.create(citation='Creese, S., Davies, S.J. and Bowen, B.J., 2019. Comparative dietary analysis of the black-flanked rock-wallaby (Petrogale lateralis lateralis), the euro (Macropus robustus erubescens) and the feral goat (Capra hircus) from Cape Range National Park, Western Australia. Australian Mammalogy, 41(2), pp.220-230.')
-    
+   
     def test_import_pa_post(self):                   
-        with open("pa_true_test.tsv") as fp:
+        with open("/src/app/tests/imports/assets/pa_true_test.tsv") as fp:
             response = self.client.post('/import/proximate_analysis', {'name': 'fred', 'csv_file': fp})
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
 
     def test_import_pa_post_incorrect_file(self):       
-        with open("pa_false_test.tsv") as fp:
+        with open("/src/app/tests/imports/assets/pa_false_test.tsv") as fp:
             response = self.client.post('/import/proximate_analysis', {'name': 'fred', 'csv_file': fp})
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
