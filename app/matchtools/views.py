@@ -3,11 +3,9 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponseRedirect
 #from .models import WordCount
 from .forms import SourceAttributeForm
-from mb.models import SourceAttribute, AttributeRelation
+from mb.models import SourceAttribute, MasterAttribute
 from django.db.models import Q
 from fuzzywuzzy import fuzz, process
-import re
-
 
 @login_required 
 @permission_required('matchtool.trait_match', raise_exception=True)
