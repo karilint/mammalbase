@@ -28,12 +28,12 @@ def wrapper(request, validator, importer, path):
     df = pd.read_csv(csv_file, sep='\t')
     try:   
         errors = validate(df, validator)
-        author_check = check_author_consistency(df)
+        #author_check = check_author_consistency(df)
         if errors:
-            error_messages = "|".join(map(str, errors))
-            messages.error(request, error_messages)
+            for error in errors:
+                messages.error(request, error)
             return HttpResponseRedirect(reverse(path))
-        if not author_check:
+        #if not author_check:
             messages.error(request, "Authors need to be consisten. Please make sure each row has your own ORCID")
             return HttpResponseRedirect(reverse(path))
  
@@ -104,7 +104,7 @@ def row_importer(df, importer):
             success_rows += 1
     return success_rows
  
-def check_author_consistency(df):
+def check_author_consistency(df: pd.DataFrame):
     """Check if every row has the same value for the 'author' column as the first row.
  
     Args:

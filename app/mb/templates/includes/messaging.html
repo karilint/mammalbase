@@ -1,41 +1,27 @@
 {% if messages %}
-	{% for message in messages %}
-		{% if message.tags == 'success'%}
-			<div class="w3-panel w3-green">
-			  <h3>Success!</h3>
-			  <p>{{message}}</p>
-			</div> 
-		{% elif message.tags == 'info'%}
-			<div class="w3-panel w3-blue">
-			  <h3>Info!</h3>
-			  <p>{{message}}</p>
-			</div> 
-		{% elif message.tags == 'warning'%}
-			<div class="w3-panel w3-yellow">
-			  <h3>Warning!</h3>
-			  <p>{{message}}</p>
-			</div> 
-		{% elif message.tags == 'error'%}
-		<div class="w3-panel w3-red">
-			<h3>Error!</h3>
-			<p hidden id="message">{{message}}</p>
-			<script>
-				document.addEventListener("DOMContentLoaded", function() {
-					var messageElement = document.getElementById("message");
-					var messageText = messageElement.textContent;
-					var parts = messageText.split('|').reverse();
-					
-					// Assuming you want to display each part in a separate paragraph
-					parts.forEach(function(part) {
-						var newParagraph = document.createElement('p');
-						newParagraph.textContent = part;
-						messageElement.parentNode.insertBefore(newParagraph, messageElement.nextSibling);
-					});
-				});
-			</script>
-		</div>
-		
-		{% elif message.tags == 'import-message'%}
+{% regroup messages by tags as message_list %}
+
+{% for message_group in message_list %}
+    <div class="{% if message_group.grouper == 'success' %}w3-green
+                {% elif message_group.grouper == 'info' %}w3-blue
+                {% elif message_group.grouper == 'warning' %}w3-yellow
+                {% elif message_group.grouper == 'error' %}w3-red
+                {% endif %} w3-panel">
+        <h3>
+            {% if message_group.grouper == 'success' %}Success!
+            {% elif message_group.grouper == 'info' %}Info!
+            {% elif message_group.grouper == 'warning' %}Warning!
+            {% elif message_group.grouper == 'error' %}Error!
+            {% endif %}
+        </h3>
+        {% for message in message_group.list %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+{% endfor %}
+
+{% for message in messages %}	
+	{% if message.tags == 'import-message'%}
 		<div class="w3-panel w3-green">
 		  <h3>Data import successful</h3>
 		  <p>{{message}}</p>
@@ -52,7 +38,7 @@
 		  </div>
 		</div>
 	{% endif %}
-	{% endfor %}
+{% endfor %}
 	<script>
 		function showInfo(id) {
 		  var x = document.getElementById(id);
