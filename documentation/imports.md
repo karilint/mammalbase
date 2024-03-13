@@ -17,7 +17,7 @@ Validation are done by using 'laravel' method. Laravel method origins from php.
 For each importer, one creates file. e.g "occurrence_validation.py". where you construct rules for each wanted field in data dictionary.
 
 Example: 
-![](https://github.com/karilint/mammalbase/documentation/images/validation_example.png
+![](https://github.com/karilint/mammalbase/blob/import_toolsin_dokumentaatio/documentation/images/validation_example.png)
 
 Data dictionary includes all fields the datatable.
 Data rules include all fields that needs to be validated.
