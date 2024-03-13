@@ -10,23 +10,21 @@
   <h1>MammalBase - Trait Match Tool</h1>
 </header>
 <!--End of article header -->
-<section class="w3-container">
+<section class="w3-threequarter w3-container">
   <header class="w3-container w3-text-teal">
     <h2>Trait Match Tool</h2>
   </header>
-
-  <form method="post" action="">
+{% if request.user|is_data_admin_or_contributor %}
+  <form method="POST" novalidate>
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save Changes</button>
-    <a href="{% url 'trait-match' %}">Next Unmatched</a>
+    {% include 'includes/w3c-form.html' with form=form %}
+    <div class="mb-detail w3-bar w3-right-align">
+      <button title="Press to Submit" type="submit" class="w3-button w3-medium w3-round w3-padding-small w3-teal">Submit&nbsp; <i class="fa fa-angle-right"></i><i class="fa fa-angle-right"></i></button>
+    </div>
   </form>
+{% else %}
+  <p><a href="{% url 'login'%}?next={{request.path}}">Please login first</a></p>
+{% endif %}
 </section>
 
-{% endblock %}
-{% block info %}
-{% endblock %}
-{% block pagination %}
-{% endblock %}
-{% block script %}
 {% endblock %}
