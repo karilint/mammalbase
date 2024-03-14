@@ -132,6 +132,6 @@ urlpatterns = [
     path('tsn/search', views.tsn_search, name='tsn-search'),
     path('exports/', include('exports.urls')),
     path('matchtools/',include('matchtools.urls')),
-    path('lm/', source_location_list, name='source-location-list')
+    path('sl/', source_location_list, name='source-location-list')
 ]
 
