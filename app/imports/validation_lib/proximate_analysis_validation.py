@@ -25,7 +25,7 @@ class Proximate_analysis_validation(Validation):
             "verbatimTraitValue__crude_fibre"           : "max:250",
             "verbatimTraitValue_ash"                    : "max:250",
             "verbatimTraitValue__nitrogen_free_extract" : "max:250",
-            "associatedReferences"                      : "max:500|regex:.*([1-2][0-9]{3})or(Original study)"
+            "associatedReferences"                      : "max:500|'regex:.*([1-2][0-9]{3})|(Original study)'"
         }
     
         self.data = {

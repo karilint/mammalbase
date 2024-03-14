@@ -46,7 +46,7 @@ class Validation():
         inside_quotes = False
 
         for char in rules:
-            if char == '"':
+            if char == "'":
                 inside_quotes = not inside_quotes
             elif char == separator and not inside_quotes:
                 result.append(current)
@@ -66,12 +66,11 @@ class Validation():
         #iterate through the rules dictionary, fetching each rule name (dictionary key) one by one
         for field_name in rules:
 
-            #fetch the rule (value of dictionary element) from "rules" dictionary for the current rule name (dictionary key) and split it to get a list
-            #field_rules = rules[field_name].split('|')
-            
+            #fetch the rule (value of dictionary element) from "rules" dictionary for the current rule name (dictionary key) and split it to get a list            
 
-            #TODO: here better spliter that also notices "-characters
             field_rules = self.split_rules(rules[field_name], '|')
+
+            print(str(field_rules))
             
             #field_errors will keep the errors for a particular field, which will be appended to the main "errors" list
             field_errors = []
@@ -351,7 +350,7 @@ class Validation():
     def validate_regex_fields(self, data, field_name, rule):
         """Used for validating field data to match a regular expression, returns a list of error messages"""
 
-        rule = rule.replace("or", "|")
+        #rule = rule.replace("or", "|")
 
         regex = str(rule.split(':')[1])
         errs,result = self.match_regular_expression(regex,str(data[field_name]),"regex")
