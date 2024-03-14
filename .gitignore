@@ -167,4 +167,4 @@ cython_debug/
 !app/mb/management/commands/habitat_csv/*.csv
 
 # keep proximate analysis tsv files
-!/app/tests/imports/assets/*.tsv
+!app/tests/imports/assets/*.tsv
