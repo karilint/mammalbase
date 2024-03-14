@@ -13,7 +13,8 @@ from mb.models import (
     SourceMeasurementValue,
     Occurrence,
     Event,
-    SourceHabitat)
+    SourceHabitat,
+    ProximateAnalysis)
 from django.db import transaction
 from django.contrib.auth.models import User
 from mb.models.occurrence_models import Occurrence, Event

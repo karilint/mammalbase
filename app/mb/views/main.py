@@ -14,39 +14,6 @@ from django.views import generic
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.http import JsonResponse
-<<<<<<< HEAD:app/mb/views.py
-from .filters import (DietSetFilter, FoodItemFilter
-    , MasterAttributeFilter, MasterEntityFilter, MasterReferenceFilter
-    , ProximateAnalysisFilter, ProximateAnalysisItemFilter
-    , SourceAttributeFilter, SourceEntityFilter, SourceReferenceFilter
-    , TaxonomicUnitsFilter, TimePeriodFilter, ViewProximateAnalysisTableFilter)
-from .forms import (AttributeRelationForm, ChoiceSetOptionRelationForm
-    , DietSetForm, DietSetItemForm, EntityRelationForm, FoodItemForm, MasterEntityForm
-    , MasterAttributeForm, MasterAttributeChoicesetOptionForm
-    , MasterChoiceSetOptionForm, MasterReferenceForm, OrderingForm
-    , ProximateAnalysisForm, ProximateAnalysisItemForm
-    , SourceAttributeForm, SourceAttributeChoicesetOptionForm
-    , SourceChoiceSetOptionForm, SourceChoiceSetOptionValueForm, SourceEntityForm
-    , SourceEntityRelationForm, SourceMeasurementValueForm
-    , SourceReferenceAttributeForm, SourceReferenceForm
-    , TaxonomicUnitsForm, TimePeriodForm)
-from .models.models import (AttributeRelation, ChoiceSetOptionRelation, DietSet
-    , DietSetItem, EntityRelation, FoodItem
-    , MasterAttribute, MasterChoiceSetOption, MasterEntity, MasterReference
-    , ProximateAnalysis, ProximateAnalysisItem
-    , RelationClass
-    , SourceAttribute, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceEntity
-    , SourceMeasurementValue, SourceReference, TimePeriod, ViewMasterTraitValue, ViewProximateAnalysisTable)
-from imports.views import import_diet_set, import_ets, import_proximate_analysis, import_occurrences
-from imports.importers.base_importer import BaseImporter
-from itis.models import TaxonomicUnits
-from itis.views import *
-from requests_cache import CachedSession
-from config.settings import ITIS_CACHE
-from itis.utils import create_return_data, create_tsn
-# from ratelimit.decorators import ratelimit
-=======
->>>>>>> 4f0762f5aac21188a7c2b62dfc731e347690c4b8:app/mb/views/main.py
 
 import requests
 from requests_cache import CachedSession
@@ -56,10 +23,9 @@ from plotly.offline import plot as plotly_offline_plot
 from pandas import DataFrame as PandasDataFrame
 
 from config.settings import ITIS_CACHE
-from imports.tools import (
+from itis.utils import (
     create_return_data,
-    create_tsn,
-    generate_standard_values_pa)
+    create_tsn)
 from itis.models import TaxonomicUnits
 from mb.filters import (
     DietSetFilter,
