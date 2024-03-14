@@ -30,7 +30,6 @@
         {% for x in page_obj %}
         <tr>
           <td class="mb-public-internal"><a title="Press for Details">{{ x.name }} <span class="fa fa-link w3-small"></span></a></td>
-          <!-- <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_location_match' id=x.id %}">{{ x.name }} <span class="fa fa-link w3-small"></span></a></td> -->
           <td>{{ x.reference|safe }}</td>
           <td style="text-align:center">
           </td>
