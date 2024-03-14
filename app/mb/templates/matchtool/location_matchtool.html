@@ -1,23 +1,50 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Match Tool</title>
-</head>
-<body>
-    <h1>Match Tool</h1>
-    <form method="POST">
-      {% csrf_token %}
-      <label>Search:</label>
-      <input type="text" id="search" name="query">
-      <input type="submit" value="Submit">
-    </form>
-    <h3>Source Location</h3>
-    {% for source in sources %}
-      <p>{{ source}}</p>
-    {% endfor %}
-    <h3>Results</h3>
-    <h4>{{ count }}</h4>
-    {% for location in locations %}
-      <p>{{ location.name }} {{ location.geonameId }}</p>
-    {% endfor %}
-</body>
+{% extends "mb/base_generic.html" %}
+{% block title %}
+<title>MammalBase - Location Matchtool</title>
+{% endblock %}
+{% block content %} {% load custom_tags %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Location Matchtool</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2>Source Locations</h2>
+  </header>
+
+  {% include 'includes/find.html' %}
+  {% if page_obj %}
+    {% if request.user|is_data_admin_or_contributor %}
+      <br>
+      <br>
+    {% endif %}
+    <table class="mb-list w3-table-all w3-small w3-responsive">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Reference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for x in page_obj %}
+        <tr>
+          <td class="mb-public-internal"><a title="Press for Details">{{ x.name }} <span class="fa fa-link w3-small"></span></a></td>
+          <!-- <td class="mb-public-internal"><a title="Press for Details" href="{% url 'source_location_match' id=x.id %}">{{ x.name }} <span class="fa fa-link w3-small"></span></a></td> -->
+          <td>{{ x.reference|safe }}</td>
+          <td style="text-align:center">
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>There are no Source Locations available.</p>
+  {% endif %}
+  </section>
+{% endblock %}
+{% block pagination %}
+  {% include 'mb/pagination.html' %}
+{% endblock %}
+{% block script %}
+{% endblock %}
