@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
@@ -7,19 +6,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from itis.models import TaxonomicUnits
 from tdwg.models import Taxon as TdwgTaxon
 from .base_model import BaseModel
-from .habitat_models import SourceHabitat, MasterHabitat
-
-
-# For doi validation
-from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
-
-def validate_doi(value):
-    if not value.startswith( '10.' ):
-        raise ValidationError(
-            _('Value "%(value)s" does not begin with 10 followed by a period'),
-            params={'value': value},
-        )
+from .validators import validate_doi
 
 
 class AttributeRelation(BaseModel):
@@ -247,7 +234,7 @@ class MasterAttribute(BaseModel):
     max_allowed_value = models.CharField(blank=True, null=True, max_length=25, help_text="Enter maximum value for the Master Attribute")
     description = models.TextField(blank=True, null=True, max_length=500, help_text="Enter description for the Master Attribute")
     remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Master Attribute")
-    # Add description-field 
+    # Add description-field
     groups = models.ManyToManyField('MasterAttributeGroup', through='AttributeGroupRelation')
 
     value_type = models.CharField(max_length=25, choices=TYPE, default='character', help_text='Select the valueType of the MasterAttribute')
@@ -572,7 +559,7 @@ class SourceEntity(BaseModel):
         max_length=250,
         help_text="Enter the Name of the Source Entity"
         )
-    
+
     taxon = models.ForeignKey(
         TdwgTaxon,
         blank=True,
@@ -651,6 +638,7 @@ class SourceMeasurementValue(BaseModel):
     measurement_accuracy = models.TextField(blank=True, null=True, max_length=50, help_text="The description of the potential error associated with the measurementValue.")
     measured_by = models.TextField(blank=True, null=True, max_length=100, help_text="A list (concatenated and separated) of names of people, groups, or organizations who determined the value of the measurement. The recommended best practice is to separate the values with a vertical bar (' | ').")
     remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Source Measurement")
+    data_quality_score = models.SmallIntegerField(blank=True, null=True, default=0, help_text="Data quality score for the data")
     # unit is no longer in use - to be deleted
     cited_reference = models.CharField(
         blank=True,
@@ -661,6 +649,7 @@ class SourceMeasurementValue(BaseModel):
         null=True,
         blank=True,
         max_length=250, help_text='Measurement unit reported.')
+    
     def clean(self):
         # Don't allow wrong n values.
         if self.n_total != self.n_unknown + self.n_male + self.n_female:
@@ -688,6 +677,52 @@ class SourceMeasurementValue(BaseModel):
         String for representing the Model object (in Admin site etc.)
         """
         return '%s: %s ' % (self.source_attribute.name, str(self.n_total))
+
+    # Used to calculate the quality of the measurement data
+    def calculate_data_quality_score_for_measurement(self):
+        score = 0
+        #1 weight of taxon quality
+        taxon = self.source_entity.entity.name
+        if taxon == 'Species' or taxon == 'Subspecies':
+            score += 1
+
+        #2 weight of having a reported citation of the data
+        citation = self.cited_reference
+        if citation == 'Original study':
+            score += 2
+        elif citation != None:
+            score += 1
+
+        #3 weight of source quality in the diet
+        try:
+            source_type = self.source_entity.reference.master_reference.type
+        except:
+            score += 0
+        else:
+            if source_type == 'journal-article':
+                score += 3
+            elif source_type == 'book':
+                score += 2
+            elif source_type == 'data set':
+                score += 1
+
+        #4 weight of having a described method in the method
+        if self.source_attribute.method:
+            score += 1
+
+        #5 weight of having individual count
+        if self.n_total != 0:
+            score += 1
+
+        #6 weight of having minimum and maximum
+        if self.minimum != 0 and self.maximum != 0:
+            score += 1
+
+        #7 weight of having Standard Deviation
+        if self.std != 0:
+            score += 1
+
+        return score
 
 class SourceMethod(BaseModel):
     """
@@ -992,7 +1027,8 @@ class DietSet(BaseModel):
         null=True,
         max_length=250,
         help_text="Enter the time when this study was performed.")
-
+    data_quality_score = models.SmallIntegerField(blank=True, null=True, default=0, help_text="Data quality score for the data")
+    
     class Meta:
         ordering = ['taxon__name', 'reference']
 #        unique_together = ('reference','taxon','location', 'gender', 'sample_size', 'cited_reference', 'time_period', 'method')
@@ -1009,6 +1045,45 @@ class DietSet(BaseModel):
         """
         return '%s - %s ' % (self.taxon, self.reference)
 
+    def calculate_data_quality_score(self):
+        score = 0
+
+        # 1. Taxon quality
+        entity = self.taxon.entity.name
+        if entity == 'Species' or entity == 'Subspecies':
+            score += 1
+
+        # 2. The weight of having a reported citation of the data in the diet
+        c_reference = self.cited_reference
+        if c_reference == 'Original study':
+            score += 2
+        elif c_reference:
+            score += 1
+
+        # 3. The weight of source quality in the diet
+        try:
+            master = self.reference.master_reference.type
+        except:
+            score += 0
+        else:
+            if master == 'journal-article':
+                score += 3
+            elif master == 'book':
+                score += 2
+            elif master == 'dataset':
+                score += 1
+
+        # 4. The weight of having a described method in the diet
+        method = self.method
+        if method:
+            score += 2
+
+        # 5. The weight of food item taxonomy
+        diet_set_items = DietSetItem.objects.filter(diet_set=self, food_item__tsn__rank_id__gt=100)
+        if diet_set_items.count():
+            score += (2 * diet_set_items.count()) // diet_set_items.count()
+
+        return score
 
 class DietSetItem(BaseModel):
     """

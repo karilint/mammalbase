@@ -1,7 +1,24 @@
+<<<<<<< HEAD
 from imports.importers.base_importer import BaseImporter
 from mb.models.models import SourceAttribute, SourceReference, SourceEntity, SourceMethod, SourceUnit, ChoiceValue, SourceStatistic, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceMeasurementValue
+=======
+>>>>>>> 4f0762f5aac21188a7c2b62dfc731e347690c4b8
 from django.db import transaction
 from django.contrib.auth.models import User
+
+from mb.models import (
+    SourceAttribute,
+    SourceReference,
+    SourceEntity,
+    SourceMethod,
+    SourceUnit,
+    ChoiceValue,
+    SourceStatistic,
+    SourceChoiceSetOption,
+    SourceChoiceSetOptionValue,
+    SourceMeasurementValue)
+from imports.tools import possible_nan_to_none, possible_nan_to_zero
+from .base_importer import BaseImporter
 
 
 class EtsImporter(BaseImporter):

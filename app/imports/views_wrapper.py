@@ -4,12 +4,18 @@ import pandas as pd
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+<<<<<<< HEAD
  
 from utils.views import render	# MB Utils
 from .importers.base_importer import BaseImporter
 from .importers.base_importer import messages
 
 bi = BaseImporter()
+=======
+from django.shortcuts import render
+
+from .tools import messages
+>>>>>>> 4f0762f5aac21188a7c2b62dfc731e347690c4b8
  
 def wrapper(request, validator, importer, path):
     """Wrapper for differnt viewers. 

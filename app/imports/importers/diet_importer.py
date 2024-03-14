@@ -1,6 +1,11 @@
-from imports.importers.base_importer import BaseImporter
 from django.db import transaction
+<<<<<<< HEAD
 from mb.models.models import DietSet, DietSetItem
+=======
+from mb.models import DietSet, DietSetItem
+from imports.tools import possible_nan_to_none, possible_nan_to_zero
+from .base_importer import BaseImporter
+>>>>>>> 4f0762f5aac21188a7c2b62dfc731e347690c4b8
 
 class DietImporter(BaseImporter):
     

@@ -1,13 +1,27 @@
 from django import forms
-from django_select2.forms import (
-    ModelSelect2Widget,
-)
-from .models.models import (AttributeRelation, ChoiceSetOptionRelation, DietSet, DietSetItem, EntityRelation
-    , FoodItem, MasterAttribute, MasterChoiceSetOption, MasterEntity, MasterReference
-    , ProximateAnalysis, ProximateAnalysisItem, SourceAttribute
-    , SourceChoiceSetOption, SourceChoiceSetOptionValue
-    , SourceEntity, SourceMeasurementValue, SourceReference, TimePeriod)
+from django_select2.forms import ModelSelect2Widget
+
 from itis.models import TaxonomicUnits
+from mb.models import (
+    AttributeRelation,
+    ChoiceSetOptionRelation,
+    DietSet,
+    DietSetItem,
+    EntityRelation,
+    FoodItem,
+    MasterAttribute,
+    MasterChoiceSetOption,
+    MasterEntity,
+    MasterReference,
+    ProximateAnalysis,
+    ProximateAnalysisItem,
+    SourceAttribute,
+    SourceChoiceSetOption,
+    SourceChoiceSetOptionValue,
+    SourceEntity,
+    SourceMeasurementValue,
+    SourceReference,
+    TimePeriod)
 
 class ReferenceWidget(ModelSelect2Widget):
     search_fields = ['title__icontains', 'first_author__icontains',]

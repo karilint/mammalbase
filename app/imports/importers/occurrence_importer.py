@@ -1,9 +1,29 @@
 from imports.importers.base_importer import BaseImporter
+<<<<<<< HEAD
 from mb.models.models import SourceAttribute, SourceReference, SourceEntity, SourceMethod, SourceUnit, ChoiceValue, SourceStatistic, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceMeasurementValue
+=======
+>>>>>>> 4f0762f5aac21188a7c2b62dfc731e347690c4b8
 from django.db import transaction
 from django.contrib.auth.models import User
-from mb.models.occurrence_models import Occurrence, Event
-from mb.models.habitat_models import SourceHabitat
+
+from mb.models import (
+    SourceAttribute,
+    SourceReference,
+    SourceEntity,
+    SourceMethod,
+    SourceUnit,
+    ChoiceValue,
+    SourceStatistic,
+    SourceChoiceSetOption,
+    SourceChoiceSetOptionValue,
+    SourceMeasurementValue,
+    
+    Occurrence,
+    Event,
+    
+    SourceHabitat)
+from imports.tools import messages, possible_nan_to_none, possible_nan_to_zero
+from .base_importer import BaseImporter
 
 class OccurrencesImporter(BaseImporter):
     
@@ -55,4 +75,3 @@ class OccurrencesImporter(BaseImporter):
         else:
             return False
 
-OccurrencesImpoter = OccurrencesImporter()

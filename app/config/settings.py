@@ -10,57 +10,53 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-import os
-import json
+from os import environ, path
 from datetime import timedelta
 from pathlib import Path
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-try:
-    with open(os.path.join(BASE_DIR, 'config.json')) as config_file:
-        config = json.load(config_file)
-except IOError:
-    config = {}
-
-
-def get_var(name, default_value=None):
-    """
-    The function first searches for a environmental variable called by the
-    name. Then, if not found, it searches for the value from config.json file.
-    If the variable is not found on either place, then it returns default_value.
-    """
-    return os.environ.get(name, config.get(name, default_value))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = get_var('SECRET_KEY', 'development_key')
+SECRET_KEY = environ.get('SECRET_KEY', 'development_key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(int(get_var('DEBUG', 0)))
+DEBUG = bool(int(environ.get('DEBUG', 0)))
 
-# For debug_toolbar
-if DEBUG:
-    #import os  # only if you haven't already imported this
-    import socket  # only if you haven't already imported this
-    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
-    INTERNAL_IPS = [ip[:-1] + '1' for ip in ips] + ['127.0.0.1', '10.0.2.2']
 
-#INTERNAL_IPS = ('127.0.0.1', '0.0.0.0', 'localhost',)
+
+""" PATHS """
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/4.0/howto/static-files/
+STATIC_URL = 'static/'
+STATIC_ROOT = environ.get('STATIC_ROOT', path.join(BASE_DIR, 'static'))
+
+# Media files
+MEDIA_URL = 'media/'
+MEDIA_ROOT = environ.get('MEDIA_ROOT', path.join(BASE_DIR, 'media'))
+
+
+
+""" Adresses and protocols """
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http" if DEBUG else "https"
 
 ALLOWED_HOSTS = []
-ALLOWED_HOSTS_ENV = get_var('ALLOWED_HOSTS')
+ALLOWED_HOSTS_ENV = environ.get('ALLOWED_HOSTS')
 if ALLOWED_HOSTS_ENV:
     ALLOWED_HOSTS.extend(ALLOWED_HOSTS_ENV.split(','))
 
 CSRF_TRUSTED_ORIGINS = []
-TRUSTED_ORIGINS_ENV = get_var('TRUSTED_ORIGINS')
+TRUSTED_ORIGINS_ENV = environ.get('TRUSTED_ORIGINS')
 if TRUSTED_ORIGINS_ENV:
     CSRF_TRUSTED_ORIGINS.extend(TRUSTED_ORIGINS_ENV.split(','))
+
+SITE_DOMAIN = environ.get('SITE_DOMAIN', 'mammalbase.net')
+
+
 
 # Application definition
 
@@ -73,34 +69,38 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.sites',
     'django.contrib.staticfiles',
-#    'django_userforeignkey',
+
+    'django_userforeignkey',
     'django_select2',
-#    'rest_framework',
-    'simple_history',
-    'main.apps.MainConfig',
-    'imports',
-    'itis',
-#    'tdwg',
-    'mb.apps.MbConfig',
-    'tdwg.apps.TdwgConfig',
-    'utils',	# mb utils
-    'debug_toolbar',
-#    'django_extensions', #for Jupyter and Scripts
-#    'crispy_forms',
+
+    "django_celery_results",
+    "celery_progress",
+
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.orcid',
-#    'users.apps.UsersConfig',
+
+    # https://django-simple-history.readthedocs.io/
+    'simple_history',
+
+    'main.apps.MainConfig',
+    'mb.apps.MbConfig',
+    'tdwg.apps.TdwgConfig',
+
+    'imports',
+    'itis',
     'exports',
-    "django_celery_results",
-    "celery_progress",
+
+#    'django_extensions', #for Jupyter and Scripts
+#    'crispy_forms',
+#    'users.apps.UsersConfig',
+#    'rest_framework',
 ]
 
 SITE_ID = 1
 
 MIDDLEWARE = [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -109,10 +109,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_userforeignkey.middleware.UserForeignKeyMiddleware',
+
+    # https://django-simple-history.readthedocs.io/
     'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
-ROOT_URLCONF = 'config.urls'
+# All URL configuration can be found on urls subpackage located at /app/urls
+ROOT_URLCONF = 'urls'
 
 TEMPLATES = [
     {
@@ -151,18 +154,12 @@ SOCIALACCOUNT_PROVIDERS = {
          'BASE_DOMAIN': 'orcid.org',
          'MEMBER_API': False,
          'APP': {
-             'client_id': get_var("ORCID_CLIENT_ID", ''),
-             'secret': get_var("ORCID_SECRET", ''),
+             'client_id': environ.get("ORCID_CLIENT_ID", ''),
+             'secret': environ.get("ORCID_SECRET", ''),
              'key': '',
         }
     }
 }
-
-if DEBUG:
-    ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http"
-else:
-    ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
-
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
@@ -172,10 +169,10 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'HOST': get_var('DB_HOST'),
-        'NAME': get_var('DB_NAME'),
-        'USER': get_var('DB_USER'),
-        'PASSWORD': get_var('DB_PASS'),
+        'HOST': environ.get('DB_HOST'),
+        'NAME': environ.get('DB_NAME'),
+        'USER': environ.get('DB_USER'),
+        'PASSWORD': environ.get('DB_PASS'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'charset': 'utf8mb4',
@@ -202,50 +199,20 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'Europe/Helsinki'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.0/howto/static-files/
-
-STATIC_URL = 'static/'
-STATIC_ROOT = get_var('STATIC_ROOT', os.path.join(BASE_DIR, 'static'))
-# Media files
-
-MEDIA_URL = 'media/'
-MEDIA_ROOT = get_var('MEDIA_ROOT', os.path.join(BASE_DIR, 'media'))
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# https://medium.com/@zero_fighter/django-debug-toolbar-setup-2bf81736efe3
-DEBUG_TOOLBAR_PANELS = [
-    'debug_toolbar.panels.versions.VersionsPanel',
-    'debug_toolbar.panels.timer.TimerPanel',
-    'debug_toolbar.panels.settings.SettingsPanel',
-    'debug_toolbar.panels.headers.HeadersPanel',
-    'debug_toolbar.panels.request.RequestPanel',
-    'debug_toolbar.panels.sql.SQLPanel',
-    'debug_toolbar.panels.staticfiles.StaticFilesPanel',
-    'debug_toolbar.panels.templates.TemplatesPanel',
-    'debug_toolbar.panels.cache.CachePanel',
-    'debug_toolbar.panels.signals.SignalsPanel',
-    'debug_toolbar.panels.logging.LoggingPanel',
-    'debug_toolbar.panels.redirects.RedirectsPanel',
-]
 
 CACHES = {
     'default': {
@@ -260,33 +227,69 @@ CACHES = {
     }
 }
 
+
 SELECT2_CACHE_BACKEND = 'select2'
+ITIS_CACHE = environ.get("ITIS_CACHE", "/vol/web/static/itis_cache")
+
 
 # Celery configuration
-CELERY_BROKER_URL = get_var("CELERY_BROKER", "redis://redis:6379")
+CELERY_BROKER_URL = environ.get("CELERY_BROKER", "redis://redis:6379")
 CELERY_RESULT_BACKEND = "django-db"
 CELERY_BEAT_SCHEDULE = {
     "update_db_from_itis" : {
         "task": "mb.tasks.update_db_from_itis",
-        "schedule": timedelta(days=30),
+        "schedule": timedelta(days = 30),
+        "args":(),
+        "options": {
+        }
+    },
+    
+    "update_dqs_in_db" : {
+        "task": "mb.tasks.update_dqs",
+        "schedule": timedelta(days = 30),
         "args":(),
         "options": {
         }
     }
 }
 
+
 # Email configuration
-SENDGRID_API_KEY = get_var('SENDGRID_API_KEY')
-EMAIL_BACKEND = get_var(
+EMAIL_HOST_PASSWORD = environ.get('SENDGRID_API_KEY')
+EMAIL_BACKEND = environ.get(
     'EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend'
 )
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_HOST_USER = 'apikey' # this is exactly the value 'apikey'
-EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = get_var('DEFAULT_FROM_EMAIL')
+DEFAULT_FROM_EMAIL = environ.get('DEFAULT_FROM_EMAIL')
 
-# Site domain
-SITE_DOMAIN = get_var('SITE_DOMAIN', 'mammalbase.net')
-ITIS_CACHE = get_var("ITIS_CACHE", "/vol/web/static/itis_cache")
+
+
+if DEBUG:
+
+    # Django Debug Toolbar
+    # https://django-debug-toolbar.readthedocs.io/
+
+    import socket
+    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+    INTERNAL_IPS = [ip[:-1] + '1' for ip in ips] + ['127.0.0.1', '10.0.2.2']
+
+    INSTALLED_APPS += [ 'debug_toolbar' ]
+    MIDDLEWARE += [ 'debug_toolbar.middleware.DebugToolbarMiddleware' ]
+
+    DEBUG_TOOLBAR_PANELS = [
+        'debug_toolbar.panels.versions.VersionsPanel',
+        'debug_toolbar.panels.timer.TimerPanel',
+        'debug_toolbar.panels.settings.SettingsPanel',
+        'debug_toolbar.panels.headers.HeadersPanel',
+        'debug_toolbar.panels.request.RequestPanel',
+        'debug_toolbar.panels.sql.SQLPanel',
+        'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+        'debug_toolbar.panels.templates.TemplatesPanel',
+        'debug_toolbar.panels.cache.CachePanel',
+        'debug_toolbar.panels.signals.SignalsPanel',
+        'debug_toolbar.panels.logging.LoggingPanel',
+        'debug_toolbar.panels.redirects.RedirectsPanel',
+    ]

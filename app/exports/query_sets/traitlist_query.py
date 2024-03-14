@@ -1,8 +1,8 @@
 from django.db.models import Value, CharField, Q, Case, When, F
 from django.db.models.functions import Concat, Replace
+
+from mb.models import SourceChoiceSetOptionValue, MasterChoiceSetOption
 from .base_query import base_query
-from mb.models.models import SourceChoiceSetOptionValue
-from mb.models.models import MasterChoiceSetOption
 
 
 def traitlist_query(measurement_choices):
