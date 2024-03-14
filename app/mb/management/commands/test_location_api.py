@@ -10,9 +10,9 @@ class Command(BaseCommand):
         api = LocationAPI()
         location = api.get_master_location(location_name)
         print("location:", location)
-        geonameId = location[0]["geonameId"]
         
         if location:
+            geonameId = location[0]["geonameId"]
             hierarchy = api.get_location_hierarchy(geonameId)
             print("hierarchy:", hierarchy)
         
