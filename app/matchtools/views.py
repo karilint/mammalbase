@@ -10,8 +10,9 @@ def trait_match(request):
     return render(request, 'matchtool/trait_match.html')
 
 def location_matchtool(request):
-    result = []
     sources = []
+    locations = []
+    count = 0
     api = LocationAPI()
     if request.method == 'POST':
         query = request.POST.get('query')
@@ -19,4 +20,4 @@ def location_matchtool(request):
         locations = result["geonames"]
         count = result["totalResultsCount"]
         sources = SourceLocation.objects.filter(name__icontains=query)
-    return render(request, 'locatio
+    return render(request, 'matchtool/location_matchtool.html', {'locations': locations, 'count': count, 'sources': sources})
