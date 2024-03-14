@@ -1,5 +1,19 @@
 from imports.importers.base_importer import BaseImporter
-from mb.models.models import SourceAttribute, SourceReference, SourceEntity, SourceMethod, SourceUnit, ChoiceValue, SourceStatistic, SourceChoiceSetOption, SourceChoiceSetOptionValue, SourceMeasurementValue, ProximateAnalysis
+
+from mb.models import (
+    SourceAttribute,
+    SourceReference,
+    SourceEntity,
+    SourceMethod,
+    SourceUnit,
+    ChoiceValue,
+    SourceStatistic,
+    SourceChoiceSetOption,
+    SourceChoiceSetOptionValue,
+    SourceMeasurementValue,
+    Occurrence,
+    Event,
+    SourceHabitat)
 from django.db import transaction
 from django.contrib.auth.models import User
 from mb.models.occurrence_models import Occurrence, Event
