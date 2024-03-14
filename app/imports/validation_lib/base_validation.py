@@ -35,6 +35,28 @@ class Validation():
             "UTM": r'^\d{1,2}[NSZT]\s+\d{1,9}(?:.\d+)?m[WE]\s+\d{1,9}(?:.\d+)?m[NS]$',
         }
 
+    def split_rules(self, rules :str, separator):
+        """
+
+        Args:
+            rules (str): rules
+        """
+        result = []
+        current = ''
+        inside_quotes = False
+
+        for char in rules:
+            if char == '"':
+                inside_quotes = not inside_quotes
+            elif char == separator and not inside_quotes:
+                result.append(current)
+                current = ''
+            else:
+                current += char
+
+        result.append(current)
+        return result
+
     def validate(self, data, rules, custom_messages=None):
         """Validate the 'data' according to the 'rules' given, returns a list of errors named 'errors'"""
         self.errors = []
@@ -45,7 +67,11 @@ class Validation():
         for field_name in rules:
 
             #fetch the rule (value of dictionary element) from "rules" dictionary for the current rule name (dictionary key) and split it to get a list
-            field_rules = rules[field_name].split('|')
+            #field_rules = rules[field_name].split('|')
+            
+
+            #TODO: here better spliter that also notices "-characters
+            field_rules = self.split_rules(rules[field_name], '|')
             
             #field_errors will keep the errors for a particular field, which will be appended to the main "errors" list
             field_errors = []

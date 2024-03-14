@@ -12,7 +12,22 @@ from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from allauth.socialaccount.models import SocialAccount
-from mb.models.models import EntityClass, MasterReference, SourceAttribute, SourceEntity, SourceMethod, SourceReference, SourceStatistic, TimePeriod, DietSet, FoodItem, DietSetItem, TaxonomicUnits, ChoiceValue, MasterEntity
+from mb.models import (
+    EntityClass,
+    MasterReference,
+    SourceAttribute,
+    SourceEntity,
+    SourceMethod,
+    SourceReference,
+    SourceStatistic,
+    TimePeriod,
+    DietSet,
+    FoodItem,
+    DietSetItem,
+    ChoiceValue,
+    MasterEntity,
+    SourceLocation)
+
 from mb.models.location_models import SourceLocation
 from itis.models import Kingdom, TaxonUnitTypes
 import tempfile, csv, os
