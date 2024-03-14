@@ -77,8 +77,6 @@ class Validation():
             #fetch the rule (value of dictionary element) from "rules" dictionary for the current rule name (dictionary key) and split it to get a list            
 
             field_rules = self.split_rules(rules[field_name], '|')
-
-            print(str(field_rules))
             
             #field_errors will keep the errors for a particular field, which will be appended to the main "errors" list
             field_errors = []
