@@ -8,7 +8,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         location_name = options['location_name']
         api = LocationAPI()
-        location = api.get_master_location(location_name)
+        data = api.get_master_location(location_name)
+        location = data["geonames"]
+        print("results:", data["totalResultsCount"])
         print("location:", location)
         
         if location:

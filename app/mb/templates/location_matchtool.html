@@ -16,7 +16,8 @@
       <p>{{ source}}</p>
     {% endfor %}
     <h3>Results</h3>
-    {% for result in results %}
-      <p>{{ result.name }} {{ result.geonameId }}</p>
+    <h4>{{ count }}</h4>
+    {% for location in locations %}
+      <p>{{ location.name }} {{ location.geonameId }}</p>
     {% endfor %}
 </body>
