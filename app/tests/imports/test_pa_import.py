@@ -47,7 +47,7 @@ class ProximateAnalysisImporterTest(TestCase):
         self.reference2 = SourceReference.objects.create(citation='Creese, S., Davies, S.J. and Bowen, B.J., 2019. Comparative dietary analysis of the black-flanked rock-wallaby (Petrogale lateralis lateralis), the euro (Macropus robustus erubescens) and the feral goat (Capra hircus) from Cape Range National Park, Western Australia. Australian Mammalogy, 41(2), pp.220-230.')
     
     def test_import_pa_post_correct_file(self):       
-        with open("/src/app/tests/imports/assets/pa_true_test.tsv") as fp:
+        with open("assets/pa_true_test.tsv") as fp:
            response = self.client.post('/import/proximate_analysis', {'name': 'fred', 'csv_file': fp})
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 2)
@@ -55,7 +55,7 @@ class ProximateAnalysisImporterTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_import_pa_post_incorrect_file(self):       
-        with open("/src/app/tests/imports/assets/pa_false_test.tsv") as fp:
+        with open("assets/pa_false_test.tsv") as fp:
            response = self.client.post('/import/proximate_analysis', {'name': 'fred', 'csv_file': fp})
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 1)
