@@ -4,5 +4,5 @@ from . import views
 
 urlpatterns = [
     path('tm/', views.trait_match, name="trait-match"),
-    path('lm/', views.location_matchtool, name="location-matchtool"),
+    path('sl/', views.source_location_list, name="source-location-list"),
 ]
