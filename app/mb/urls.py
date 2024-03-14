@@ -3,7 +3,7 @@ from django.conf.urls import url
 from django.urls import path, re_path, include
 
 from . import views
-from matchtools.views import location_matchtool, location_match_detail
+from matchtools.views import location_matchtool, location_match_detail, match_location
 from imports.views import (
     import_diet_set,
     import_ets,
@@ -134,5 +134,6 @@ urlpatterns = [
     path('matchtools/',include('matchtools.urls')),
     path('lm/', location_matchtool, name='location-matchtool'),
     path('lmd/', location_match_detail, name='location-match-detail'),
+    path('match_location/', match_location, name='match_location'),
 ]
 

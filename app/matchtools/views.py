@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, permission_required
-from mb.models import SourceLocation
+from mb.models import SourceLocation, LocationRelation
 from .location_api import LocationAPI
 
 @login_required
@@ -30,4 +30,8 @@ def location_match_detail(request):
     result_count = result["totalResultsCount"]
 
     return render(request, 'matchtool/location_match_detail.html', {'source_location': source_location, 'result_locations': result_locations, 'result_count': result_count})
+
+def match_location(request):
+    print("ksjka")
+
     
