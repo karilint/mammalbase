@@ -1906,7 +1906,7 @@ def tsn_search(request):
                 item = item[1]
                 return_data[item["tsn"]] = item
         return JsonResponse(return_data, safe=False, status=200 )
-
+    
 def view_proximate_analysis_table_list(request):
     f = ViewProximateAnalysisTableFilter(request.GET, queryset=ViewProximateAnalysisTable.objects.all().select_related())
 

@@ -81,6 +81,7 @@ INSTALLED_APPS = [
 
     "django_celery_results",
     "celery_progress",
+    "matchtools",
 
     'allauth',
     'allauth.account',
