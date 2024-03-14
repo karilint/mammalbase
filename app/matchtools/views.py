@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, permission_required
 from mb.models import SourceLocation
 from .location_api import LocationAPI
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from mb.filters import SourceLocationFilter
 
 @login_required
 #@permission_required('matchtool.trait_match', raise_exception=True)
@@ -9,15 +11,16 @@ def trait_match(request):
     #TODO
     return render(request, 'matchtool/trait_match.html')
 
-def location_matchtool(request):
-    sources = []
-    locations = []
-    count = 0
-    api = LocationAPI()
-    if request.method == 'POST':
-        query = request.POST.get('query')
-        result = api.get_master_location(query)
-        locations = result["geonames"]
-        count = result["totalResultsCount"]
-        sources = SourceLocation.objects.filter(name__icontains=query)
-    return render(request, 'matchtool/location_matchtool.html', {'locations': locations, 'count': count, 'sources': sources})
+@login_required
+def source_location_list(request):
+    filter = SourceLocationFilter(request.GET, queryset=SourceLocation.objects.is_active().select_related())
+    paginator = Paginator(filter.qs, 10)
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    return render(request, 'matchtool/source_location_list.html', {'page_obj': page_obj, 'filter': filter})
