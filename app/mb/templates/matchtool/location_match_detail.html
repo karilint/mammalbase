@@ -1,0 +1,74 @@
+{% block title %}
+<title>MammalBase - {{ source_location }}</title>
+{% endblock %}
+{% block content %} {% load custom_tags %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - {{ source_location }}</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2>{{ source_location }}</h2>
+  </header>
+
+
+    {% if request.user|is_data_admin_or_contributor %}
+      <br>
+      <br>
+    {% endif %}
+    <table class="mb-list w3-table-all w3-small w3-responsive">
+      <thead>
+        <tr>
+          <th>Taxon</th>
+          <th>Location</th>
+          <th>Method</th>
+          <th>Period</th>
+          <th>Months</th>
+          <th>Reference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for x in page_obj %}
+        <tr>
+          <td class="mb-public-internal"><a title="Press for Details" href="{% url 'diet_set-detail' pk=x.pk %}">{{ x.taxon.name }} <span class="fa fa-link w3-small"></span></a></td>
+          {% if x.location %}
+            <td>{{ x.location }}</td>
+          {% else %}
+            <td style="text-align:center">-</td>
+          {% endif %}
+          {% if x.method %}
+            <td>{{ x.method }}</td>
+          {% else %}
+            <td style="text-align:center">-</td>
+          {% endif %}
+          {% if x.time_period %}
+            <td>{{ x.time_period }}</td>
+          {% else %}
+            <td style="text-align:center">-</td>
+          {% endif %}
+          {% if x.time_period.time_in_months %}
+            <td style="text-align:right">{{ x.time_period.time_in_months }}</td>
+          {% else %}
+            <td style="text-align:right">12</td>
+          {% endif %}
+          <td>{{ x.reference|safe }}</td>
+          <td style="text-align:center">
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>There are no {{ source_location }} available.</p>
+  
+  </section>
+{% endblock %}
+{% block info %}
+  {% include 'info/diet_set_info.html' %}
+{% endblock %}
+{% block pagination %}
+  {% include 'mb/pagination.html' %}
+{% endblock %}
+{% block script %}
+{% endblock %}

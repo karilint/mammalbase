@@ -21,3 +21,13 @@ def location_matchtool(request):
         count = result["totalResultsCount"]
         sources = SourceLocation.objects.filter(name__icontains=query)
     return render(request, 'matchtool/location_matchtool.html', {'locations': locations, 'count': count, 'sources': sources})
+
+def location_match_detail(request):
+    api = LocationAPI()
+    source_location = "Italy"
+    result = api.get_master_location(source_location)
+    result_locations = result["geonames"]
+    result_count = result["totalResultsCount"]
+
+    return render(request, 'matchtool/location_match_detail.html', {'source_location': source_location, 'result_locations': result_locations, 'result_count': result_count})
+    
