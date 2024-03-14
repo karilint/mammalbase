@@ -1,10 +1,13 @@
 from django.shortcuts import render
 from mb.models import SourceLocation
+from .location_api import LocationAPI
 
 def location_matchtool(request):
-    results = []
+    result = []
+    api = LocationAPI()
     if request.method == 'POST':
         query = request.POST.get('query')
-        results = SourceLocation.objects.filter(name=query)
-        print(results)
-    return render(request, 'location_matchtool.html', {'results': results})
+        result = api.get_master_location(query)
+        sources = SourceLocation.objects.filter(name__icontains=query)
+        print(sources)
+    return render(request, 'location_matchtool.html', {'results': result, 'sources': sources})
