@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponseRedirect
 #from .models import WordCount
@@ -10,12 +10,16 @@ from fuzzywuzzy import fuzz, process
 @login_required
 def info_traitmatch(request):
     """Match tool info page."""
-    return render(request, 'matchtool/info_trait_match.html')
+    unmatched_source = SourceAttribute.objects.filter(master_attribute=None).first()
+    return render(request, 'matchtool/info_trait_match.html', {'unmatched_source': unmatched_source})
 
 @login_required 
 @permission_required('matchtool.trait_match', raise_exception=True)
-def trait_match(request):
+def trait_match(request, source_attribute_id):
     """Match source attributes to master attributes."""
+    unmatched_source = get_object_or_404(SourceAttribute, pk=source_attribute_id)
+    form = AttributeRelationForm(instance=unmatched_source)
+    
     relations = MasterAttribute.objects.exclude(is_active=False).values_list('name', 'source_attribute__name')[:20]
 
     for source in SourceAttribute.objects.filter(master_attribute=None):
@@ -41,9 +45,6 @@ def trait_match(request):
     #             WordCount.objects.filter(
     #             Q(word = source) & Q(master_attribute = master)
     #         ).update(count = current_count + 1)
-
-    unmatched_source = SourceAttribute.objects.filter(master_attribute=None).first()
-    form = AttributeRelationForm(instance=unmatched_source)
 
     if request.method == "POST":
         form = AttributeRelationForm(request.POST, instance=unmatched_source)

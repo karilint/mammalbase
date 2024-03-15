@@ -10,5 +10,5 @@ from matchtools.views import (
 
 urlpatterns = [
     path('tm/', info_traitmatch, name="info-trait-match"),
-    path('tm/1', trait_match, name="trait-match") #path TODO
+    path('tm/<int:source_attribute_id>', trait_match, name="trait-match")
 ]
