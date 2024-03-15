@@ -15,8 +15,6 @@
     <h2>Trait Match Tool</h2>
   </header>
 {% if request.user|is_data_admin_or_contributor %}
-  <p>Source Attribute: {{ unmatched_source.name }}</p>
-
   <form method="POST" novalidate>
     {% csrf_token %}
     {% include 'includes/w3c-form.html' with form=form %}
