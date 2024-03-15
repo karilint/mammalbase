@@ -7,6 +7,11 @@ from mb.models import SourceAttribute, MasterAttribute
 from django.db.models import Q
 from fuzzywuzzy import fuzz, process
 
+@login_required
+def info_traitmatch(request):
+    """Match tool info page."""
+    return render(request, 'matchtool/info_trait_match.html')
+
 @login_required 
 @permission_required('matchtool.trait_match', raise_exception=True)
 def trait_match(request):
