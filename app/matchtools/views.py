@@ -14,7 +14,6 @@ def info_traitmatch(request):
     unmatched_source = get_unmatched()
     return render(request, 'matchtool/info_trait_match.html', {'unmatched_source': unmatched_source})
 
-
 @login_required
 @permission_required('matchtool.trait_match', raise_exception=True)
 def trait_match(request, source_attribute_id):
@@ -40,7 +39,7 @@ def trait_match(request, source_attribute_id):
             else:
                 return redirect('info-trait-match')
 
-    return render(request, 'matchtool/trait_match.html', {'form': form})
+    return render(request, 'matchtool/trait_match.html', {'form': form, 'unmatched_source': unmatched_source})
 
 
 def get_unmatched():

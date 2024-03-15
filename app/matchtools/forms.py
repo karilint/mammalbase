@@ -5,3 +5,7 @@ class AttributeRelationForm(forms.ModelForm):
     class Meta:
         model = AttributeRelation
         fields = ['source_attribute', 'master_attribute']
+        
+        widgets = {
+            'source_attribute': forms.HiddenInput(),
+        }
