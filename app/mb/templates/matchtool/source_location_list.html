@@ -2,48 +2,48 @@
 {% block title %}
 <title>MammalBase - Location Matchtool</title>
 {% endblock %}
-{% block content %} {% load custom_tags %}
+{% block content %}
+{% load custom_tags %}
 <!--Article header -->
 <header style="display:none">
-  <h1>MammalBase - Location Matchtool</h1>
+    <h1>MammalBase - Location Matchtool</h1>
 </header>
 <!--End of article header -->
 <section class="w3-threequarter w3-container">
-  <header class="w3-container w3-text-teal">
-    <h2>Source Locations</h2>
-  </header>
-
-  {% include 'includes/find.html' %}
-  {% if page_obj %}
+    <header class="w3-container w3-text-teal">
+        <h2>Location Matchtool</h2>
+        <h3>Source Locations</h3>
+    </header>
+    {% include 'includes/find.html' %}
+    {% if page_obj %}
     {% if request.user|is_data_admin_or_contributor %}
-      <br>
-      <br>
+    <br>
+    <br>
     {% endif %}
     <table class="mb-list w3-table-all w3-small w3-responsive">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Reference</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for x in page_obj %}
-        <tr>
-          <td class="mb-public-internal"><a title="Press for Details">{{ x.name }} <span class="fa fa-link w3-small"></span></a></td>
-          <td>{{ x.reference|safe }}</td>
-          <td style="text-align:center">
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Reference</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for x in page_obj %}
+            <tr>
+                <td class="mb-public-internal">
+                    <a title="Press for Details">{{ x.name }} <span class="fa fa-link w3-small"></span></a>
+                </td>
+                <td>{{ x.reference|safe }}</td>
+                <td style="text-align:center"></td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
-  {% else %}
-    <p>There are no Source Locations available.</p>
-  {% endif %}
-  </section>
+    {% else %}
+    <p>There are no source locations available.</p>
+    {% endif %}
+</section>
 {% endblock %}
 {% block pagination %}
-  {% include 'mb/pagination.html' %}
-{% endblock %}
-{% block script %}
+{% include 'mb/pagination.html' %}
 {% endblock %}
