@@ -61,4 +61,12 @@ class ProximateAnalysisImporterTest(TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), "Error on row: 1. Error: 'author' field must follow the following format: 0000-0000-0000-0000|Error on row: 2. Error: 'author' field must follow the following format: 0000-0000-0000-0000")
         self.assertEqual(response.status_code, 302)
+
+    def test_import_pa_post_incorrect_file(self):       
+        with open("tests/imports/assets/pa_false_test2.tsv") as fp:
+           response = self.client.post('/import/proximate_analysis', {'name': 'fred', 'csv_file': fp})
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "Error on row: 1. Error: 'references' field does not match the RE|Error on row: 2. Error: 'associatedReferences' field does not match the RE|Error on row: 3. Error: 'PartOfOrganism' has invalid value for in rule")
+        self.assertEqual(response.status_code, 302)
     
