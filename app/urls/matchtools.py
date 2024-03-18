@@ -5,10 +5,11 @@
 from django.urls import path
 
 from matchtools.views import (
-    info_traitmatch, trait_match
+    info_traitmatch,
+    # trait_match
 )
 
 urlpatterns = [
     path('tm/', info_traitmatch, name="info-trait-match"),
-    path('tm/<int:source_attribute_id>', trait_match, name="trait-match")
+    # path('tm/<int:source_attribute_id>', trait_match, name="trait-match")
 ]

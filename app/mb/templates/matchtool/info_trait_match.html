@@ -20,16 +20,40 @@
     <p>The match tool presents one source attribute at a time and suggests the closest matching master attribute.
        The suggestion can then be accepted or skipped.</p>
   </div>
-
-{% if unmatched_source %}
-{% if request.user|is_data_admin_or_contributor %}
-  <a href="{% url 'trait-match' unmatched_source.id %}" class="w3-button w3-medium w3-round w3-padding-small w3-teal">Go to Trait Match Tool</a>
-{% else %}
-  <p><a href="{% url 'login'%}?next={{request.path}}">Please login first</a></p>
-{% endif %}
-{% else %}
-<p>No matches found</p>
-{% endif %}
+    {% include 'includes/find.html' %}
+    {% if page_obj %}
+      {% if user.is_authenticated %}
+        <br>
+      {% else %}
+        <br>
+      {% endif %}
+      <table class="mb-list w3-table-all w3-small w3-responsive">
+        <thead>
+          <tr>
+            <th>Source Trait</th>
+            <th>Suggested Standard Trait</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for x in page_obj %}
+            <tr>
+                <td class="mb-public-internal">
+                  <a title="Press for Details" href="{% url 'source_attribute-detail' pk=x.pk %}">{{ x.name }} <span class="fa fa-link w3-small"></span></a>
+                </td>
+                <td>{{ x.matched_master.name }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No matches found.</p>
+    {% endif %}
 </section>
-
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+  {% include 'mb/pagination.html' %}
+{% endblock %}
+{% block script %}
 {% endblock %}

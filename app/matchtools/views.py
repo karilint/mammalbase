@@ -6,50 +6,35 @@ from .forms import AttributeRelationForm
 from mb.models import SourceAttribute, MasterAttribute, AttributeRelation
 from django.db.models import Q
 from fuzzywuzzy import fuzz, process
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from mb.filters import SourceAttributeFilter
 
 
 @login_required
 def info_traitmatch(request):
-    """Match tool info page."""
-    unmatched_source = get_unmatched()
-    return render(request, 'matchtool/info_trait_match.html', {'unmatched_source': unmatched_source})
+    """List all source attributes and their best match from master attributes."""
+    f = SourceAttributeFilter(request.GET, queryset=SourceAttribute.objects.filter(Q(master_attribute=None) | Q(master_attribute__is_active=False)))
+    
+    paginator = Paginator(f.qs, 10)
 
-@login_required
-@permission_required('matchtool.trait_match', raise_exception=True)
-def trait_match(request, source_attribute_id):
-    """Match source attributes to master attributes."""
-    unmatched_source = get_object_or_404(
-        SourceAttribute, pk=source_attribute_id)
-    found_match = get_match(unmatched_source.name)
-    if not found_match:
-        return redirect('info-trait-match')
-
-    master = MasterAttribute.objects.get(name=found_match)
-    attribute_relation = AttributeRelation(
-        source_attribute=unmatched_source, master_attribute=master)
-    form = AttributeRelationForm(instance=attribute_relation)
-
-    if request.method == 'POST':
-        form = AttributeRelationForm(request.POST, instance=attribute_relation)
-        if form.is_valid():
-            form.save()
-            next_source = get_unmatched()
-            if next_source:
-                return redirect('trait-match', source_attribute_id=next_source.id)
-            else:
-                return redirect('info-trait-match')
-
-    return render(request, 'matchtool/trait_match.html', {'form': form, 'unmatched_source': unmatched_source})
-
-
-def get_unmatched():
-    """Get first unmatched source attribute."""
-    for source in SourceAttribute.objects.filter(master_attribute=None):
-        match = get_match(source.name)
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+        
+    for source_attribute in page_obj:
+        match = get_match(source_attribute.name)
         if match:
-            return source
-    return None
-
+            source_attribute.matched_master = MasterAttribute.objects.get(name=match)
+        
+    return render(
+        request,
+        'matchtool/info_trait_match.html',
+        {'page_obj': page_obj, 'filter': f}
+    )
 
 def get_match(source_name):
     """Get best match for source attribute from master attributes using fuzzy matching."""
@@ -58,6 +43,42 @@ def get_match(source_name):
     match = process.extractOne(
         source_name, relations, scorer=fuzz.token_set_ratio, score_cutoff=75)
     return match[0][0] if match else None
+
+# @login_required
+# @permission_required('matchtool.trait_match', raise_exception=True)
+# def trait_match(request, source_attribute_id):
+#     """Match source attributes to master attributes."""
+#     unmatched_source = get_object_or_404(
+#         SourceAttribute, pk=source_attribute_id)
+#     found_match = get_match(unmatched_source.name)
+#     if not found_match:
+#         return redirect('info-trait-match')
+
+#     master = MasterAttribute.objects.get(name=found_match)
+#     attribute_relation = AttributeRelation(
+#         source_attribute=unmatched_source, master_attribute=master)
+#     form = AttributeRelationForm(instance=attribute_relation)
+
+#     if request.method == 'POST':
+#         form = AttributeRelationForm(request.POST, instance=attribute_relation)
+#         if form.is_valid():
+#             form.save()
+#             next_source = get_unmatched()
+#             if next_source:
+#                 return redirect('trait-match', source_attribute_id=next_source.id)
+#             else:
+#                 return redirect('info-trait-match')
+
+#     return render(request, 'matchtool/trait_match.html', {'form': form, 'unmatched_source': unmatched_source})
+
+
+# def get_unmatched():
+#     """Get first unmatched source attribute."""
+#     for source in SourceAttribute.objects.filter(master_attribute=None):
+#         match = get_match(source.name)
+#         if match:
+#             return source
+#     return None
 
     # for attribute in relations: # Tällä käydään läpi olemassaolevat relaatiot ja luodaan sanataulukko
     #     master = attribute['master_attribute__name']
