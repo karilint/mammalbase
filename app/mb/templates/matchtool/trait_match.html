@@ -14,13 +14,10 @@
   <header class="w3-container w3-text-teal">
     <h2>Trait Match Tool</h2>
   </header>
-
   {% if request.user|is_data_admin_or_contributor %}
-
   <div class="w3-container">
     <p><b>Next unmatched source attribute: </b>{{ unmatched_source.name }}</p></p>
   </div>
-
     <form method="POST" novalidate>
       {% csrf_token %}
       {% include 'includes/w3c-form.html' with form=form %}

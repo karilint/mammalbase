@@ -16,11 +16,12 @@
   </header>
 
   <div class="w3-container" style=" background-color: #f0f0f0; margin-bottom: 10px;">
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur</p>
+    <p>The trait match tool allows to match unmatched source attributes to a suitable master attribute.</p>
+    <p>The match tool presents one source attribute at a time and suggests the closest matching master attribute.
+       The suggestion can then be accepted or skipped.</p>
   </div>
-{% if unmatched_source.name %}
+
+{% if unmatched_source %}
 {% if request.user|is_data_admin_or_contributor %}
   <a href="{% url 'trait-match' unmatched_source.id %}" class="w3-button w3-medium w3-round w3-padding-small w3-teal">Go to Trait Match Tool</a>
 {% else %}
