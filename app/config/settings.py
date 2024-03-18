@@ -180,10 +180,9 @@ DATABASES = {
     }
 }
 # sq lite for testing
-if 'test' in os.environ.get('DJANGO_SETTINGS_MODULE', ''):
+if 'test' in environ.get('DJANGO_SETTINGS_MODULE', ''):
     DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.sqlite3'
     }
 
 # Password validation
