@@ -31,6 +31,7 @@ from .main import (
     index_mammals,
     index_news,
     index_proximate_analysis,
+    index_master_location_list,
     save_new_ordering,
     user_is_data_admin_or_contributor,
     user_is_data_admin_or_owner,

@@ -91,6 +91,7 @@ from mb.models import (
     TimePeriod,
     ViewMasterTraitValue,
     ViewProximateAnalysisTable)
+from mb.models.location_models import MasterLocation
 
 
 # Error Pages
@@ -138,6 +139,10 @@ def index_news(request):
 def index_proximate_analysis(request):
     num_PA_item=ProximateAnalysisItem.objects.is_active().values('forage_id').distinct().count()
     return render(request, 'mb/index_proximate_analysis.html', context={'num_PA_item':num_PA_item},)
+
+def index_master_location_list(request):
+    master_locations = MasterLocation.objects.all()
+    return render(request, 'mb/master_location_list.html', context={"master_locations" : master_locations},)
 
 # Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
 @require_POST
