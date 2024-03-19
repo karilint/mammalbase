@@ -11,7 +11,6 @@ from django.test.client import RequestFactory
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
-from allauth.socialaccount.models import SocialAccount
 from mb.models import (
     EntityClass,
     MasterReference,
@@ -33,7 +32,7 @@ from itis.models import Kingdom, TaxonUnitTypes
 import tempfile, csv, os
 import pandas as pd
 import json
-import requests_mock
+#import requests_mock
 from unittest import skip
 
 

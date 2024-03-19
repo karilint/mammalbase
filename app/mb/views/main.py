@@ -22,6 +22,10 @@ from plotly import express as plotly_express
 from plotly.offline import plot as plotly_offline_plot
 from pandas import DataFrame as PandasDataFrame
 
+from itis.utils import generate_standard_values_pa
+from itis.models import SynonymLinks
+from itis.tools import getTaxonomicRankNameFromTSN, GetAcceptedNamesfromTSN, GetCommonNamesfromTSN
+
 from config.settings import ITIS_CACHE
 from itis.utils import (
     create_return_data,
@@ -1146,8 +1150,7 @@ def proximate_analysis_item_edit(request, pk):
         form = ProximateAnalysisItemForm(request.POST, instance=proximate_analysis_item)
         if form.is_valid():
             proximate_analysis_item = form.save(commit=False)
-            bi = BaseImporter()
-            std_values = bi.generate_standard_values_pa(form.cleaned_data)
+            std_values = generate_standard_values_pa(form.cleaned_data)
             proximate_analysis_item.cp_std = std_values['cp_std']
             proximate_analysis_item.ee_std = std_values['ee_std']
             proximate_analysis_item.cf_std = std_values['cf_std']
