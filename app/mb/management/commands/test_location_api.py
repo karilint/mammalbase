@@ -1,5 +1,6 @@
 from matchtools.location_api import LocationAPI
 from django.core.management.base import BaseCommand
+from matchtools.location_match import create_master_location
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -11,7 +12,8 @@ class Command(BaseCommand):
         data = api.get_master_location(location_name)
         location = data["geonames"]
         print("results:", data["totalResultsCount"])
-        print("location:", location)
+        print("location:", location[0]["name"])
+        create_master_location(location[0])
         
         if location:
             geonameId = location[0]["geonameId"]
