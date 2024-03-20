@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required, permission_required
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 #from .models import WordCount
 from .forms import AttributeRelationForm
 from mb.models import SourceAttribute, MasterAttribute, AttributeRelation
@@ -43,6 +43,24 @@ def get_match(source_name):
     match = process.extractOne(
         source_name, relations, scorer=fuzz.token_set_ratio, score_cutoff=75)
     return match[0][0] if match else None
+
+@login_required
+def match_operation_endpoint(request):
+    if request.method == "POST":
+        source_attribute_id = request.POST.get("source_attribute_id")
+        source_attribute = get_object_or_404(SourceAttribute, pk=source_attribute_id)
+        match = get_match(source_attribute.name)
+        if match:
+            master = MasterAttribute.objects.get(name=match)
+            attribute_relation = AttributeRelation.objects.create(
+                source_attribute=source_attribute, master_attribute=master
+            )
+
+            return JsonResponse({"success": True})
+        else:
+            return JsonResponse({"success": False, "error": "No match found."})
+    else:
+        return JsonResponse({"success": False, "error": "Invalid request method."})
 
 # @login_required
 # @permission_required('matchtool.trait_match', raise_exception=True)

@@ -32,17 +32,21 @@
           <tr>
             <th>Source Trait</th>
             <th>Suggested Standard Trait</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
-          {% for x in page_obj %}
+            {% for x in page_obj %}
             <tr>
                 <td class="mb-public-internal">
-                  <a title="Press for Details" href="{% url 'source_attribute-detail' pk=x.pk %}">{{ x.name }} <span class="fa fa-link w3-small"></span></a>
+                    <a title="Press for Details" href="{% url 'source_attribute-detail' pk=x.pk %}">{{ x.name }} <span class="fa fa-link w3-small"></span></a>
                 </td>
                 <td>{{ x.matched_master.name }}</td>
+                <td><button id="matchButton_{{ x.pk }}" title="Press to match the source attribute" type="button" class="w3-button w3-medium w3-round w3-padding-small w3-teal">
+                    Match&nbsp;<i class="fa fa-angle-right"></i>
+                </button></td>
             </tr>
-          {% endfor %}
+            {% endfor %}
         </tbody>
       </table>
     {% else %}
@@ -56,4 +60,30 @@
   {% include 'mb/pagination.html' %}
 {% endblock %}
 {% block script %}
+<script>
+    function handleMatchButtonClick(sourceAttributeId) {
+      $.ajax({
+        url: "{% url 'match_operation_endpoint' %}",
+        method: "POST",
+        data: {
+          source_attribute_id: sourceAttributeId,
+          csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+        success: function(data) {
+          alert("Match successful!");
+        },
+        error: function(xhr, status, error) {
+          console.error("Error:", error);
+          alert("An error occurred while matching.");
+        }
+      });
+    }
+    
+    $(document).ready(function() {
+      $("button[id^='matchButton_']").click(function() {
+        var sourceAttributeId = $(this).attr("id").split("_")[1];
+        handleMatchButtonClick(sourceAttributeId);
+      });
+    });
+  </script>
 {% endblock %}
