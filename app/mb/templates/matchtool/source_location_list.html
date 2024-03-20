@@ -6,14 +6,17 @@
 {% load custom_tags %}
 <!--Article header -->
 <header style="display:none">
-    <h1>MammalBase - Location Matchtool</h1>
+    <h1>MammalBase - Location Match Tool</h1>
 </header>
 <!--End of article header -->
 <section class="w3-threequarter w3-container">
     <header class="w3-container w3-text-teal">
-        <h2>Location Matchtool</h2>
-        <h3>Source Locations</h3>
+        <h2>Location Match Tool</h2>
     </header>
+    <div class="w3-container" style=" background-color: #f0f0f0; margin-bottom: 10px;">
+        <p>The location match tool allows to match unmatched source locations to a suitable master location.</br>
+        Select the source location you wish to match from the provided list.</p>
+    </div>
     {% include 'includes/find.html' %}
     {% if page_obj %}
     {% if request.user|is_data_admin_or_contributor %}
