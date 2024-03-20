@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, permission_required
+from django.core.paginator import Paginator
 from mb.models import SourceLocation, LocationRelation
 from .location_api import LocationAPI
 
@@ -22,14 +23,18 @@ def location_matchtool(request):
         sources = SourceLocation.objects.filter(name__icontains=query)
     return render(request, 'matchtool/location_matchtool.html', {'locations': locations, 'count': count, 'sources': sources})
 
-def location_match_detail(request):
+def location_match_detail(request, id):
     api = LocationAPI()
-    source_location = "Italy"
-    result = api.get_master_location(source_location)
-    result_locations = result["geonames"]
+    location = SourceLocation.objects.get(id=id)
+    
+    if request.method == 'POST':
+        location = request.POST.get('query')
+        
+    result = api.get_master_location(location)
+    result_locations = result["geonames"][:10]
     result_count = result["totalResultsCount"]
 
-    return render(request, 'matchtool/location_match_detail.html', {'source_location': source_location, 'result_locations': result_locations, 'result_count': result_count})
+    return render(request, 'matchtool/location_match_detail.html', {'location': location, 'result_locations': result_locations, 'result_count': result_count})
 
 def match_location(request):
     print("ksjka")

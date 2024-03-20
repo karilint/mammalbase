@@ -1,16 +1,22 @@
 {% extends "mb/base_generic.html" %}
 {% block title %}
-<title>MammalBase - {{ source_location }}</title>
+<title>MammalBase - {{ location }}</title>
 {% endblock %}
 {% block content %} {% load custom_tags %}
 <!--Article header -->
 <header style="display:none">
-  <h1>MammalBase - {{ source_location }}</h1>
+  <h1>MammalBase - {{ location }}</h1>
 </header>
 <!--End of article header -->
 <section class="w3-threequarter w3-container">
   <header class="w3-container w3-text-teal">
-    <h2>{{ source_location }}</h2>
+    <h2>Location Match</h2>
+    <form method="POST">
+      {% csrf_token %}
+      <label>Refine Search:</label>
+      <input type="text" id="search" name="query" value="{{ location }}">
+      <input type="submit" value="Submit">
+    </form>
   </header>
 
 
@@ -56,11 +62,6 @@
  
   </section>
 {% endblock %}
-{% block info %}
-  {% include 'info/diet_set_info.html' %}
-{% endblock %}
-{% block pagination %}
-  {% include 'mb/pagination.html' %}
-{% endblock %}
+
 {% block script %}
 {% endblock %}

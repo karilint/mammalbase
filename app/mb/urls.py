@@ -133,7 +133,7 @@ urlpatterns = [
     path('exports/', include('exports.urls')),
     path('matchtools/',include('matchtools.urls')),
     path('lm/', location_matchtool, name='location-matchtool'),
-    path('lmd/', location_match_detail, name='location-match-detail'),
+    path('lm/<int:id>', location_match_detail, name='location-match-detail'),
     path('match_location/', match_location, name='match_location'),
 ]
 
