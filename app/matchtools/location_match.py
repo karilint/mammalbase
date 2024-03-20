@@ -5,7 +5,7 @@ def create_master_location(geoNamesLocation: dict):
     master_location.save()
     return master_location
 
-def match_locations(sourceLocation, masterLocation):
-    location_relation = LocationRelation(source_location_id=sourceLocation.id, master_location_id=masterLocation.id)
+def match_locations(sourceLocationId, masterLocationId):
+    location_relation = LocationRelation(source_location_id=sourceLocationId, master_location_id=masterLocationId)
     location_relation.save()
     return location_relation

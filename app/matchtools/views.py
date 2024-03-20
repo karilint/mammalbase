@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from mb.models import SourceLocation, LocationRelation
 from .location_api import LocationAPI
+from .location_match import create_master_location, match_locations
 
 @login_required
 #@permission_required('matchtool.trait_match', raise_exception=True)
@@ -25,18 +26,27 @@ def location_matchtool(request):
 
 def location_match_detail(request, id):
     api = LocationAPI()
-    location = SourceLocation.objects.get(id=id)
+    sourceLocation = SourceLocation.objects.get(id=id)
     
     if request.method == 'POST':
-        location = request.POST.get('query')
+        sourceLocation = request.POST.get('query')
         
-    result = api.get_master_location(location)
+    result = api.get_master_location(sourceLocation)
     result_locations = result["geonames"][:10]
     result_count = result["totalResultsCount"]
 
-    return render(request, 'matchtool/location_match_detail.html', {'location': location, 'result_locations': result_locations, 'result_count': result_count})
+    return render(request, 'matchtool/location_match_detail.html', {'sourceLocation': sourceLocation, 'result_locations': result_locations, 'result_count': result_count})
 
 def match_location(request):
-    print("ksjka")
+    geoNamesLocation = request.GET.get('geoNamesLocation')
+    sourceLocation = request.GET.get('sourceLocation')
+    print(geoNamesLocation)
+    print(sourceLocation)
+    
+    #masterLocation = create_master_location(geoNamesLocation)
+    masterLocation = "test"
+    #match_locations(sourceLocation.id, masterLocation.id)
+    
+    return render(request, 'matchtool/match_location.html', {'sourceLocation': sourceLocation, 'masterLocation': masterLocation})
 
     

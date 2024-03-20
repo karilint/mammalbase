@@ -1,11 +1,11 @@
 {% extends "mb/base_generic.html" %}
 {% block title %}
-<title>MammalBase - {{ location }}</title>
+<title>MammalBase - {{ sourceLocation }}</title>
 {% endblock %}
 {% block content %} {% load custom_tags %}
 <!--Article header -->
 <header style="display:none">
-  <h1>MammalBase - {{ location }}</h1>
+  <h1>MammalBase - {{ sourceLocation }}</h1>
 </header>
 <!--End of article header -->
 <section class="w3-threequarter w3-container">
@@ -14,7 +14,7 @@
     <form method="POST">
       {% csrf_token %}
       <label>Refine Search:</label>
-      <input type="text" id="search" name="query" value="{{ location }}">
+      <input type="text" id="search" name="query" value="{{ sourceLocation }}">
       <input type="submit" value="Submit">
     </form>
   </header>
@@ -44,14 +44,11 @@
           {% else %}
             <td style="text-align:center">-</td>
           {% endif %}
-            <td><button onclick="executePythonFunction()">Match</button>
+            <td><button onclick="executePythonFunction('{{ location.geonameId }}', '{{ sourceLocation }}')">Match</button>
 
                 <script>
-                    function executePythonFunction() {
-                        fetch('/match_location/')
-                            .then(response => response.text())
-                            .then(data => alert(data))
-                            .catch(error => console.error('Error:', error));
+                    function executePythonFunction(geoNamesLocation, sourceLocation) {
+                        window.location.href = `/match_location/?geoNamesLocation=${geoNamesLocation}&sourceLocation=${sourceLocation}`
                     }
                 </script></td>
           
