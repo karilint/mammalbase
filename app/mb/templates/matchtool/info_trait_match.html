@@ -32,6 +32,7 @@
           <tr>
             <th>Source Trait</th>
             <th>Suggested Standard Trait</th>
+            <th>Reference</th>
             <th></th>
           </tr>
         </thead>
@@ -56,6 +57,7 @@
                       {% endfor %}
                   </select>
               </td> 
+              <td>{{ x.reference}}</td>
                 <td><button id="matchButton_{{ x.pk }}" title="Press to match the source attribute" type="button" class="w3-button w3-medium w3-round w3-padding-small w3-teal">
                     Match&nbsp;<i class="fa fa-angle-right"></i>
                 </button></td>
