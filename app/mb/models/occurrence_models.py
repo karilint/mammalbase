@@ -1,3 +1,15 @@
+""" mb.models.occurrence_models - 
+
+This module should not be imported anywhere else than __init__.py!
+
+To import models elsewhere use subpackage:
+from mb.models import ModelName
+"""
+
+# We can safely disable some linting for models:
+# pylint: disable = too-few-public-methods
+# pylint: disable = missing-function-docstring, missing-class-docstring
+
 from django.db import models
 from .base_model import BaseModel
 
@@ -65,7 +77,6 @@ class Occurrence(BaseModel):
         null=True,
         help_text="References to other sources of information about the Occurrence."
         )
-
     
 class Event(BaseModel):
     """
@@ -88,25 +99,4 @@ class Event(BaseModel):
         blank=True,
         null=True,
         help_text="The verbatim original representation of the date and time information for an Event."
-        )
-
-class SourceHabitat(BaseModel):
-    """
-    Model representing a habitat associated with an Occurrence.
-    """
-    source_reference = models.ForeignKey(
-        'SourceReference',
-        on_delete = models.CASCADE,
-        )
-    habitat_type = models.CharField(
-        max_length=250,
-        blank=True,
-        null=True,
-        help_text="Enter the Name of the Source Habitat"
-        )
-    habitat_percentage = models.CharField(
-        max_length=250,
-        blank=True,
-        null=True,
-        help_text="Enter the Percentage of the Source Habitat"
         )
