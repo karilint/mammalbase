@@ -14,7 +14,7 @@ from mb.filters import SourceAttributeFilter
 def info_traitmatch(request):
     """List all source attributes and their best match from master attributes."""
     f = SourceAttributeFilter(request.GET, queryset=SourceAttribute.objects.filter(Q(master_attribute=None) | Q(master_attribute__is_active=False)))
-    
+    master_attributes = MasterAttribute.objects.all()
     paginator = Paginator(f.qs, 10)
 
     page_number = request.GET.get('page')
@@ -29,11 +29,11 @@ def info_traitmatch(request):
         match = get_match(source_attribute.name)
         if match:
             source_attribute.matched_master = MasterAttribute.objects.get(name=match)
-        
+            
     return render(
         request,
         'matchtool/info_trait_match.html',
-        {'page_obj': page_obj, 'filter': f}
+        {'page_obj': page_obj, 'filter': f,'master_attributes': master_attributes}
     )
 
 def get_match(source_name):

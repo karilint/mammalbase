@@ -41,7 +41,21 @@
                 <td class="mb-public-internal">
                     <a title="Press for Details" href="{% url 'source_attribute-detail' pk=x.pk %}">{{ x.name }} <span class="fa fa-link w3-small"></span></a>
                 </td>
-                <td>{{ x.matched_master.name }}</td>
+                <td>
+                  <select name="master_attribute" class="w3-select">
+                      {% for master_attribute in master_attributes %}
+                          {% if x.matched_master %}
+                              {% if x.matched_master.id == master_attribute.id %}
+                                  <option value="{{ master_attribute.id }}" selected>{{ master_attribute.name }}</option>
+                              {% else %}
+                                  <option value="{{ master_attribute.id }}">{{ master_attribute.name }}</option>
+                              {% endif %}
+                          {% else %}
+                              <option value="{{ master_attribute.id }}">{{ master_attribute.name }}</option>
+                          {% endif %}
+                      {% endfor %}
+                  </select>
+              </td> 
                 <td><button id="matchButton_{{ x.pk }}" title="Press to match the source attribute" type="button" class="w3-button w3-medium w3-round w3-padding-small w3-teal">
                     Match&nbsp;<i class="fa fa-angle-right"></i>
                 </button></td>
