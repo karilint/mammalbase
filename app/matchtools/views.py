@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
+from django.http import JsonResponse
 from mb.models import SourceLocation, LocationRelation
 from .location_api import LocationAPI
 from .location_match import create_master_location, match_locations
+import json
 
 @login_required
 #@permission_required('matchtool.trait_match', raise_exception=True)
@@ -38,15 +40,18 @@ def location_match_detail(request, id):
     return render(request, 'matchtool/location_match_detail.html', {'sourceLocation': sourceLocation, 'result_locations': result_locations, 'result_count': result_count})
 
 def match_location(request):
-    geoNamesLocation = request.GET.get('geoNamesLocation')
-    sourceLocation = request.GET.get('sourceLocation')
-    print(geoNamesLocation)
-    print(sourceLocation)
+    geoNamesLocation = request.POST.get('geoNamesLocation')
+    sourceLocationId = request.POST.get('sourceLocation')
+    
+    geoNamesLocation = geoNamesLocation.replace("'", '"')
+    geoNamesLocation = json.loads(geoNamesLocation)
+
+    sourceLocation = SourceLocation.objects.get(id=sourceLocationId)
     
     #masterLocation = create_master_location(geoNamesLocation)
-    masterLocation = "test"
+    masterLocation = ["test", "Italy", "Finland"]
     #match_locations(sourceLocation.id, masterLocation.id)
     
-    return render(request, 'matchtool/match_location.html', {'sourceLocation': sourceLocation, 'masterLocation': masterLocation})
+    return JsonResponse({'masterLocation': masterLocation})
 
     

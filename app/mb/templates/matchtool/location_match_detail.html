@@ -11,54 +11,88 @@
 <section class="w3-threequarter w3-container">
   <header class="w3-container w3-text-teal">
     <h2>Location Match</h2>
-    <form method="POST">
-      {% csrf_token %}
-      <label>Refine Search:</label>
-      <input type="text" id="search" name="query" value="{{ sourceLocation }}">
-      <input type="submit" value="Submit">
-    </form>
-  </header>
+    <div id="Search" style="display: block;">
+      <form method="POST">
+        {% csrf_token %}
+        <label>Refine Search:</label>
+        <input type="text" id="search" name="query" value="{{ sourceLocation }}">
+        <input type="submit" value="Submit">
+      </form>
+    </div>
+    </header>
+      {% if request.user|is_data_admin_or_contributor %}
+        <br>
+        <br>
+      {% endif %}
+      <table class="mb-list w3-table-all w3-small w3-responsive">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>ID</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for location in result_locations %}
+          <tr>
+            {% if location.name %}
+              <td>{{ location.name }}</td>
+            {% else %}
+              <td style="text-align:center">-</td>
+            {% endif %}
+            {% if location.geonameId %}
+              <td><a href="https://www.geonames.org/{{ location.geonameId }}">{{ location.geonameId }}</a></td>
+            {% else %}
+              <td style="text-align:center">-</td>
+            {% endif %}
+              <td><button onclick="handleMatchButtonClick('{{ location|escapejs }}', '{{ sourceLocation.id|escapejs }}')">Match</button></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
 
+    <div id="successMessage" style="display: none;">
+      <h3>{{ sourceLocation }} successfully matched!</h3>
+      <div>New Master locations added:</div>
+      <div id="masterLocation"></div>
+    </div>    
 
-    {% if request.user|is_data_admin_or_contributor %}
-      <br>
-      <br>
-    {% endif %}
-    <table class="mb-list w3-table-all w3-small w3-responsive">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>ID</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for location in result_locations %}
-        <tr>
-          {% if location.name %}
-            <td>{{ location.name }}</td>
-          {% else %}
-            <td style="text-align:center">-</td>
-          {% endif %}
-          {% if location.geonameId %}
-            <td><a href="https://www.geonames.org/{{ location.geonameId }}">{{ location.geonameId }}</a></td>
-          {% else %}
-            <td style="text-align:center">-</td>
-          {% endif %}
-            <td><button onclick="executePythonFunction('{{ location.geonameId }}', '{{ sourceLocation }}')">Match</button>
-
-                <script>
-                    function executePythonFunction(geoNamesLocation, sourceLocation) {
-                        window.location.href = `/match_location/?geoNamesLocation=${geoNamesLocation}&sourceLocation=${sourceLocation}`
-                    }
-                </script></td>
-          
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
- 
   </section>
 {% endblock %}
 
 {% block script %}
+<script>
+  function handleMatchButtonClick(geoNamesLocation, sourceLocation) {
+    // Create a FormData object to send data with POST request
+    var formData = new FormData();
+    formData.append('geoNamesLocation', geoNamesLocation);
+    formData.append('sourceLocation', sourceLocation);
+
+    // Send a POST request to the server
+    fetch('/match_location/', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': "{{ csrf_token }}"
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        console.error('Response error:', response.statusText)
+      }
+    })
+    .then(data => {
+      document.querySelector('#masterLocation').innerHTML = data.masterLocation.join('<br>');
+
+      document.querySelector('#search').style.display = 'none';
+      document.querySelector('.mb-list').style.display = 'none';
+
+      document.querySelector('#successMessage').style.display = 'block';
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+  }
+</script>
 {% endblock %}
