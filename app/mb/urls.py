@@ -3,7 +3,6 @@ from django.conf.urls import url
 from django.urls import path, re_path, include
 
 from . import views
-from matchtools.views import location_matchtool, location_match_detail, match_location
 from imports.views import (
     import_diet_set,
     import_ets,
