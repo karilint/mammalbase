@@ -7,10 +7,12 @@ from fuzzywuzzy import fuzz, process
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from mb.filters import SourceAttributeFilter
 
+
 @login_required
-def info_traitmatch(request):
+def trait_match_list(request):
     """List all source attributes and their best match from master attributes."""
-    f = SourceAttributeFilter(request.GET, queryset=SourceAttribute.objects.filter(Q(master_attribute=None) | Q(master_attribute__is_active=False)))
+    f = SourceAttributeFilter(request.GET, queryset=SourceAttribute.objects.filter(
+        Q(master_attribute=None) | Q(master_attribute__is_active=False)))
     master_attributes = MasterAttribute.objects.all()
     paginator = Paginator(f.qs, 10)
 
@@ -21,41 +23,48 @@ def info_traitmatch(request):
         page_obj = paginator.page(1)
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
-        
+
     for source_attribute in page_obj:
         match = get_match(source_attribute.name)
         if match:
-            source_attribute.matched_master = MasterAttribute.objects.get(name=match)
-            
+            source_attribute.matched_master = MasterAttribute.objects.get(
+                name=match)
+
     return render(
         request,
         'matchtool/info_trait_match.html',
-        {'page_obj': page_obj, 'filter': f,'master_attributes': master_attributes}
+        {'page_obj': page_obj, 'filter': f, 'master_attributes': master_attributes}
     )
 
+
 def get_match(source_name):
-    """Get best match for source attribute from master attributes and source attributes."""   
-    relations = MasterAttribute.objects.exclude(is_active=False).values_list('name','source_attribute__name')
-    
+    """Get best match for source attribute from master attributes and source attributes."""
+    relations = MasterAttribute.objects.exclude(
+        is_active=False).values_list('name', 'source_attribute__name')
+
     sources = [rel[1] for rel in relations]
     masters = [rel[0] for rel in relations]
-    
-    master_match = process.extractOne(source_name, masters, scorer=fuzz.token_set_ratio, score_cutoff=70)
+
+    master_match = process.extractOne(
+        source_name, masters, scorer=fuzz.token_set_ratio, score_cutoff=70)
     if master_match:
         return master_match[0]
-    
-    source_match = process.extractOne(source_name, sources, scorer=fuzz.token_set_ratio, score_cutoff=70)
+
+    source_match = process.extractOne(
+        source_name, sources, scorer=fuzz.token_set_ratio, score_cutoff=70)
     if source_match:
         index = sources.index(source_match[0])
         return relations[index][0]
 
     return None
 
+
 @login_required
 def match_operation_endpoint(request):
     if request.method == "POST":
         source_attribute_id = request.POST.get("source_attribute_id")
-        source_attribute = get_object_or_404(SourceAttribute, pk=source_attribute_id)
+        source_attribute = get_object_or_404(
+            SourceAttribute, pk=source_attribute_id)
         match = get_match(source_attribute.name)
         if match:
             master = MasterAttribute.objects.get(name=match)
