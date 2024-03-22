@@ -59,6 +59,8 @@
     <form action="{% url 'location-match-detail' id=next_id %}" method="get">
         <button type="submit">Next</button>
     </form>
+    {% else %}
+    <p>There are no further source locations to match with the current filter.</p>
     {% endif %}
   </section>
 {% endblock %}
