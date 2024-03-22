@@ -51,12 +51,15 @@
                         window.location.href = `/match_location/?geoNamesLocation=${geoNamesLocation}&sourceLocation=${sourceLocation}`
                     }
                 </script></td>
-          
         </tr>
         {% endfor %}
       </tbody>
     </table>
- 
+    {% if next_id %}
+    <form action="{% url 'location-match-detail' id=next_id %}" method="get">
+        <button type="submit">Next</button>
+    </form>
+    {% endif %}
   </section>
 {% endblock %}
 

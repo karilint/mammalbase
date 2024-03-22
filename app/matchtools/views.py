@@ -17,6 +17,8 @@ def trait_match(request):
 def source_location_list(request):
     """List all source locations to be matched with master locations"""
     filter = SourceLocationFilter(request.GET, queryset=SourceLocation.objects.is_active().select_related())
+    values=filter.qs
+    id_list = [x.id for x in values]
     paginator = Paginator(filter.qs, 10)
     page_number = request.GET.get('page')
     try:
@@ -25,6 +27,8 @@ def source_location_list(request):
         page_obj = paginator.page(1)
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
+
+    request.session['id_list'] = id_list
 
     return render(request, 'matchtool/source_location_list.html', {'page_obj': page_obj, 'filter': filter})
 
@@ -38,8 +42,11 @@ def location_match_detail(request, id):
     result = api.get_master_location(sourceLocation)
     result_locations = result["geonames"][:10]
     result_count = result["totalResultsCount"]
-
-    return render(request, 'matchtool/location_match_detail.html', {'sourceLocation': sourceLocation, 'result_locations': result_locations, 'result_count': result_count})
+    id_list = request.session.get('id_list')
+    index = id_list.index(id)+1
+    next_id = id_list[index] if index < len(id_list) else None
+    
+    return render(request, 'matchtool/location_match_detail.html', {'sourceLocation': sourceLocation, 'result_locations': result_locations, 'result_count': result_count, 'next_id': next_id})
 
 def match_location(request):
     geoNamesLocation = request.GET.get('geoNamesLocation')
