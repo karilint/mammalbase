@@ -1,8 +1,6 @@
-from django.shortcuts import get_object_or_404, render, redirect
-from django.contrib.auth.decorators import login_required, permission_required
-from django.http import HttpResponseRedirect, JsonResponse
-#from .models import WordCount
-from .forms import AttributeRelationForm
+from django.shortcuts import get_object_or_404, render
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from mb.models import SourceAttribute, MasterAttribute, AttributeRelation
 from django.db.models import Q
 from fuzzywuzzy import fuzz, process
