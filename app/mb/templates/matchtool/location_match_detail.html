@@ -55,15 +55,19 @@
         {% endfor %}
       </tbody>
     </table>
-    {% if next_id %}
-    <form action="{% url 'location-match-detail' id=next_id %}" method="get">
-        <button type="submit">Next</button>
-    </form>
-    {% else %}
-    <p>There are no further source locations to match with the current filter.</p>
-    {% endif %}
-  </section>
+    <div class="w3-container" style="margin-top: 10px;">
+      {% if previous_id %}
+        <a href="{% url 'location-match-detail' id=previous_id %}">
+          <button type="button" class="w3-button w3-hover-black">previous</button></a>
+      {% endif %}
+        <a class="w3-black w3-padding" style="padding: 8px 16px; display: inline-block; vertical-align: middle;">
+          Location {{ current_index }} of {{ id_count }}.</a>   
+      {% if next_id %}
+      <a href="{% url 'location-match-detail' id=next_id %}">
+        <button type="button" class="w3-button w3-hover-black">next</button></a>
+      {% endif %}
+    </div>
+</section>
 {% endblock %}
-
 {% block script %}
 {% endblock %}
