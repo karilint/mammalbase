@@ -35,12 +35,20 @@ def info_traitmatch(request):
     )
 
 def get_match(source_name):
-    """Get best match for source attribute from master attributes using fuzzy matching."""
-    relations = MasterAttribute.objects.exclude(
-        is_active=False).values_list('name', 'source_attribute__name')
-    match = process.extractOne(
-        source_name, relations, scorer=fuzz.token_set_ratio, score_cutoff=75)
-    return match[0][0] if match else None
+    """Get best match for source attribute from master attributes and source attributes."""   
+    master_relation = MasterAttribute.objects.exclude(is_active=False).values_list('name','source_attribute__name')
+    source_relation = [master_relation[1] for master_relation in master_relation]
+    
+    source_match = process.extractOne(source_name, source_relation, scorer=fuzz.token_set_ratio, score_cutoff=70)
+    if source_match:
+        index = source_relation.index(source_match[0])
+        return master_relation[index][0]
+    
+    master_match = process.extractOne(source_name, master_relation, scorer=fuzz.token_set_ratio, score_cutoff=70)
+    if master_match:
+        return master_match[0]
+    return None
+
 
 @login_required
 def match_operation_endpoint(request):
