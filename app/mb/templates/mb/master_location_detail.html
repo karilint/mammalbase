@@ -14,7 +14,7 @@
   </header>
 
   <!-- {% include 'includes/find.html' %} -->
-  {% if master_locations %}
+  {% if master_location %}
   {% if request.user|is_data_admin_or_contributor %}
       <br>
       <br>
@@ -41,30 +41,27 @@
         </tr>
         </thead>
         <tbody>
-        {% for x in master_locations %}
-        <!-- <p>id: {{ x.id }}</p> -->
         <tr>
-            <td>{{ x.name }}</td>
-            <td>{{ x.country }}</td>
-            <td>{{ x.continent }}</td>
-            <td>{{ x.countryCode }}</td>
-            <td>{{ x.county }}</td>
-            <td>{{ x.decimalLatitude }}</td>
-            <td>{{ x.decimalLongitude }}</td>
-            <td>{{ x.geodeticDatum }}</td>
-            <td>{{ x.locality }}</td>
-            <td>{{ x.locationAccordingTo }}</td>
-            <td>{{ x.locationID }}</td>
-            <td>{{ x.locationRemarks }}</td>
-            <td>{{ x.maximumElevationInMeters }}</td>
-            <td>{{ x.minimumElevationInMeters }}</td>
-            <td>{{ x.municipality }}</td>
-            <td>{{ x.stateProvince }}</td>
+            <td>{{ master_location.name }}</td>
+            <td>{{ master_location.country }}</td>
+            <td>{{ master_location.continent }}</td>
+            <td>{{ master_location.countryCode }}</td>
+            <td>{{ master_location.county }}</td>
+            <td>{{ master_location.decimalLatitude }}</td>
+            <td>{{ master_location.decimalLongitude }}</td>
+            <td>{{ master_location.geodeticDatum }}</td>
+            <td>{{ master_location.locality }}</td>
+            <td>{{ master_location.locationAccordingTo }}</td>
+            <td>{{ master_location.locationID }}</td>
+            <td>{{ master_location.locationRemarks }}</td>
+            <td>{{ master_location.maximumElevationInMeters }}</td>
+            <td>{{ master_location.minimumElevationInMeters }}</td>
+            <td>{{ master_location.municipality }}</td>
+            <td>{{ master_location.stateProvince }}</td>
         </tr>
-        {% endfor %}
     </table>
   {% else %}
-    <p>There are no Master Locations available.</p>
+    <p>There are no Master Location available.</p>
   {% endif %}
   </section>
 {% endblock %}

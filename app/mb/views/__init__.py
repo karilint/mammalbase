@@ -32,6 +32,7 @@ from .main import (
     index_news,
     index_proximate_analysis,
     index_master_location_list,
+    master_location_detail,
     save_new_ordering,
     user_is_data_admin_or_contributor,
     user_is_data_admin_or_owner,
