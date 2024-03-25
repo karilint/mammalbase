@@ -164,9 +164,16 @@ def measurement_or_fact_query(
         measurement_remarks=Case(
             When(
                 remarks__exact=None,
-                then=Value('NA')
+                then=Concat(
+                    Value('Data quality score '),
+                    'data_quality_score',
+                    Value('/10'))
             ),
-            default='remarks',
+            default=Concat(
+                Value('Data quality score '),
+                'data_quality_score',
+                Value("/10 | "),
+                'remarks'),
             output_field=CharField()
         ),
         aggregate_measure=Case(

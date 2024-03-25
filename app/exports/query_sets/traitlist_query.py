@@ -1,7 +1,7 @@
-from django.db.models import Value, CharField, Q, Case, When, F, Aggregate
+from django.db.models import Value, CharField, Q, Case, When, F, Aggregate, Subquery
 from django.db.models.functions import Concat, Replace
 
-from mb.models import SourceChoiceSetOptionValue, MasterAttribute
+from mb.models import SourceChoiceSetOptionValue, MasterAttribute, MasterChoiceSetOption
 from .base_query import base_query
 
 
@@ -13,6 +13,21 @@ def traitlist_query(measurement_choices):
         Returns the query and fields whereof non active values are excluded.
     """
     base = base_query(measurement_choices)
+
+    class GroupConcat(Aggregate):
+        function = 'GROUP_CONCAT'
+        template = '%(function)s(%(distinct)s%(expressions)s%(ordering)s%(separator)s)'
+
+        def __init__(self, expression, distinct=False, ordering=None, separator=',', **extra):
+            super().__init__(
+                expression,
+                distinct='DISTINCT ' if distinct else '',
+                ordering=' ORDER BY %s' % ordering if ordering is not None else '',
+                separator=' SEPARATOR "%s"' % separator,
+                output_field=CharField(),
+                **extra
+        )
+
 
     non_active = (
               Q(source_attribute__master_attribute__unit__is_active=False)
@@ -51,29 +66,29 @@ def traitlist_query(measurement_choices):
         'source_attribute__master_attribute__attributegrouprelation__display_order'
     ).distinct()
 
-    nominal_query = SourceChoiceSetOptionValue.objects.exclude(nominal_non_active).annotate(
+    nominal_query = MasterAttribute.objects.exclude(nominal_non_active).annotate(
         identifier=Concat(
             Value('https://www.mammalbase.net/ma/'),
-            'source_choiceset_option__source_attribute__master_attribute__id',
+            'id',
             Value('/'),
             output_field=CharField()
         ),
         trait=Replace(
-            'source_choiceset_option__source_attribute__master_attribute__name',
+            'name',
             Value(' '),
             Value('_')
         ),
         narrowerTerm=Value('NA'),
         relatedTerm=Value('NA'),
-        #factorLevels=GroupConcat('source_choiceset_option__master_choiceset_option__name'),
+        factorLevels=GroupConcat(Subquery(MasterChoiceSetOption.objects.name.filter(master_attribute_id='id'))),
         broaderTerm=Value('NA'),
         expectedUnit=Value('NA'),
         max_allowed_value=Value('NA'),
         min_allowed_value=Value('NA'),
         comments=Value('NA'),
     ).order_by(
-        'source_choiceset_option__source_attribute__master_attribute__groups__name',
-        'source_choiceset_option__source_attribute__master_attribute__attributegrouprelation__display_order'
+        'groups__name',
+        'attributegrouprelation__display_order'
     ).distinct()
 
     fields = [
@@ -98,14 +113,14 @@ def traitlist_query(measurement_choices):
         ('broaderTerm', 'broaderTerm'),
         ('narrowerTerm', 'narrowerTerm'),
         ('relatedTerm', 'relatedTerm'),
-        ('source_choiceset_option__source_attribute__master_attribute__value_type', 'valueType'),
+        ('value_type', 'valueType'),
         ('expectedUnit', 'expectedUnit'),
-        #('factorLevels', 'factorLevels'),
+        ('factorLevels', 'factorLevels'),
         ('max_allowed_value', 'maxAllowedValue'),
         ('min_allowed_value', 'minAllowedValue'),
-        ('source_choiceset_option__source_attribute__master_attribute__description', 'traitDescription'),
+        ('description', 'traitDescription'),
         ('comments', 'comments'),
-        ('source_choiceset_option__source_attribute__master_attribute__reference__citation', 'source')
+        ('citation', 'source')
     ]
 
     queries = []

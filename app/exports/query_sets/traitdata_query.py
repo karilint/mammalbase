@@ -28,6 +28,7 @@ def traitdata_query(measurement_choices):
             | Q(source_entity__master_entity__id__isnull=True)
             | Q(source_choiceset_option__source_attribute__reference__status=1)
             | Q(source_choiceset_option__source_attribute__reference__status=3)
+            | Q(source_choiceset_option__master_choiceset_option__name=None)
     )
 
     query = base.exclude(non_active).annotate(
