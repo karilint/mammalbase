@@ -32,7 +32,7 @@ def trait_match_list(request):
 
     return render(
         request,
-        'matchtool/info_trait_match.html',
+        'matchtool/trait_match_list.html',
         {'page_obj': page_obj, 'filter': f, 'master_attributes': master_attributes}
     )
 
