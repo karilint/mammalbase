@@ -104,7 +104,6 @@ def metadata_query(measurement_choices):
     ).order_by('author').distinct()
 
     fields = [
-        ('id', 'hmmm'),
         ('dataset_id', 'datasetID'),
         ('dataset_name', 'datasetName'),
         ('dataset_description', 'datasetDescription'),

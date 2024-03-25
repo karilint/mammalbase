@@ -66,7 +66,7 @@ def traitlist_query(measurement_choices):
         'source_attribute__master_attribute__attributegrouprelation__display_order'
     ).distinct()
 
-    nominal_query = MasterAttribute.objects.exclude(nominal_non_active).annotate(
+    nominal_query = SourceChoiceSetOptionValue.objects.exclude(nominal_non_active).annotate(
         identifier=Concat(
             Value('https://www.mammalbase.net/ma/'),
             'id',
@@ -74,21 +74,21 @@ def traitlist_query(measurement_choices):
             output_field=CharField()
         ),
         trait=Replace(
-            'name',
+            'source_choiceset_option__source_attribute__master_attribute__name',
             Value(' '),
             Value('_')
         ),
         narrowerTerm=Value('NA'),
         relatedTerm=Value('NA'),
-        factorLevels=GroupConcat(Subquery(MasterChoiceSetOption.objects.name.filter(master_attribute_id='id'))),
+        factorLevels=Value('ASDASD'),
         broaderTerm=Value('NA'),
         expectedUnit=Value('NA'),
         max_allowed_value=Value('NA'),
         min_allowed_value=Value('NA'),
         comments=Value('NA'),
     ).order_by(
-        'groups__name',
-        'attributegrouprelation__display_order'
+        'source_choiceset_option__source_attribute__master_attribute__groups__name',
+        'source_choiceset_option__source_attribute__master_attribute__attributegrouprelation__display_order'
     ).distinct()
 
     fields = [
@@ -113,14 +113,14 @@ def traitlist_query(measurement_choices):
         ('broaderTerm', 'broaderTerm'),
         ('narrowerTerm', 'narrowerTerm'),
         ('relatedTerm', 'relatedTerm'),
-        ('value_type', 'valueType'),
+        ('source_choiceset_option__source_attribute__master_attribute__value_type', 'valueType'),
         ('expectedUnit', 'expectedUnit'),
         ('factorLevels', 'factorLevels'),
         ('max_allowed_value', 'maxAllowedValue'),
         ('min_allowed_value', 'minAllowedValue'),
-        ('description', 'traitDescription'),
+        ('source_choiceset_option__source_attribute__master_attribute__description', 'traitDescription'),
         ('comments', 'comments'),
-        ('citation', 'source')
+        ('source_choiceset_option__source_attribute__master_attribute__reference__citation', 'source')
     ]
 
     queries = []
