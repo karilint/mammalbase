@@ -23,43 +23,14 @@
     <thead>
         <tr>
             <th>Name</th>
-            <th>Country</th>
-            <th>Continent</th>
-            <th>Country Code</th>
-            <th>County</th>
-            <th>Decimal Latitude</th>
-            <th>Decimal Longitude</th>
-            <th>Geodetic Datum</th>
-            <th>Locality</th>
-            <th>Location According To</th>
-            <th>Location ID</th>
-            <th>Location Remarks</th>
-            <th>Maximum Elevation In Meters</th>
-            <th>Minimum Elevation In Meters</th>
-            <th>Municipality</th>
-            <th>State/Province</th>
+            <th>Reference</th>
         </tr>
         </thead>
         <tbody>
         {% for x in master_locations %}
-        <!-- <p>id: {{ x.id }}</p> -->
         <tr>
-            <td>{{ x.name }}</td>
-            <td>{{ x.country }}</td>
-            <td>{{ x.continent }}</td>
-            <td>{{ x.countryCode }}</td>
-            <td>{{ x.county }}</td>
-            <td>{{ x.decimalLatitude }}</td>
-            <td>{{ x.decimalLongitude }}</td>
-            <td>{{ x.geodeticDatum }}</td>
-            <td>{{ x.locality }}</td>
-            <td>{{ x.locationAccordingTo }}</td>
-            <td>{{ x.locationID }}</td>
-            <td>{{ x.locationRemarks }}</td>
-            <td>{{ x.maximumElevationInMeters }}</td>
-            <td>{{ x.minimumElevationInMeters }}</td>
-            <td>{{ x.municipality }}</td>
-            <td>{{ x.stateProvince }}</td>
+            <td><a href="/ml_detail/{{ x.id }}">{{ x.name }}</a></td>
+            <td>{{ x.reference }}</td>
         </tr>
         {% endfor %}
     </table>

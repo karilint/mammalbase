@@ -10,7 +10,7 @@
 <!--End of article header -->
 <section class="w3-threequarter w3-container">
   <header class="w3-container w3-text-teal">
-    <h2>Master Locations</h2>
+    <h2>Master Location</h2>
   </header>
 
   <!-- {% include 'includes/find.html' %} -->
@@ -19,47 +19,113 @@
       <br>
       <br>
     {% endif %}
-    <table class="mb-list w3-table-all w3-small w3-responsive">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Country</th>
-            <th>Continent</th>
-            <th>Country Code</th>
-            <th>County</th>
-            <th>Decimal Latitude</th>
-            <th>Decimal Longitude</th>
-            <th>Geodetic Datum</th>
-            <th>Locality</th>
-            <th>Location According To</th>
-            <th>Location ID</th>
-            <th>Location Remarks</th>
-            <th>Maximum Elevation In Meters</th>
-            <th>Minimum Elevation In Meters</th>
-            <th>Municipality</th>
-            <th>State/Province</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>{{ master_location.name }}</td>
-            <td>{{ master_location.country }}</td>
-            <td>{{ master_location.continent }}</td>
-            <td>{{ master_location.countryCode }}</td>
-            <td>{{ master_location.county }}</td>
-            <td>{{ master_location.decimalLatitude }}</td>
-            <td>{{ master_location.decimalLongitude }}</td>
-            <td>{{ master_location.geodeticDatum }}</td>
-            <td>{{ master_location.locality }}</td>
-            <td>{{ master_location.locationAccordingTo }}</td>
-            <td>{{ master_location.locationID }}</td>
-            <td>{{ master_location.locationRemarks }}</td>
-            <td>{{ master_location.maximumElevationInMeters }}</td>
-            <td>{{ master_location.minimumElevationInMeters }}</td>
-            <td>{{ master_location.municipality }}</td>
-            <td>{{ master_location.stateProvince }}</td>
-        </tr>
+    <div class="mb-detail w3-bar w3-right-align">
+      <a title="Press to Go Back" class="w3-button w3-medium w3-round w3-padding-small w3-teal" onclick="backFunction()"><span class="fa fa-arrow-left"></span></a>
+      {% if request.user|is_data_admin_or_owner:master_location %}
+      <a title="Press to Edit" class="w3-button w3-medium w3-round w3-padding-small w3-teal" href="{% url 'master_location-edit' pk=master_location.pk %}"><span class="fa fa-pencil-square-o"></span></a>
+      <a title="Press to Delete" class="w3-button w3-medium w3-round w3-padding-small w3-teal" href="{% url 'master_location-delete' pk=master_location.pk %}"><span class="fa  fa-trash-o"></span></a>
+      {% else %}
+      <button title="Please login to Edit" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
+      <button title="Please login to Delete" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+      {% endif %}
+    </div>
+    <table class="mb-detail w3-table-all w3-responsive">
+      <caption class="mb-detail w3-left-align">Master Location: {{ master_location.name }}</caption>
+      <tr>
+        <th class="w3-quarter">Name:</th>
+        <td class="w3-threequarter">{{ master_location.name }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Country:</th>
+        <td class="w3-threequarter">{{ master_location.country }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Continent:</th>
+        <td class="w3-threequarter">{{ master_location.continent }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Country Code:</th>
+        <td class="w3-threequarter">{{ master_location.country }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">County:</th>
+        <td class="w3-threequarter">{{ master_location.county }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Decimal Latitude:</th>
+        <td class="w3-threequarter">{{ master_location.decimalLatitude }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Decimal Longitude</th>
+        <td class="w3-threequarter">{{ master_location.decimalLongitude }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Geodetic Datum</th>
+        <td class="w3-threequarter">{{ master_location.geodedicDatum }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Locality</th>
+        <td class="w3-threequarter">{{ master_location.locality }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Location According to</th>
+        <td class="w3-threequarter">{{ master_location.locationAccordingTo }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Location ID</th>
+        <td class="w3-threequarter">{{ master_location.locationID }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Location Remarks</th>
+        <td class="w3-threequarter">{{ master_location.locationRermarks }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Maximum Elevation in Meters</th>
+        <td class="w3-threequarter">{{ master_location.maximumElevationInMeters }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Minimum Elevation in Meters</th>
+        <td class="w3-threequarter">{{ master_location.minimumElevationInMeters }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Municipality</th>
+        <td class="w3-threequarter">{{ master_location.municipality }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">State Province</th>
+        <td class="w3-threequarter">{{ master_location.stateProvince }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Reference:</th>
+        <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="{% url 'master_reference-detail' pk=master_location.reference.id %}">{{ master_location.reference }}<span class="fa fa-link w3-small"></span></a></td>
+      </tr>
     </table>
+    <table class="mb-list w3-table-all w3-small w3-responsive">
+      <caption class="w3-left-align">Table 1. List of Occurrences related with <b><i>{{ master_location }}</i></b>.</caption>
+      <thead>
+      {% if master_location.attributerelation_set.count > 0 %}
+      {% for occurrence in master_location.attributerelation_set.all %} <!-- hae relaatiotaulun avulla sourcelocationit. Ei siis näin!-->
+      <tr>
+        {% if user.is_authenticated %}
+          <td class="mb-private-internal"><a title="Press for Details" href="#">{{ occurrence }} <span class="fa fa-link w3-small"></span></a></td>
+        {% else %}
+          <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ occurrence }} <span class="fa fa-link w3-small"></span></a></td>
+        {% endif %}
+        <td class="mb-private-internal" title="sa.source_attribute.method|safe">{{ occurrence.method |default_if_none:"-" }}</td>
+        <td title="{{ sa.source_attribute.reference|safe }}">{{ occurrence.reference|truncatechars:50|safe }}</td>
+      </tr>
+      {% endfor %}
+      {% else %}
+      <tr><td colspan="2">There are no related Occurrences available.</td></tr>
+      {% endif %}
+    </table>
+    {% if request.user|is_data_admin_or_contributor %}
+    <br>
+    <a title="Press to Add new" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'attribute-relation-new' master_attribute.id %}"><span class="fa fa-plus"></span></a>
+    {% else %}
+    <button title="Please login to Add new" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-plus"></span></button>
+    <br>
+    {% endif %}
   {% else %}
     <p>There are no Master Location available.</p>
   {% endif %}

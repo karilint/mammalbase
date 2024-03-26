@@ -13,11 +13,11 @@ urlpatterns = [
             views.index_mammals,
             name='index_mammals'),
     path(
-        "master_location_list",
+        "ml_list",
         views.index_master_location_list,
         name="master_location_list"),
     path(
-        "master_location_detail/<int:pk>/",
+        "ml_detail/<int:pk>/",
         views.master_location_detail,
         name="master_location_detail"),
     path(

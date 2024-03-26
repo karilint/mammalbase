@@ -145,7 +145,7 @@ def index_master_location_list(request):
     return render(request, 'mb/master_location_list.html', context={"master_locations" : master_locations},)
 
 def master_location_detail(request, pk):
-    master_location = MasterLocation.objects.get(id=pk)
+    master_location = get_object_or_404(MasterLocation, id=pk)
     return render(request, 'mb/master_location_detail.html', context={"master_location" : master_location},)
 
 # Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
