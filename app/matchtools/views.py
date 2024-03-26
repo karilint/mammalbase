@@ -5,8 +5,7 @@ from mb.models import SourceAttribute, MasterAttribute, AttributeRelation
 from django.db.models import Q
 from fuzzywuzzy import fuzz, process
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from mb.filters import SourceAttributeFilter
-
+from .filters import SourceAttributeFilter
 
 @login_required
 def trait_match_list(request):
