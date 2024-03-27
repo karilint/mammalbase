@@ -12,5 +12,5 @@ class SourceAttributeFilter(django_filters.FilterSet):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not any(self.data.values()):
-            self.queryset = SourceAttribute.objects.filter(master_attribute=None)
+        if not any(key != 'page' and value for key, value in self.data.items()):
+            self.queryset = self.queryset.filter(master_attribute=None)
