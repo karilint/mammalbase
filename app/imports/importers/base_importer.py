@@ -24,6 +24,7 @@ from itis.views import *
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from decimal import Decimal
 from django.contrib import messages
+from requests_cache import CachedSession
 
 class BaseImporter:
     """
@@ -260,9 +261,9 @@ class BaseImporter:
         """
         Return TimePeriod object for the given time_period or create a new one
         """
-        time_period = TimePeriod.objects.filter(name__iexact=time_period, reference=source_reference)
-        if time_period.count() == 1:
-            return time_period[0]
+        time_period1 = TimePeriod.objects.filter(name__iexact=time_period, reference=source_reference)
+        if time_period1.exists():
+            return time_period1[0]  # Return the first matching object
         else:
             new_time_period = TimePeriod(name=time_period, reference=source_reference, created_by=author)
             new_time_period.save()
