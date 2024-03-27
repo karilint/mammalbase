@@ -179,6 +179,11 @@ DATABASES = {
         },
     }
 }
+# sq lite for testing
+if 'test' in environ.get('DJANGO_SETTINGS_MODULE', ''):
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3'
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
