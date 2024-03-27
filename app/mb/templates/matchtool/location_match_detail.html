@@ -9,14 +9,14 @@
 </header>
 <!--End of article header -->
 <section class="w3-threequarter w3-container">
-  <header class="w3-container w3-text-teal">
-    <h2>Location Match</h2>
+  <header class="w3-text-teal">
+    <h2 class="w3-container">Location Match</h2>
     <div id="Search" style="display: block;">
       <form method="POST">
         {% csrf_token %}
         <label>Refine Search:</label>
-        <input type="text" id="search" name="query" value="{{ sourceLocation }}">
-        <input type="submit" value="Submit">
+        <input type="text" id="search" name="query" value="{{ sourceLocation }}" style="margin-bottom: 5px;">
+        <input type="submit" value="Submit" style="width: 80px; margin-bottom: 15px;">
       </form>
     </div>
     </header>
