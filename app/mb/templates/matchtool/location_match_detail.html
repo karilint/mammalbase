@@ -28,6 +28,7 @@
         <thead>
           <tr>
             <th>Name</th>
+            <th>Country</th>
             <th>ID</th>
           </tr>
         </thead>
@@ -36,6 +37,11 @@
           <tr>
             {% if location.name %}
               <td>{{ location.name }}</td>
+            {% else %}
+              <td style="text-align:center">-</td>
+            {% endif %}
+            {% if location.countryName %}
+              <td>{{ location.countryName }}</td>
             {% else %}
               <td style="text-align:center">-</td>
             {% endif %}
