@@ -276,3 +276,9 @@ class ValidationTest(TestCase):
             rules = "regex:.*([1-2][0-9]{3})"
             errors = self.instance.validate_regex_fields(data,"regex", rules)
             self.assertEqual(errors, [required_error])
+
+            # Test case 3:
+            data = {"regex": "Original study"} 
+            rules = "regex:.*([1-2][0-9]{3})|(Original study)'"
+            errors = self.instance.validate_regex_fields(data,"regex", rules)
+            self.assertEqual(errors, [required_error])
