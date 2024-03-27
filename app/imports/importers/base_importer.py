@@ -21,9 +21,11 @@ import json
 import logging
 from itis.models import TaxonomicUnits
 from itis.views import *
+from itis.tools import getFullHierarchyFromTSN, hierarchyToString
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from decimal import Decimal
 from django.contrib import messages
+from requests_cache import CachedSession
 
 class BaseImporter:
     """
