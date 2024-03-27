@@ -76,11 +76,6 @@ INSTALLED_APPS = [
     "django_celery_results",
     "celery_progress",
 
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.orcid',
-
     # https://django-simple-history.readthedocs.io/
     'simple_history',
 
@@ -92,6 +87,11 @@ INSTALLED_APPS = [
     'itis',
     'exports',
     'matchtools'
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.orcid',
 
 #    'django_extensions', #for Jupyter and Scripts
 #    'crispy_forms',
