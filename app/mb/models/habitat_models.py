@@ -74,8 +74,7 @@ class MasterHabitat(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
-
+        return f"{self.name}"
 
 class HabitatRelation(BaseModel):
     source_habitat = models.ForeignKey(
@@ -96,6 +95,8 @@ class HabitatRelation(BaseModel):
         """
         String for representing the Model object
         """
+        # pylint: disable = consider-using-f-string
+        # This is arguably more clear presentation than f-string
         return '{0} ({1}) {2}'.format(
                 self.source_habitat.habitat_type,
                 self.master_habitat.name,

@@ -21,9 +21,15 @@ from .validators import validate_doi
 
 
 class AttributeRelation(BaseModel):
-    source_attribute = models.ForeignKey('SourceAttribute', on_delete=models.CASCADE)
-    master_attribute = models.ForeignKey('MasterAttribute', on_delete=models.CASCADE)
-    remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Attribute Relation")
+    source_attribute = (
+            models.ForeignKey('SourceAttribute', on_delete=models.CASCADE))
+    master_attribute = (
+            models.ForeignKey('MasterAttribute', on_delete=models.CASCADE))
+    remarks = models.TextField(
+            blank=True,
+            null=True,
+            max_length=500,
+            help_text="Enter remarks for the Attribute Relation")
 
     class Meta:
         unique_together = ('source_attribute', 'master_attribute',)
@@ -233,7 +239,7 @@ class FoodItem(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class MasterAttributeGroup(BaseModel):
     name = models.CharField(
@@ -490,15 +496,48 @@ class MasterReference(BaseModel):
                     "the Standard Reference"),
             blank=True,
             null=True)
-    year = models.IntegerField(validators=[MinValueValidator(1800), MaxValueValidator(2100)], blank=True, null=True,)
-    title = models.CharField(max_length=400, help_text="Enter the Title of the Standard Reference", blank=True, null=True,)
-    container_title = models.CharField(max_length=100, help_text="Enter the Container Title of the Standard Reference", blank=True, null=True,)
-    volume = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(4000)], blank=True, null=True,)
-    issue = models.CharField(max_length=5, help_text="Enter the Issue of the Standard Reference", blank=True, null=True,)
-    page = models.CharField(max_length=50, help_text="Enter the Page(s) of the Standard Reference", blank=True, null=True,)
-    citation = models.CharField(max_length=500, help_text="Enter the Citation of the Standard Reference")
-#    link = models.URLField(max_length=200, help_text="Enter a valid URL for the Source Reference", blank=True, null=True,)
-    is_public = models.BooleanField(help_text="Enter if the source is public", blank=False, null=True,)
+    year = models.IntegerField(
+            validators=[MinValueValidator(1800),
+            MaxValueValidator(2100)],
+            blank=True,
+            null=True,)
+    title = models.CharField(
+            max_length=400,
+            help_text="Enter the Title of the Standard Reference",
+            blank=True,
+            null=True,)
+    container_title = models.CharField(
+            max_length=100,
+            help_text="Enter the Container Title of the Standard Reference",
+            blank=True,
+            null=True,)
+    volume = models.IntegerField(
+            validators=[MinValueValidator(0),
+            MaxValueValidator(4000)],
+            blank=True,
+            null=True,)
+    issue = models.CharField(
+            max_length=5,
+            help_text="Enter the Issue of the Standard Reference",
+            blank=True,
+            null=True,)
+    page = models.CharField(
+            max_length=50,
+            help_text="Enter the Page(s) of the Standard Reference",
+            blank=True,
+            null=True,)
+    citation = models.CharField(
+            max_length=500,
+            help_text="Enter the Citation of the Standard Reference")
+#    link = models.URLField(
+#            max_length=200,
+#            help_text="Enter a valid URL for the Source Reference",
+#            blank=True,
+#            null=True,)
+    is_public = models.BooleanField(
+            help_text="Enter if the source is public",
+            blank=False,
+            null=True,)
 
     class Meta:
         ordering = ['citation']
