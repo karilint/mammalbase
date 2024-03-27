@@ -7,6 +7,7 @@ from mb.models import ModelName
 """
 
 from django.db import models
+from django.urls import reverse
 from .base_model import BaseModel
 
 class SourceLocation(BaseModel):

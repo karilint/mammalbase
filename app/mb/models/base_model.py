@@ -13,14 +13,18 @@ from django_userforeignkey.models.fields import UserForeignKey
 from simple_history.models import HistoricalRecords
 
 class CustomQuerySet(QuerySet):
-    def delete(self):
+    """ Custom query to disable delete. Delete just makes entry inactive. """
+    def delete(self, *args, **kwargs):
         self.update(is_active=False)
 
 class ActiveManager(models.Manager):
+    """ Model for filtering active entries ??? """
     def is_active(self):
+        """ Return objects that are currently active """
         return self.model.objects.filter(is_active=True)
 
     def get_queryset(self):
+        """ For getting deletion preventing queryset ??? """
         return CustomQuerySet(self.model, using=self._db)
 
 # https://medium.com/@KevinPavlish/
@@ -58,13 +62,15 @@ class BaseModel(models.Model):
     #        self.save()
 
     # Code by ChatGPT4
-    def delete(self):
+    def delete(self, *args, **kwargs):
         """
         Recursively soft delete this object and cascade the soft delete to
         related objects.
         """
         # Handle related fields with cascading deletion
         for rel in self._meta.related_objects:
+            # pylint: disable = comparison-with-callable
+            # Seems that we are comparing callable to callable on next line
             if (rel.on_delete == models.CASCADE
                     and hasattr(rel.related_model, 'is_active')):
                 related_manager = getattr(self, rel.get_accessor_name())
