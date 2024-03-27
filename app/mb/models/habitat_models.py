@@ -6,11 +6,6 @@ To import models elsewhere use subpackage:
 from mb.models import ModelName
 """
 
-# We can safely disable some linting for models:
-# pylint: disable = too-few-public-methods
-# pylint: disable = missing-function-docstring, missing-class-docstring
-
-
 from django.db import models
 from .base_model import BaseModel
 
