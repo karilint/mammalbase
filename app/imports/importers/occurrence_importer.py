@@ -13,12 +13,9 @@ from mb.models import (
     SourceChoiceSetOption,
     SourceChoiceSetOptionValue,
     SourceMeasurementValue,
-    
     Occurrence,
     Event,
-    
     SourceHabitat)
-from imports.tools import messages, possible_nan_to_none, possible_nan_to_zero
 from .base_importer import BaseImporter
 
 class OccurrencesImporter(BaseImporter):

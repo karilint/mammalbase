@@ -6,10 +6,6 @@ To import models elsewhere use subpackage:
 from mb.models import ModelName
 """
 
-# We can safely disable some linting for models:
-# pylint: disable = too-few-public-methods
-# pylint: disable = missing-function-docstring, missing-class-docstring
-
 from django.db import models
 from .base_model import BaseModel
 
@@ -75,9 +71,11 @@ class Occurrence(BaseModel):
     associated_references = models.TextField(
         blank=True,
         null=True,
-        help_text="References to other sources of information about the Occurrence."
+        help_text=(
+                "References to other sources "
+                "of information about the Occurrence.")
         )
-    
+
 class Event(BaseModel):
     """
     Model representing an event that is associated with an Occurrence.
@@ -98,5 +96,7 @@ class Event(BaseModel):
         max_length=250,
         blank=True,
         null=True,
-        help_text="The verbatim original representation of the date and time information for an Event."
+        help_text=(
+                "The verbatim original representation "
+                "of the date and time information for an Event.")
         )

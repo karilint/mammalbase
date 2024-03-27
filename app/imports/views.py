@@ -1,7 +1,12 @@
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.shortcuts import render
+
 from .importers.diet_importer import DietImporter
 from .importers.ets_importer import EtsImporter
 from .importers.occurrence_importer import OccurrencesImporter
+from .importers.proximate_analysis_importer import ProximateAnalysisImporter
 from .validation_lib.occurrence_validation import Occurrence_validation
 from .validation_lib.diet_set_validation import Diet_set_validation
 from .validation_lib.ets_validation import Ets_validation
@@ -36,10 +41,10 @@ def import_proximate_analysis(request):
 		HTTP-response: html-template
 	"""
 	validator = Proximate_analysis_validation()
-	#importer = ProximateAnalysisImporter()
+	importer = ProximateAnalysisImporter()
 	path = "import_proximate_analysis"
 
-	#return wrapper(request, validator, importer, path)
+	return wrapper(request, validator, importer, path)
 
 @login_required
 def import_ets(request):
