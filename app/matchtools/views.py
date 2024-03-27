@@ -60,6 +60,7 @@ def get_match(source_name):
 
 @login_required
 def match_operation_endpoint(request):
+    """Handles the AJAX POST request sent when a user tries to make a match."""
     if request.method == "POST":
         source_attribute_id = request.POST.get("source_attribute_id")
         source_attribute = get_object_or_404(
