@@ -9,14 +9,14 @@
 </header>
 <!--End of article header -->
 <section class="w3-threequarter w3-container">
-  <header class="w3-text-teal">
-    <h2 class="w3-container">Location Match</h2>
-    <div id="Search" style="display: block;">
+  <header class="w3-row">
+    <h2 class="w3-container w3-text-teal">Location Match: {{ sourceLocation }}</h2>
+    <div class="w3-half" id="Search" style="display: block;">
       <form method="POST">
         {% csrf_token %}
-        <label>Refine Search:</label>
-        <input type="text" id="search" name="query" value="{{ sourceLocation }}" style="margin-bottom: 5px;">
-        <input type="submit" value="Submit" style="width: 80px; margin-bottom: 15px;">
+        <label style="font-size: 18px"><b>Refine Search:</b> <a class="fa fa-info-circle w3-large" title='Tip: If the location is not found, try modifying the search result (e.g. "Wilhelmina Rise" instead of "Wilhelmina Rise, Hawaii, USA")'></a></label>
+        <input type="text" id="search" name="query" value="{{ sourceLocation }}" style="margin-bottom: 8px; margin-top: 8px">
+        <input type="submit" value="Submit" class="w3-button w3-medium w3-round w3-padding-small w3-teal" style="width: 80px; margin-bottom: 15px;">
       </form>
     </div>
     </header>
@@ -24,7 +24,7 @@
         <br>
         <br>
       {% endif %}
-      <table class="mb-list w3-table-all w3-small w3-responsive">
+      <table class="mb-list w3-table-all w3-medium w3-half">
         <thead>
           <tr>
             <th>Name</th>
@@ -50,7 +50,8 @@
             {% else %}
               <td style="text-align:center">-</td>
             {% endif %}
-              <td><button onclick="handleMatchButtonClick('{{ location|escapejs }}', '{{ sourceLocation.id|escapejs }}')">Match</button></td>
+              <td style="text-align:right"><button onclick="handleMatchButtonClick('{{ location|escapejs }}', '{{ sourceLocation.id|escapejs }}')" class="w3-button w3-medium w3-round w3-padding-small w3-teal">
+                Match&nbsp;<i class="fa fa-angle-right"></i></button></td>
           </tr>
           {% endfor %}
         </tbody>
