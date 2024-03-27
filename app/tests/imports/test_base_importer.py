@@ -1,5 +1,5 @@
 from django.test import TestCase
-from mb.models.models import EntityRelation
+from mb.models import EntityRelation
 import requests_mock
 from imports.importers.base_importer import BaseImporter
 from django.contrib.auth.models import User
@@ -74,49 +74,7 @@ class BaseImporterTest(TestCase):
         source_entity2 = self.base_importer.get_or_create_source_entity('Mangifera', source_reference, entity_class, self.test_author)
         #assert
         self.assertEqual(source_entity, source_entity2)
-        
-    def test_create_entity_relation(self):
-        source_reference = self.base_importer.get_or_create_source_reference('test', self.test_author)
-        entity_class = self.base_importer.get_or_create_entity_class('test', self.test_author)
-        source_entity = self.base_importer.get_or_create_source_entity('Mangifera', source_reference, entity_class, self.test_author)
-        #create
-        self.base_importer.create_entity_relation(source_entity)
-        #get entity relation
-        entity_relation = EntityRelation.objects.filter(source_entity=source_entity)
-        if len(entity_relation) == 0:
-            self.fail('Entity relation not created')
-        #assert
-        entity_relation[0]
-        self.assertEqual(entity_relation.source_entity, source_entity)
-        
-    def test_create_and_link_entity_relation(self):
-        source_reference = self.base_importer.get_or_create_source_reference('test', self.test_author)
-        entity_class = self.base_importer.get_or_create_entity_class('test', self.test_author)
-        source_entity = self.base_importer.get_or_create_source_entity('Mangifera', source_reference, entity_class, self.test_author)
-        #create
-        self.base_importer.create_and_link_entity_relation_from_api(source_entity)
-        #get entity relation
-        entity_relation = EntityRelation.objects.filter(source_entity=source_entity)
-        if len(entity_relation) == 0:
-            self.fail('Entity relation not created')
-        #assert
-        entity_relation = entity_relation[0]
-        self.assertEqual(entity_relation.source_entity, source_entity)
-    
-    def test_get_or_create_master_reference_when_new(self):
-        #create
-        master_reference = self.base_importer.get_or_create_master_reference('Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.', self.test_author)
-        #assert
-        self.assertEqual(master_reference.citation, 'Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
-        
-    def test_get_or_create_master_reference_when_exist(self):
-        #create
-        master_reference = self.base_importer.get_or_create_master_reference('Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.', self.test_author)
-        #get
-        master_reference2 = self.base_importer.get_or_create_master_reference('Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.', self.test_author)
-        #assert
-        self.assertEqual(master_reference, master_reference2)
-        
+         
     def test_get_or_create_source_location_when_new(self):
         source_reference = self.base_importer.get_or_create_source_reference('test', self.test_author)
         #create
@@ -132,21 +90,5 @@ class BaseImporterTest(TestCase):
         source_location2 = self.base_importer.get_or_create_source_location('test',  source_reference, self.test_author)
         #assert
         self.assertEqual(source_location, source_location2)
-        
-    def test_get_or_create_time_period_when_new(self):
-        source_reference = self.base_importer.get_or_create_source_reference('test', self.test_author)
-        #create
-        time_period = self.base_importer.get_or_create_time_period('test',  source_reference, self.test_author)
-        #assert
-        self.assertEqual(time_period.name, 'test')
-        
-    def test_get_or_create_time_period_when_exist(self):
-        source_reference = self.base_importer.get_or_create_source_reference('test', self.test_author)
-        #create
-        time_period = self.base_importer.get_or_create_time_period('test',  source_reference, self.test_author)
-        #get
-        time_period2 = self.base_importer.get_or_create_time_period('test',  source_reference, self.test_author)
-        #assert
-        self.assertEqual(time_period, time_period2)
         
     

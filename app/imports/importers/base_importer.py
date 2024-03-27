@@ -19,9 +19,8 @@ from imports.tools import make_harvard_citation_journalarticle, messages
 from datetime import timedelta
 from config.settings import ITIS_CACHE
 from requests_cache import CachedSession
-import itis.views as itis
+import itis.tools as itis
 import json
-import logging
 
 class BaseImporter:
     """
@@ -83,6 +82,7 @@ class BaseImporter:
                 page=page, citation=citation, created_by=user_author
             )
             mr.save()
+            print(f"MasterReference created: {mr}")
             return mr
 
         except Exception as e:
