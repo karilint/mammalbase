@@ -79,6 +79,8 @@ class MasterLocation(BaseModel):
     reference = models.ForeignKey(
         'MasterReference',
         on_delete = models.CASCADE,
+        blank=True,
+        null=True
         )
     name = models.CharField(
         max_length=250, 

@@ -48,10 +48,10 @@ def match_location(request):
 
     sourceLocation = SourceLocation.objects.get(id=sourceLocationId)
     
-    #masterLocation = create_master_location(geoNamesLocation)
-    masterLocation = ["test", "Italy", "Finland"]
+    masterLocation = create_master_location(geoNamesLocation)
+    masterLocations = [masterLocation.name, "test"]
     #match_locations(sourceLocation.id, masterLocation.id)
     
-    return JsonResponse({'masterLocation': masterLocation})
+    return JsonResponse({'masterLocation': masterLocations})
 
     

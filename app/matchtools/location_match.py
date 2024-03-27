@@ -1,7 +1,7 @@
 from mb.models import SourceLocation, MasterLocation, LocationRelation
 
 def create_master_location(geoNamesLocation: dict):
-    master_location = MasterLocation(name=geoNamesLocation["name"], reference="test")
+    master_location = MasterLocation(name=geoNamesLocation["name"])
     master_location.save()
     return master_location
 
