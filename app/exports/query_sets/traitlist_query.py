@@ -80,7 +80,7 @@ def traitlist_query(measurement_choices):
         ),
         narrowerTerm=Value('NA'),
         relatedTerm=Value('NA'),
-        factorLevels=Value('ASDASD'),
+        factorLevels=GroupConcat('source_choiceset_option__master_choiceset_option__name'),
         broaderTerm=Value('NA'),
         expectedUnit=Value('NA'),
         max_allowed_value=Value('NA'),
