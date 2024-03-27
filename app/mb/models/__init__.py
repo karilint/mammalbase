@@ -1,3 +1,5 @@
+""" mb.models initialized here. Importing all models from submodules here. """
+
 from .base_model import (
     CustomQuerySet,
     ActiveManager,
