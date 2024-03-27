@@ -15,18 +15,9 @@
     <h2>Trait Match Tool</h2>
   </header>
 
-  <div class="w3-container" style=" background-color: #f0f0f0; margin-bottom: 10px;">
-    <p>The trait match tool allows to match unmatched source attributes to a suitable master attribute.</p>
-    <p>The match tool presents one source attribute at a time and suggests the closest matching master attribute.
-       The suggestion can then be accepted or skipped.</p>
-  </div>
     {% include 'includes/find.html' %}
     {% if page_obj %}
-      {% if user.is_authenticated %}
-        <br>
-      {% else %}
-        <br>
-      {% endif %}
+      <br>
       <table class="mb-list w3-table-all w3-small w3-responsive">
         <thead>
           <tr>
@@ -56,11 +47,13 @@
                           {% endif %}
                       {% endfor %}
                   </select>
-              </td> 
-              <td>{{ x.reference}}</td>
-                <td><button id="matchButton_{{ x.pk }}" title="Press to match the source attribute" type="button" class="w3-button w3-medium w3-round w3-padding-small w3-teal">
+                </td> 
+                <td>{{ x.reference}}</td>
+                <td>
+                  <button id="matchButton_{{ x.pk }}" title="Press to match the source attribute" type="button" class="w3-button w3-medium w3-round w3-padding-small w3-teal">
                     Match&nbsp;<i class="fa fa-angle-right"></i>
-                </button></td>
+                  </button>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
