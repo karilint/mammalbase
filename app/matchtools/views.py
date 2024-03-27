@@ -63,19 +63,14 @@ def match_operation_endpoint(request):
     """Handles the AJAX POST request sent when a user tries to make a match."""
     if request.method == "POST":
         source_attribute_id = request.POST.get("source_attribute_id")
-        source_attribute = get_object_or_404(
-            SourceAttribute, pk=source_attribute_id)
-        match = get_match(source_attribute.name)
+        selected_master_attribute_id = request.POST.get("selected_master_attribute_id")
 
-        try:
-            master = MasterAttribute.objects.get(name=match)
-            attribute_relation = AttributeRelation.objects.create(
-                source_attribute=source_attribute, master_attribute=master
-            )
-            return JsonResponse({"success": True})
-        except MasterAttribute.DoesNotExist:
-            return JsonResponse({"success": False, "error": "No matching master attribute found."})
-        except Exception as e:
-            return JsonResponse({"success": False, "error": str(e)})
+        selected_master_attribute = get_object_or_404(MasterAttribute, pk=selected_master_attribute_id)
+        source_attribute = get_object_or_404(SourceAttribute, pk=source_attribute_id)
+        attribute_relation = AttributeRelation.objects.create(
+            source_attribute=source_attribute, master_attribute=selected_master_attribute
+        )
+        
+        return JsonResponse({"success": True})
     else:
         return JsonResponse({"success": False, "error": "Invalid request method."})

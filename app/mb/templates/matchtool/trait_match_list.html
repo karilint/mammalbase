@@ -70,30 +70,36 @@
 {% endblock %}
 {% block script %}
 <script>
-    function handleMatchButtonClick(sourceAttributeId) {
-      $.ajax({
-        url: "{% url 'match_operation_endpoint' %}",
-        method: "POST",
-        data: {
-          source_attribute_id: sourceAttributeId,
-          csrfmiddlewaretoken: "{{ csrf_token }}"
-        },
-        success: function(data) {
-          alert("Match successful!");
-          location.reload();
-        },
-        error: function(xhr, status, error) {
-          console.error("Error:", error);
-          alert("An error occurred while matching.");
-        }
-      });
-    }
-    
-    $(document).ready(function() {
-      $("button[id^='matchButton_']").click(function() {
+  $(document).ready(function() {
+    $("button[id^='matchButton_']").click(function() {
         var sourceAttributeId = $(this).attr("id").split("_")[1];
-        handleMatchButtonClick(sourceAttributeId);
-      });
+        var selectedMasterAttributeId = $(this).closest("tr").find("select[name='master_attribute']").val();
+        handleMatchButtonClick(sourceAttributeId, selectedMasterAttributeId);
     });
+  });
+
+  function handleMatchButtonClick(sourceAttributeId, selectedMasterAttributeId) {
+      $.ajax({
+          url: "{% url 'match_operation_endpoint' %}",
+          method: "POST",
+          data: {
+              source_attribute_id: sourceAttributeId,
+              selected_master_attribute_id: selectedMasterAttributeId,
+              csrfmiddlewaretoken: "{{ csrf_token }}"
+          },
+          success: function(data) {
+              if (data.success) {
+                  alert("Match successful!");
+                  location.reload();
+              } else {
+                  alert("Match failed: " + data.error);
+              }
+          },
+          error: function(xhr, status, error) {
+              console.error("Error:", error);
+              alert("An error occurred while matching.");
+          }
+      });
+  }
   </script>
 {% endblock %}
