@@ -29,15 +29,18 @@ def location_matchtool(request):
 def location_match_detail(request, id):
     api = LocationAPI()
     sourceLocation = SourceLocation.objects.get(id=id)
+    result = api.get_master_location(sourceLocation)
+    
+    query = sourceLocation
     
     if request.method == 'POST':
-        sourceLocation = request.POST.get('query')
-        
-    result = api.get_master_location(sourceLocation)
+        query = request.POST.get('query')
+        result = api.get_master_location(query)
+
     result_locations = result["geonames"][:10]
     result_count = result["totalResultsCount"]
 
-    return render(request, 'matchtool/location_match_detail.html', {'sourceLocation': sourceLocation, 'result_locations': result_locations, 'result_count': result_count})
+    return render(request, 'matchtool/location_match_detail.html', {'query': query, 'sourceLocation': sourceLocation, 'result_locations': result_locations, 'result_count': result_count})
 
 def match_location(request):
     geoNamesLocation = request.POST.get('geoNamesLocation')

@@ -15,7 +15,7 @@
       <form method="POST">
         {% csrf_token %}
         <label style="font-size: 18px"><b>Refine Search:</b> <a class="fa fa-info-circle w3-large" title='Tip: If the location is not found, try modifying the search result (e.g. "Wilhelmina Rise" instead of "Wilhelmina Rise, Hawaii, USA")'></a></label>
-        <input type="text" id="search" name="query" value="{{ sourceLocation }}" style="margin-bottom: 8px; margin-top: 8px">
+        <input type="text" id="search" name="query" value="{{ query }}" style="margin-bottom: 8px; margin-top: 8px">
         <input type="submit" value="Submit" class="w3-button w3-medium w3-round w3-padding-small w3-teal" style="width: 80px; margin-bottom: 15px;">
       </form>
     </div>
