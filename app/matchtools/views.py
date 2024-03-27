@@ -55,7 +55,7 @@ def get_match(source_name):
         index = sources.index(source_match[0])
         return relations[index][0]
 
-    return None
+    return "- Checked, Unlinked -"
 
 
 @login_required
@@ -66,15 +66,17 @@ def match_operation_endpoint(request):
         source_attribute = get_object_or_404(
             SourceAttribute, pk=source_attribute_id)
         match = get_match(source_attribute.name)
-        if match:
+
+        try:
             master = MasterAttribute.objects.get(name=match)
             attribute_relation = AttributeRelation.objects.create(
                 source_attribute=source_attribute, master_attribute=master
             )
-
             return JsonResponse({"success": True})
-        else:
-            return JsonResponse({"success": False, "error": "No match found."})
+        except MasterAttribute.DoesNotExist:
+            return JsonResponse({"success": False, "error": "No matching master attribute found."})
+        except Exception as e:
+            return JsonResponse({"success": False, "error": str(e)})
     else:
         return JsonResponse({"success": False, "error": "Invalid request method."})
 
