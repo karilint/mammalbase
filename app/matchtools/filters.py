@@ -12,5 +12,5 @@ class SourceAttributeFilter(django_filters.FilterSet):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if 'master_attribute' not in self.data:
+        if not any(self.data.values()):
             self.queryset = SourceAttribute.objects.filter(master_attribute=None)
