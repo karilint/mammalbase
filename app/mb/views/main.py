@@ -22,11 +22,14 @@ from plotly import express as plotly_express
 from plotly.offline import plot as plotly_offline_plot
 from pandas import DataFrame as PandasDataFrame
 
+from itis.utils import generate_standard_values_pa
+from itis.models import SynonymLinks
+from itis.tools import getTaxonomicRankNameFromTSN, GetAcceptedNamesfromTSN, GetCommonNamesfromTSN
+
 from config.settings import ITIS_CACHE
-from imports.tools import (
+from itis.utils import (
     create_return_data,
-    create_tsn,
-    generate_standard_values_pa)
+    create_tsn)
 from itis.models import TaxonomicUnits
 from mb.filters import (
     DietSetFilter,
