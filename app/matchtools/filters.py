@@ -4,7 +4,7 @@ from mb.models import SourceAttribute, MasterAttribute
 class SourceAttributeFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains', label='Attribute contains')
     reference__citation = django_filters.CharFilter(lookup_expr='icontains', label='Reference contains')
-    master_attribute = django_filters.ModelChoiceFilter(queryset=MasterAttribute.objects.filter(is_active=False), label='Master Attribute', empty_label='None')
+    master_attribute = django_filters.ModelChoiceFilter(queryset=MasterAttribute.objects.filter(name='- Checked, Unlinked -'), label='Master Attribute', empty_label='None')
 
     class Meta:
         model = SourceAttribute

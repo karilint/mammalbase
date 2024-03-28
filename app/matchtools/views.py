@@ -2,16 +2,19 @@ from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from mb.models import SourceAttribute, MasterAttribute, AttributeRelation
-from django.db.models import Q
+from django.db.models import Q, Count
 from fuzzywuzzy import fuzz, process
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .filters import SourceAttributeFilter
 
+
 @login_required
 def trait_match_list(request):
     """List all source attributes and their best match from master attributes."""
-    f = SourceAttributeFilter(request.GET, queryset=SourceAttribute.objects.filter(
-        Q(master_attribute=None) | Q(master_attribute__is_active=False)))
+    f = SourceAttributeFilter(request.GET, queryset=SourceAttribute.objects.annotate(
+        num_master_attributes=Count('master_attribute')
+    ).filter(Q(num_master_attributes=0) | (Q(num_master_attributes=1) & Q(master_attribute__is_active=False))))
+
     master_attributes = MasterAttribute.objects.all()
     paginator = Paginator(f.qs, 10)
 
@@ -54,8 +57,7 @@ def get_match(source_name):
     if source_match:
         index = sources.index(source_match[0])
         return relations[index][0]
-
-    return "- Checked, Unlinked -"
+    return None
 
 
 @login_required
