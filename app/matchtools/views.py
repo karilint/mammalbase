@@ -72,15 +72,18 @@ def match_location(request):
     
     geoNamesLocation = geoNamesLocation.replace("'", '"')
     geoNamesLocation = json.loads(geoNamesLocation)
-
+    
+    masterLocation = create_master_location(geoNamesLocation)
     sourceLocation = SourceLocation.objects.get(id=sourceLocationId)
+    
+    LocationRelation(master_location=masterLocation, source_location=sourceLocation).save()
+    
     hierarchy_list = api.get_location_hierarchy(geoNamesLocation["geonameId"])["geonames"]
     #print(hierarchy_list)
     #for location in hierarchy_list:
         #print(location["name"])
-    
-    masterLocation = create_master_location(geoNamesLocation)
+
     masterLocations = [masterLocation.name]
     #match_locations(sourceLocation.id, masterLocation.id)
-    
+
     return JsonResponse({'masterLocation': masterLocations})

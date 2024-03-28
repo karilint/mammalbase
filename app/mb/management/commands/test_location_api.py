@@ -13,13 +13,11 @@ class Command(BaseCommand):
         location = data["geonames"]
         print("results:", data["totalResultsCount"])
         print("location:", location[0])
-        create_master_location(location[0])
+        #create_master_location(location[0])
         
         if location:
             geonameId = location[0]["geonameId"]
-            hierarchy = api.get_location_hierarchy(geonameId)
+            hierarchy = api.get_location_hierarchy(geonameId)["geonames"]
+            #for location in hierarchy:
+            #    print(location)
             #print("hierarchy:", hierarchy)
-        
-        
-        
-        
