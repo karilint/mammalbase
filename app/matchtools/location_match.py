@@ -1,6 +1,6 @@
 from mb.models import SourceLocation, MasterLocation, LocationRelation
 
-def create_master_location(geoNamesLocation: dict):
+def create_master_location(geoNamesLocation: dict, continent: str = None):
     name = geoNamesLocation["name"]
     latitude = geoNamesLocation["lat"]
     longitude = geoNamesLocation["lng"]
@@ -12,6 +12,7 @@ def create_master_location(geoNamesLocation: dict):
     if country:
         master_location.country = country
         master_location.country_code = country_code
+    master_location.continent = continent
 
     master_location.save()
     return master_location
@@ -20,3 +21,11 @@ def match_locations(sourceLocationId, masterLocationId):
     location_relation = LocationRelation(source_location_id=sourceLocationId, master_location_id=masterLocationId)
     location_relation.save()
     return location_relation
+
+def refine_hierarchy(hierarchy_list: list, location_name: str):
+    refined_list = []
+    for location in hierarchy_list:
+        if location["name"] != location_name:
+            refined_list.append(location)
+            
+    return refined_list
