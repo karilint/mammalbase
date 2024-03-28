@@ -9,10 +9,10 @@ from imports.views import (
     import_proximate_analysis,
     import_occurrences,
     )
+from matchtools.views import match_location
 
 import debug_toolbar
 #from rest_framework.urlpatterns import format_suffix_patterns
-
 urlpatterns = [
 #    path('rnames/', views.name_list, name='name_list'),
 #    path('rnames/name/<int:pk>/', views.name_detail, name='name_detail'),
@@ -130,6 +130,7 @@ urlpatterns = [
     path('tsn/new', views.tsn_new, name='tsn-new'),
     path('tsn/search', views.tsn_search, name='tsn-search'),
     path('exports/', include('exports.urls')),
-    path('matchtools/',include('matchtools.urls'))
+    path('matchtools/',include('matchtools.urls')),
+    path('match_location/', match_location, name='match_location'),
 ]
 

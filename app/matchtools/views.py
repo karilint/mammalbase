@@ -30,6 +30,7 @@ def source_location_list(request):
         page_obj = paginator.page(paginator.num_pages)
 
     request.session['id_list'] = id_list
+    print(id_list)
 
     return render(request, 'matchtool/source_location_list.html', {'page_obj': page_obj, 'filter': filter})
 
@@ -47,6 +48,7 @@ def location_match_detail(request, id):
     result_locations = result["geonames"][:10]
     result_count = result["totalResultsCount"]
     id_list = request.session.get('id_list')
+    print("idlist:",id_list)
     index = id_list.index(id)+1
     previous=id_list.index(id)-1
     next_id = id_list[index] if index < len(id_list) else None
@@ -72,10 +74,8 @@ def match_location(request):
 
     sourceLocation = SourceLocation.objects.get(id=sourceLocationId)
     
-    masterLocation = create_master_location(geoNamesLocation)
-    masterLocations = [masterLocation.name, "test"]
+    #masterLocation = create_master_location(geoNamesLocation)
+    masterLocations = ["test", "asd"]
     #match_locations(sourceLocation.id, masterLocation.id)
     
     return JsonResponse({'masterLocation': masterLocations})
-
-    

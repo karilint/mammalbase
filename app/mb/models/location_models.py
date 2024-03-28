@@ -8,6 +8,8 @@ class SourceLocation(BaseModel):
     reference = models.ForeignKey(
         'SourceReference',
         on_delete = models.CASCADE,
+        blank=True,
+        null=True
         )
     name = models.CharField(
         max_length=250,
