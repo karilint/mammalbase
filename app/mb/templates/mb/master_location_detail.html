@@ -39,8 +39,7 @@
         <th class="w3-quarter">Higher Geography ID:</th>
         <td class="w3-threequarter">
           {% for x in related_objects %}
-            <p>{{ x.name }}</p>
-            <!-- TODO: objektin sivulle -->
+            <p><a href="/ml_detail/{{ x.id }}">{{ x.name }}</a></p>
           {% endfor %}
         </td>
       </tr>
@@ -112,21 +111,38 @@
     <table class="mb-list w3-table-all w3-small w3-responsive">
       <caption class="w3-left-align">Table 1. List of Occurrences related with <b><i>{{ master_location }}</i></b>.</caption>
       <thead>
-      {% if master_location.attributerelation_set.count > 0 %}
-      {% for occurrence in master_location.attributerelation_set.all %} <!-- hae relaatiotaulun avulla sourcelocationit. Ei siis näin!-->
+      {% for occurrence in occurrences %} <!-- hae relaatiotaulun avulla sourcelocationit. Ei siis näin!-->
       <tr>
         {% if user.is_authenticated %}
-          <td class="mb-private-internal"><a title="Press for Details" href="#">{{ occurrence }} <span class="fa fa-link w3-small"></span></a></td>
+          <td class="mb-private-internal"><a title="Press for Details" href="#">{{ occurrence }} <span class="fa fa-link w3-small"></span></a><br>
+            <table>
+              <tr>
+                <th>Associated References</th>
+                <td>{{ occurrence.associated_references }}</td>
+              </tr>
+              <tr>
+                <th>Sex</th>
+                <td>{{ occurrence.gender }}</td>
+              </tr>
+              <tr>
+                <th>Life Stage</th>
+                <td>{{ occurrence.life_stage }}</tr>
+              </tr>
+              <tr>
+                <th>Reference</th>
+                <td>{{ occurrence.source_reference }}</tr>
+              </tr>
+            </table>
+          </td>
         {% else %}
-          <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ occurrence }} <span class="fa fa-link w3-small"></span></a></td>
+          <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href=""> <span class="fa fa-link w3-small"></span></a></td>
         {% endif %}
         <td class="mb-private-internal" title="sa.source_attribute.method|safe">{{ occurrence.method |default_if_none:"-" }}</td>
         <td title="{{ sa.source_attribute.reference|safe }}">{{ occurrence.reference|truncatechars:50|safe }}</td>
       </tr>
       {% endfor %}
-      {% else %}
+      <!-- todo: jos occurrenceja ei ole, tulosta tämä-->
       <tr><td colspan="2">There are no related Occurrences available.</td></tr>
-      {% endif %}
     </table>
     {% if request.user|is_data_admin_or_contributor %}
     <br>

@@ -90,8 +90,10 @@ from mb.models import (
     SourceReference,
     TimePeriod,
     ViewMasterTraitValue,
-    ViewProximateAnalysisTable)
-from mb.models.location_models import MasterLocation
+    ViewProximateAnalysisTable,
+    Occurrence,
+    ChoiceValue)
+from mb.models.location_models import MasterLocation, LocationRelation, SourceLocation
 
 
 # Error Pages
@@ -146,9 +148,9 @@ def index_master_location_list(request):
 
 def master_location_detail(request, pk):
     master_location = get_object_or_404(MasterLocation, id=pk)
-    higherGeographyID = str(master_location.higherGeographyID)
     related_objects = MasterLocation.objects.filter(pk=master_location.higherGeographyID.id)
-    return render(request, 'mb/master_location_detail.html', context={"master_location" : master_location, "related_objects" : related_objects},)
+    occurrences = get_occurrences_by_masterlocation(master_location)
+    return render(request, 'mb/master_location_detail.html', context={"master_location" : master_location, "related_objects" : related_objects, "occurrences" : occurrences},)
 
 # Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
 @require_POST
@@ -1935,3 +1937,35 @@ def view_proximate_analysis_table_list(request):
         'mb/view_proximate_analysis_table_list.html',
         {'page_obj': page_obj, 'filter': f,}
     )
+
+def get_occurrences_by_masterlocation(ml : MasterLocation):
+    """
+    Return occurrences by master location.
+    """
+
+    occurrences = []
+    source_locations = []
+
+
+    try:
+        location_relations = LocationRelation.objects.filter(master_location=ml)
+        
+        for location_relation in location_relations:
+            source_locations.append(location_relation.source_location)
+
+        for source_location in source_locations:
+            try:
+                occs = Occurrence.objects.filter(source_location=source_location)
+                for occ in occs:
+                    print()
+                    print("Occurrence: " + str(occ))
+                    print("ref: " + str(occ.associated_references))
+                    occurrences.append(occ)
+            except Exception as e:
+                print("virhe occurrence " + str(e))
+                continue
+    except Exception as e:
+        print("error: " + str(e))
+        return None
+    
+    return occurrences
