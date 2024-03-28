@@ -3,14 +3,18 @@
 <title>MammalBase - {{ sourceLocation }}</title>
 {% endblock %}
 {% block content %} {% load custom_tags %}
+
 <!--Article header -->
 <header style="display:none">
   <h1>MammalBase - {{ sourceLocation }}</h1>
 </header>
-<!--End of article header -->
+
+<!--Page header-->
 <section class="w3-threequarter w3-container">
   <header class="w3-row">
     <h2 class="w3-container w3-text-teal">Location Match:<span style="color: black;">{{ sourceLocation }}</span></h2>
+
+    <!--Search function-->
     <div class="w3-half" id="Search" style="display: block;">
       <form method="POST">
         {% csrf_token %}
@@ -19,11 +23,15 @@
         <input type="submit" value="Submit" class="w3-button w3-medium w3-round w3-padding-small w3-teal" style="width: 80px; margin-bottom: 15px;">
       </form>
     </div>
+    
+    <!--Permission to see page-->
     </header>
       {% if request.user|is_data_admin_or_contributor %}
         <br>
         <br>
       {% endif %}
+
+      <!--Table for search results-->
       <table class="mb-list w3-table-all w3-medium w3-half">
         <thead>
           <tr>
@@ -32,6 +40,8 @@
             <th>ID <a class="fa fa-info-circle w3-medium" title="Click ID to go to Geonames location page"></a></th>
           </tr>
         </thead>
+      
+        <!--Table content-->
         <tbody>
           {% for location in result_locations %}
           <tr>
@@ -57,12 +67,14 @@
         </tbody>
       </table>
 
+    <!--Message if location successfully matched -->
     <div id="successMessage" style="display: none;">
       <h3>{{ sourceLocation }} successfully matched!</h3>
       <div>New Master locations added:</div>
       <div id="masterLocation"></div>
     </div>    
 
+    <!--Pagination-->
     <div class="w3-container" style="margin-top: 10px;">
       {% if previous_id %}
         <a href="{% url 'location-match-detail' id=previous_id %}">
@@ -79,6 +91,8 @@
   </section>
 {% endblock %}
 {% block script %}
+
+<!--Script for handling match button click-->
 <script>
   function handleMatchButtonClick(geoNamesLocation, sourceLocation) {
     // Create a FormData object to send data with POST request
