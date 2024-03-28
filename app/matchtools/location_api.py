@@ -8,7 +8,7 @@ class LocationAPI:
     def __init__(self):
         self.geonames_username = os.getenv("GEONAMES_USERNAME")
 
-    def get_master_location(self, location_name):
+    def get_locations(self, location_name):
         """
         Get the master location from the geonames API
         """

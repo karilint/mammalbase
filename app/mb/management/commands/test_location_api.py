@@ -9,16 +9,16 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         location_name = options['location_name']
         api = LocationAPI()
-        data = api.get_master_location(location_name)
+        data = api.get_locations(location_name)
         location = data["geonames"]
         print("results:", data["totalResultsCount"])
-        print("location:", location[0]["name"])
+        print("location:", location[0])
         create_master_location(location[0])
         
         if location:
             geonameId = location[0]["geonameId"]
             hierarchy = api.get_location_hierarchy(geonameId)
-            print("hierarchy:", hierarchy)
+            #print("hierarchy:", hierarchy)
         
         
         

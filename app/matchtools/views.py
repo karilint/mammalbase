@@ -37,13 +37,13 @@ def source_location_list(request):
 def location_match_detail(request, id):
     api = LocationAPI()
     sourceLocation = SourceLocation.objects.get(id=id)
-    result = api.get_master_location(sourceLocation)
+    result = api.get_locations(sourceLocation)
     
     query = sourceLocation
     
     if request.method == 'POST':
         query = request.POST.get('query')
-        result = api.get_master_location(query)
+        result = api.get_locations(query)
 
     result_locations = result["geonames"][:10]
     result_count = result["totalResultsCount"]
@@ -66,6 +66,7 @@ def location_match_detail(request, id):
     })
 
 def match_location(request):
+    api = LocationAPI()
     geoNamesLocation = request.POST.get('geoNamesLocation')
     sourceLocationId = request.POST.get('sourceLocation')
     
@@ -73,9 +74,13 @@ def match_location(request):
     geoNamesLocation = json.loads(geoNamesLocation)
 
     sourceLocation = SourceLocation.objects.get(id=sourceLocationId)
+    hierarchy_list = api.get_location_hierarchy(geoNamesLocation["geonameId"])["geonames"]
+    #print(hierarchy_list)
+    #for location in hierarchy_list:
+        #print(location["name"])
     
-    #masterLocation = create_master_location(geoNamesLocation)
-    masterLocations = ["test", "asd"]
+    masterLocation = create_master_location(geoNamesLocation)
+    masterLocations = [masterLocation.name]
     #match_locations(sourceLocation.id, masterLocation.id)
     
     return JsonResponse({'masterLocation': masterLocations})
