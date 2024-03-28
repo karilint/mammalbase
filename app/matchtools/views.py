@@ -1,10 +1,13 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, permission_required
+from django.core.paginator import Paginator
+from django.http import JsonResponse
 from mb.models import SourceLocation, LocationRelation
 from .location_api import LocationAPI
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from mb.filters import SourceLocationFilter
 from .location_match import create_master_location, match_locations
+import json
 
 @login_required
 #@permission_required('matchtool.trait_match', raise_exception=True)
@@ -33,11 +36,14 @@ def source_location_list(request):
 def location_match_detail(request, id):
     api = LocationAPI()
     sourceLocation = SourceLocation.objects.get(id=id)
+    result = api.get_master_location(sourceLocation)
+    
+    query = sourceLocation
     
     if request.method == 'POST':
-        sourceLocation = request.POST.get('query')
-        
-    result = api.get_master_location(sourceLocation)
+        query = request.POST.get('query')
+        result = api.get_master_location(query)
+
     result_locations = result["geonames"][:10]
     result_count = result["totalResultsCount"]
     id_list = request.session.get('id_list')
@@ -47,6 +53,7 @@ def location_match_detail(request, id):
     previous_id = id_list[previous] if previous >= 0 else None
     
     return render(request, 'matchtool/location_match_detail.html', {
+        'query': query,
         'sourceLocation': sourceLocation, 
         'result_locations': result_locations, 
         'result_count': result_count, 
@@ -57,15 +64,18 @@ def location_match_detail(request, id):
     })
 
 def match_location(request):
-    geoNamesLocation = request.GET.get('geoNamesLocation')
-    sourceLocation = request.GET.get('sourceLocation')
-    print(geoNamesLocation)
-    print(sourceLocation)
+    geoNamesLocation = request.POST.get('geoNamesLocation')
+    sourceLocationId = request.POST.get('sourceLocation')
     
-    #masterLocation = create_master_location(geoNamesLocation)
-    masterLocation = "test"
+    geoNamesLocation = geoNamesLocation.replace("'", '"')
+    geoNamesLocation = json.loads(geoNamesLocation)
+
+    sourceLocation = SourceLocation.objects.get(id=sourceLocationId)
+    
+    masterLocation = create_master_location(geoNamesLocation)
+    masterLocations = [masterLocation.name, "test"]
     #match_locations(sourceLocation.id, masterLocation.id)
     
-    return render(request, 'matchtool/match_location.html', {'sourceLocation': sourceLocation, 'masterLocation': masterLocation})
+    return JsonResponse({'masterLocation': masterLocations})
 
     
