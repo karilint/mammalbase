@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.http import JsonResponse
 from mb.models import SourceAttribute, MasterAttribute, AttributeRelation
 from django.db.models import Q, Count
@@ -73,6 +74,8 @@ def match_operation_endpoint(request):
             source_attribute=source_attribute, master_attribute=selected_master_attribute
         )
         
+        messages.success(request, "Match successful!")
         return JsonResponse({"success": True})
     else:
+        messages.error(request, "Invalid request method.")
         return JsonResponse({"success": False, "error": "Invalid request method."})
