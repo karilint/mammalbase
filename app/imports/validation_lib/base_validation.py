@@ -260,6 +260,7 @@ class Validation():
         """Used for validating fields for alphabets only, returns a list of error messages"""
         errs = []
 
+        # TODO: To be fixed. SyntaxWarning: invalid escape sequence '\s'
         try:
             if not re.match("^[a-zA-Z\s]+$",str(data[field_name])) and str(data[field_name]) != "nan":
                 errs.append(self.return_field_message(field_name,"alpha"))
