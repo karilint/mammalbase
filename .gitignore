@@ -168,3 +168,6 @@ cython_debug/
 
 # keep proximate analysis tsv files
 !app/tests/imports/assets/*.tsv
+
+# Ignore migrations. Pushes to main creates them automatically.
+app/*/migrations/*.py
