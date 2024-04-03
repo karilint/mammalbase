@@ -1,3 +1,4 @@
+from pathlib import WindowsPath
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -42,6 +43,8 @@ def trait_match_list(request):
 
 def get_match(source_name):
     """Get best match for source attribute from master attributes and source attributes."""
+    print("tänne päästiin")
+    print(source_name)
     relations = MasterAttribute.objects.exclude(
         is_active=False).values_list('name', 'source_attribute__name')
 
@@ -82,18 +85,18 @@ def match_operation_endpoint(request):
     
 @login_required
 def source_attribute_edit(request):
+    print("kyllä täällä ollaan")
     if request.method == "POST":
-        source_attribute_id = request.POST.get("source_attribute_id")
-        selected_master_attribute_id = request.POST.get("selected_master_attribute_id")
-
-        selected_master_attribute = get_object_or_404(MasterAttribute, pk=selected_master_attribute_id)
-        source_attribute = get_object_or_404(SourceAttribute, pk=source_attribute_id)
-        attribute_relation = AttributeRelation.objects.create(
-            source_attribute=source_attribute, master_attribute=selected_master_attribute
-        )
-        
-        messages.success(request, "Match successful!")
-        return JsonResponse({"success": True})
-    else:
-        messages.error(request, "Invalid request method.")
-        return JsonResponse({"success": False, "error": "Invalid request method."})
+        source_attribute_newName = request.POST.get("new_Name")
+        print(source_attribute_newName)
+        print(request.POST.get("source_attribute_id"))
+        newMatch = get_match(source_attribute_newName)
+        print("päästiin uloskin")
+        print(newMatch)
+        print(source_attribute_newName)
+        if newMatch:
+            messages.success(request, "New match found!")
+            return JsonResponse({"success": True}) 
+        else:          
+            messages.error(request, "Invalid request method.")
+            return JsonResponse({"success": False, "error": "Invalid request method."})           

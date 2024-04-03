@@ -111,18 +111,23 @@
     }
 
     function handleEditButtonClick(sourceAttributeId) {
-      let newName = prompt("Edit the name", "Modified source attribute name");
+      let newName = prompt("Edit the name", "The source attribute name you want to match with");
+      console.log(newName)
       $.ajax({
         url: "{% url 'source_attribute_edit' %}",
         method: "POST",
         data: {
           source_attribute_id: sourceAttributeId,
-          csrfmiddlewaretoken: "{{ csrf_token }}",
-          new_name: newName
+          new_name: newName,
+          csrfmiddlewaretoken: "{{ csrf_token }}"
         },
         success: function(data) {
-          alert("Name changed successfully!");
+        if (data.success) {
+          $("#message-container").html("<p class='success-message'>New match found!</p>");
           location.reload();
+        } else {
+          $("#message-container").html("<p class='error-message'>Match failed: </p>" + data.error);
+        }
         },
         error: function(xhr, status, error) {
           console.error("Error:", error);
