@@ -56,4 +56,5 @@ jobs:
         ITIS_CACHE: ./itis_cache
       working-directory: ./app
       run: |
+        python manage.py makemigrations
         python manage.py test -v 3
