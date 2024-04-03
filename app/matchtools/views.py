@@ -79,3 +79,21 @@ def match_operation_endpoint(request):
     else:
         messages.error(request, "Invalid request method.")
         return JsonResponse({"success": False, "error": "Invalid request method."})
+    
+@login_required
+def source_attribute_edit(request):
+    if request.method == "POST":
+        source_attribute_id = request.POST.get("source_attribute_id")
+        selected_master_attribute_id = request.POST.get("selected_master_attribute_id")
+
+        selected_master_attribute = get_object_or_404(MasterAttribute, pk=selected_master_attribute_id)
+        source_attribute = get_object_or_404(SourceAttribute, pk=source_attribute_id)
+        attribute_relation = AttributeRelation.objects.create(
+            source_attribute=source_attribute, master_attribute=selected_master_attribute
+        )
+        
+        messages.success(request, "Match successful!")
+        return JsonResponse({"success": True})
+    else:
+        messages.error(request, "Invalid request method.")
+        return JsonResponse({"success": False, "error": "Invalid request method."})

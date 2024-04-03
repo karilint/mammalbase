@@ -33,8 +33,12 @@
             {% for x in page_obj %}
             <tr>
                 <td class="mb-public-internal">
+                    <button id="editButton_{{ x.pk }}" title="Press to match with a modified source attribute" type="button" class="w3-button w3-medium w3-round w3-padding-small w3-teal">
+                      Modify&nbsp;<i class="fa fa-angle-right"></i>
+                  </button>
                     <a title="Press for Details" href="{% url 'source_attribute-detail' pk=x.pk %}">{{ x.name }} <span class="fa fa-link w3-small"></span></a>
-                </td>
+                  
+              </td>
                 <td>
                   <select name="master_attribute" class="w3-select">
                       {% for master_attribute in master_attributes %}
@@ -103,7 +107,40 @@
           $("#message-container").empty();
         }, 4000);
       }
+      });
+    }
+
+    function handleEditButtonClick(sourceAttributeId) {
+      let newName = prompt("Edit the name", "Modified source attribute name");
+      $.ajax({
+        url: "{% url 'source_attribute_edit' %}",
+        method: "POST",
+        data: {
+          source_attribute_id: sourceAttributeId,
+          csrfmiddlewaretoken: "{{ csrf_token }}",
+          new_name: newName
+        },
+        success: function(data) {
+          alert("Name changed successfully!");
+          location.reload();
+        },
+        error: function(xhr, status, error) {
+          console.error("Error:", error);
+          alert("An error occurred while editing.");
+        }
+      });
+    }
+    
+    $(document).ready(function() {
+      $("button[id^='matchButton_']").click(function() {
+        var sourceAttributeId = $(this).attr("id").split("_")[1];
+        handleMatchButtonClick(sourceAttributeId);
+      });
+      $("button[id^='editButton_']").click(function() {
+        var sourceAttributeId = $(this).attr("id").split("_")[1];
+        handleEditButtonClick(sourceAttributeId);
+      });
     });
-  }
+  
 </script>
 {% endblock %}
