@@ -17,7 +17,7 @@ def trait_match_list(request):
     ).filter(Q(num_master_attributes=0) | (Q(num_master_attributes=1) & Q(master_attribute__is_active=False))))
 
     master_attributes = MasterAttribute.objects.all()
-    paginator = Paginator(f.qs, 10)
+    paginator = Paginator(f.qs.order_by('name'), 10)
 
     page_number = request.GET.get('page')
     try:
