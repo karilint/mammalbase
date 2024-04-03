@@ -8,11 +8,16 @@ from django.db.models import Q, Count
 from fuzzywuzzy import fuzz, process
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .filters import SourceAttributeFilter
+from mb.views import user_is_data_admin_or_contributor
+from django.core.exceptions import PermissionDenied
+
 
 
 @login_required
 def trait_match_list(request):
     """List all source attributes and their best match from master attributes."""
+    if not user_is_data_admin_or_contributor(request.user):
+        raise PermissionDenied
     f = SourceAttributeFilter(request.GET, queryset=SourceAttribute.objects.annotate(
         num_master_attributes=Count('master_attribute')
     ).filter(Q(num_master_attributes=0) | (Q(num_master_attributes=1) & Q(master_attribute__is_active=False))))
