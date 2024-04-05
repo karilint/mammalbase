@@ -1,4 +1,4 @@
-from django.db.models import Value, CharField, Q, Case, When, F, Aggregate, Subquery
+from django.db.models import Value, CharField, Q, Case, When, F, Aggregate, Subquery, OuterRef, FilteredRelation, Prefetch
 from django.db.models.functions import Concat, Replace
 
 from mb.models import SourceChoiceSetOptionValue, MasterAttribute, MasterChoiceSetOption
@@ -14,37 +14,12 @@ def traitlist_query(measurement_choices):
     """
     base = base_query(measurement_choices)
 
-    class GroupConcat(Aggregate):
-        function = 'GROUP_CONCAT'
-        template = '%(function)s(%(distinct)s%(expressions)s%(ordering)s%(separator)s)'
-
-        def __init__(self, expression, distinct=False, ordering=None, separator=',', **extra):
-            super().__init__(
-                expression,
-                distinct='DISTINCT ' if distinct else '',
-                ordering=' ORDER BY %s' % ordering if ordering is not None else '',
-                separator=' SEPARATOR "%s"' % separator,
-                output_field=CharField(),
-                **extra
-        )
-
 
     non_active = (
               Q(source_attribute__master_attribute__unit__is_active=False)
             | Q(source_attribute__master_attribute__reference__is_active=False)
     )
 
-    nominal_non_active = (
-              Q(source_choiceset_option__source_attribute__master_attribute__unit__is_active=False)
-            | Q(source_choiceset_option__source_attribute__master_attribute__reference__is_active=False)
-            | Q(source_choiceset_option__source_attribute__master_attribute__id=None)
-            | Q(source_choiceset_option__source_attribute__master_attribute__name='- Checked, Unlinked -')
-            | Q(source_choiceset_option__source_attribute__master_attribute__name__exact='')
-            | Q(source_entity__master_entity__name__exact='')
-            | Q(source_entity__master_entity__id__isnull=True)
-            | Q(source_choiceset_option__source_attribute__reference__status=1)
-            | Q(source_choiceset_option__source_attribute__reference__status=3)
-    )
 
     query = base.exclude(non_active).annotate(
         identifier=Concat(
@@ -66,7 +41,16 @@ def traitlist_query(measurement_choices):
         'source_attribute__master_attribute__attributegrouprelation__display_order'
     ).distinct()
 
-    nominal_query = SourceChoiceSetOptionValue.objects.exclude(nominal_non_active).annotate(
+    attributelink = {}
+    attributes = MasterAttribute.objects.filter(groups__name='Nominal traits')
+    for i in attributes:
+        for j in i.masterchoicesetoption_set.all():
+            try:
+                attributelink[i.name].append(j.name)
+            except:
+                attributelink[i.name]=[j.name]
+
+    nominal_query = MasterAttribute.objects.prefetch_related('master_choiceset_option_set').filter(groups__name='Nominal traits').annotate(
         identifier=Concat(
             Value('https://www.mammalbase.net/ma/'),
             'id',
@@ -74,22 +58,25 @@ def traitlist_query(measurement_choices):
             output_field=CharField()
         ),
         trait=Replace(
-            'source_choiceset_option__source_attribute__master_attribute__name',
+            'name',
             Value(' '),
             Value('_')
         ),
         narrowerTerm=Value('NA'),
         relatedTerm=Value('NA'),
-        factorLevels=GroupConcat('source_choiceset_option__master_choiceset_option__name'),
+        factorLevels=Case(
+            *[
+            When(name=attribute_name, then=Value(attributelink[attribute_name],output_field=CharField())) for attribute_name in attributelink
+            ]
+        ),
         broaderTerm=Value('NA'),
         expectedUnit=Value('NA'),
-        max_allowed_value=Value('NA'),
-        min_allowed_value=Value('NA'),
         comments=Value('NA'),
     ).order_by(
-        'source_choiceset_option__source_attribute__master_attribute__groups__name',
-        'source_choiceset_option__source_attribute__master_attribute__attributegrouprelation__display_order'
+        'groups__name',
+        'attributegrouprelation__display_order'
     ).distinct()
+
 
     fields = [
         ('identifier', 'identifier'),
@@ -107,20 +94,21 @@ def traitlist_query(measurement_choices):
         ('source_attribute__master_attribute__reference__citation', 'source')
     ]
 
+
     nominal_fields = [
         ('identifier', 'identifier'),
         ('trait', 'trait'),
         ('broaderTerm', 'broaderTerm'),
         ('narrowerTerm', 'narrowerTerm'),
         ('relatedTerm', 'relatedTerm'),
-        ('source_choiceset_option__source_attribute__master_attribute__value_type', 'valueType'),
+        ('value_type', 'valueType'),
         ('expectedUnit', 'expectedUnit'),
         ('factorLevels', 'factorLevels'),
         ('max_allowed_value', 'maxAllowedValue'),
         ('min_allowed_value', 'minAllowedValue'),
-        ('source_choiceset_option__source_attribute__master_attribute__description', 'traitDescription'),
+        ('description', 'traitDescription'),
         ('comments', 'comments'),
-        ('source_choiceset_option__source_attribute__master_attribute__reference__citation', 'source')
+        ('reference__citation', 'source')
     ]
 
     queries = []
