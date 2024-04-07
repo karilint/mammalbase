@@ -94,16 +94,16 @@ def match_operation_endpoint(request):
 def source_attribute_edit(request):
     print("kyllä täällä ollaan")
     if request.method == "POST":
-        source_attribute_newName = request.POST.get("new_Name")
-        print(source_attribute_newName)
-        print(request.POST.get("source_attribute_id"))
-        newMatch = get_match(source_attribute_newName)
-        print("päästiin uloskin")
-        print(newMatch)
-        print(source_attribute_newName)
-        if newMatch:
-            messages.success(request, "New match found!")
-            return JsonResponse({"success": True}) 
-        else:          
-            messages.error(request, "Invalid request method.")
-            return JsonResponse({"success": False, "error": "Invalid request method."})           
+        source_attribute_id = request.POST.get("source_attribute_id")
+        new_name = request.POST.get("new_name")
+
+        response_data = {}
+
+        # Assuming the source attribute ID is unique to identify the table row
+        response_data['source_attribute_id'] = source_attribute_id
+        response_data['new_name'] = new_name
+        print(response_data)
+        return JsonResponse(response_data)
+    else:
+        messages.error(request, "Invalid request method.")
+        return JsonResponse({"success": False, "error": "Invalid request method."})
