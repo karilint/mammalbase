@@ -82,15 +82,15 @@
 {% block script %}
 <script>
   $(document).ready(function() {
-    $("button[id^='editButton_']").click(function() {
-        var sourceAttributeId = $(this).attr("id").split("_")[1];
-        handleEditButtonClick(sourceAttributeId);
-    });
-
     $("button[id^='matchButton_']").click(function() {
       var sourceAttributeId = $(this).attr("id").split("_")[1];
       var selectedMasterAttributeId = $(this).closest("tr").find("select[name='master_attribute']").val();
       handleMatchButtonClick(sourceAttributeId, selectedMasterAttributeId);
+    });
+
+    $("button[id^='editButton_']").click(function() {
+        var sourceAttributeId = $(this).attr("id").split("_")[1];
+        handleEditButtonClick(sourceAttributeId);
     });
   });
 
@@ -121,10 +121,8 @@
     }
 
   function handleEditButtonClick(sourceAttributeId) {
-    console.log("handleEditButtonClick function called");
     let newName = prompt("Edit the name", "Modified source attribute name");
     if (newName !== null && newName !== "") {
-      console.log("if newname");
       $.ajax({
         url: "{% url 'source_attribute_edit' %}",
         method: "POST",
@@ -134,17 +132,14 @@
           csrfmiddlewaretoken: "{{ csrf_token }}"
         },
         success: function(data) {
-          console.log("success");
           $("#message-container").html("<p class='success-message'>Name changed successfully!</p>");
           setTimeout(function() {
             $("#message-container").empty();
           }, 4000);
-          
+
           var sourceAttributeId = data.source_attribute_id;
           var newName = data.new_name;
-
           $("#editButton_" + sourceAttributeId).closest("tr").find(".source-attribute-name").text(newName);
-          console.log("Uusi nimi: " + newName + ", Id: " + sourceAttributeId)
         },
         error: function(xhr, status, error) {
           $("#message-container").html("<p class='error-message'>An error occurred while editing.</p>");
