@@ -34,11 +34,13 @@
             {% for x in page_obj %}
             <tr>
               <td class="mb-public-internal source-attribute-name">
+                <span class="editable" data-source-attribute-id="{{ x.pk }}">{{ x.name }}</span>
                 <a title="Press for Details" href="{% url 'source_attribute-detail' pk=x.pk %}">
-                  <span>{{ x.name }}</span><span class="fa fa-link w3-small"></span></a>  
+                    <span class="fa fa-link w3-small"></span>
+                </a>  
               </td>
               <td>
-                <button id="editButton_{{ x.pk }}" title="Modify the source attribute" type="button" 
+                <button id="editButton_{{ x.pk }}" title="Modify the source trait name" type="button" 
                   class="w3-button w3-medium w3-round w3-padding-small w3-gray w3-text-white">
                   Modify&nbsp;
                 </button>
@@ -82,18 +84,66 @@
 {% block script %}
 <script>
   $(document).ready(function() {
-    $("button[id^='matchButton_']").click(function() {
-      var sourceAttributeId = $(this).attr("id").split("_")[1];
-      var selectedMasterAttributeId = $(this).closest("tr").find("select[name='master_attribute']").val();
-      handleMatchButtonClick(sourceAttributeId, selectedMasterAttributeId);
-    });
+    
+  // Handle click event on modify buttons
+  $("button[id^='editButton_']").click(function(event) {
+    var sourceAttributeId = $(this).attr("id").split("_")[1];
+    var $editableSpan = $(this).closest("tr").find("td.source-attribute-name .editable");
+    activateEditableField($editableSpan);
+  });
 
-    $("button[id^='editButton_']").click(function() {
-        var sourceAttributeId = $(this).attr("id").split("_")[1];
-        handleEditButtonClick(sourceAttributeId);
+  function activateEditableField($editableSpan) {
+    var currentValue = $editableSpan.text();
+    $editableSpan.html("<input type='text' class='edit-input' value='" + currentValue + "'>");
+    $editableSpan.find("input").focus();
+  }
+
+  $("table").on("blur", "td.source-attribute-name input.edit-input", function() {
+    var newValue = $(this).val();
+    var sourceAttributeId = $(this).closest("td").find(".editable").data("source-attribute-id");
+    
+    if (newValue.trim() === "") {
+      $("#message-container").html("<p class='error-message'>Source trait name cannot be empty.</p>");
+      setTimeout(function() {
+        $("#message-container").empty();
+      }, 3000);
+      return;
+    }
+    
+    $.ajax({
+      url: "{% url 'source_attribute_edit' %}",
+      method: "POST",
+      data: {
+        source_attribute_id: sourceAttributeId,
+        new_name: newValue,
+        csrfmiddlewaretoken: "{{ csrf_token }}"
+      },
+      success: function(data) {
+        $("span.editable[data-source-attribute-id='" + sourceAttributeId + "']").text(newValue);
+      },
+      error: function(xhr, status, error) {
+        $("#message-container").html("<p class='error-message'>An error occurred while editing.</p>");
+        setTimeout(function() {
+          $("#message-container").empty();
+        }, 3000);
+      }
     });
   });
 
+  $("table").on("click", "td.source-attribute-name .editable", function() {
+    if (!$(this).find("input").length) {
+      activateEditableField($(this));
+    }
+  });
+
+  // Handle click event on match buttons
+  $("button[id^='matchButton_']").click(function() {
+    var sourceAttributeId = $(this).attr("id").split("_")[1];
+    var selectedMasterAttributeId = $(this).closest("tr").find("select[name='master_attribute']").val();
+    handleMatchButtonClick(sourceAttributeId, selectedMasterAttributeId);
+  });
+
+  // Function to handle match button click
   function handleMatchButtonClick(sourceAttributeId, selectedMasterAttributeId) {
     $.ajax({
       url: "{% url 'match_operation_endpoint' %}",
@@ -115,40 +165,10 @@
         $("#message-container").html("<p class='error-message'>An error occurred while matching.</p>");
         setTimeout(function() {
           $("#message-container").empty();
-        }, 4000);
+        }, 3000);
       }
-      });
-    }
-
-  function handleEditButtonClick(sourceAttributeId) {
-    let newName = prompt("Edit the name", "Modified source attribute name");
-    if (newName !== null && newName !== "") {
-      $.ajax({
-        url: "{% url 'source_attribute_edit' %}",
-        method: "POST",
-        data: {
-          source_attribute_id: sourceAttributeId,
-          new_name: newName,
-          csrfmiddlewaretoken: "{{ csrf_token }}"
-        },
-        success: function(data) {
-          $("#message-container").html("<p class='success-message'>Name changed successfully!</p>");
-          setTimeout(function() {
-            $("#message-container").empty();
-          }, 4000);
-
-          var sourceAttributeId = data.source_attribute_id;
-          var newName = data.new_name;
-          $("#editButton_" + sourceAttributeId).closest("tr").find(".source-attribute-name").text(newName);
-        },
-        error: function(xhr, status, error) {
-          $("#message-container").html("<p class='error-message'>An error occurred while editing.</p>");
-          setTimeout(function() {
-            $("#message-container").empty();
-          }, 4000);
-        }
-      });
-    }
+    });
   }
+});
 </script>
 {% endblock %}

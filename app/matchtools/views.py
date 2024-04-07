@@ -95,8 +95,6 @@ def source_attribute_edit(request):
         new_name = request.POST.get("new_name")
 
         response_data = {}
-
-        # Assuming the source attribute ID is unique to identify the table row
         response_data['source_attribute_id'] = source_attribute_id
         response_data['new_name'] = new_name
         print(response_data)
