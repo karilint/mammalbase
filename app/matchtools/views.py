@@ -50,8 +50,6 @@ def trait_match_list(request):
 
 def get_match(source_name):
     """Get best match for source attribute from master attributes and source attributes."""
-    print("tänne päästiin")
-    print(source_name)
     relations = MasterAttribute.objects.exclude(
         is_active=False).values_list('name', 'source_attribute__name')
 
@@ -92,7 +90,6 @@ def match_operation_endpoint(request):
     
 @login_required
 def source_attribute_edit(request):
-    print("kyllä täällä ollaan")
     if request.method == "POST":
         source_attribute_id = request.POST.get("source_attribute_id")
         new_name = request.POST.get("new_name")
