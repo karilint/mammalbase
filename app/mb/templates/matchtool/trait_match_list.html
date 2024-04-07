@@ -84,7 +84,7 @@
 {% block script %}
 <script>
   $(document).ready(function() {
-    
+
   // Handle click event on modify buttons
   $("button[id^='editButton_']").click(function(event) {
     var sourceAttributeId = $(this).attr("id").split("_")[1];
@@ -103,7 +103,7 @@
     var sourceAttributeId = $(this).closest("td").find(".editable").data("source-attribute-id");
     
     if (newValue.trim() === "") {
-      $("#message-container").html("<p class='error-message'>Source trait name cannot be empty.</p>");
+      $("#message-container").html("<p class='error-message'>Source Trait cannot be empty.</p>");
       setTimeout(function() {
         $("#message-container").empty();
       }, 3000);
