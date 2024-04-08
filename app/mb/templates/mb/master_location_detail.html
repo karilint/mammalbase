@@ -111,14 +111,28 @@
     <table class="mb-list w3-table-all w3-small w3-responsive">
       <caption class="w3-left-align">Table 1. List of Occurrences related with <b><i>{{ master_location }}</i></b>.</caption>
       <thead>
+      {%if occurrences %}
       {% for occurrence in occurrences %} <!-- hae relaatiotaulun avulla sourcelocationit. Ei siis näin!-->
       <tr>
         {% if user.is_authenticated %}
-          <td class="mb-private-internal"><a title="Press for Details" href="#">{{ occurrence }} <span class="fa fa-link w3-small"></span></a><br>
+          <td class="mb-private-internal"><br>
             <table>
+              
               <tr>
-                <th>Associated References</th>
-                <td>{{ occurrence.associated_references }}</td>
+                <th>Event</th>
+                <td>{{ occurrence.event }}</tr>
+              </tr>
+              <tr>
+                <th>Source Entity</th>
+                <td>{{ occurrence.source_entity }}</tr>
+              </tr>
+              <tr>
+                <th>Organism Quantity</th>
+                <td>{{ occurrence.organism_quantity }}</tr>
+              </tr>
+              <tr>
+                <th>Organism Quantity Type</th>
+                <td>{{ occurrence.organism_quantity_type }}</tr>
               </tr>
               <tr>
                 <th>Sex</th>
@@ -129,8 +143,15 @@
                 <td>{{ occurrence.life_stage }}</tr>
               </tr>
               <tr>
+                <th>Occurrence Remarks</th>
+                <td>{{ occurrence.occurrence_remarks }}</tr>
+              </tr>
                 <th>Reference</th>
                 <td>{{ occurrence.source_reference }}</tr>
+              </tr>
+              <tr>
+                <th>Associated References</th>
+                <td>{{ occurrence.associated_references }}</td>
               </tr>
             </table>
           </td>
@@ -141,8 +162,9 @@
         <td title="{{ sa.source_attribute.reference|safe }}">{{ occurrence.reference|truncatechars:50|safe }}</td>
       </tr>
       {% endfor %}
-      <!-- todo: jos occurrenceja ei ole, tulosta tämä-->
+      {% else %}
       <tr><td colspan="2">There are no related Occurrences available.</td></tr>
+      {% endif %}
     </table>
     {% if request.user|is_data_admin_or_contributor %}
     <br>

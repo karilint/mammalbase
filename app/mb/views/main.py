@@ -1954,12 +1954,10 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
             source_locations.append(location_relation.source_location)
 
         for source_location in source_locations:
+            print("source_location: " + str(source_location.id))
             try:
                 occs = Occurrence.objects.filter(source_location=source_location)
                 for occ in occs:
-                    print()
-                    print("Occurrence: " + str(occ))
-                    print("ref: " + str(occ.associated_references))
                     occurrences.append(occ)
             except Exception as e:
                 print("virhe occurrence " + str(e))
@@ -1968,4 +1966,7 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
         print("error: " + str(e))
         return None
     
+    if len(occurrences) == 0:
+        return False
+    print("occurrenceja: " + str(len(occurrences)))
     return occurrences
