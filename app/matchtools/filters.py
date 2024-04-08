@@ -1,9 +1,9 @@
 import django_filters
-from mb.models import SourceAttribute, MasterAttribute
+from mb.models import SourceAttribute, MasterAttribute, SourceReference
 
 class SourceAttributeFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains', label='Attribute contains')
-    reference__citation = django_filters.CharFilter(lookup_expr='icontains', label='Reference contains')
+    reference__citation = django_filters.ModelChoiceFilter(queryset=SourceReference.objects.all(), label='Reference')
     master_attribute = django_filters.ModelChoiceFilter(queryset=MasterAttribute.objects.filter(name='- Checked, Unlinked -'), label='Master Attribute', empty_label='None')
 
     class Meta:
