@@ -84,91 +84,94 @@
 {% block script %}
 <script>
   $(document).ready(function() {
+    // Event listeners
+    $("button[id^='editButton_']").click(handleEditButtonClick);
+    $("table").on("blur", "td.source-attribute-name input.edit-input", handleEditInputBlur);
+    $("table").on("click", "td.source-attribute-name .editable", handleEditableClick);
+    $("button[id^='matchButton_']").click(handleMatchButtonClick);
 
-  // Handle click event on modify buttons
-  $("button[id^='editButton_']").click(function(event) {
-    var sourceAttributeId = $(this).attr("id").split("_")[1];
-    var $editableSpan = $(this).closest("tr").find("td.source-attribute-name .editable");
-    activateEditableField($editableSpan);
-  });
+    // Functions
+    function handleEditButtonClick(event) {
+      var sourceAttributeId = $(this).attr("id").split("_")[1];
+      var $editableSpan = $(this).closest("tr").find("td.source-attribute-name .editable");
+      activateEditableField($editableSpan);
+    }
 
-  function activateEditableField($editableSpan) {
-    var currentValue = $editableSpan.text();
-    $editableSpan.html("<input type='text' class='edit-input' value='" + currentValue + "'>");
-    $editableSpan.find("input").focus();
-  }
+    function activateEditableField($editableSpan) {
+      var currentValue = $editableSpan.text();
+      $editableSpan.html("<input type='text' class='edit-input' value='" + currentValue + "'>");
+      $editableSpan.find("input").focus();
+    }
 
-  $("table").on("blur", "td.source-attribute-name input.edit-input", function() {
-    var newValue = $(this).val();
-    var sourceAttributeId = $(this).closest("td").find(".editable").data("source-attribute-id");
-    
-    if (newValue.trim() === "") {
-      $("#message-container").html("<p class='error-message'>Source Trait cannot be empty.</p>");
+    function handleEditInputBlur() {
+      var $input = $(this);
+      var newValue = $input.val();
+      var sourceAttributeId = $input.closest("td").find(".editable").data("source-attribute-id");
+      
+      if (newValue.trim() === "") {
+        showMessage("error", "Source Trait cannot be empty.");
+        return;
+      }
+      
+      $.ajax({
+        url: "{% url 'source_attribute_edit' %}",
+        method: "POST",
+        data: {
+          source_attribute_id: sourceAttributeId,
+          new_name: newValue,
+          csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+        success: function(data) {
+          $("span.editable[data-source-attribute-id='" + sourceAttributeId + "']").text(newValue);
+        },
+        error: function(xhr, status, error) {
+          showMessage("error", "An error occurred while editing.");
+        }
+      });
+    }
+
+    function handleEditableClick() {
+      if (!$(this).find("input").length) {
+        activateEditableField($(this));
+      }
+    }
+
+    function handleMatchButtonClick() {
+      var sourceAttributeId = $(this).attr("id").split("_")[1];
+      var selectedMasterAttributeId = $(this).closest("tr").find("select[name='master_attribute']").val();
+      matchAttributes(sourceAttributeId, selectedMasterAttributeId);
+    }
+
+    function matchAttributes(sourceAttributeId, selectedMasterAttributeId) {
+      $.ajax({
+        url: "{% url 'match_operation_endpoint' %}",
+        method: "POST",
+        data: {
+          source_attribute_id: sourceAttributeId,
+          selected_master_attribute_id: selectedMasterAttributeId,
+          csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+        success: function(data) {
+          if (data.success) {
+            showMessage("success", "Match successful!");
+            location.reload();
+          } else {
+            showMessage("error", "Match failed: " + data.error);
+          }
+        },
+        error: function(xhr, status, error) {
+          showMessage("error", "An error occurred while matching.");
+        }
+      });
+    }
+
+    function showMessage(type, message) {
+      var className = (type === "error") ? "error-message" : "success-message";
+      $("#message-container").html("<p class='" + className + "'>" + message + "</p>");
       setTimeout(function() {
         $("#message-container").empty();
-      }, 3000);
-      return;
-    }
-    
-    $.ajax({
-      url: "{% url 'source_attribute_edit' %}",
-      method: "POST",
-      data: {
-        source_attribute_id: sourceAttributeId,
-        new_name: newValue,
-        csrfmiddlewaretoken: "{{ csrf_token }}"
-      },
-      success: function(data) {
-        $("span.editable[data-source-attribute-id='" + sourceAttributeId + "']").text(newValue);
-      },
-      error: function(xhr, status, error) {
-        $("#message-container").html("<p class='error-message'>An error occurred while editing.</p>");
-        setTimeout(function() {
-          $("#message-container").empty();
-        }, 3000);
-      }
-    });
-  });
-
-  $("table").on("click", "td.source-attribute-name .editable", function() {
-    if (!$(this).find("input").length) {
-      activateEditableField($(this));
+      }, 4000);
     }
   });
-
-  // Handle click event on match buttons
-  $("button[id^='matchButton_']").click(function() {
-    var sourceAttributeId = $(this).attr("id").split("_")[1];
-    var selectedMasterAttributeId = $(this).closest("tr").find("select[name='master_attribute']").val();
-    handleMatchButtonClick(sourceAttributeId, selectedMasterAttributeId);
-  });
-
-  // Function to handle match button click
-  function handleMatchButtonClick(sourceAttributeId, selectedMasterAttributeId) {
-    $.ajax({
-      url: "{% url 'match_operation_endpoint' %}",
-      method: "POST",
-      data: {
-        source_attribute_id: sourceAttributeId,
-        selected_master_attribute_id: selectedMasterAttributeId,
-        csrfmiddlewaretoken: "{{ csrf_token }}"
-      },
-      success: function(data) {
-        if (data.success) {
-          $("#message-container").html("<p class='success-message'>Match successful!</p>");
-          location.reload();
-        } else {
-          $("#message-container").html("<p class='error-message'>Match failed: </p>" + data.error);
-        }
-      },
-      error: function(xhr, status, error) {
-        $("#message-container").html("<p class='error-message'>An error occurred while matching.</p>");
-        setTimeout(function() {
-          $("#message-container").empty();
-        }, 3000);
-      }
-    });
-  }
-});
 </script>
 {% endblock %}
