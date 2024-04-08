@@ -2,6 +2,7 @@ import os
 from django.contrib.auth.models import User
 #from allauth.account.models import EmailAddress
 from django.contrib.sites.models import Site
+from allauth.account.models import EmailAddress
 
 username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
 password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'password')

@@ -16,7 +16,8 @@ from mb.models import (
     SourceLocation)
 from datetime import timedelta
 from config.settings import ITIS_CACHE
-import itis.views as itis
+from requests_cache import CachedSession
+import itis.tools as itis
 import json
 import logging
 from itis.models import TaxonomicUnits
@@ -96,6 +97,7 @@ class BaseImporter:
                 page=page, citation=citation, created_by=user_author
             )
             mr.save()
+            print(f"MasterReference created: {mr}")
             return mr
 
         except Exception as e:
