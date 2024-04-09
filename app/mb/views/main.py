@@ -1954,7 +1954,6 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
             source_locations.append(location_relation.source_location)
 
         for source_location in source_locations:
-            print("source_location: " + str(source_location.id))
             try:
                 occs = Occurrence.objects.filter(source_location=source_location)
                 for occ in occs:
@@ -1968,5 +1967,5 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
     
     if len(occurrences) == 0:
         return False
-    print("occurrenceja: " + str(len(occurrences)))
+    
     return occurrences
