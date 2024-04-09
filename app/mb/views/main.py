@@ -14,6 +14,7 @@ from django.views import generic
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.http import JsonResponse
+from django.db import models
 
 import requests
 from requests_cache import CachedSession
@@ -1943,9 +1944,31 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
     Return occurrences by master location.
     """
 
+    def remove_nan_value(string : str):
+        return string.replace("nan", "")
+    
+    def get_master_entity(source_entity : SourceEntity):
+        master_entity = None
+        try:
+            master_entity = MasterEntity.objects.filter(source_entity=source_entity)[0]
+        except Exception as e:
+            print("virhe: " + str(e))
+        return master_entity
+
     occurrences = []
     source_locations = []
 
+    class OccurrenceView(models.Model):
+        """ 'Tool model' to present a single occurrence with correct information. """
+        event = models.CharField(max_length=500) 
+        master_entity = models.CharField(max_length=500) 
+        organism_quantity = models.CharField(max_length=500) 
+        organism_quantity_type = models.CharField(max_length=500) 
+        gender = models.CharField(max_length=500) 
+        life_stage = models.CharField(max_length=500) 
+        occurrence_remarks = models.CharField(max_length=500) 
+        reference = models.CharField(max_length=500) 
+        associated_references = models.CharField(max_length=500) 
 
     try:
         location_relations = LocationRelation.objects.filter(master_location=ml)
@@ -1957,7 +1980,35 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
             try:
                 occs = Occurrence.objects.filter(source_location=source_location)
                 for occ in occs:
-                    occurrences.append(occ)
+                    gender = str(occ.gender).replace("Gender - ", "")
+                    if gender == "None":
+                        gender = ""
+
+                    life_stage = str(occ.life_stage).replace("LifeStage - ", "")
+                    if life_stage == "None":
+                        life_stage = ""
+
+                    reference = str(occ.source_reference)
+                    if reference == "None":
+                        reference = ""
+
+                    master_entity = str(get_master_entity(occ.source_entity))
+
+                    print("master entity: " + str(master_entity))
+
+                    if master_entity == "None":
+                        master_entity = ""
+
+                    occ_view = OccurrenceView(event="No event yet!", master_entity=master_entity, organism_quantity=occ.organism_quantity,
+                                              organism_quantity_type=occ.organism_quantity_type, gender=gender, life_stage=life_stage,
+                                              occurrence_remarks=occ.occurrence_remarks, reference=reference, associated_references=occ.associated_references)
+                    
+                    occ_view.organism_quantity = remove_nan_value(occ_view.organism_quantity)
+                    occ_view.organism_quantity_type = remove_nan_value(occ_view.organism_quantity_type)
+                    occ_view.associated_references = remove_nan_value(occ_view.associated_references)
+                    occ_view.occurrence_remarks = remove_nan_value(occ_view.occurrence_remarks)
+                    
+                    occurrences.append(occ_view)
             except Exception as e:
                 print("virhe occurrence " + str(e))
                 continue

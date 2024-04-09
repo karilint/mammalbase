@@ -132,13 +132,13 @@
               {% for occurrence in occurrences %} <!-- hae relaatiotaulun avulla sourcelocationit. Ei siis näin!-->
               <tr>
                 <td>{{ occurrence.event }}</td>
-                <td>{{ occurrence.source_entity }}</td>
+                <td>{{ occurrence.master_entity }}</td>
                 <td>{{ occurrence.organism_quantity }}</td>
                 <td>{{ occurrence.organism_quantity_type }}</td>
                 <td>{{ occurrence.gender }}</td>
                 <td>{{ occurrence.life_stage }}</td>
                 <td>{{ occurrence.occurrence_remarks }}</td>
-                <td>{{ occurrence.source_reference }}</td>
+                <td>{{ occurrence.reference }}</td>
                 <td>{{ occurrence.associated_references }}</td>
               </tr>
               {% endfor %}
