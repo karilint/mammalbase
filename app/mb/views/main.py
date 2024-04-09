@@ -1945,16 +1945,18 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
     """
 
     def remove_nan_value(string : str):
+        """ Cut 'nan'-string. """
         return string.replace("nan", "")
     
     def get_master_entity(source_entity : SourceEntity):
+        """ Get master entity by source entity. """
         master_entity = None
         try:
             master_entity = MasterEntity.objects.filter(source_entity=source_entity)[0]
         except Exception as e:
             print("virhe: " + str(e))
         return master_entity
-
+    
     occurrences = []
     source_locations = []
 
@@ -1984,7 +1986,7 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
                     if gender == "None":
                         gender = ""
 
-                    life_stage = str(occ.life_stage).replace("LifeStage - ", "")
+                    life_stage = str(occ.life_stage).replace("Lifestage - ", "")
                     if life_stage == "None":
                         life_stage = ""
 
@@ -1993,8 +1995,6 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
                         reference = ""
 
                     master_entity = str(get_master_entity(occ.source_entity))
-
-                    print("master entity: " + str(master_entity))
 
                     if master_entity == "None":
                         master_entity = ""
