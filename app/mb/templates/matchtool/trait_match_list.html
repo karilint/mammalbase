@@ -135,7 +135,7 @@
           csrfmiddlewaretoken: "{{ csrf_token }}"
         },
         success: function(data) {
-          $("span.editable[data-source-attribute-id='" + sourceAttributeId + "']").text(newValue);
+          getMatch(newValue, sourceAttributeId);
         },
         error: function(xhr, status, error) {
           showMessage("error", "An error occurred while editing.");
@@ -148,6 +148,29 @@
         activateEditableField($(this));
       }
     }
+
+    function getMatch(sourceAttributeName, sourceAttributeId) {
+        $.ajax({
+          url: "{% url 'get_match_endpoint' %}",
+          method: "POST",
+          data: {
+            source_attribute_name: sourceAttributeName,
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+          },
+          success: function(data) {
+            if (data.match) {
+              var selectedMasterAttributeId = data.match.id;
+              var $dropdown = $("span.editable[data-source-attribute-id='" + sourceAttributeId + "']").closest("tr").find("select[name='master_attribute']");
+              $dropdown.val(selectedMasterAttributeId);
+            } else {
+              console.log("No match found for current name");
+            }
+            },
+          error: function(xhr, status, error) {
+            console.error("Error fetching match:", error);
+        }
+      });
+   }
 
     function handleMatchButtonClick() {
       var sourceAttributeId = $(this).attr("id").split("_")[1];

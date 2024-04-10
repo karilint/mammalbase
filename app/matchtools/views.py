@@ -111,3 +111,16 @@ def source_attribute_edit(request):
     else:
         messages.error(request, "Invalid request method.")
         return JsonResponse({"success": False, "error": "Invalid request method."})
+    
+@login_required
+def get_match_endpoint(request):
+    if request.method == "POST":
+        source_attribute_name = request.POST.get("source_attribute_name")
+        match = get_match(source_attribute_name) 
+        if match:
+            matched_master_attribute = MasterAttribute.objects.get(name=match)
+            return JsonResponse({"match": {"id": matched_master_attribute.id}})
+        else:
+            return JsonResponse({"match": None})
+    else:
+        return JsonResponse({"error": "Invalid request method."})
