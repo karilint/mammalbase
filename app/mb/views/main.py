@@ -1,5 +1,6 @@
-import datetime, json
-from decimal import * # TODO: fix star imports!
+import datetime
+import json
+from decimal import *  # TODO: fix star imports!
 from django.core.exceptions import PermissionDenied
 from django.db import connection, transaction
 from django.db.models import Count, Max, F
@@ -101,52 +102,82 @@ from mb.models import (
 def server_error(request):
     return render(request, 'errors/500.html')
 
+
 def not_found(request):
     return render(request, 'errors/404.html')
+
 
 def permission_denied(request):
     return render(request, 'errors/403.html')
 
+
 def bad_request(request):
     return render(request, 'errors/400.html')
+
 
 def about_history(request):
     return render(request, 'mb/history.html',)
 
+
 def index_about(request):
     return render(request, 'mb/index_about.html',)
+
 
 def privacy_policy(request):
     return render(request, 'mb/privacy_policy.html',)
 
-#@ratelimit(key='ip', rate='2/m')
+# @ratelimit(key='ip', rate='2/m')
+
+
 def index(request):
     return render(request, 'mb/index.html',)
 
+
 def index_diet(request):
-    num_diet_taxa=DietSet.objects.is_active().values('taxon_id').distinct().count()
-    num_diet_set=DietSet.objects.is_active().count()
-    num_diet_set_item=DietSetItem.objects.is_active().count()
-    num_food_item=DietSetItem.objects.is_active().values('food_item_id').distinct().count()
-    latest=DietSet.objects.is_active().filter(reference__master_reference__is_active=True).order_by('-pk')[:10]
-    return render(request, 'mb/index_diet.html', context={'num_diet_taxa':num_diet_taxa, 'num_diet_set':num_diet_set, 'num_diet_set_item':num_diet_set_item, 'num_food_item':num_food_item, 'latest':latest},)
+    num_diet_taxa = DietSet.objects.is_active().values('taxon_id').distinct().count()
+    num_diet_set = DietSet.objects.is_active().count()
+    num_diet_set_item = DietSetItem.objects.is_active().count()
+    num_food_item = DietSetItem.objects.is_active().values(
+        'food_item_id').distinct().count()
+    latest = DietSet.objects.is_active().filter(
+        reference__master_reference__is_active=True).order_by('-pk')[:10]
+    return render(
+        request,
+        'mb/index_diet.html',
+        context={'num_diet_taxa': num_diet_taxa,
+                 'num_diet_set': num_diet_set,
+                 'num_diet_set_item': num_diet_set_item,
+                 'num_food_item': num_food_item,
+                 'latest': latest},
+    )
+
 
 def index_mammals(request):
-    measurements=SourceReference.objects.is_active().filter(sourceattribute__type = 1).filter(status = 2).distinct().order_by('-pk')[:10]
-    return render(request, 'mb/index_mammals.html', context={'measurements':measurements},)
+    measurements = SourceReference.objects.is_active().filter(
+        sourceattribute__type=1).filter(status=2).distinct().order_by('-pk')[:10]
+    return render(
+        request,
+        'mb/index_mammals.html',
+        context={
+            'measurements': measurements},
+    )
+
 
 def index_news(request):
     return render(request, 'mb/index_news.html',)
 
-def index_proximate_analysis(request):
-    num_PA_item=ProximateAnalysisItem.objects.is_active().values('forage_id').distinct().count()
-    return render(request, 'mb/index_proximate_analysis.html', context={'num_PA_item':num_PA_item},)
 
-# Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
+def index_proximate_analysis(request):
+    num_PA_item = ProximateAnalysisItem.objects.is_active().values(
+        'forage_id').distinct().count()
+    return render(request, 'mb/index_proximate_analysis.html',
+                  context={'num_PA_item': num_PA_item},)
+
+
 @require_POST
 def save_new_ordering(request):
     form = OrderingForm(request.POST)
-    pk=0
+    pk = 0
 
     if form.is_valid():
         ordered_ids = form.cleaned_data["ordering"].split(',')
@@ -154,16 +185,17 @@ def save_new_ordering(request):
         with transaction.atomic():
             i = 1
             for lookup_id in ordered_ids:
-#                weight = 2*(n+1-i)/(n*(n+1))*100 Jernvall Calculation
+                # weight = 2*(n+1-i)/(n*(n+1))*100 Jernvall Calculation
                 dsi = DietSetItem.objects.get(pk=lookup_id)
                 diet_set = dsi.diet_set
                 dsi.list_order = i
                 dsi.save()
                 i += 1
-                pk=diet_set.pk
+                pk = diet_set.pk
         return redirect('diet_set-detail', pk=pk)
     else:
         return redirect('diet_set-list')
+
 
 def user_is_data_admin_or_contributor(user, data=None):
     if user.groups.filter(name='data_admin').exists():
@@ -174,35 +206,50 @@ def user_is_data_admin_or_contributor(user, data=None):
 
     return False
 
+
 def user_is_data_admin_or_owner(user, data):
     if user.groups.filter(name='data_admin').exists():
         return True
 
-    if user.groups.filter(name='data_contributor').exists() and data.created_by == user:
+    if user.groups.filter(
+            name='data_contributor').exists() and data.created_by == user:
         return True
 
     return False
 
+
 class attribute_relation_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = AttributeRelation
+
     def get_success_url(self):
-        attribute_relation = super(attribute_relation_delete, self).get_object()
+        attribute_relation = super(
+            attribute_relation_delete,
+            self).get_object()
         sa_id = attribute_relation.source_attribute.id
         return reverse_lazy(
             'source_attribute-detail',
             args=(sa_id,)
         )
 
+
 def attribute_relation_detail(request, pk):
-    attribute_relation = get_object_or_404(AttributeRelation, pk=pk, is_active=1)
-    return render(request, 'mb/attribute_relation_detail.html', {'attribute_relation': attribute_relation})
+    attribute_relation = get_object_or_404(
+        AttributeRelation, pk=pk, is_active=1)
+    return render(
+        request,
+        'mb/attribute_relation_detail.html',
+        {'attribute_relation': attribute_relation}
+    )
+
 
 @login_required
 @permission_required('mb.edit_attribute_relation', raise_exception=True)
 def attribute_relation_edit(request, pk):
-    attribute_relation = get_object_or_404(AttributeRelation, pk=pk, is_active=1)
+    attribute_relation = get_object_or_404(
+        AttributeRelation, pk=pk, is_active=1)
 
     if not user_is_data_admin_or_owner(request.user, attribute_relation):
         raise PermissionDenied
@@ -212,10 +259,13 @@ def attribute_relation_edit(request, pk):
         if form.is_valid():
             attribute_relation = form.save(commit=False)
             attribute_relation.save()
-            return redirect('mb/attribute_relation-detail', pk=attribute_relation.pk)
+            return redirect(
+                'mb/attribute_relation-detail',
+                pk=attribute_relation.pk)
     else:
         form = AttributeRelationForm(instance=attribute_relation)
     return render(request, 'mb/attribute_relation_edit.html', {'form': form})
+
 
 @login_required
 @permission_required('mb.add_attribute_relation', raise_exception=True)
@@ -227,63 +277,101 @@ def attribute_relation_new(request, sa):
             attribute_relation = form.save(commit=False)
             attribute_relation.source_attribute = source_attribute
             attribute_relation.save()
-            return redirect('source_attribute-detail', pk=attribute_relation.source_attribute.id)
+            return redirect(
+                'source_attribute-detail',
+                pk=attribute_relation.source_attribute.id)
     else:
         form = AttributeRelationForm()
     return render(request, 'mb/attribute_relation_edit.html', {'form': form})
 
+
 class choiceset_option_relation_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = ChoiceSetOptionRelation
+
     def get_success_url(self):
-        choiceset_option_relation = super(choiceset_option_relation_delete, self).get_object()
+        choiceset_option_relation = super(
+            choiceset_option_relation_delete, self).get_object()
         sco_id = choiceset_option_relation.source_choiceset_option.id
         return reverse_lazy(
             'source_choiceset_option-detail',
             args=(sco_id,)
         )
 
+
 def choiceset_option_relation_detail(request, pk):
-    choiceset_option_relation = get_object_or_404(ChoiceSetOptionRelation, pk=pk, is_active=1)
-    return render(request, 'mb/choiceset_option_relation_detail.html', {'choiceset_option_relation': choiceset_option_relation})
+    choiceset_option_relation = get_object_or_404(
+        ChoiceSetOptionRelation, pk=pk, is_active=1)
+    return render(
+        request,
+        'mb/choiceset_option_relation_detail.html',
+        {'choiceset_option_relation': choiceset_option_relation}
+    )
+
 
 @login_required
 @permission_required('mb.edit_choiceset_option_relation', raise_exception=True)
 def choiceset_option_relation_edit(request, pk):
-    choiceset_option_relation = get_object_or_404(ChoiceSetOptionRelation, pk=pk, is_active=1)
+    choiceset_option_relation = get_object_or_404(
+        ChoiceSetOptionRelation, pk=pk, is_active=1)
 
-    if not user_is_data_admin_or_owner(request.user, choiceset_option_relation):
+    if not user_is_data_admin_or_owner(
+            request.user, choiceset_option_relation):
         raise PermissionDenied
 
     if request.method == "POST":
-        form = ChoiceSetOptionRelationForm(request.POST, instance=choiceset_option_relation)
+        form = ChoiceSetOptionRelationForm(
+            request.POST, instance=choiceset_option_relation)
         if form.is_valid():
             choiceset_option_relation = form.save(commit=False)
             choiceset_option_relation.save()
-            return redirect('mb/choiceset_option_relation-detail', pk=choiceset_option_relation.pk)
+            return redirect(
+                'mb/choiceset_option_relation-detail',
+                pk=choiceset_option_relation.pk)
     else:
         form = ChoiceSetOptionRelationForm(instance=choiceset_option_relation)
-    return render(request, 'mb/choiceset_option_relation_edit.html', {'form': form})
+    return render(request,
+                  'mb/choiceset_option_relation_edit.html',
+                  {'form': form})
+
 
 @login_required
 @permission_required('mb.choiceset_option_relation', raise_exception=True)
 def choiceset_option_relation_new(request, cso):
-    choiceset_option = get_object_or_404(SourceChoiceSetOption, pk=cso, is_active=1)
+    choiceset_option = get_object_or_404(
+        SourceChoiceSetOption, pk=cso, is_active=1)
     if request.method == "POST":
         form = ChoiceSetOptionRelationForm(request.POST)
         if form.is_valid():
             choiceset_option_relation = form.save(commit=False)
             choiceset_option_relation.source_choiceset_option = choiceset_option
             choiceset_option_relation.save()
-            return redirect('source_choiceset_option-detail', pk=choiceset_option_relation.source_choiceset_option.id)
+            return redirect(
+                'source_choiceset_option-detail',
+                pk=choiceset_option_relation.source_choiceset_option.id
+            )
     else:
         form = ChoiceSetOptionRelationForm()
-    return render(request, 'mb/choiceset_option_relation_edit.html', {'form': form})
+    return render(request,
+                  'mb/choiceset_option_relation_edit.html',
+                  {'form': form})
+
 
 @login_required
 def data_check_detail(request):
-    dsi = DietSetItem.objects.is_active().values('diet_set_id').order_by('diet_set_id').annotate(count=(Count('list_order')), max=(Max('list_order'))).exclude(count=F("max"))
+    dsi = (
+        DietSetItem.objects
+        .is_active()
+        .values('diet_set_id')
+        .order_by('diet_set_id')
+        .annotate(
+            count=Count('list_order'),
+            max=Max('list_order')
+        )
+        .exclude(count=F("max"))
+    )
 
     # Food item: missing part, TSN
     ds_data = DietSet.objects.raw("""
@@ -301,23 +389,28 @@ def data_check_detail(request):
         order by count(dsi.id)
         """)
 
-    return render(request, 'mb/data_check_detail.html', {'dsi': dsi, 'ds_data': ds_data, })
+    return render(request, 'mb/data_check_detail.html',
+                  {'dsi': dsi, 'ds_data': ds_data, })
+
 
 def diet_set_detail(request, pk):
-	ds = get_object_or_404(DietSet, pk=pk, is_active=1)
-	return render(request, 'mb/diet_set_detail.html', {'ds': ds})
+    ds = get_object_or_404(DietSet, pk=pk, is_active=1)
+    return render(request, 'mb/diet_set_detail.html', {'ds': ds})
+
 
 class diet_set_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = DietSet
     success_url = reverse_lazy('diet_set-list')
 
-    #https://stackoverflow.com/questions/53145279/edit-record-before-delete-django-deleteview
+    # https://stackoverflow.com/questions/53145279/edit-record-before-delete-django-deleteview
     def delete(self, *args, **kwargs):
         self.object = self.get_object()
         self.object.dietsetitem_set.all().delete()
         return super(diet_set_delete, self).delete(*args, **kwargs)
+
 
 @login_required
 @permission_required('mb.edit_diet_set', raise_exception=True)
@@ -337,8 +430,11 @@ def diet_set_edit(request, pk):
         form = DietSetForm(instance=diet_set)
     return render(request, 'mb/diet_set_edit.html', {'form': form})
 
+
 def diet_set_list(request):
-    f = DietSetFilter(request.GET, queryset=DietSet.objects.is_active().select_related())
+    f = DietSetFilter(
+        request.GET,
+        queryset=DietSet.objects.is_active().select_related())
 
     paginator = Paginator(f.qs, 10)
 
@@ -353,8 +449,9 @@ def diet_set_list(request):
     return render(
         request,
         'mb/diet_set_list.html',
-        {'page_obj': page_obj, 'filter': f,}
+        {'page_obj': page_obj, 'filter': f, }
     )
+
 
 def diet_set_item_detail(request, pk):
     diet_set_item = get_object_or_404(DietSetItem, pk=pk, is_active=1)
@@ -373,16 +470,20 @@ def diet_set_item_detail(request, pk):
         tsn_id = diet_set_item.food_item.tsn.tsn
         taxonomic_unit = get_object_or_404(TaxonomicUnits, tsn=tsn_id)
 
-        response1 = requests.get("https://www.itis.gov/ITISWebService/jsonservice/getCommonNamesFromTSN?tsn="+str(tsn_id))
+        response1 = requests.get(
+            "https://www.itis.gov/ITISWebService/jsonservice/getCommonNamesFromTSN?tsn=" +
+            str(tsn_id))
         r1 = response1.json()
-        response3 = requests.get("https://www.itis.gov/ITISWebService/jsonservice/getFullHierarchyFromTSN?tsn="+str(tsn_id))
+        response3 = requests.get(
+            "https://www.itis.gov/ITISWebService/jsonservice/getFullHierarchyFromTSN?tsn=" +
+            str(tsn_id))
         r3 = response3.json()
 
         strings1 = []
         strings3 = []
         strings4 = []
 
-        i=0
+        i = 0
         while r3['hierarchyList']:
             strings1.append(r3['hierarchyList'][i]['tsn'])
             strings3.append(r3['hierarchyList'][i]['taxonName'])
@@ -391,7 +492,7 @@ def diet_set_item_detail(request, pk):
             i += 1
 
         if str(r1['commonNames'][0]) != 'None':
-            j=0
+            j = 0
             while j < len(r1['commonNames']):
                 strings4.append(r1['commonNames'][j]['commonName'])
                 j += 1
@@ -401,7 +502,7 @@ def diet_set_item_detail(request, pk):
 
         hierarchy_string = '-'.join(strings1)
         hierarchy = '-'.join(strings3)
-#if request.POST['amount'] is not None:
+# if request.POST['amount'] is not None:
 
         if len(hierarchy_string) > 0:
             taxonomic_unit.hierarchy_string = hierarchy_string
@@ -417,12 +518,23 @@ def diet_set_item_detail(request, pk):
             taxonomic_unit.common_names = ''
         taxonomic_unit.tsn_update_date = datetime.datetime.now()
         taxonomic_unit.save()
-    return render(request, 'mb/diet_set_item_detail.html', {'dsi': diet_set_item, 'common_names': common_names, 'hierarchy': hierarchy, 'hierarchy_string': hierarchy_string,}, )
+    return render(
+        request,
+        'mb/diet_set_item_detail.html',
+        {'dsi': diet_set_item,
+         'common_names': common_names,
+         'hierarchy': hierarchy,
+         'hierarchy_string': hierarchy_string,
+         },
+    )
+
 
 class diet_set_item_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = DietSetItem
+
     def get_success_url(self):
         diet_set_item = super(diet_set_item_delete, self).get_object()
         ds_id = diet_set_item.diet_set.id
@@ -430,6 +542,7 @@ class diet_set_item_delete(UserPassesTestMixin, DeleteView):
             'diet_set-detail',
             args=(ds_id,)
         )
+
 
 @login_required
 @permission_required('mb.edit_diet_set_item', raise_exception=True)
@@ -449,6 +562,7 @@ def diet_set_item_edit(request, pk):
         form = DietSetItemForm(instance=diet_set_item)
     return render(request, 'mb/diet_set_item_edit.html', {'form': form})
 
+
 @login_required
 @permission_required('mb.add_diet_set_item', raise_exception=True)
 def diet_set_item_new(request, diet_set):
@@ -458,18 +572,24 @@ def diet_set_item_new(request, diet_set):
         if form.is_valid():
             diet_set_item = form.save(commit=False)
             diet_set_item.diet_set = diet_set
-            diet_set_item.list_order = DietSetItem.objects.is_active().filter(diet_set_id=diet_set.id).count()+1
+            diet_set_item.list_order = (
+                DietSetItem.objects
+                .is_active()
+                .filter(diet_set_id=diet_set.id)
+                .count() + 1
+            )
             diet_set_item.save()
             return redirect('diet_set-detail', pk=diet_set_item.diet_set.id)
     else:
         form = DietSetItemForm()
     return render(request, 'mb/diet_set_item_edit.html', {'form': form})
 
+
 def diet_set_reference_list(request):
     f = MasterReferenceFilter(request.GET, queryset=MasterReference.objects
-        .is_active()
-        .filter(sourcereference__dietset__gte=0)
-        .distinct())
+                              .is_active()
+                              .filter(sourcereference__dietset__gte=0)
+                              .distinct())
 
     paginator = Paginator(f.qs, 10)
 
@@ -484,14 +604,18 @@ def diet_set_reference_list(request):
     return render(
         request,
         'mb/diet_set_reference_list.html',
-        {'page_obj': page_obj, 'filter': f,}
+        {'page_obj': page_obj, 'filter': f, }
     )
 
 # https://ultimatedjango.com/learn-django/lessons/delete-contact-full-lesson/
+
+
 class entity_relation_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = EntityRelation
+
     def get_success_url(self):
         entity_relation = super(entity_relation_delete, self).get_object()
         se_id = entity_relation.source_entity.id
@@ -500,9 +624,12 @@ class entity_relation_delete(UserPassesTestMixin, DeleteView):
             args=(se_id,)
         )
 
+
 def entity_relation_detail(request, pk):
     entity_relation = get_object_or_404(EntityRelation, pk=pk, is_active=1)
-    return render(request, 'mb/entity_relation_detail.html', {'entity_relation': entity_relation})
+    return render(request, 'mb/entity_relation_detail.html',
+                  {'entity_relation': entity_relation})
+
 
 @login_required
 @permission_required('mb.edit_entity_relation', raise_exception=True)
@@ -522,11 +649,14 @@ def entity_relation_edit(request, pk):
         form = EntityRelationForm(instance=entity_relation)
     return render(request, 'mb/entity_relation_edit.html', {'form': form})
 
+
 class food_item_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = FoodItem
     success_url = reverse_lazy('food_item-list')
+
 
 def food_item_detail(request, pk):
     food_item = get_object_or_404(FoodItem, pk=pk, is_active=1)
@@ -544,26 +674,32 @@ def food_item_detail(request, pk):
     else:
         tsn_hierarchy = ''
 
-    i=len(tsn_hierarchy)-1
+    i = len(tsn_hierarchy) - 1
     pa = ViewProximateAnalysisTable.objects.none()
 
-    while(i>=0):
-        part=food_item.part.caption
-        if part=='CARRION':
-            part='WHOLE'
-        pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i]).filter(part__exact=part)
-        if len(pa)==1:
+    while i >= 0:
+        part = food_item.part.caption
+        if part == 'CARRION':
+            part = 'WHOLE'
+        pa = (ViewProximateAnalysisTable.objects
+              .filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i])
+              .filter(part__exact=part)
+              )
+        if len(pa) == 1:
             break
-        i=i-1
+        i = i - 1
 
     if pa.exists():
-        proximate_analysis=pa.all()[0]
+        proximate_analysis = pa.all()[0]
     else:
-        proximate_analysis=pa.none()
-    
-    
+        proximate_analysis = pa.none()
 
-    return render(request, 'mb/food_item_detail.html', {'proximate_analysis': proximate_analysis, 'food_item': food_item, 'synonym_link': sl})
+    return render(request,
+                  'mb/food_item_detail.html',
+                  {'proximate_analysis': proximate_analysis,
+                   'food_item': food_item,
+                   'synonym_link': sl})
+
 
 @login_required
 @permission_required('mb.edit_food_item', raise_exception=True)
@@ -583,8 +719,11 @@ def food_item_edit(request, pk):
         form = FoodItemForm(instance=food_item)
     return render(request, 'mb/food_item_edit.html', {'form': form})
 
+
 def food_item_list(request):
-    f = FoodItemFilter(request.GET, queryset=FoodItem.objects.is_active().select_related())
+    f = FoodItemFilter(
+        request.GET,
+        queryset=FoodItem.objects.is_active().select_related())
 
     paginator = Paginator(f.qs, 10)
 
@@ -599,13 +738,16 @@ def food_item_list(request):
     return render(
         request,
         'mb/food_item_list.html',
-        {'page_obj': page_obj, 'filter': f,}
+        {'page_obj': page_obj, 'filter': f, }
     )
+
 
 class master_attribute_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = MasterAttribute
+
     def get_success_url(self):
         master_attribute = super(master_attribute_delete, self).get_object()
         mr_id = master_attribute.reference.id
@@ -614,10 +756,15 @@ class master_attribute_delete(UserPassesTestMixin, DeleteView):
             args=(mr_id,)
         )
 
+
 def master_attribute_detail(request, pk):
     master_attribute = get_object_or_404(MasterAttribute, pk=pk, is_active=1)
     attribute_group = master_attribute.groups.first()
-    return render(request, 'mb/master_attribute_detail.html', {'master_attribute': master_attribute, 'attribute_group' : attribute_group})
+    return render(request,
+                  'mb/master_attribute_detail.html',
+                  {'master_attribute': master_attribute,
+                   'attribute_group': attribute_group})
+
 
 @login_required
 @permission_required('mb.edit_master_attribute', raise_exception=True)
@@ -637,8 +784,12 @@ def master_attribute_edit(request, pk):
         form = MasterAttributeForm(instance=master_attribute)
     return render(request, 'mb/master_attribute_edit.html', {'form': form})
 
+
 def master_attribute_list(request):
-    f = MasterAttributeFilter(request.GET, queryset=MasterAttribute.objects.is_active().filter(entity__name = 'Taxon').order_by('name'))
+    f = MasterAttributeFilter(
+        request.GET,
+        queryset=MasterAttribute.objects.is_active().filter(
+            entity__name='Taxon').order_by('name'))
 
     paginator = Paginator(f.qs, 10)
 
@@ -651,33 +802,42 @@ def master_attribute_list(request):
         page_obj = paginator.page(paginator.num_pages)
 
     for x in page_obj:
-        vars(x)['group']=x.groups.first()
+        vars(x)['group'] = x.groups.first()
 
     return render(
         request,
         'mb/master_attribute_list.html',
-        {'page_obj': page_obj, 'filter': f,}
+        {'page_obj': page_obj, 'filter': f, }
     )
+
 
 @login_required
 @permission_required('mb.add_choiceset_option', raise_exception=True)
 def master_attribute_master_choiceset_option_new(request, master_attribute):
-    master_attribute = get_object_or_404(MasterAttribute, pk=master_attribute, is_active=1)
+    master_attribute = get_object_or_404(
+        MasterAttribute, pk=master_attribute, is_active=1)
     if request.method == "POST":
         form = MasterAttributeChoicesetOptionForm(request.POST)
         if form.is_valid():
             choiceset_option = form.save(commit=False)
             choiceset_option.master_attribute = master_attribute
             choiceset_option.save()
-            return redirect('master_attribute-detail', pk=choiceset_option.master_attribute.id)
+            return redirect(
+                'master_attribute-detail',
+                pk=choiceset_option.master_attribute.id)
     else:
         form = MasterAttributeChoicesetOptionForm()
-    return render(request, 'mb/master_attribute_master_choiceset_option_edit.html', {'form': form})
+    return render(request,
+                  'mb/master_attribute_master_choiceset_option_edit.html',
+                  {'form': form})
+
 
 class master_choiceset_option_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = MasterChoiceSetOption
+
     def get_success_url(self):
         obj = super(master_choiceset_option_delete, self).get_object()
         ma_id = obj.master_attribute.id
@@ -686,33 +846,46 @@ class master_choiceset_option_delete(UserPassesTestMixin, DeleteView):
             args=(ma_id,)
         )
 
+
 def master_choiceset_option_detail(request, pk):
-    master_choiceset_option = get_object_or_404(MasterChoiceSetOption, pk=pk, is_active=1)
-    return render(request, 'mb/master_choiceset_option_detail.html', {'master_choiceset_option': master_choiceset_option})
+    master_choiceset_option = get_object_or_404(
+        MasterChoiceSetOption, pk=pk, is_active=1)
+    return render(request, 'mb/master_choiceset_option_detail.html',
+                  {'master_choiceset_option': master_choiceset_option})
+
 
 @login_required
 @permission_required('mb.edit_master_choiceset_option', raise_exception=True)
 def master_choiceset_option_edit(request, pk):
-    master_choiceset_option = get_object_or_404(MasterChoiceSetOption, pk=pk, is_active=1)
+    master_choiceset_option = get_object_or_404(
+        MasterChoiceSetOption, pk=pk, is_active=1)
 
     if not user_is_data_admin_or_owner(request.user, master_choiceset_option):
         raise PermissionDenied
 
     if request.method == "POST":
-        form = MasterChoiceSetOptionForm(request.POST, instance=master_choiceset_option)
+        form = MasterChoiceSetOptionForm(
+            request.POST, instance=master_choiceset_option)
         if form.is_valid():
             master_choiceset_option = form.save(commit=False)
             master_choiceset_option.save()
-            return redirect('master_choiceset_option-detail', pk=master_choiceset_option.pk)
+            return redirect(
+                'master_choiceset_option-detail',
+                pk=master_choiceset_option.pk)
     else:
         form = MasterChoiceSetOptionForm(instance=master_choiceset_option)
-    return render(request, 'mb/master_choiceset_option_edit.html', {'form': form})
+    return render(request,
+                  'mb/master_choiceset_option_edit.html',
+                  {'form': form})
+
 
 class master_entity_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = MasterEntity
     success_url = reverse_lazy('master_entity-list')
+
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
@@ -722,11 +895,12 @@ def dictfetchall(cursor):
         for row in cursor.fetchall()
     ]
 
+
 def master_entity_detail(request, pk):
     master_entity = get_object_or_404(MasterEntity, pk=pk, is_active=1)
     with connection.cursor() as cursor:
 
-#        cursor.execute("SELECT foo FROM bar WHERE baz = %s", [master_entity.id])
+        #        cursor.execute("SELECT foo FROM bar WHERE baz = %s", [master_entity.id])
         cursor.execute("""
             select me.id master_entity_id
             , sum(ifnull(tp.time_in_months/12,1) /
@@ -798,7 +972,7 @@ def master_entity_detail(request, pk):
         diets = dictfetchall(cursor)
 
     with connection.cursor() as cursor:
-#        cursor.execute("SELECT foo FROM bar WHERE baz = %s", [master_entity.id])
+        #        cursor.execute("SELECT foo FROM bar WHERE baz = %s", [master_entity.id])
         cursor.execute("""
             select se.name source_taxon
                 , ma.id master_attribute_id
@@ -854,7 +1028,7 @@ def master_entity_detail(request, pk):
 
 # Begin Ternary plot data
     with connection.cursor() as cursor:
-#        cursor.execute("SELECT foo FROM bar WHERE baz = %s", [master_entity.id])
+        #        cursor.execute("SELECT foo FROM bar WHERE baz = %s", [master_entity.id])
         cursor.execute("""
         select me.id
         , me.name
@@ -881,51 +1055,92 @@ def master_entity_detail(request, pk):
 
         ternary = dictfetchall(cursor)
 
-#https://www.codingwithricky.com/2019/08/28/easy-django-plotly/
-#https://community.plotly.com/t/how-to-add-a-polygon-and-a-caption-for-it-on-a-ternary-plot/47268
+# https://www.codingwithricky.com/2019/08/28/easy-django-plotly/
+# https://community.plotly.com/t/how-to-add-a-polygon-and-a-caption-for-it-on-a-ternary-plot/47268
     if ternary:
-        cf_ash = ternary[0]['cf']+ternary[0]['ash']
+        cf_ash = ternary[0]['cf'] + ternary[0]['ash']
         nfe = ternary[0]['nfe']
-        cp_ee = ternary[0]['cp']+ternary[0]['ee']
+        cp_ee = ternary[0]['cp'] + ternary[0]['ee']
     else:
         cf_ash = 1.0
         nfe = 0.0
         cp_ee = 0.0
 
     data = [[cf_ash, nfe, cp_ee]]
-    df = PandasDataFrame(data,columns=['CF+ASH','NFE','CP+EE'])
+    df = PandasDataFrame(data, columns=['CF+ASH', 'NFE', 'CP+EE'])
     fig = plotly_express.scatter_ternary(df, a="CF+ASH", b="NFE", c="CP+EE")
 
 # Animalivory
     t = [0.0, 0.0, 0.1, 0.2, 0.2]
     l = [0.0, 0.3, 0.3, 0.2, 0.0]
     r = [1.0, 0.7, 0.6, 0.6, 0.8]
-    fig.add_scatterternary(a=t, b=l, c=r, name="",
-                            mode='lines', fill="toself", text="Animalivory", showlegend=False)
+    fig.add_scatterternary(
+        a=t,
+        b=l,
+        c=r,
+        name="",
+        mode='lines',
+        fill="toself",
+        text="Animalivory",
+        showlegend=False)
 # Herbivory
     t = [0.3, 0.5, 0.5, 0.4]
     l = [0.5, 0.5, 0.4, 0.4]
     r = [0.2, 0.0, 0.1, 0.2]
-    fig.add_scatterternary(a=t, b=l, c=r, name="",
-                            mode='lines', fill="toself", text="Herbivory", showlegend=False)
+    fig.add_scatterternary(
+        a=t,
+        b=l,
+        c=r,
+        name="",
+        mode='lines',
+        fill="toself",
+        text="Herbivory",
+        showlegend=False)
 
 # Frugivory
     t = [0.0, 0.0, 0.3, 0.3, 0.2]
     l = [0.7, 1.0, 0.7, 0.5, 0.5]
     r = [0.3, 0.0, 0.0, 0.2, 0.3]
-    fig.add_scatterternary(a=t, b=l, c=r, name="",
-                            mode='lines', fill="toself", text="Frugivory", showlegend=False)
+    fig.add_scatterternary(
+        a=t,
+        b=l,
+        c=r,
+        name="",
+        mode='lines',
+        fill="toself",
+        text="Frugivory",
+        showlegend=False)
 
 # Omnivory
     t = [0.0, 0.0, 0.3, 0.3, 0.2]
     l = [0.4, 0.65, 0.35, 0.2, 0.2]
     r = [0.6, 0.35, 0.35, 0.5, 0.6]
-    fig.add_scatterternary(a=t, b=l, c=r, name="",
-                            mode='lines', fill="toself", text="Omnivory", showlegend=False)
+    fig.add_scatterternary(
+        a=t,
+        b=l,
+        c=r,
+        name="",
+        mode='lines',
+        fill="toself",
+        text="Omnivory",
+        showlegend=False)
 
-    plot_div = plotly_offline_plot(fig, output_type='div', include_plotlyjs=False, show_link=False, link_text="")
+    plot_div = plotly_offline_plot(
+        fig,
+        output_type='div',
+        include_plotlyjs=False,
+        show_link=False,
+        link_text="")
 
-    return render(request, 'mb/master_entity_detail.html', {'master_entity': master_entity, 'measurements': measurements, 'diets': diets, 'ternary':ternary, 'plot_div': plot_div,})
+    return render(request,
+                  'mb/master_entity_detail.html',
+                  {'master_entity': master_entity,
+                   'measurements': measurements,
+                   'diets': diets,
+                   'ternary': ternary,
+                   'plot_div': plot_div,
+                   })
+
 
 @login_required
 @permission_required('mb.edit_master_entity', raise_exception=True)
@@ -945,8 +1160,13 @@ def master_entity_edit(request, pk):
         form = MasterEntityForm(instance=master_entity)
     return render(request, 'mb/master_entity_edit.html', {'form': form})
 
+
 def master_entity_list(request):
-    f = MasterEntityFilter(request.GET, queryset=MasterEntity.objects.is_active().filter(reference_id=4).filter(entity__name = 'Species').order_by('name'))
+    f = MasterEntityFilter(
+        request.GET,
+        queryset=MasterEntity.objects.is_active().filter(
+            reference_id=4).filter(
+            entity__name='Species').order_by('name'))
 
     paginator = Paginator(f.qs, 10)
 
@@ -961,14 +1181,14 @@ def master_entity_list(request):
     return render(
         request,
         'mb/master_entity_list.html',
-        {'page_obj': page_obj, 'filter': f,}
+        {'page_obj': page_obj, 'filter': f, }
     )
 
+
 def master_entity_reference_list(request):
-    f = MasterReferenceFilter(request.GET, queryset=MasterReference.objects
-        .is_active()
-        .filter(sourcereference__sourceattribute__type__gte=0)
-        .distinct())
+    f = MasterReferenceFilter(
+        request.GET, queryset=MasterReference.objects .is_active() .filter(
+            sourcereference__sourceattribute__type__gte=0) .distinct())
 
     paginator = Paginator(f.qs, 10)
 
@@ -983,14 +1203,17 @@ def master_entity_reference_list(request):
     return render(
         request,
         'mb/master_entity_reference_list.html',
-        {'page_obj': page_obj, 'filter': f,}
+        {'page_obj': page_obj, 'filter': f, }
     )
+
 
 class master_reference_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = MasterReference
     success_url = reverse_lazy('master_reference-list')
+
 
 def master_reference_detail(request, pk):
     master_reference = get_object_or_404(MasterReference, pk=pk, is_active=1)
@@ -1041,8 +1264,13 @@ def master_reference_detail(request, pk):
         """, [master_reference.id])
         attributes = dictfetchall(cursor)
 
-    return render(request, 'mb/master_reference_detail.html'
-        , {'master_reference': master_reference, 'taxa': taxa, 'attributes': attributes, })
+    return render(request,
+                  'mb/master_reference_detail.html',
+                  {'master_reference': master_reference,
+                   'taxa': taxa,
+                   'attributes': attributes,
+                   })
+
 
 @login_required
 @permission_required('mb.edit_master_reference', raise_exception=True)
@@ -1062,7 +1290,7 @@ def master_reference_edit(request, pk):
         form = MasterReferenceForm(instance=master_reference)
     return render(request, 'mb/master_reference_edit.html', {'form': form})
 
-#def master_reference_list(request):
+# def master_reference_list(request):
 #    f = MasterReferenceFilter(request.GET, queryset=MasterReference.objects.is_active())
 
 #    paginator = Paginator(f.qs, 10)
@@ -1081,20 +1309,27 @@ def master_reference_edit(request, pk):
 #        {'page_obj': page_obj, 'filter': f,}
 #    )
 
+
 class proximate_analysis_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = ProximateAnalysis
     success_url = reverse_lazy('proximate_analysis-list')
 
+
 def proximate_analysis_detail(request, pk):
-    proximate_analysis = get_object_or_404(ProximateAnalysis, pk=pk, is_active=1)
-    return render(request, 'mb/proximate_analysis_detail.html', {'proximate_analysis': proximate_analysis})
+    proximate_analysis = get_object_or_404(
+        ProximateAnalysis, pk=pk, is_active=1)
+    return render(request, 'mb/proximate_analysis_detail.html',
+                  {'proximate_analysis': proximate_analysis})
+
 
 @login_required
 @permission_required('mb.edit_proximate_analysis', raise_exception=True)
 def proximate_analysis_edit(request, pk):
-    proximate_analysis = get_object_or_404(ProximateAnalysis, pk=pk, is_active=1)
+    proximate_analysis = get_object_or_404(
+        ProximateAnalysis, pk=pk, is_active=1)
 
     if not user_is_data_admin_or_owner(request.user, proximate_analysis):
         raise PermissionDenied
@@ -1104,13 +1339,18 @@ def proximate_analysis_edit(request, pk):
         if form.is_valid():
             proximate_analysis = form.save(commit=False)
             proximate_analysis.save()
-            return redirect('proximate_analysis-detail', pk=proximate_analysis.pk)
+            return redirect(
+                'proximate_analysis-detail',
+                pk=proximate_analysis.pk)
     else:
         form = ProximateAnalysisForm(instance=proximate_analysis)
     return render(request, 'mb/proximate_analysis_edit.html', {'form': form})
 
+
 def proximate_analysis_list(request):
-    f = ProximateAnalysisFilter(request.GET, queryset=ProximateAnalysis.objects.is_active().select_related())
+    f = ProximateAnalysisFilter(
+        request.GET,
+        queryset=ProximateAnalysis.objects.is_active().select_related())
 
     paginator = Paginator(f.qs, 10)
 
@@ -1125,29 +1365,37 @@ def proximate_analysis_list(request):
     return render(
         request,
         'mb/proximate_analysis_list.html',
-        {'page_obj': page_obj, 'filter': f,}
+        {'page_obj': page_obj, 'filter': f, }
     )
+
 
 class proximate_analysis_item_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = ProximateAnalysisItem
     success_url = reverse_lazy('proximate_analysis_item-list')
 
+
 def proximate_analysis_item_detail(request, pk):
-    proximate_analysis_item = get_object_or_404(ProximateAnalysisItem, pk=pk, is_active=1)
-    return render(request, 'mb/proximate_analysis_item_detail.html', {'proximate_analysis_item': proximate_analysis_item})
+    proximate_analysis_item = get_object_or_404(
+        ProximateAnalysisItem, pk=pk, is_active=1)
+    return render(request, 'mb/proximate_analysis_item_detail.html',
+                  {'proximate_analysis_item': proximate_analysis_item})
+
 
 @login_required
 @permission_required('mb.edit_proximate_analysis_item', raise_exception=True)
 def proximate_analysis_item_edit(request, pk):
-    proximate_analysis_item = get_object_or_404(ProximateAnalysisItem, pk=pk, is_active=1)
+    proximate_analysis_item = get_object_or_404(
+        ProximateAnalysisItem, pk=pk, is_active=1)
 
     if not user_is_data_admin_or_owner(request.user, proximate_analysis_item):
         raise PermissionDenied
 
     if request.method == "POST":
-        form = ProximateAnalysisItemForm(request.POST, instance=proximate_analysis_item)
+        form = ProximateAnalysisItemForm(
+            request.POST, instance=proximate_analysis_item)
         if form.is_valid():
             proximate_analysis_item = form.save(commit=False)
             std_values = generate_standard_values_pa(form.cleaned_data)
@@ -1157,13 +1405,20 @@ def proximate_analysis_item_edit(request, pk):
             proximate_analysis_item.ash_std = std_values['ash_std']
             proximate_analysis_item.nfe_std = std_values['nfe_std']
             proximate_analysis_item.save()
-            return redirect('proximate_analysis_item-detail', pk=proximate_analysis_item.pk)
+            return redirect(
+                'proximate_analysis_item-detail',
+                pk=proximate_analysis_item.pk)
     else:
         form = ProximateAnalysisItemForm(instance=proximate_analysis_item)
-    return render(request, 'mb/proximate_analysis_item_edit.html', {'form': form})
+    return render(request,
+                  'mb/proximate_analysis_item_edit.html',
+                  {'form': form})
+
 
 def proximate_analysis_item_list(request):
-    f = ProximateAnalysisItemFilter(request.GET, queryset=ProximateAnalysisItem.objects.is_active().select_related())
+    f = ProximateAnalysisItemFilter(
+        request.GET,
+        queryset=ProximateAnalysisItem.objects.is_active().select_related())
 
     paginator = Paginator(f.qs, 10)
 
@@ -1178,20 +1433,21 @@ def proximate_analysis_item_list(request):
     return render(
         request,
         'mb/proximate_analysis_item_list.html',
-        {'page_obj': page_obj, 'filter': f,}
+        {'page_obj': page_obj, 'filter': f, }
     )
+
 
 def proximate_analysis_reference_detail(request, pk):
     master_reference = get_object_or_404(MasterReference, pk=pk, is_active=1)
 
-    return render(request, 'mb/proximate_analysis_reference_detail.html'
-        , {'master_reference': master_reference, })
+    return render(request, 'mb/proximate_analysis_reference_detail.html',
+                  {'master_reference': master_reference, })
+
 
 def proximate_analysis_reference_list(request):
-    f = MasterReferenceFilter(request.GET, queryset=MasterReference.objects
-        .is_active()
-        .filter(sourcereference__proximateanalysis__gte=0)
-        .distinct())
+    f = MasterReferenceFilter(
+        request.GET, queryset=MasterReference.objects .is_active() .filter(
+            sourcereference__proximateanalysis__gte=0) .distinct())
 
     paginator = Paginator(f.qs, 10)
 
@@ -1206,13 +1462,16 @@ def proximate_analysis_reference_list(request):
     return render(
         request,
         'mb/proximate_analysis_reference_list.html',
-        {'page_obj': page_obj, 'filter': f,}
+        {'page_obj': page_obj, 'filter': f, }
     )
+
 
 class source_attribute_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = SourceAttribute
+
     def get_success_url(self):
         source_attribute = super(source_attribute_delete, self).get_object()
         sr_id = source_attribute.reference.id
@@ -1221,9 +1480,12 @@ class source_attribute_delete(UserPassesTestMixin, DeleteView):
             args=(sr_id,)
         )
 
+
 def source_attribute_detail(request, pk):
     source_attribute = get_object_or_404(SourceAttribute, pk=pk, is_active=1)
-    return render(request, 'mb/source_attribute_detail.html', {'source_attribute': source_attribute})
+    return render(request, 'mb/source_attribute_detail.html',
+                  {'source_attribute': source_attribute})
+
 
 @login_required
 @permission_required('mb.edit_source_attribute', raise_exception=True)
@@ -1243,8 +1505,11 @@ def source_attribute_edit(request, pk):
         form = SourceAttributeForm(instance=source_attribute)
     return render(request, 'mb/source_attribute_edit.html', {'form': form})
 
+
 def source_attribute_list(request):
-    f = SourceAttributeFilter(request.GET, queryset=SourceAttribute.objects.is_active().order_by('name'))
+    f = SourceAttributeFilter(
+        request.GET,
+        queryset=SourceAttribute.objects.is_active().order_by('name'))
 
     paginator = Paginator(f.qs, 10)
 
@@ -1259,28 +1524,37 @@ def source_attribute_list(request):
     return render(
         request,
         'mb/source_attribute_list.html',
-        {'page_obj': page_obj, 'filter': f,}
+        {'page_obj': page_obj, 'filter': f, }
     )
+
 
 @login_required
 @permission_required('mb.add_choiceset_option', raise_exception=True)
 def source_attribute_source_choiceset_option_new(request, source_attribute):
-    source_attribute = get_object_or_404(SourceAttribute, pk=source_attribute, is_active=1)
+    source_attribute = get_object_or_404(
+        SourceAttribute, pk=source_attribute, is_active=1)
     if request.method == "POST":
         form = SourceAttributeChoicesetOptionForm(request.POST)
         if form.is_valid():
             choiceset_option = form.save(commit=False)
             choiceset_option.source_attribute = source_attribute
             choiceset_option.save()
-            return redirect('source_attribute-detail', pk=choiceset_option.source_attribute.id)
+            return redirect(
+                'source_attribute-detail',
+                pk=choiceset_option.source_attribute.id)
     else:
         form = SourceAttributeChoicesetOptionForm()
-    return render(request, 'mb/source_attribute_source_choiceset_option_edit.html', {'form': form})
+    return render(request,
+                  'mb/source_attribute_source_choiceset_option_edit.html',
+                  {'form': form})
+
 
 class source_choiceset_option_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = SourceChoiceSetOption
+
     def get_success_url(self):
         obj = super(source_choiceset_option_delete, self).get_object()
         sa_id = obj.source_attribute.id
@@ -1289,32 +1563,45 @@ class source_choiceset_option_delete(UserPassesTestMixin, DeleteView):
             args=(sa_id,)
         )
 
+
 def source_choiceset_option_detail(request, pk):
-    source_choiceset_option = get_object_or_404(SourceChoiceSetOption, pk=pk, is_active=1)
-    return render(request, 'mb/source_choiceset_option_detail.html', {'source_choiceset_option': source_choiceset_option})
+    source_choiceset_option = get_object_or_404(
+        SourceChoiceSetOption, pk=pk, is_active=1)
+    return render(request, 'mb/source_choiceset_option_detail.html',
+                  {'source_choiceset_option': source_choiceset_option})
+
 
 @login_required
 @permission_required('mb.edit_source_choiceset_option', raise_exception=True)
 def source_choiceset_option_edit(request, pk):
-    source_choiceset_option = get_object_or_404(SourceChoiceSetOption, pk=pk, is_active=1)
+    source_choiceset_option = get_object_or_404(
+        SourceChoiceSetOption, pk=pk, is_active=1)
 
     if not user_is_data_admin_or_owner(request.user, source_choiceset_option):
         raise PermissionDenied
 
     if request.method == "POST":
-        form = SourceChoiceSetOptionForm(request.POST, instance=source_choiceset_option)
+        form = SourceChoiceSetOptionForm(
+            request.POST, instance=source_choiceset_option)
         if form.is_valid():
             source_choiceset_option = form.save(commit=False)
             source_choiceset_option.save()
-            return redirect('source_choiceset_option-detail', pk=source_choiceset_option.pk)
+            return redirect(
+                'source_choiceset_option-detail',
+                pk=source_choiceset_option.pk)
     else:
         form = SourceChoiceSetOptionForm(instance=source_choiceset_option)
-    return render(request, 'mb/source_choiceset_option_edit.html', {'form': form})
+    return render(request,
+                  'mb/source_choiceset_option_edit.html',
+                  {'form': form})
+
 
 class source_choiceset_option_value_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = SourceChoiceSetOptionValue
+
     def get_success_url(self):
         obj = super(source_choiceset_option_value_delete, self).get_object()
         source_entity_id = obj.source_entity.id
@@ -1323,32 +1610,46 @@ class source_choiceset_option_value_delete(UserPassesTestMixin, DeleteView):
             args=(source_entity_id,)
         )
 
+
 def source_choiceset_option_value_detail(request, pk):
-    source_choiceset_option_value = get_object_or_404(SourceChoiceSetOptionValue, pk=pk, is_active=1)
-    return render(request, 'mb/source_choiceset_option_value_detail.html', {'source_choiceset_option_value': source_choiceset_option_value})
+    source_choiceset_option_value = get_object_or_404(
+        SourceChoiceSetOptionValue, pk=pk, is_active=1)
+    return render(request, 'mb/source_choiceset_option_value_detail.html',
+                  {'source_choiceset_option_value': source_choiceset_option_value})
+
 
 @login_required
-@permission_required('mb.edit_source_choiceset_option_value', raise_exception=True)
+@permission_required('mb.edit_source_choiceset_option_value',
+                     raise_exception=True)
 def source_choiceset_option_value_edit(request, pk):
-    source_choiceset_option_value = get_object_or_404(SourceChoiceSetOptionValue, pk=pk, is_active=1)
+    source_choiceset_option_value = get_object_or_404(
+        SourceChoiceSetOptionValue, pk=pk, is_active=1)
 
-    if not user_is_data_admin_or_owner(request.user, source_choiceset_option_value):
+    if not user_is_data_admin_or_owner(
+            request.user, source_choiceset_option_value):
         raise PermissionDenied
 
     sac = source_choiceset_option_value.source_choiceset_option.source_attribute.id
     if request.method == "POST":
-        form = SourceChoiceSetOptionValueForm(request.POST, instance=source_choiceset_option_value, sac=sac)
+        form = SourceChoiceSetOptionValueForm(
+            request.POST, instance=source_choiceset_option_value, sac=sac)
         if form.is_valid():
             source_choiceset_option_value = form.save(commit=False)
             source_choiceset_option_value.save()
-            return redirect('source_entity-detail', pk=source_choiceset_option_value.source_entity.id)
+            return redirect('source_entity-detail',
+                            pk=source_choiceset_option_value.source_entity.id)
     else:
-        form = SourceChoiceSetOptionValueForm(instance=source_choiceset_option_value, sac=sac)
+        form = SourceChoiceSetOptionValueForm(
+            instance=source_choiceset_option_value, sac=sac)
 #        form = SourceChoiceSetOptionValueForm()
-    return render(request, 'mb/source_choiceset_option_value_edit.html', {'form': form})
+    return render(request,
+                  'mb/source_choiceset_option_value_edit.html',
+                  {'form': form})
+
 
 @login_required
-@permission_required('mb.add_source_choiceset_option_value', raise_exception=True)
+@permission_required('mb.add_source_choiceset_option_value',
+                     raise_exception=True)
 def source_choiceset_option_value_new(request, se, sac):
     source_entity = get_object_or_404(SourceEntity, pk=se)
     if request.method == "POST":
@@ -1357,15 +1658,22 @@ def source_choiceset_option_value_new(request, se, sac):
             source_choiceset_option_value = form.save(commit=False)
             source_choiceset_option_value.source_entity = source_entity
             source_choiceset_option_value.save()
-            return redirect('source_entity-detail', pk=source_choiceset_option_value.source_entity.id)
+            return redirect('source_entity-detail',
+                            pk=source_choiceset_option_value.source_entity.id)
     else:
         form = SourceChoiceSetOptionValueForm(sac=sac)
-    return render(request, 'mb/source_choiceset_option_value_edit.html', {'form': form})
+    return render(request,
+                  'mb/source_choiceset_option_value_edit.html',
+                  {'form': form})
+
 
 @login_required
 @permission_required('mb.add_source_attribute', raise_exception=True)
 def source_entity_attribute_new(request, source_reference, source_entity):
-    reference = get_object_or_404(SourceReference, pk=source_reference, is_active=1)
+    reference = get_object_or_404(
+        SourceReference,
+        pk=source_reference,
+        is_active=1)
     if request.method == "POST":
         form = SourceReferenceAttributeForm(request.POST)
         if form.is_valid():
@@ -1376,12 +1684,18 @@ def source_entity_attribute_new(request, source_reference, source_entity):
             return redirect('source_entity-detail', pk=source_entity)
     else:
         form = SourceReferenceAttributeForm()
-    return render(request, 'mb/source_reference_attribute_edit.html', {'form': form})
+    return render(request,
+                  'mb/source_reference_attribute_edit.html',
+                  {'form': form})
+
 
 @login_required
 @permission_required('mb.add_source_attribute', raise_exception=True)
 def source_entity_measurement_new(request, source_reference, source_entity):
-    reference = get_object_or_404(SourceReference, pk=source_reference, is_active=1)
+    reference = get_object_or_404(
+        SourceReference,
+        pk=source_reference,
+        is_active=1)
     if request.method == "POST":
         form = SourceReferenceAttributeForm(request.POST)
         if form.is_valid():
@@ -1392,55 +1706,65 @@ def source_entity_measurement_new(request, source_reference, source_entity):
             return redirect('source_entity-detail', pk=source_entity)
     else:
         form = SourceReferenceAttributeForm()
-    return render(request, 'mb/source_reference_measurement_edit.html', {'form': form})
+    return render(request,
+                  'mb/source_reference_measurement_edit.html',
+                  {'form': form})
+
 
 class source_entity_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
+
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = SourceEntity
     success_url = reverse_lazy('source_entity-list')
 
+
 def source_entity_detail(request, pk):
     source_entity = get_object_or_404(SourceEntity, pk=pk, is_active=1)
-    source_reference = get_object_or_404(SourceReference, pk=source_entity.reference.id)
-    sa_ids = SourceAttribute.objects.is_active().filter(reference = source_reference).values('id')
-    sa_has_values = (SourceChoiceSetOptionValue
-        .objects
-        .is_active()
-        .filter(source_choiceset_option__source_attribute__type = 2)
-        .filter(source_choiceset_option__source_attribute__in=sa_ids)
-        .filter(source_entity = source_entity))
-    sa_no_values = (SourceAttribute
-        .objects
-        .is_active()
-        .filter(type = 2)
-        .filter(reference = source_reference)
-        .exclude(pk__in=sa_has_values.values('source_choiceset_option__source_attribute_id')))
+    source_reference = get_object_or_404(
+        SourceReference, pk=source_entity.reference.id)
+    sa_ids = SourceAttribute.objects.is_active().filter(
+        reference=source_reference).values('id')
+    sa_has_values = (
+        SourceChoiceSetOptionValue .objects .is_active() .filter(
+            source_choiceset_option__source_attribute__type=2) .filter(
+            source_choiceset_option__source_attribute__in=sa_ids) .filter(
+                source_entity=source_entity))
+    sa_no_values = (
+        SourceAttribute .objects .is_active() .filter(
+            type=2) .filter(
+            reference=source_reference) .exclude(
+                pk__in=sa_has_values.values('source_choiceset_option__source_attribute_id')))
     sa_has_measurements = (SourceMeasurementValue
-        .objects
-        .is_active()
-        .filter(source_attribute__type = 1)
-        .filter(source_attribute__in = sa_ids)
-        .filter(source_entity = source_entity))
-    sa_no_measurements = (SourceAttribute
-        .objects
-        .is_active()
-        .filter(type = 1)
-        .filter(reference = source_reference)
-        .exclude(pk__in = sa_has_measurements.values('source_attribute_id')))
+                           .objects
+                           .is_active()
+                           .filter(source_attribute__type=1)
+                           .filter(source_attribute__in=sa_ids)
+                           .filter(source_entity=source_entity))
+    sa_no_measurements = (
+        SourceAttribute .objects .is_active() .filter(
+            type=1) .filter(
+            reference=source_reference) .exclude(
+                pk__in=sa_has_measurements.values('source_attribute_id')))
 
-    return render(request, 'mb/source_entity_detail.html'
-        , {'source_entity': source_entity
-        , 'sa_has_values': sa_has_values
-        , 'sa_no_values': sa_no_values
-        , 'sa_has_measurements': sa_has_measurements
-        , 'sa_no_measurements': sa_no_measurements
-        ,})
+    return render(request,
+                  'mb/source_entity_detail.html',
+                  {'source_entity': source_entity,
+                   'sa_has_values': sa_has_values,
+                   'sa_no_values': sa_no_values,
+                   'sa_has_measurements': sa_has_measurements,
+                   'sa_no_measurements': sa_no_measurements,
+                   })
+
 
 def source_entity_list(request):
-    f = SourceEntityFilter(request.GET, queryset=SourceEntity.objects.is_active().order_by('name'))
+    f = SourceEntityFilter(
+        request.GET,
+        queryset=SourceEntity.objects.is_active().order_by('name'))
 
     paginator = Paginator(f.qs, 10)
 
@@ -1455,8 +1779,9 @@ def source_entity_list(request):
     return render(
         request,
         'mb/source_entity_list.html',
-        {'page_obj': page_obj, 'filter': f,}
+        {'page_obj': page_obj, 'filter': f, }
     )
+
 
 @login_required
 @permission_required('mb.edit_source_entity', raise_exception=True)
@@ -1476,10 +1801,12 @@ def source_entity_edit(request, pk):
         form = SourceEntityForm(instance=source_entity)
     return render(request, 'mb/source_entity_edit.html', {'form': form})
 
+
 @login_required
 @permission_required('mb.add_relation', raise_exception=True)
 def source_entity_relation_new(request, source_entity):
-    source_entity = get_object_or_404(SourceEntity, pk=source_entity, is_active=1)
+    source_entity = get_object_or_404(
+        SourceEntity, pk=source_entity, is_active=1)
     er_relation = get_object_or_404(RelationClass, pk=1, is_active=1)
     if request.method == "POST":
         form = SourceEntityRelationForm(request.POST)
@@ -1488,15 +1815,22 @@ def source_entity_relation_new(request, source_entity):
             relation.relation = er_relation
             relation.source_entity = source_entity
             relation.save()
-            return redirect('source_entity-detail', pk=relation.source_entity.id)
+            return redirect(
+                'source_entity-detail',
+                pk=relation.source_entity.id)
     else:
         form = SourceEntityRelationForm()
-    return render(request, 'mb/source_entity_relation_edit.html', {'form': form})
+    return render(request,
+                  'mb/source_entity_relation_edit.html',
+                  {'form': form})
+
 
 class source_measurement_value__delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = SourceMeasurementValue
+
     def get_success_url(self):
         obj = super(source_measurement_value__delete, self).get_object()
         source_entity_id = obj.source_entity.id
@@ -1505,33 +1839,43 @@ class source_measurement_value__delete(UserPassesTestMixin, DeleteView):
             args=(source_entity_id,)
         )
 
+
 @login_required
 @permission_required('mb.read_source_measurement_value', raise_exception=True)
 def source_measurement_value_detail(request, pk):
-    source_measurement_value = get_object_or_404(SourceMeasurementValue, pk=pk, is_active=1)
+    source_measurement_value = get_object_or_404(
+        SourceMeasurementValue, pk=pk, is_active=1)
     if not user_is_data_admin_or_owner(request.user, source_measurement_value):
         raise PermissionDenied
 
-    return render(request, 'mb/source_measurement_value_detail.html', {'source_measurement_value': source_measurement_value})
+    return render(request, 'mb/source_measurement_value_detail.html',
+                  {'source_measurement_value': source_measurement_value})
+
 
 @login_required
 @permission_required('mb.edit_source_measurement_value', raise_exception=True)
 def source_measurement_value_edit(request, pk):
-    source_measurement_value = get_object_or_404(SourceMeasurementValue, pk=pk, is_active=1)
+    source_measurement_value = get_object_or_404(
+        SourceMeasurementValue, pk=pk, is_active=1)
 
     if not user_is_data_admin_or_owner(request.user, source_measurement_value):
         raise PermissionDenied
 
     sa = source_measurement_value.source_attribute.id
     if request.method == "POST":
-        form = SourceMeasurementValueForm(request.POST, instance=source_measurement_value)
+        form = SourceMeasurementValueForm(
+            request.POST, instance=source_measurement_value)
         if form.is_valid():
             source_measurement_value = form.save(commit=False)
             source_measurement_value.save()
-            return redirect('source_entity-detail', pk=source_measurement_value.source_entity.id)
+            return redirect('source_entity-detail',
+                            pk=source_measurement_value.source_entity.id)
     else:
         form = SourceMeasurementValueForm(instance=source_measurement_value)
-    return render(request, 'mb/source_measurement_value_edit.html', {'form': form})
+    return render(request,
+                  'mb/source_measurement_value_edit.html',
+                  {'form': form})
+
 
 @login_required
 @permission_required('mb.add_source_measurement_value', raise_exception=True)
@@ -1545,16 +1889,22 @@ def source_measurement_value_new(request, sa, se):
             source_measurement_value.source_attribute = source_attribute
             source_measurement_value.source_entity = source_entity
             source_measurement_value.save()
-            return redirect('source_entity-detail', pk=source_measurement_value.source_entity.id)
+            return redirect('source_entity-detail',
+                            pk=source_measurement_value.source_entity.id)
     else:
         form = SourceMeasurementValueForm()
-    return render(request, 'mb/source_measurement_value_edit.html', {'form': form})
+    return render(request,
+                  'mb/source_measurement_value_edit.html',
+                  {'form': form})
+
 
 class source_reference_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = SourceReference
     success_url = reverse_lazy('source_reference-list')
+
 
 @login_required
 @permission_required('mb.add_source_reference', raise_exception=True)
@@ -1569,10 +1919,14 @@ def source_reference_new(request):
         form = SourceReferenceForm()
     return render(request, 'mb/source_reference_edit.html', {'form': form})
 
+
 @login_required
 @permission_required('mb.add_source_attribute', raise_exception=True)
 def source_reference_attribute_new(request, source_reference, type):
-    reference = get_object_or_404(SourceReference, pk=source_reference, is_active=1)
+    reference = get_object_or_404(
+        SourceReference,
+        pk=source_reference,
+        is_active=1)
     if request.method == "POST":
         form = SourceReferenceAttributeForm(request.POST)
         if form.is_valid():
@@ -1581,42 +1935,45 @@ def source_reference_attribute_new(request, source_reference, type):
             source_attribute.entity_id = 2
             source_attribute.type = type
             source_attribute.save()
-            return redirect('source_reference-detail', pk=source_attribute.reference.id)
+            return redirect(
+                'source_reference-detail',
+                pk=source_attribute.reference.id)
     else:
         form = SourceReferenceAttributeForm()
-    return render(request, 'mb/source_reference_attribute_edit.html', {'form': form})
+    return render(request,
+                  'mb/source_reference_attribute_edit.html',
+                  {'form': form})
+
 
 def source_reference_detail(request, pk):
 
-    source_reference = get_object_or_404(SourceReference
-        .objects
-        .is_active()
-        .select_related('master_reference'), pk=pk
-        )
+    source_reference = get_object_or_404(
+        SourceReference .objects .is_active() .select_related('master_reference'),
+        pk=pk)
 
     sr_traits = (SourceAttribute
-        .objects
-        .is_active()
-        .filter(type = 2)
-        .filter(reference = source_reference)
-        .select_related('entity',)
-        .prefetch_related('attributerelation_set__master_attribute',)
-        .order_by('name')
-        )
+                 .objects
+                 .is_active()
+                 .filter(type=2)
+                 .filter(reference=source_reference)
+                 .select_related('entity',)
+                 .prefetch_related('attributerelation_set__master_attribute',)
+                 .order_by('name')
+                 )
 
     sr_measurements = (SourceAttribute
-        .objects
-        .is_active()
-        .filter(type = 1)
-        .filter(reference = source_reference)
-        .select_related('entity').order_by('name')
-        )
+                       .objects
+                       .is_active()
+                       .filter(type=1)
+                       .filter(reference=source_reference)
+                       .select_related('entity').order_by('name')
+                       )
 
     sr_diet_sets = (DietSet
-        .objects
-        .is_active()
-        .filter(reference = source_reference)
-        )
+                    .objects
+                    .is_active()
+                    .filter(reference=source_reference)
+                    )
 
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -1654,13 +2011,15 @@ def source_reference_detail(request, pk):
 
         sr_entities = dictfetchall(cursor)
 
-    return render(request, 'mb/source_reference_detail.html'
-        , {'source_reference': source_reference
-        , 'sr_traits': sr_traits
-        , 'sr_measurements': sr_measurements
-        , 'sr_diet_sets': sr_diet_sets
-        , 'sr_entities': sr_entities
-        ,})
+    return render(request,
+                  'mb/source_reference_detail.html',
+                  {'source_reference': source_reference,
+                   'sr_traits': sr_traits,
+                   'sr_measurements': sr_measurements,
+                   'sr_diet_sets': sr_diet_sets,
+                   'sr_entities': sr_entities,
+                   })
+
 
 @login_required
 @permission_required('mb.edit_source_reference', raise_exception=True)
@@ -1680,8 +2039,11 @@ def source_reference_edit(request, pk):
         form = SourceReferenceForm(instance=source_reference)
     return render(request, 'mb/source_reference_edit.html', {'form': form})
 
+
 def source_reference_list(request):
-    f = SourceReferenceFilter(request.GET, queryset=SourceReference.objects.is_active().order_by('citation'))
+    f = SourceReferenceFilter(
+        request.GET,
+        queryset=SourceReference.objects.is_active().order_by('citation'))
 
     paginator = Paginator(f.qs, 10)
 
@@ -1696,18 +2058,24 @@ def source_reference_list(request):
     return render(
         request,
         'mb/source_reference_list.html',
-        {'page_obj': page_obj, 'filter': f,}
+        {'page_obj': page_obj, 'filter': f, }
     )
+
 
 class time_period_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = TimePeriod
     success_url = reverse_lazy('time_period-list')
 
+
 def time_period_detail(request, pk):
     time_period = get_object_or_404(TimePeriod, pk=pk, is_active=1)
-    return render(request, 'mb/time_period_detail.html', {'time_period': time_period})
+    return render(request,
+                  'mb/time_period_detail.html',
+                  {'time_period': time_period})
+
 
 @login_required
 @permission_required('mb.edit_time_period', raise_exception=True)
@@ -1727,8 +2095,11 @@ def time_period_edit(request, pk):
         form = TimePeriodForm(instance=time_period)
     return render(request, 'mb/time_period_edit.html', {'form': form})
 
+
 def time_period_list(request):
-    f = TimePeriodFilter(request.GET, queryset=TimePeriod.objects.is_active().order_by('name'))
+    f = TimePeriodFilter(
+        request.GET,
+        queryset=TimePeriod.objects.is_active().order_by('name'))
 
     paginator = Paginator(f.qs, 10)
 
@@ -1743,17 +2114,20 @@ def time_period_list(request):
     return render(
         request,
         'mb/time_period_list.html',
-        {'page_obj': page_obj, 'filter': f,}
+        {'page_obj': page_obj, 'filter': f, }
     )
+
 
 class tsn_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+        return user_is_data_admin_or_owner(
+            self.request.user, self.get_object())
     model = TaxonomicUnits
     success_url = reverse_lazy('tsn-list')
 
+
 def tsn_update(request, tsn):
-    accepted_tsn=tsn
+    accepted_tsn = tsn
     kingdom_id = 0
     rank_id = 0
 
@@ -1768,14 +2142,17 @@ def tsn_update(request, tsn):
     response2 = GetAcceptedNamesfromTSN(taxonomic_unit.tsn)
     if response2['acceptedNames'] is None:
         accepted_tsn = tsn
-    response3 = requests.get("https://www.itis.gov/ITISWebService/jsonservice/getFullHierarchyFromTSN?tsn="+str(taxonomic_unit.tsn))
+    response3 = requests.get(
+        "https://www.itis.gov/ITISWebService/jsonservice/getFullHierarchyFromTSN?tsn=" +
+        str(
+            taxonomic_unit.tsn))
 #    r1 = response1.json()
     r3 = response3.json()
     strings1 = []
     strings3 = []
     strings4 = []
 
-    i=0
+    i = 0
     while r3['hierarchyList']:
         strings1.append(r3['hierarchyList'][i]['tsn'])
         strings3.append(r3['hierarchyList'][i]['taxonName'])
@@ -1794,15 +2171,15 @@ def tsn_update(request, tsn):
     else:
         taxonomic_unit.hierarchy = ''
 
-
     tsn_hierarchy = taxonomic_unit.hierarchy_string.split("-")
-    i=len(tsn_hierarchy)-1
-    found=False
-    while(i>=0 and found is False):
-        pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i])
-        if len(pa)>=1:
+    i = len(tsn_hierarchy) - 1
+    found = False
+    while (i >= 0 and found is False):
+        pa = ViewProximateAnalysisTable.objects.filter(
+            tsn__hierarchy_string__endswith=tsn_hierarchy[i])
+        if len(pa) >= 1:
             break
-        i=i-1
+        i = i - 1
 
     taxonomic_unit.common_names = GetCommonNamesfromTSN(tsn)
     if kingdom_id != '0':
@@ -1811,7 +2188,9 @@ def tsn_update(request, tsn):
         taxonomic_unit.tsn_update_date = datetime.datetime.now()
         taxonomic_unit.save()
 
-    return render(request, 'mb/tsn_detail.html', {'pa': pa, 'tsn': taxonomic_unit},)
+    return render(request, 'mb/tsn_detail.html',
+                  {'pa': pa, 'tsn': taxonomic_unit},)
+
 
 def tsn_detail(request, tsn):
     taxonomic_unit = get_object_or_404(TaxonomicUnits, tsn=tsn)
@@ -1820,10 +2199,13 @@ def tsn_detail(request, tsn):
     for i in reversed(range(len(tsn_hierarchy))):
         if tsn_hierarchy[i] == "":
             break
-        pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i])
-        if len(pa)>=1:
+        pa = ViewProximateAnalysisTable.objects.filter(
+            tsn__hierarchy_string__endswith=tsn_hierarchy[i])
+        if len(pa) >= 1:
             break
-    return render(request, 'mb/tsn_detail.html', {'pa': pa, 'tsn': taxonomic_unit},)
+    return render(request, 'mb/tsn_detail.html',
+                  {'pa': pa, 'tsn': taxonomic_unit},)
+
 
 @login_required
 def tsn_edit(request, tsn):
@@ -1842,8 +2224,11 @@ def tsn_edit(request, tsn):
         form = TaxonomicUnitsForm(instance=tsn)
     return render(request, 'mb/tsn_edit.html', {'form': form})
 
+
 def tsn_list(request):
-    f = TaxonomicUnitsFilter(request.GET, queryset=TaxonomicUnits.objects.all().select_related())
+    f = TaxonomicUnitsFilter(
+        request.GET,
+        queryset=TaxonomicUnits.objects.all().select_related())
 
     paginator = Paginator(f.qs, 10)
 
@@ -1858,8 +2243,9 @@ def tsn_list(request):
     return render(
         request,
         'mb/tsn_list.html',
-        {'page_obj': page_obj, 'filter': f,}
+        {'page_obj': page_obj, 'filter': f, }
     )
+
 
 @login_required
 @permission_required('mb.add_tsn', raise_exception=True)
@@ -1875,6 +2261,7 @@ def tsn_new(request):
         form = TaxonomicUnitsForm()
     return render(request, 'mb/tsn_edit.html', {'form': form})
 
+
 @login_required
 @permission_required('mb.add_tsn', raise_exception=True)
 def tsn_search(request):
@@ -1882,21 +2269,27 @@ def tsn_search(request):
 
         tsn_data = json.loads(request.POST.get("tsn_data"))
 
-        return_data = create_return_data(tsn_data["tsn"], tsn_data["scientificName"], status=tsn_data["nameUsage"])
+        return_data = create_return_data(
+            tsn_data["tsn"],
+            tsn_data["scientificName"],
+            status=tsn_data["nameUsage"])
 
         create_tsn(return_data, tsn_data["tsn"])
         return JsonResponse("recieved", safe=False, status=201)
 
-    elif request.method == "GET":
-        return_data = {"message":"Found no entries"}
-        query = request.GET.get("query").lower().capitalize().replace(' ', '%20')
+    if request.method == "GET":
+        return_data = {"message": "Found no entries"}
+        query = request.GET.get("query").lower(
+        ).capitalize().replace(' ', '%20')
         url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
         try:
-            session = CachedSession(ITIS_CACHE, expire_after=datetime.timedelta(days=1))
+            session = CachedSession(ITIS_CACHE,
+                                    expire_after=datetime.timedelta(days=1))
             file = session.get(url)
             data = file.text
         except Exception:
-            return JsonResponse({"message":"Connection to ITIS failed."}, safe=False, status=200 )
+            return JsonResponse(
+                {"message": "Connection to ITIS failed."}, safe=False, status=200)
         try:
             data = json.loads(data)['itisTerms']
         except UnicodeDecodeError:
@@ -1907,10 +2300,13 @@ def tsn_search(request):
             for item in enumerate(data):
                 item = item[1]
                 return_data[item["tsn"]] = item
-        return JsonResponse(return_data, safe=False, status=200 )
+        return JsonResponse(return_data, safe=False, status=200)
+
 
 def view_proximate_analysis_table_list(request):
-    f = ViewProximateAnalysisTableFilter(request.GET, queryset=ViewProximateAnalysisTable.objects.all().select_related())
+    f = ViewProximateAnalysisTableFilter(
+        request.GET,
+        queryset=ViewProximateAnalysisTable.objects.all().select_related())
 
     paginator = Paginator(f.qs, 10)
 
@@ -1925,5 +2321,5 @@ def view_proximate_analysis_table_list(request):
     return render(
         request,
         'mb/view_proximate_analysis_table_list.html',
-        {'page_obj': page_obj, 'filter': f,}
+        {'page_obj': page_obj, 'filter': f, }
     )
