@@ -4,7 +4,8 @@
 <title>MammalBase - Match Tool</title>
 {% endblock %}
 
-{% block content %} {% load custom_tags %}
+{% block content %}
+{% load custom_tags %}
 <!--Article header -->
 <header style="display:none">
   <h1>MammalBase - Trait Match Tool</h1>
@@ -82,6 +83,18 @@
   {% include 'mb/pagination.html' %}
 {% endblock %}
 {% block script %}
+<script>
+  window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const referenceCitation = urlParams.get('reference_citation');
+    
+    if (referenceCitation) {
+      document.getElementById('id_reference__citation').value = referenceCitation;
+      document.getElementById('Find').submit();
+    }
+  }
+</script>
+
 <script>
   $(document).ready(function() {
     // Event listeners

@@ -18,9 +18,20 @@ def trait_match_list(request):
     if not user_is_data_admin_or_contributor(request.user):
         raise PermissionDenied
     
-    f = SourceAttributeFilter(request.GET, queryset=SourceAttribute.objects.annotate(
-        num_master_attributes=Count('master_attribute')
-    ).filter(Q(num_master_attributes=0) | (Q(num_master_attributes=1) & Q(master_attribute__is_active=False))))
+    reference_citation = request.GET.get('reference_citation')
+    
+    f = SourceAttributeFilter(
+        request.GET,
+        queryset=SourceAttribute.objects.annotate(
+            num_master_attributes=Count('master_attribute')
+        ).filter(
+            Q(num_master_attributes=0) |
+            (Q(num_master_attributes=1) & Q(master_attribute__is_active=False))
+        ),
+    )
+    
+    if reference_citation:
+        f.filters['reference__citation'].extra['initial'] = reference_citation
 
     master_attributes = MasterAttribute.objects.all()
     paginator = Paginator(f.qs.order_by('name'), 10)
