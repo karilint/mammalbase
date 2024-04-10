@@ -26,6 +26,8 @@ from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from decimal import Decimal
 from django.contrib import messages
 from requests_cache import CachedSession
+import re
+
 
 class BaseImporter:
     """
@@ -219,15 +221,29 @@ class BaseImporter:
                 'classification_path_ranks': classification_path_ranks,
                 'taxonomic_status':status
             }
+        
             return {'data': [{'results': [return_data]}]}
         
-        
-        query = food.lower().capitalize().replace(' ', '%20')
-        url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
+        queries = self.clean_query(food)
+        query1 = queries[0]
+        query2 = queries[1]
+        query3 = queries[2]
+        print(query1)
+        print(query2)
+        print(query3)
+        url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey='
+        print(url)
         try:
             session = CachedSession(ITIS_CACHE, expire_after=timedelta(days=30), stale_if_error=True)
-            file = session.get(url)
+            file = session.get(url+query1)
             data = file.text
+            print(data)
+            file = session.get(url+query2)
+            data = file.text
+            print(data)
+            file = session.get(url+query3)
+            data = file.text
+            print(data)
         except (ConnectionError, UnicodeError):
             return {'data': [{}]}
         try:
@@ -235,14 +251,33 @@ class BaseImporter:
         except UnicodeDecodeError:
             taxon_data = json.loads(data.decode('utf-8', 'ignore'))['itisTerms'][0]
         return_data = {}
-        print(taxon_data)
         if taxon_data and taxon_data['scientificName'].lower() == food.lower():
             tsn = taxon_data['tsn']
             scientific_name = taxon_data['scientificName']
             return_data = create_return_data(tsn, scientific_name, status=taxon_data['nameUsage'])
         else:
             return {'data': [{}]}
+
         return return_data
+        
+        
+        
+    def clean_query(self, food):
+    # Remove unnecessary substrings and capitalize the first letter
+        cleaned_food = re.sub(r'\b(sp|ssp|af|aff|gen)\.?|[\(\)\-]', '', food.lower()).capitalize()
+        # Split the cleaned string by spaces
+        parts = cleaned_food.split(' ')
+        # Compress into different query formats
+        queries = [('%20'.join(parts[:3])).replace(' ', '%20').lower(),
+                ('%20'.join(parts[1:3])).replace(' ', '%20').lower(),
+                ('%20'.join(parts[:1])).replace(' ', '%20').lower()]
+        print(queries)
+        return queries
+
+
+
+        
+
     
     def get_or_create_source_location(self, location: str, source_reference: SourceReference, author: User):
         """
