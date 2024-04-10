@@ -232,20 +232,16 @@ class BaseImporter:
         print(query2)
         print(query3)
         url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey='
-        print(url)
         try:
             session = CachedSession(ITIS_CACHE, expire_after=timedelta(days=30), stale_if_error=True)
-            file = session.get(url+query1)
-            data = file.text
-            print(data)
-            file = session.get(url+query2)
-            data = file.text
-            print(data)
-            file = session.get(url+query3)
-            data = file.text
-            print(data)
+            for query in queries:
+                file = session.get(url + query)
+                data = file.text
+                if data:
+                    break
         except (ConnectionError, UnicodeError):
             return {'data': [{}]}
+        
         try:
             taxon_data = json.loads(data)['itisTerms'][0]
         except UnicodeDecodeError:
