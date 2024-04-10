@@ -14,6 +14,9 @@ class Command(BaseCommand):
         #print("results:", data["totalResultsCount"])
         print("location:", location[0])
         #create_master_location(location[0])
+
+        data = api.get_nature_reserves(location_name)
+        print("data", data[0])
         
         if location:
             geonameId = location[0]["geonameId"]
