@@ -95,7 +95,9 @@ from mb.models import (
     ViewMasterTraitValue,
     ViewProximateAnalysisTable,
     Occurrence,
-    ChoiceValue)
+    ChoiceValue,
+    Event,
+    SourceHabitat)
 from mb.models.location_models import MasterLocation, LocationRelation, SourceLocation
 
 
@@ -1960,6 +1962,10 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
             print("virhe: " + str(e))
         return master_entity
     
+    def get_source_habitat(event : Event):
+        source_habitat = event.source_habitat
+        return source_habitat.habitat_type
+    
     occurrences = []
     source_locations = []
 
@@ -1998,11 +2004,12 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
                         reference = ""
 
                     master_entity = str(get_master_entity(occ.source_entity))
-
                     if master_entity == "None":
                         master_entity = ""
 
-                    occ_view = OccurrenceView(event="No event yet!", master_entity=master_entity, organism_quantity=occ.organism_quantity,
+                    source_habitat = str(get_source_habitat(occ.event))
+
+                    occ_view = OccurrenceView(event=source_habitat, master_entity=master_entity, organism_quantity=occ.organism_quantity,
                                               organism_quantity_type=occ.organism_quantity_type, gender=gender, life_stage=life_stage,
                                               occurrence_remarks=occ.occurrence_remarks, reference=reference, associated_references=occ.associated_references)
                     
