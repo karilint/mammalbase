@@ -6,7 +6,7 @@ from mb.models import SourceLocation, LocationRelation
 from .location_api import LocationAPI
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from mb.filters import SourceLocationFilter
-from .location_match import create_master_location, match_locations, refine_hierarchy
+from .location_match import add_locations
 import json
 
 @login_required
@@ -30,7 +30,6 @@ def source_location_list(request):
         page_obj = paginator.page(paginator.num_pages)
 
     request.session['id_list'] = id_list
-    print(id_list)
 
     return render(request, 'matchtool/source_location_list.html', {'page_obj': page_obj, 'filter': filter})
 
@@ -48,7 +47,6 @@ def location_match_detail(request, id):
     result_locations = result["geonames"][:10]
     result_count = result["totalResultsCount"]
     id_list = request.session.get('id_list')
-    print("idlist:",id_list)
     index = id_list.index(id)+1
     previous=id_list.index(id)-1
     next_id = id_list[index] if index < len(id_list) else None
@@ -67,31 +65,18 @@ def location_match_detail(request, id):
 
 def match_location(request):
     api = LocationAPI()
-    geoNamesLocation = request.POST.get('geoNamesLocation')
-    sourceLocationId = request.POST.get('sourceLocation')
+    geo_names_location = request.POST.get('geoNamesLocation')
+    source_location_id = request.POST.get('sourceLocation')
     
-    geoNamesLocation = geoNamesLocation.replace("'", '"')
-    geoNamesLocation = json.loads(geoNamesLocation)
+    geo_names_location = geo_names_location.replace("'", '"')
+    geo_names_location = json.loads(geo_names_location)
     
-    hierarchy_list = api.get_location_hierarchy(geoNamesLocation["geonameId"])["geonames"]
-    hierarchy_list = refine_hierarchy(hierarchy_list, geoNamesLocation["name"])
-    
-    #country_list = [geoNamesLocation + hierarchy_list]
-    #Kaikki lisättävät locationit listaan, for loopilla läpi ja lisätään master_locationeihin
-    #Tarkastetaan continents create_master_location funktiossa
-    
-    
-    continents = ["Africa", "Antarctica", "Asia", "Europe", "Oceania", "North America", "South America"]
-    if hierarchy_list[-1]["name"] in continents:
-        continent = hierarchy_list[-1]["name"]
-        masterLocation = create_master_location(geoNamesLocation, continent)
-    else:    
-        masterLocation = create_master_location(geoNamesLocation)
+    locations = add_locations(geo_names_location)
+    matched_location = locations[0]
+    hierarchy_locations = locations[1:]
         
-    sourceLocation = SourceLocation.objects.get(id=sourceLocationId)
+    source_location = SourceLocation.objects.get(id=source_location_id)
     
-    LocationRelation(master_location=masterLocation, source_location=sourceLocation).save()
-    
-    masterLocations = [masterLocation.name]
+    LocationRelation(master_location=matched_location, source_location=source_location).save()
 
-    return JsonResponse({'masterLocation': masterLocations})
+    return JsonResponse({'masterLocation': matched_location.name, 'hierarchy_locations': hierarchy_locations})
