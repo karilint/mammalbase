@@ -19,6 +19,10 @@ class DietImporter(BaseImporter):
         time_period=self.get_or_create_time_period(getattr(row, 'samplingEffort'), reference, author)
         created = None
         
+        food_item = self.get_food_item(getattr(row, 'verbatimAssociatedTaxa'))
+        list_order = getattr(row, 'sequence')
+        percentage = round((getattr(row, 'measurementValue')), 3)
+
         # Create source location model
         new_source_location = self.get_or_create_source_location(getattr(row, 'verbatimLocality'), reference, author)
 
@@ -36,28 +40,17 @@ class DietImporter(BaseImporter):
         else:
             part_of_organism, created = ChoiceValue.objects.get_or_create(choice_set="FoodItemPart", caption=part_of_organism.capitalize())
                 
-        
-        print("Creating diet set")
+
         obj, created = DietSet.objects.get_or_create(reference=reference, cited_reference=getattr(row, 'associatedReferences'), taxon=taxon, location=new_source_location, sample_size=getattr(row, 'individualCount'),
                                                      time_period=time_period, method=method, study_time=getattr(row, 'verbatimEventDate'), created_by=author)
-
-        if created:
-            self.create_diet_set_item(row, obj)
-            return True
-        else:
+        if not created:
             return False
 
-    def create_diet_set_item(self, row, diet_set: DietSet):
-        """
-        Creates a DietSetItem object from a row of data and a DietSet object.
-        """
-        food_item = self.get_food_item(getattr(row, 'PartOfOrganism'))
-        list_order = getattr(row, 'sequence')
-        percentage = round((getattr(row, 'measurementValue')), 3)
 
-        obj, created = DietSetItem.objects.get_or_create(diet_set=diet_set, food_item=food_item, list_order=list_order)
+        obj2, created = DietSetItem.objects.get_or_create(diet_set=obj, food_item=food_item, list_order=list_order, percentage=percentage)
 
         if created:
             return True
         else:
             return False
+

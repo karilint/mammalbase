@@ -326,12 +326,12 @@ class Validation():
         errs = []
         choice_set = str(rule.split(':')[1])
 
-        choicevalue = ChoiceValue.objects.filter(choice_set=choice_set.capitalize(), caption=field_value.capitalize())
+        choicevalue = ChoiceValue.objects.filter(choice_set=choice_set, caption=field_value.capitalize())
 
         if field_value == 'nan' or field_value == "":
             return errs
         if len(choicevalue) == 0 or field_value.capitalize() != str(choicevalue[0].caption):
-            errs.append(self.return_field_message(field_name, choice_set.lower()))
+            errs.append(self.return_field_message(field_name, choice_set))
         return errs
 
 

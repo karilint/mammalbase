@@ -19,6 +19,7 @@ from config.settings import ITIS_CACHE
 import itis.views as itis
 import json
 import logging
+from itis.tools import getFullHierarchyFromTSN, hierarchyToString
 from itis.models import TaxonomicUnits
 from itis.views import *
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
@@ -234,6 +235,7 @@ class BaseImporter:
         except UnicodeDecodeError:
             taxon_data = json.loads(data.decode('utf-8', 'ignore'))['itisTerms'][0]
         return_data = {}
+        print(taxon_data)
         if taxon_data and taxon_data['scientificName'].lower() == food.lower():
             tsn = taxon_data['tsn']
             scientific_name = taxon_data['scientificName']
