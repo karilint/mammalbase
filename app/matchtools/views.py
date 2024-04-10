@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from django.http import JsonResponse
-from mb.models import SourceLocation, LocationRelation
+from mb.models import SourceLocation
 from .location_api import LocationAPI
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from mb.filters import SourceLocationFilter
@@ -64,19 +64,21 @@ def location_match_detail(request, id):
     })
 
 def match_location(request):
-    api = LocationAPI()
     geo_names_location = request.POST.get('geoNamesLocation')
     source_location_id = request.POST.get('sourceLocation')
     
     geo_names_location = geo_names_location.replace("'", '"')
     geo_names_location = json.loads(geo_names_location)
     
-    locations = add_locations(geo_names_location)
-    matched_location = locations[0]
-    hierarchy_locations = locations[1:]
+    locations = add_locations(geo_names_location, source_location_id)
+    if locations[0] is not None:
+        matched_location = locations[0].name
+    else:
+        matched_location = None
         
-    source_location = SourceLocation.objects.get(id=source_location_id)
-    
-    LocationRelation(master_location=matched_location, source_location=source_location).save()
-
-    return JsonResponse({'masterLocation': matched_location.name, 'hierarchy_locations': hierarchy_locations})
+    if locations[0] is not None and len(locations) > 1:
+        hierarchy_locations = [location.name for location in locations[1:]]
+    else:
+        hierarchy_locations = []
+        
+    return JsonResponse({'masterLocation': matched_location, 'hierarchy_locations': hierarchy_locations})

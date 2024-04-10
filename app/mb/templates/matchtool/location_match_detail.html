@@ -12,7 +12,7 @@
 <!--Page header-->
 <section class="w3-threequarter w3-container">
   <header class="w3-row">
-    <h2 class="w3-container w3-text-teal">Location Match:<span style="color: black;">{{ sourceLocation }}</span></h2>
+    <h2 class="w3-container w3-text-teal">Location Match: <span style="color: black;">{{ sourceLocation }}</span></h2>
 
     <!--Search function-->
     <div class="w3-half" id="Search" style="display: block;">
@@ -78,6 +78,8 @@
       <h3>{{ sourceLocation }} successfully matched!</h3>
       <div>New Master locations added:</div>
       <div id="masterLocation"></div>
+      <div>Hierarchy locations:</div>
+      <div id="hierarchyLocations"></div>
     </div>    
 
     <!--Pagination-->
@@ -122,7 +124,8 @@
       }
     })
     .then(data => {
-      document.querySelector('#masterLocation').innerHTML = data.masterLocation.join('<br>');
+      document.querySelector('#masterLocation').innerHTML = data.masterLocation;
+      document.querySelector('#hierarchyLocations').innerHTML = data.hierarchy_locations.join('<br>');
 
       document.querySelector('#Search').style.display = 'none';
       document.querySelector('.mb-list').style.display = 'none';
