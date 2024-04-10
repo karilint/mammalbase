@@ -35,10 +35,10 @@
             {% for x in page_obj %}
             <tr>
               <td class="mb-public-internal source-attribute-name">
-                <span class="editable" data-source-attribute-id="{{ x.pk }}">{{ x.name }}</span>
+                <span class="editable" data-source-attribute-id="{{ x.pk }}" data-original-value="{{ x.name }}">{{ x.name }}</span>
                 <a title="Press for Details" href="{% url 'source_attribute-detail' pk=x.pk %}">
                     <span class="fa fa-link w3-small"></span>
-                </a>  
+                </a>   
               </td>
               <td>
                 <button id="editButton_{{ x.pk }}" title="Modify the source trait name" type="button" 
@@ -120,7 +120,8 @@
       var $input = $(this);
       var newValue = $input.val();
       var sourceAttributeId = $input.closest("td").find(".editable").data("source-attribute-id");
-      
+      var originalValue = $input.closest("td").find(".editable").data("original-value");
+
       if (newValue.trim() === "") {
         showMessage("error", "Source Trait cannot be empty.");
         return;
@@ -132,9 +133,11 @@
         data: {
           source_attribute_id: sourceAttributeId,
           new_name: newValue,
+          original_name: originalValue,
           csrfmiddlewaretoken: "{{ csrf_token }}"
         },
         success: function(data) {
+          $input.closest("td").find(".editable").text(originalValue);
           getMatch(newValue, sourceAttributeId);
         },
         error: function(xhr, status, error) {
