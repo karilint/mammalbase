@@ -42,7 +42,9 @@ from mb.filters import (
     SourceReferenceFilter,
     TaxonomicUnitsFilter,
     TimePeriodFilter,
-    ViewProximateAnalysisTableFilter)
+    ViewProximateAnalysisTableFilter,
+    MasterLocationFilter
+    )
 from mb.forms import (
     AttributeRelationForm,
     ChoiceSetOptionRelationForm,
@@ -144,8 +146,9 @@ def index_proximate_analysis(request):
     return render(request, 'mb/index_proximate_analysis.html', context={'num_PA_item':num_PA_item},)
 
 def index_master_location_list(request):
+    filter = MasterLocationFilter(request.GET, queryset=MasterLocation.objects.is_active().select_related())
     master_locations = MasterLocation.objects.all()
-    return render(request, 'mb/master_location_list.html', context={"master_locations" : master_locations},)
+    return render(request, 'mb/master_location_list.html', context={"master_locations" : master_locations, "filter" : filter},)
 
 def master_location_detail(request, pk):
     master_location = get_object_or_404(MasterLocation, id=pk)
