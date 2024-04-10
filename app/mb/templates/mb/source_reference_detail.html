@@ -54,9 +54,11 @@
         {{ source_reference.master_reference.citation|safe }} <span class="fa fa-link"></span></a></td>
     </tr>
     <tr>
-      <th class="w3-quarter">Trait match:</th>
-      <td class="mb-private-internal w3-threequarter"><a href="{% url 'info-trait-match' %}?reference_citation={{ source_reference.citation }}">
-        Match unmatched source traits linked to this reference <span class="fa fa-link"></span></a></td>
+      {% if source_reference.sourceattribute_set.exists %}
+        <th class="w3-quarter">Trait match:</th>
+        <td class="mb-private-internal w3-threequarter"><a href="{% url 'info-trait-match' %}?reference_citation={{ source_reference.citation }}">
+          Match unmatched source traits linked to this reference <span class="fa fa-link"></span></a></td>
+      {% endif %}
     </tr>
   </table>
 
