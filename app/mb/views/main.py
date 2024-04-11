@@ -158,15 +158,8 @@ def index_master_location_list(request):
         page_obj = paginator.page(1)
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
-
-    for obj in page_obj:
-        print(str(obj.reference))
     
-    return render(
-        request,
-        'mb/master_location_list.html',
-        {'page_obj': page_obj, 'filter': filter,}
-    )
+    return render(request, 'mb/master_location_list.html', {'page_obj': page_obj, 'filter': filter,})
 
 def master_location_detail(request, pk):
     master_location = get_object_or_404(MasterLocation, id=pk)
@@ -1940,7 +1933,7 @@ def tsn_search(request):
                 item = item[1]
                 return_data[item["tsn"]] = item
         return JsonResponse(return_data, safe=False, status=200 )
-    
+
 def view_proximate_analysis_table_list(request):
     f = ViewProximateAnalysisTableFilter(request.GET, queryset=ViewProximateAnalysisTable.objects.all().select_related())
 
@@ -2015,6 +2008,10 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
                         gender = ""
 
                     life_stage = str(occ.life_stage).replace("LifeStage - ", "")
+                    if life_stage == "None":
+                        life_stage = ""
+
+                    life_stage = str(occ.life_stage).replace("Lifestage - ", "")
                     if life_stage == "None":
                         life_stage = ""
 
