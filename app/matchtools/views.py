@@ -39,10 +39,19 @@ def location_match_detail(request, id):
     result = api.get_locations(sourceLocation)
     
     query = sourceLocation
+    selected_option = 'all'
     
     if request.method == 'POST':
+        selected_option = request.POST.get('limit_search')
         query = request.POST.get('query')
-        result = api.get_locations(query)
+        if selected_option == 'all':
+            result = api.get_locations(query)
+        elif selected_option == 'reserves':
+            reserves = api.get_nature_reserves(query)
+            result = {
+                "geonames": reserves,
+                "totalResultsCount": len(reserves)
+            }
 
     result_locations = result["geonames"][:10]
     result_count = result["totalResultsCount"]
@@ -60,7 +69,8 @@ def location_match_detail(request, id):
         'next_id': next_id, 
         'current_index': index, 
         'id_count': len(id_list), 
-        'previous_id': previous_id
+        'previous_id': previous_id,
+        'selected_option': selected_option,
     })
 
 def match_location(request):
