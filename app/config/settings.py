@@ -75,6 +75,7 @@ INSTALLED_APPS = [
 
     "django_celery_results",
     "celery_progress",
+    "matchtools",
 
     # https://django-simple-history.readthedocs.io/
     'simple_history',
