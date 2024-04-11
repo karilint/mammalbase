@@ -18,10 +18,7 @@ class DietImporter(BaseImporter):
         method= self.get_or_create_source_method(getattr(row, 'measurementMethod'), reference, author)
         time_period=self.get_or_create_time_period(getattr(row, 'samplingEffort'), reference, author)
         created = None
-        
-        food_item = self.get_food_item(getattr(row, 'verbatimAssociatedTaxa'))
-        list_order = getattr(row, 'sequence')
-        percentage = round((getattr(row, 'measurementValue')), 3)
+
 
         # Create source location model
         new_source_location = self.get_or_create_source_location(getattr(row, 'verbatimLocality'), reference, author)
@@ -39,15 +36,21 @@ class DietImporter(BaseImporter):
             part_of_organism = None
         else:
             part_of_organism, created = ChoiceValue.objects.get_or_create(choice_set="FoodItemPart", caption=part_of_organism.capitalize())
+            
+            
                 
 
         obj, created = DietSet.objects.get_or_create(reference=reference, cited_reference=getattr(row, 'associatedReferences'), taxon=taxon, location=new_source_location, sample_size=getattr(row, 'individualCount'),
                                                      time_period=time_period, method=method, study_time=getattr(row, 'verbatimEventDate'), created_by=author)
         if not created:
             return False
+        
+        food_item = self.get_fooditem(getattr(row, 'verbatimAssociatedTaxa'), part_of_organism)
+        list_order = getattr(row, 'sequence')
+        percentage = round((getattr(row, 'measurementValue')), 3)
 
 
-        obj2, created = DietSetItem.objects.get_or_create(diet_set=obj, food_item=food_item, list_order=list_order, percentage=percentage)
+        bj2, created = DietSetItem.objects.get_or_create(diet_set=obj, food_item=food_item, list_order=list_order, percentage=percentage)
 
         if created:
             return True
