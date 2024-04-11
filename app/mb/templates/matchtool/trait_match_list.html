@@ -1,5 +1,7 @@
 {% extends "mb/base_generic.html" %}
 
+{% load static %}
+
 {% block title %}
 <title>MammalBase - Match Tool</title>
 {% endblock %}
@@ -83,141 +85,10 @@
   {% include 'mb/pagination.html' %}
 {% endblock %}
 {% block script %}
+<script src="{% static 'js/traitmatch.js' %}"></script>
 <script>
-  window.onload = function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const referenceCitation = urlParams.get('reference_citation');
-    
-    if (referenceCitation) {
-      document.getElementById('id_reference__citation').value = referenceCitation;
-      document.getElementById('Find').submit();
-    }
-  }
-</script>
-
-<script>
-  $(document).ready(function() {
-    // Event listeners
-    $("button[id^='editButton_']").click(handleEditButtonClick);
-    $("table").on("blur", "td.source-attribute-name input.edit-input", handleEditInputBlur);
-    $("table").on("click", "td.source-attribute-name .editable", handleEditableClick);
-    $("button[id^='matchButton_']").click(handleMatchButtonClick);
-    $("table").on("keypress", "td.source-attribute-name input.edit-input", handleEnterKeyPress);
-
-    // Functions
-    function handleEditButtonClick(event) {
-      var sourceAttributeId = $(this).attr("id").split("_")[1];
-      var $editableSpan = $(this).closest("tr").find("td.source-attribute-name .editable");
-      activateEditableField($editableSpan);
-    }
-
-    function activateEditableField($editableSpan) {
-      var currentValue = $editableSpan.text();
-      $editableSpan.html("<input type='text' class='edit-input' value='" + currentValue + "'>");
-      $editableSpan.find("input").focus();
-    }
-
-    function handleEditInputBlur() {
-      var $input = $(this);
-      var newValue = $input.val();
-      var sourceAttributeId = $input.closest("td").find(".editable").data("source-attribute-id");
-      var originalValue = $input.closest("td").find(".editable").data("original-value");
-
-      if (newValue.trim() === "") {
-        showMessage("error", "Source Trait cannot be empty.");
-        return;
-      }
-      
-      $.ajax({
-        url: "{% url 'source_attribute_edit' %}",
-        method: "POST",
-        data: {
-          source_attribute_id: sourceAttributeId,
-          new_name: newValue,
-          original_name: originalValue,
-          csrfmiddlewaretoken: "{{ csrf_token }}"
-        },
-        success: function(data) {
-          $input.closest("td").find(".editable").text(originalValue);
-          getMatch(newValue, sourceAttributeId);
-        },
-        error: function(xhr, status, error) {
-          showMessage("error", "An error occurred while editing.");
-        }
-      });
-    }
-
-    function handleEditableClick() {
-      if (!$(this).find("input").length) {
-        activateEditableField($(this));
-      }
-    }
-
-    function handleEnterKeyPress(event) {
-      if (event.which === 13) {
-        $(this).blur();
-      }
-    }
-
-    function getMatch(sourceAttributeName, sourceAttributeId) {
-        $.ajax({
-          url: "{% url 'get_match_endpoint' %}",
-          method: "POST",
-          data: {
-            source_attribute_name: sourceAttributeName,
-            csrfmiddlewaretoken: "{{ csrf_token }}"
-          },
-          success: function(data) {
-            if (data.match) {
-              var selectedMasterAttributeId = data.match.id;
-              var $dropdown = $("span.editable[data-source-attribute-id='" + sourceAttributeId + "']").closest("tr").find("select[name='master_attribute']");
-              $dropdown.val(selectedMasterAttributeId);
-            } else {
-              console.log("No match found for current name");
-            }
-            },
-          error: function(xhr, status, error) {
-            console.error("Error fetching match:", error);
-        }
-      });
-   }
-
-    function handleMatchButtonClick() {
-      var sourceAttributeId = $(this).attr("id").split("_")[1];
-      var selectedMasterAttributeId = $(this).closest("tr").find("select[name='master_attribute']").val();
-      matchAttributes(sourceAttributeId, selectedMasterAttributeId);
-    }
-
-    function matchAttributes(sourceAttributeId, selectedMasterAttributeId) {
-      $.ajax({
-        url: "{% url 'match_operation_endpoint' %}",
-        method: "POST",
-        data: {
-          source_attribute_id: sourceAttributeId,
-          selected_master_attribute_id: selectedMasterAttributeId,
-          csrfmiddlewaretoken: "{{ csrf_token }}"
-        },
-        success: function(data) {
-          if (data.success) {
-            showMessage("success", "Match successful!");
-            location.reload();
-          } else {
-            showMessage("error", "Match failed: " + data.error);
-          }
-        },
-        error: function(xhr, status, error) {
-          showMessage("error", "An error occurred while matching.");
-        }
-      });
-    }
-
-    function showMessage(type, message) {
-      var className = (type === "error") ? "error-message" : "success-message";
-      $("#message-container").html("<p class='" + className + "'>" + message + "</p>");
-      setTimeout(function() {
-        $("#message-container").empty();
-      }, 4000);
-    }
-  });
+  var sourceAttributeEditUrl = "{% url 'source_attribute_edit' %}";
+  var matchOperationEndpointUrl = "{% url 'match_operation_endpoint' %}";
+  var getMatchEndpointUrl = "{% url 'get_match_endpoint' %}";
 </script>
 {% endblock %}
