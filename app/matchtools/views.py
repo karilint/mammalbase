@@ -71,13 +71,13 @@ def match_location(request):
     geo_names_location = json.loads(geo_names_location)
     
     locations = add_locations(geo_names_location, source_location_id)
-    if locations[0] is not None:
-        matched_location = locations[0].name
+    if locations[-1] is not None:
+        matched_location = locations[-1].name
     else:
         matched_location = None
         
     if locations[0] is not None and len(locations) > 1:
-        hierarchy_locations = [location.name for location in locations[1:]]
+        hierarchy_locations = [location.name for location in locations[:-1]]
     else:
         hierarchy_locations = []
         
