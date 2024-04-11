@@ -155,7 +155,7 @@ class SourceLocationFilter(django_filters.FilterSet):
         fields = ['name', 'reference__citation',]
 
 class MasterLocationFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(lookup_expr='icontains', label='Location contains')
+    name = django_filters.CharFilter(lookup_expr='icontains', label='Name contains')
     reference__citation = django_filters.CharFilter(lookup_expr='icontains', label='Reference contains')
 
     class Meta:

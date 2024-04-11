@@ -14,7 +14,7 @@
   </header>
 
   {% include 'includes/find.html' %}
-  {% if master_locations %}
+  {% if page_obj %}
   {% if request.user|is_data_admin_or_contributor %}
       <br>
       <br>
@@ -27,7 +27,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for x in master_locations %}
+        {% for x in page_obj %}
         <tr>
             <td><a href="/ml_detail/{{ x.id }}">{{ x.name }}</a></td>
             <td>{{ x.reference }}</td>

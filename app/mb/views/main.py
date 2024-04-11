@@ -149,8 +149,24 @@ def index_proximate_analysis(request):
 
 def index_master_location_list(request):
     filter = MasterLocationFilter(request.GET, queryset=MasterLocation.objects.is_active().select_related())
-    master_locations = MasterLocation.objects.all()
-    return render(request, 'mb/master_location_list.html', context={"master_locations" : master_locations, "filter" : filter},)
+    paginator = Paginator(filter.qs, 10)
+
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    for obj in page_obj:
+        print(str(obj.reference))
+    
+    return render(
+        request,
+        'mb/master_location_list.html',
+        {'page_obj': page_obj, 'filter': filter,}
+    )
 
 def master_location_detail(request, pk):
     master_location = get_object_or_404(MasterLocation, id=pk)
@@ -1963,7 +1979,10 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
         return master_entity
     
     def get_source_habitat(event : Event):
+        """ Get source habitat by event """
         source_habitat = event.source_habitat
+        if source_habitat.habitat_type == "nan":
+            return ""
         return source_habitat.habitat_type
     
     occurrences = []
