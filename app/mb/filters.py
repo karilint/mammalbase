@@ -20,7 +20,7 @@ from .models import (
     TimePeriod,
     ViewMasterTraitValue,
     ViewProximateAnalysisTable,
-    SourceLocation)
+    MasterLocation)
 from itis.models import TaxonomicUnits
 
 class DietSetFilter(django_filters.FilterSet):
@@ -145,10 +145,10 @@ class ViewProximateAnalysisTableFilter(django_filters.FilterSet):
     class Meta:
         fields = ['id', 'tsn','tsn__completename','tsn__hierarchy','tsn__hierarchystring','part','cp_std','ee_std','cf_std','ash_std','nfe_std','n_taxa','n_reference','n_analysis',]
 
-class SourceLocationFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(lookup_expr='icontains', label='Location contains')
+class MasterLocationFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(lookup_expr='icontains', label='Name contains')
     reference__citation = django_filters.CharFilter(lookup_expr='icontains', label='Reference contains')
 
     class Meta:
-        model = SourceLocation
+        model = MasterLocation
         fields = ['name', 'reference__citation',]

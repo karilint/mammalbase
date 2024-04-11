@@ -14,13 +14,13 @@ from django.views import generic
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.http import JsonResponse
+from django.db import models
 
 import requests
 from requests_cache import CachedSession
 
-from plotly import (
-    express as plotly_express,
-    offline as plotly_offline)
+from plotly import express as plotly_express
+from plotly.offline import plot as plotly_offline_plot
 from pandas import DataFrame as PandasDataFrame
 
 from config.settings import ITIS_CACHE
@@ -29,7 +29,7 @@ from imports.tools import (
     create_tsn,
     generate_standard_values_pa)
 from itis.models import TaxonomicUnits
-from .filters import (
+from mb.filters import (
     DietSetFilter,
     FoodItemFilter,
     MasterAttributeFilter,
@@ -42,8 +42,10 @@ from .filters import (
     SourceReferenceFilter,
     TaxonomicUnitsFilter,
     TimePeriodFilter,
-    ViewProximateAnalysisTableFilter)
-from .forms import (
+    ViewProximateAnalysisTableFilter,
+    MasterLocationFilter
+    )
+from mb.forms import (
     AttributeRelationForm,
     ChoiceSetOptionRelationForm,
     DietSetForm,
@@ -69,7 +71,7 @@ from .forms import (
     SourceReferenceForm,
     TaxonomicUnitsForm,
     TimePeriodForm)
-from .models import (
+from mb.models import (
     AttributeRelation,
     ChoiceSetOptionRelation,
     DietSet,
@@ -91,7 +93,12 @@ from .models import (
     SourceReference,
     TimePeriod,
     ViewMasterTraitValue,
-    ViewProximateAnalysisTable)
+    ViewProximateAnalysisTable,
+    Occurrence,
+    ChoiceValue,
+    Event,
+    SourceHabitat)
+from mb.models.location_models import MasterLocation, LocationRelation, SourceLocation
 
 
 # Error Pages
@@ -139,6 +146,33 @@ def index_news(request):
 def index_proximate_analysis(request):
     num_PA_item=ProximateAnalysisItem.objects.is_active().values('forage_id').distinct().count()
     return render(request, 'mb/index_proximate_analysis.html', context={'num_PA_item':num_PA_item},)
+
+def index_master_location_list(request):
+    filter = MasterLocationFilter(request.GET, queryset=MasterLocation.objects.is_active().select_related())
+    paginator = Paginator(filter.qs, 10)
+
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    for obj in page_obj:
+        print(str(obj.reference))
+    
+    return render(
+        request,
+        'mb/master_location_list.html',
+        {'page_obj': page_obj, 'filter': filter,}
+    )
+
+def master_location_detail(request, pk):
+    master_location = get_object_or_404(MasterLocation, id=pk)
+    related_objects = MasterLocation.objects.filter(pk=master_location.higherGeographyID.id)
+    occurrences = get_occurrences_by_masterlocation(master_location)
+    return render(request, 'mb/master_location_detail.html', context={"master_location" : master_location, "related_objects" : related_objects, "occurrences" : occurrences},)
 
 # Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
 @require_POST
@@ -921,7 +955,7 @@ def master_entity_detail(request, pk):
     fig.add_scatterternary(a=t, b=l, c=r, name="",
                             mode='lines', fill="toself", text="Omnivory", showlegend=False)
 
-    plot_div = plotly_offline(fig, output_type='div', include_plotlyjs=False, show_link=False, link_text="")
+    plot_div = plotly_offline_plot(fig, output_type='div', include_plotlyjs=False, show_link=False, link_text="")
 
     return render(request, 'mb/master_entity_detail.html', {'master_entity': master_entity, 'measurements': measurements, 'diets': diets, 'ternary':ternary, 'plot_div': plot_div,})
 
@@ -1925,3 +1959,93 @@ def view_proximate_analysis_table_list(request):
         'mb/view_proximate_analysis_table_list.html',
         {'page_obj': page_obj, 'filter': f,}
     )
+
+def get_occurrences_by_masterlocation(ml : MasterLocation):
+    """
+    Return occurrences by master location.
+    """
+
+    def remove_nan_value(string : str):
+        """ Cut 'nan'-string. """
+        return string.replace("nan", "")
+    
+    def get_master_entity(source_entity : SourceEntity):
+        """ Get master entity by source entity. """
+        master_entity = None
+        try:
+            master_entity = MasterEntity.objects.filter(source_entity=source_entity)[0]
+        except Exception as e:
+            print("virhe: " + str(e))
+        return master_entity
+    
+    def get_source_habitat(event : Event):
+        """ Get source habitat by event """
+        source_habitat = event.source_habitat
+        if source_habitat.habitat_type == "nan":
+            return ""
+        return source_habitat.habitat_type
+    
+    occurrences = []
+    source_locations = []
+
+    class OccurrenceView(models.Model):
+        """ 'Tool model' to present a single occurrence with correct information. """
+        event = models.CharField(max_length=500) 
+        master_entity = models.CharField(max_length=500) 
+        organism_quantity = models.CharField(max_length=500) 
+        organism_quantity_type = models.CharField(max_length=500) 
+        gender = models.CharField(max_length=500) 
+        life_stage = models.CharField(max_length=500) 
+        occurrence_remarks = models.CharField(max_length=500) 
+        reference = models.CharField(max_length=500) 
+        associated_references = models.CharField(max_length=500) 
+
+    try:
+        location_relations = LocationRelation.objects.filter(master_location=ml)
+        
+        for location_relation in location_relations:
+            source_locations.append(location_relation.source_location)
+
+        for source_location in source_locations:
+            try:
+                occs = Occurrence.objects.filter(source_location=source_location)
+                for occ in occs:
+                    gender = str(occ.gender).replace("Gender - ", "")
+                    if gender == "None":
+                        gender = ""
+
+                    life_stage = str(occ.life_stage).replace("LifeStage - ", "")
+                    if life_stage == "None":
+                        life_stage = ""
+
+                    reference = str(occ.source_reference)
+                    if reference == "None":
+                        reference = ""
+
+                    master_entity = str(get_master_entity(occ.source_entity))
+                    if master_entity == "None":
+                        master_entity = ""
+
+                    source_habitat = str(get_source_habitat(occ.event))
+
+                    occ_view = OccurrenceView(event=source_habitat, master_entity=master_entity, organism_quantity=occ.organism_quantity,
+                                              organism_quantity_type=occ.organism_quantity_type, gender=gender, life_stage=life_stage,
+                                              occurrence_remarks=occ.occurrence_remarks, reference=reference, associated_references=occ.associated_references)
+                    
+                    occ_view.organism_quantity = remove_nan_value(occ_view.organism_quantity)
+                    occ_view.organism_quantity_type = remove_nan_value(occ_view.organism_quantity_type)
+                    occ_view.associated_references = remove_nan_value(occ_view.associated_references)
+                    occ_view.occurrence_remarks = remove_nan_value(occ_view.occurrence_remarks)
+                    
+                    occurrences.append(occ_view)
+            except Exception as e:
+                print("virhe occurrence " + str(e))
+                continue
+    except Exception as e:
+        print("error: " + str(e))
+        return None
+    
+    if len(occurrences) == 0:
+        return False
+    
+    return occurrences

@@ -7,6 +7,8 @@ from django.db.models import QuerySet
 from itis.models import TaxonomicUnits
 import itis.views as itis
 import sys
+from mb.models import SourceMeasurementValue, DietSet
+
 
 class bcolors:
     HEADER = '\033[95m'
@@ -43,3 +45,30 @@ def update_db_from_itis():
     print(f"{len(tsn_objects) - skipped_units} out of {len(tsn_objects)} taxonomic units have been updated in the database. Spent time: {round(time.time()-db_start_time,2)}")
         
 
+@shared_task
+def update_dqs():
+    source_measurement_value_object = SourceMeasurementValue.objects.all()
+    diet_set_objects = DietSet.objects.all()
+    
+    print("Starting automatic database update for data quality score.")
+    i = 0
+    for source_measurement in source_measurement_value_object:
+        score = source_measurement.calculate_data_quality_score_for_measurement()
+        source_measurement.data_quality_score = score
+        source_measurement.save()
+        i += 1
+        if i%1000 == 0:
+            print("1000 updated moving on...")
+
+    print("Data quality scores for sourcemeasurements updated moving on to DietSets...")
+    i = 0
+    print("Starting automatic database update for data quality score for DietSets")
+    for diet_set in diet_set_objects:
+        score = diet_set.calculate_data_quality_score()
+        diet_set.data_quality_score = score
+        diet_set.save()
+        i += 1
+        if i%1000 == 0:
+            print("1000 updated moving on...")
+
+    print("Update successful!")

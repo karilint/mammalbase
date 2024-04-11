@@ -2,7 +2,7 @@ from django import forms
 from django_select2.forms import ModelSelect2Widget
 
 from itis.models import TaxonomicUnits
-from .models import (
+from mb.models import (
     AttributeRelation,
     ChoiceSetOptionRelation,
     DietSet,

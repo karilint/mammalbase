@@ -72,6 +72,10 @@
       <td class="w3-threequarter">{{ source_measurement_value.source_unit.name}}</td>
     </tr>
     <tr>
+      <th class="w3-quarter">Data quality score:</th>
+      <td class="w3-threequarter">{{ source_measurement_value.calculate_data_quality_score_for_measurement|default_if_none:"-"}}</td>
+    </tr>
+    <tr>
       <th class="w3-quarter">Reference:</th>
       <td class="w3-threequarter">{{ source_measurement_value.source_attribute.reference}}</td>
     </tr>

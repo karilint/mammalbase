@@ -1,3 +1,17 @@
+""" mb.models.unsorted - Models that won't fit any other file.
+
+Ideally this module should not exist.
+
+This module should not be imported anywhere else than __init__.py!
+
+To import models elsewhere use subpackage:
+from mb.models import ModelName
+"""
+
+# We can safely disable some linting for models:
+# pylint: disable = too-few-public-methods,
+# pylint: disable = missing-function-docstring, missing-class-docstring
+
 from django.db import models
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
@@ -6,18 +20,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from itis.models import TaxonomicUnits
 from tdwg.models import Taxon as TdwgTaxon
 from .base_model import BaseModel
-
-
-# For doi validation
-from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
-
-def validate_doi(value):
-    if not value.startswith( '10.' ):
-        raise ValidationError(
-            _('Value "%(value)s" does not begin with 10 followed by a period'),
-            params={'value': value},
-        )
+from .validators import validate_doi
 
 
 class AttributeRelation(BaseModel):
@@ -26,7 +29,7 @@ class AttributeRelation(BaseModel):
     remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Attribute Relation")
 
     class Meta:
-      unique_together = ('source_attribute', 'master_attribute',)
+        unique_together = ('source_attribute', 'master_attribute',)
 
     def get_absolute_url(self):
         """
@@ -38,7 +41,10 @@ class AttributeRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0} ({1}) {2}'.format(self.source_attribute.name,self.master_attribute.name,self.master_attribute.reference)
+        return '{0} ({1}) {2}'.format(
+                self.source_attribute.name,
+                self.master_attribute.name,
+                self.master_attribute.reference)
 
 
 class ChoiceValue(BaseModel):
@@ -46,9 +52,17 @@ class ChoiceValue(BaseModel):
     Model representing a ChoiceValue in MammalBase
     """
 
-    choice_set = models.CharField(max_length=25, help_text="Enter the Choice Set of the ChoiceValue")
-    caption = models.CharField(max_length=25, help_text="Enter the Caption of the ChoiceValue")
-#    link = models.URLField(max_length=200, help_text="Enter a valid URL for the Source Reference", blank=True, null=True,)
+    choice_set = models.CharField(
+            max_length=25,
+            help_text="Enter the Choice Set of the ChoiceValue")
+    caption = models.CharField(
+            max_length=25,
+            help_text="Enter the Caption of the ChoiceValue")
+#    link = models.URLField(
+#            max_length=200,
+#            help_text="Enter a valid URL for the Source Reference",
+#            blank=True,
+#            null=True)
 
     class Meta:
         ordering = ['choice_set','caption']
@@ -67,24 +81,38 @@ class ChoiceValue(BaseModel):
         return '%s - %s ' % (self.choice_set, self.caption)
 
 class ChoiceSetOptionRelation(BaseModel):
-    source_choiceset_option = models.ForeignKey('SourceChoiceSetOption', on_delete=models.CASCADE)
-    master_choiceset_option = models.ForeignKey('MasterChoiceSetOption', on_delete=models.CASCADE)
-    remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the ChoiceSetOption Relation")
+    source_choiceset_option = models.ForeignKey(
+            'SourceChoiceSetOption',
+            on_delete=models.CASCADE)
+    master_choiceset_option = models.ForeignKey(
+            'MasterChoiceSetOption',
+            on_delete=models.CASCADE)
+    remarks = models.TextField(
+            blank=True,
+            null=True,
+            max_length=500,
+            help_text="Enter remarks for the ChoiceSetOption Relation")
 
     class Meta:
-      unique_together = ('source_choiceset_option', 'master_choiceset_option',)
+        unique_together = (
+                'source_choiceset_option',
+                'master_choiceset_option')
 
     def get_absolute_url(self):
         """
         Returns the url to access a particular ChoiceSetOptionRelation instance.
         """
-        return reverse('choiceset_option-relation-detail', args=[str(self.id)])
+        return reverse(
+                'choiceset_option-relation-detail',
+                args = [str(self.id)])
 
     def __str__(self):
         """
         String for representing the Model object
         """
-        return '{0} - {1}'.format(self.source_choiceset_option.name,self.master_choiceset_option.name)
+        return '{0} - {1}'.format(
+                self.source_choiceset_option.name,
+                self.master_choiceset_option.name)
 
 
 class EntityClass(BaseModel):
@@ -92,8 +120,14 @@ class EntityClass(BaseModel):
     Model representing a Entity Class in MammalBase
     """
 
-    name = models.CharField(max_length=50, help_text="Enter the Name of the Entity Class")
-#    link = models.URLField(max_length=200, help_text="Enter a valid URL for the Source Reference", blank=True, null=True,)
+    name = models.CharField(
+            max_length=50,
+            help_text="Enter the Name of the Entity Class")
+#    link = models.URLField(
+#            max_length=200,
+#            help_text="Enter a valid URL for the Source Reference",
+#            blank=True,
+#            null=True)
 
     class Meta:
         ordering = ['name']
@@ -102,7 +136,7 @@ class EntityClass(BaseModel):
         """
         Returns the url to access a particular Entity Class instance.
         """
-        return reverse('entity-class-detail', args=[str(self.id)])
+        return reverse('entity-class-detail', args = [str(self.id)])
 
     def __str__(self):
         """
@@ -116,7 +150,9 @@ class RelationClass(BaseModel):
     Model representing a RelationClass in MammalBase
     """
 
-    name = models.CharField(max_length=25, help_text="Enter the Name of the RelationClass")
+    name = models.CharField(
+            max_length=25,
+            help_text="Enter the Name of the RelationClass")
 
     class Meta:
         ordering = ['name']
@@ -125,7 +161,7 @@ class RelationClass(BaseModel):
         """
         Returns the url to access a particular RelationClass instance.
         """
-        return reverse('relation-class-detail', args=[str(self.id)])
+        return reverse('relation-class-detail', args = [str(self.id)])
 
     def __str__(self):
         """
@@ -138,16 +174,34 @@ class FoodItem(BaseModel):
     """
     Model representing a FoodItem in MammalBase
     """
-    name = models.CharField(max_length=250, unique=True, help_text="Enter the Name of the FoodItem")
+    name = models.CharField(
+            max_length=250,
+            unique=True,
+            help_text="Enter the Name of the FoodItem")
     part = models.ForeignKey(
-        'ChoiceValue',
-        on_delete = models.SET_NULL,
-        null = True,
-        limit_choices_to={'choice_set': 'FoodItemPart'},
-        )
-    tsn = models.ForeignKey(TaxonomicUnits, to_field="tsn", db_column="tsn", blank=True, null=True, on_delete = models.SET_NULL, related_name='tsn_food')
-    pa_tsn = models.ForeignKey(TaxonomicUnits, to_field="tsn", db_column="pa_tsn", blank=True, null=True, on_delete = models.SET_NULL, related_name='tsn_pa')
-    is_cultivar = models.BooleanField(default=False, help_text='Is this Food Item a FAO cultivar?')
+            'ChoiceValue',
+            on_delete = models.SET_NULL,
+            null = True,
+            limit_choices_to={'choice_set': 'FoodItemPart'})
+    tsn = models.ForeignKey(
+            TaxonomicUnits,
+            to_field="tsn",
+            db_column="tsn",
+            blank=True,
+            null=True,
+            on_delete = models.SET_NULL,
+            related_name='tsn_food')
+    pa_tsn = models.ForeignKey(
+            TaxonomicUnits,
+            to_field="tsn",
+            db_column="pa_tsn",
+            blank=True,
+            null=True,
+            on_delete = models.SET_NULL,
+            related_name='tsn_pa')
+    is_cultivar = models.BooleanField(
+            default=False,
+            help_text='Is this Food Item a FAO cultivar?')
 
     class Meta:
         ordering = ['name']
@@ -171,7 +225,7 @@ class FoodItem(BaseModel):
                         part=self.part.caption
                         if part=='CARRION':
                             part='WHOLE'
-                        pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i]).filter(part__exact=part)
+                        pa = ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i]).filter(part__exact=part)
                         if len(pa)==1:
                             self.pa_tsn=pa.all()[0].tsn
                             break
@@ -185,8 +239,14 @@ class FoodItem(BaseModel):
         return '%s' % (self.name)
 
 class MasterAttributeGroup(BaseModel):
-    name = models.CharField(max_length=250, help_text="Enter the Name of the Master Attribute Group")
-    remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Master Attribute Group")
+    name = models.CharField(
+            max_length=250,
+            help_text="Enter the Name of the Master Attribute Group")
+    remarks = models.TextField(
+            blank=True,
+            null=True,
+            max_length=500,
+            help_text="Enter remarks for the Master Attribute Group")
 
     class Meta:
         ordering = ['name']
@@ -223,33 +283,54 @@ class MasterAttribute(BaseModel):
     ]
 
     reference = models.ForeignKey(
-        'MasterReference',
-        on_delete = models.CASCADE,
-        )
+            'MasterReference',
+            on_delete = models.CASCADE)
     entity = models.ForeignKey(
-        'EntityClass',
-        on_delete = models.CASCADE,
-        )
+            'EntityClass',
+            on_delete = models.CASCADE)
     source_attribute = models.ManyToManyField(
-        'SourceAttribute',
-        through='AttributeRelation',
-        through_fields=('master_attribute', 'source_attribute')
-    )
-    name = models.CharField(max_length=250, help_text="Enter the Name of the Master Attribute")
+            'SourceAttribute',
+            through='AttributeRelation',
+            through_fields=('master_attribute', 'source_attribute') )
+    name = models.CharField(
+            max_length=250,
+            help_text="Enter the Name of the Master Attribute")
     unit = models.ForeignKey(
-    'MasterUnit',blank=True, null=True,
-    on_delete = models.CASCADE,
-    )
+            'MasterUnit',
+            blank=True,
+            null=True,
+            on_delete = models.CASCADE)
 
-    min_allowed_value = models.CharField(blank=True, null=True, max_length=25, help_text="Enter minimum value for the Master Attribute")
-    max_allowed_value = models.CharField(blank=True, null=True, max_length=25, help_text="Enter maximum value for the Master Attribute")
-    description = models.TextField(blank=True, null=True, max_length=500, help_text="Enter description for the Master Attribute")
-    remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Master Attribute")
-    # Add description-field 
-    groups = models.ManyToManyField('MasterAttributeGroup', through='AttributeGroupRelation')
+    min_allowed_value = models.CharField(
+            blank=True,
+            null=True,
+            max_length=25,
+            help_text="Enter minimum value for the Master Attribute")
+    max_allowed_value = models.CharField(
+            blank=True,
+            null=True,
+            max_length=25,
+            help_text="Enter maximum value for the Master Attribute")
+    description = models.TextField(
+            blank=True,
+            null=True,
+            max_length=500,
+            help_text="Enter description for the Master Attribute")
+    remarks = models.TextField(
+            blank=True,
+            null=True,
+            max_length=500,
+            help_text="Enter remarks for the Master Attribute")
+    # Add description-field
+    groups = models.ManyToManyField(
+            'MasterAttributeGroup',
+            through='AttributeGroupRelation')
 
-    value_type = models.CharField(max_length=25, choices=TYPE, default='character', help_text='Select the valueType of the MasterAttribute')
-
+    value_type = models.CharField(
+            max_length=25,
+            choices=TYPE,
+            default='character',
+            help_text='Select the valueType of the MasterAttribute')
 
 
     class Meta:
@@ -275,20 +356,29 @@ class MasterChoiceSetOption(BaseModel):
     Model representing a MasterChoiceSetOption in MammalBase
     """
     master_attribute = models.ForeignKey(
-        'MasterAttribute',
-        on_delete = models.CASCADE,
-        )
+            'MasterAttribute',
+            on_delete = models.CASCADE)
     source_choiceset_option = models.ManyToManyField(
-        'SourceChoiceSetOption',
-        through='ChoiceSetOptionRelation',
-        through_fields=('master_choiceset_option', 'source_choiceset_option')
-    )
-    display_order = models.PositiveSmallIntegerField(default=10, help_text='Display order on choises')
-    name = models.CharField(max_length=250, help_text="Enter the Name of the Master Attribute")
-    description = models.TextField(blank=True, null=True, max_length=1500, help_text="Enter description for the Master Choice Set Option")
+            'SourceChoiceSetOption',
+            through = 'ChoiceSetOptionRelation',
+            through_fields = (
+                'master_choiceset_option',
+                'source_choiceset_option'
+            ) )
+    display_order = models.PositiveSmallIntegerField(
+            default=10,
+            help_text='Display order on choises')
+    name = models.CharField(
+            max_length=250,
+            help_text="Enter the Name of the Master Attribute")
+    description = models.TextField(
+            blank=True,
+            null=True,
+            max_length=1500,
+            help_text="Enter description for the Master Choice Set Option")
 
     class Meta:
-        ordering = ['master_attribute__name','display_order']
+        ordering = ['master_attribute__name', 'display_order']
 
     def get_absolute_url(self):
         """
@@ -308,27 +398,25 @@ class MasterEntity(BaseModel):
     Model representing a MasterEntity in MammalBase
     """
     reference = models.ForeignKey(
-        'MasterReference',
-        on_delete = models.CASCADE,
-        )
+            'MasterReference',
+            on_delete = models.CASCADE)
     entity = models.ForeignKey(
-        'EntityClass',
-        on_delete = models.CASCADE,
-        )
+            'EntityClass',
+            on_delete = models.CASCADE)
     source_entity = models.ManyToManyField(
-        'SourceEntity',
-        through='EntityRelation',
-        through_fields=('master_entity', 'source_entity')
-    )
-    name = models.CharField(max_length=250, help_text="Enter the Name of the Master Entity")
+            'SourceEntity',
+            through = 'EntityRelation',
+            through_fields = ('master_entity', 'source_entity') )
+    name = models.CharField(
+            max_length=250,
+            help_text="Enter the Name of the Master Entity")
     taxon = models.ForeignKey(
-        TdwgTaxon,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='master_entities',
-        help_text="The associated taxon (optional)"
-    )
+            TdwgTaxon,
+            on_delete = models.SET_NULL,
+            null = True,
+            blank = True,
+            related_name = 'master_entities',
+            help_text = "The associated taxon (optional)")
 
     class Meta:
         ordering = ['name']
@@ -378,13 +466,33 @@ class MasterReference(BaseModel):
         ('standard', 'standard'),
         ('standard-series', 'standard-series'),
     ]
-    type = models.CharField(max_length=25, choices=TYPE, default='other', help_text='Select the type of the Standard Reference', blank=True, null=True,)
-
-#    type = models.CharField(max_length=25, help_text="Enter the Type of the Standard Reference", blank=True, null=True,)
-#    doi = models.URLField(max_length=200, help_text="Enter a valid DOI URL for the Standard Reference", blank=True, null=True,)
-    doi = models.CharField(max_length=100, validators=[validate_doi], help_text="Enter the DOI number that begins with 10 followed by a period", blank=True, null=True,)
-    uri = models.URLField(max_length=200, help_text="Enter the Uniform Resource Identifier link", blank=True, null=True,)
-    first_author = models.CharField(max_length=50, help_text="Enter the name of the first author of the Standard Reference", blank=True, null=True,)
+    type = models.CharField(
+            max_length=25,
+            choices=TYPE,
+            default='other',
+            help_text='Select the type of the Standard Reference',
+            blank=True,
+            null=True)
+    doi = models.CharField(
+            max_length=100,
+            validators=[validate_doi],
+            help_text=(
+                    "Enter the DOI number that begins "
+                    "with 10 followed by a period"),
+            blank=True,
+            null=True,)
+    uri = models.URLField(
+            max_length=200,
+            help_text="Enter the Uniform Resource Identifier link",
+            blank=True,
+            null=True,)
+    first_author = models.CharField(
+            max_length=50,
+            help_text=(
+                    "Enter the name of the first author of "
+                    "the Standard Reference"),
+            blank=True,
+            null=True)
     year = models.IntegerField(validators=[MinValueValidator(1800), MaxValueValidator(2100)], blank=True, null=True,)
     title = models.CharField(max_length=400, help_text="Enter the Title of the Standard Reference", blank=True, null=True,)
     container_title = models.CharField(max_length=100, help_text="Enter the Container Title of the Standard Reference", blank=True, null=True,)
@@ -570,7 +678,7 @@ class SourceEntity(BaseModel):
         max_length=250,
         help_text="Enter the Name of the Source Entity"
         )
-    
+
     taxon = models.ForeignKey(
         TdwgTaxon,
         blank=True,
@@ -649,6 +757,7 @@ class SourceMeasurementValue(BaseModel):
     measurement_accuracy = models.TextField(blank=True, null=True, max_length=50, help_text="The description of the potential error associated with the measurementValue.")
     measured_by = models.TextField(blank=True, null=True, max_length=100, help_text="A list (concatenated and separated) of names of people, groups, or organizations who determined the value of the measurement. The recommended best practice is to separate the values with a vertical bar (' | ').")
     remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Source Measurement")
+    data_quality_score = models.SmallIntegerField(blank=True, null=True, default=0, help_text="Data quality score for the data")
     # unit is no longer in use - to be deleted
     cited_reference = models.CharField(
         blank=True,
@@ -659,6 +768,7 @@ class SourceMeasurementValue(BaseModel):
         null=True,
         blank=True,
         max_length=250, help_text='Measurement unit reported.')
+    
     def clean(self):
         # Don't allow wrong n values.
         if self.n_total != self.n_unknown + self.n_male + self.n_female:
@@ -686,6 +796,52 @@ class SourceMeasurementValue(BaseModel):
         String for representing the Model object (in Admin site etc.)
         """
         return '%s: %s ' % (self.source_attribute.name, str(self.n_total))
+
+    # Used to calculate the quality of the measurement data
+    def calculate_data_quality_score_for_measurement(self):
+        score = 0
+        #1 weight of taxon quality
+        taxon = self.source_entity.entity.name
+        if taxon == 'Species' or taxon == 'Subspecies':
+            score += 1
+
+        #2 weight of having a reported citation of the data
+        citation = self.cited_reference
+        if citation == 'Original study':
+            score += 2
+        elif citation != None:
+            score += 1
+
+        #3 weight of source quality in the diet
+        try:
+            source_type = self.source_entity.reference.master_reference.type
+        except:
+            score += 0
+        else:
+            if source_type == 'journal-article':
+                score += 3
+            elif source_type == 'book':
+                score += 2
+            elif source_type == 'data set':
+                score += 1
+
+        #4 weight of having a described method in the method
+        if self.source_attribute.method:
+            score += 1
+
+        #5 weight of having individual count
+        if self.n_total != 0:
+            score += 1
+
+        #6 weight of having minimum and maximum
+        if self.minimum != 0 and self.maximum != 0:
+            score += 1
+
+        #7 weight of having Standard Deviation
+        if self.std != 0:
+            score += 1
+
+        return score
 
 class SourceMethod(BaseModel):
     """
@@ -787,7 +943,7 @@ class EntityRelation(BaseModel):
     remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Entity Relation")
 
     class Meta:
-      unique_together = ('source_entity', 'master_entity','relation')
+        unique_together = ('source_entity', 'master_entity','relation')
 
 # What is this?
     def level_1(self):
@@ -848,7 +1004,7 @@ class ReferenceRelation(BaseModel):
         )
 
     class Meta:
-      unique_together = ('source_reference', 'master_reference',)
+        unique_together = ('source_reference', 'master_reference',)
 
     def get_absolute_url(self):
         """
@@ -894,7 +1050,7 @@ class UnitRelation(BaseModel):
     remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Unit Relation")
 
     class Meta:
-      unique_together = ('source_unit', 'master_unit',)
+        unique_together = ('source_unit', 'master_unit',)
 
     def get_absolute_url(self):
         """
@@ -990,7 +1146,8 @@ class DietSet(BaseModel):
         null=True,
         max_length=250,
         help_text="Enter the time when this study was performed.")
-
+    data_quality_score = models.SmallIntegerField(blank=True, null=True, default=0, help_text="Data quality score for the data")
+    
     class Meta:
         ordering = ['taxon__name', 'reference']
 #        unique_together = ('reference','taxon','location', 'gender', 'sample_size', 'cited_reference', 'time_period', 'method')
@@ -1007,6 +1164,45 @@ class DietSet(BaseModel):
         """
         return '%s - %s ' % (self.taxon, self.reference)
 
+    def calculate_data_quality_score(self):
+        score = 0
+
+        # 1. Taxon quality
+        entity = self.taxon.entity.name
+        if entity == 'Species' or entity == 'Subspecies':
+            score += 1
+
+        # 2. The weight of having a reported citation of the data in the diet
+        c_reference = self.cited_reference
+        if c_reference == 'Original study':
+            score += 2
+        elif c_reference:
+            score += 1
+
+        # 3. The weight of source quality in the diet
+        try:
+            master = self.reference.master_reference.type
+        except:
+            score += 0
+        else:
+            if master == 'journal-article':
+                score += 3
+            elif master == 'book':
+                score += 2
+            elif master == 'dataset':
+                score += 1
+
+        # 4. The weight of having a described method in the diet
+        method = self.method
+        if method:
+            score += 2
+
+        # 5. The weight of food item taxonomy
+        diet_set_items = DietSetItem.objects.filter(diet_set=self, food_item__tsn__rank_id__gt=100)
+        if diet_set_items.count():
+            score += (2 * diet_set_items.count()) // diet_set_items.count()
+
+        return score
 
 class DietSetItem(BaseModel):
     """

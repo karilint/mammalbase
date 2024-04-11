@@ -11,6 +11,8 @@ MammalBase is a database of recent mammals. The main focus of this database is t
 
 [Data Architecture](documentation/data-architecture.md)
 
+[Master Habitats Script](documentation/scripts/master_habitat_scripts.md)
+
 ## Testing
 [Testing Guide](documentation/testing.md)
 

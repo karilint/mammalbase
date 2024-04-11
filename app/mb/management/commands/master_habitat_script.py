@@ -1,7 +1,7 @@
 from io import StringIO
 import os
 import pandas as pd
-from mb.models.habitat_models import MasterHabitat
+from mb.models import MasterHabitat
 from imports.importers.base_importer import BaseImporter
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User

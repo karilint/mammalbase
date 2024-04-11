@@ -3,7 +3,7 @@ from .base_model import (
     ActiveManager,
     BaseModel)
 
-from .models import (
+from .unsorted import (
     AttributeRelation,
     ChoiceValue,
     ChoiceSetOptionRelation,
@@ -51,3 +51,6 @@ from .location_models import (
 from .occurrence_models import (
     Occurrence,
     Event)
+
+from .validators import (
+    validate_doi)

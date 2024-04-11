@@ -1,3 +1,8 @@
+""" Celery config 
+    https://docs.celeryq.dev/en/stable/userguide/configuration.html
+    https://docs.celeryq.dev/en/stable/django/first-steps-with-django.html
+"""
+
 import os
 
 from celery import Celery
@@ -16,7 +21,7 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 # Load task modules from all registered Django apps.
 app.autodiscover_tasks()
 
-
+# pylint: disable = missing-function-docstring
 @app.task(bind=True)
 def debug_task(self):
     print(f'Request: {self.request!r}')
