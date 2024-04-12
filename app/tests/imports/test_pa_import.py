@@ -29,7 +29,6 @@ from mb.models import (
     MasterEntity,
     SourceLocation)
 
-from mb.models.location_models import SourceLocation
 from itis.models import Kingdom, TaxonUnitTypes
 import tempfile
 import csv
