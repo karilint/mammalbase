@@ -1,16 +1,15 @@
-from celery import shared_task
-from django.core.files import File
-from datetime import datetime
+"""Celery tasks defined here
+"""
 import time
-from config.settings import SITE_DOMAIN
-from django.db.models import QuerySet
+from celery import shared_task
 from itis.models import TaxonomicUnits
-import itis.views as itis
-import sys
+import itis.tools as itis
 from mb.models import SourceMeasurementValue, DietSet
 
-
-class bcolors:
+# pylint: disable=R0903
+class BColors:
+    """Theme colors
+    """
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
     OKCYAN = '\033[96m'
@@ -23,11 +22,20 @@ class bcolors:
 
 @shared_task
 def hello_mammals():
-    print("Hello, fellow mammalians! Greetings from the Celery Beat department of the one and only Mammalbase Inc.")
+    """Prints greeting message to user
+    """
+    print(
+        "Hello, fellow mammalians! "
+        "Greetings from the Celery Beat "
+        "department of the one and only Mammalbase Inc."
+    )
 
 @shared_task
 def update_db_from_itis():
+    """Database update
+    """
     print("Starting automatic database update.")
+    # pylint: disable=E1101
     tsn_objects = TaxonomicUnits.objects.all()
     db_start_time = time.time()
     skipped_units = 0
@@ -35,21 +43,34 @@ def update_db_from_itis():
         action_start_time = time.time()
         result = itis.updateTSN(taxonomic_unit.tsn)
         timestamp = time.time()-action_start_time
-        estimated_time = round((len(tsn_objects)-iteration) * (time.time()-db_start_time)/(iteration),2)
+        estimated_time = round(
+            (len(tsn_objects)-iteration) * (time.time()-db_start_time)/(iteration),2)
         if result:
             print(f"{taxonomic_unit} has been updated! {round(timestamp,2)}")
         else:
             skipped_units+=1
-            print(f"{bcolors.WARNING}{taxonomic_unit} has NOT been updated! {round(timestamp,2)}{bcolors.ENDC}")
-        print( f"{round((float(iteration)/len(tsn_objects))*100,2)}%\tEstimated time left: {estimated_time} seconds", end='\r')
-    print(f"{len(tsn_objects) - skipped_units} out of {len(tsn_objects)} taxonomic units have been updated in the database. Spent time: {round(time.time()-db_start_time,2)}")
-        
+            print(
+                f"{BColors.WARNING}{taxonomic_unit} "
+                f"has NOT been updated! "
+                f"{round(timestamp,2)}{BColors.ENDC}"
+            )
+        print(
+            f"{round((float(iteration)/len(tsn_objects))*100,2)}%\t"
+            f"Estimated time left: {estimated_time} seconds", end='\r'
+        )
+    print(f"{len(tsn_objects) - skipped_units} "
+          f"out of {len(tsn_objects)} "
+          f"taxonomic units have been updated in the database. "
+          f"Spent time: {round(time.time()-db_start_time,2)}"
+    )
 
 @shared_task
 def update_dqs():
+    """Updates data quality scores
+    """
     source_measurement_value_object = SourceMeasurementValue.objects.all()
     diet_set_objects = DietSet.objects.all()
-    
+
     print("Starting automatic database update for data quality score.")
     i = 0
     for source_measurement in source_measurement_value_object:

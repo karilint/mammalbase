@@ -35,9 +35,11 @@ from .unsorted import (
     TimePeriod,
     DietSet,
     DietSetItem,
+    ViewMasterTraitValue)
+
+from .proximate_analysis import (
     ProximateAnalysis,
     ProximateAnalysisItem,
-    ViewMasterTraitValue,
     ViewProximateAnalysisTable)
 
 from .habitat_models import (
