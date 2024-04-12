@@ -718,9 +718,9 @@ class SourceChoiceSetOptionValue(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (
-            self.source_choiceset_option.source_attribute.name, self.source_choiceset_option.name
-        )
+        return (
+                f"{self.source_choiceset_option.source_attribute.name} - "
+                f"{self.source_choiceset_option.name} ")
 
 class SourceEntity(BaseModel):
     """
@@ -764,7 +764,7 @@ class SourceEntity(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class SourceMeasurementValue(BaseModel):
     """
