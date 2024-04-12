@@ -35,7 +35,7 @@ class BaseImporter:
     def importRow(self, row : pd.Series):
         pass
 
-    def make_harvard_citation_journalarticle(title, d, authors, year, container_title, volume, issue, page):
+    def make_harvard_citation_journalarticle(self, title, d, authors, year, container_title, volume, issue, page):
         citation = ""
         for a in authors:
             if authors.index(a) == len(authors) - 1:

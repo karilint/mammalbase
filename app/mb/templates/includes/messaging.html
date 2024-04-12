@@ -14,11 +14,12 @@
             {% elif message_group.grouper == 'error' %}Error!
             {% endif %}
         </h3>
-		{% if message_group.grouper in ['success', 'info', 'warning', 'error'] %}
-        {% for message in message_group.list %}
+	{% if message_group.grouper == 'success' or message_group.grouper == 'info' or message_group.grouper == 'warning' or message_group.grouper == 'error' %}
+		{% for message in message_group.list %}
             <p>{{ message }}</p>
         {% endfor %}
     </div>
+	{% endif %}
 {% endfor %}
 
 {% for message in messages %}	
