@@ -1228,11 +1228,10 @@ class UnitRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0}: {1} ({2})'.format(
-            self.source_unit.name,
-            self.master_unit.name,
-            self.master_unit.quantity_type
-        )
+        return (
+                f"{self.source_unit.name}: "
+                f"{self.master_unit.name} "
+                f"({self.master_unit.quantity_type})")
 
 class TimePeriod(BaseModel):
     """
