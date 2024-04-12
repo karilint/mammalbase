@@ -12,8 +12,7 @@ from mb.models import ModelName
 
 from django.db import models
 from django.db.models import Q
-from django.shortcuts import render, get_object_or_404, redirect
-from django.utils import timezone
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
@@ -49,10 +48,10 @@ class AttributeRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0} ({1}) {2}'.format(
-                self.source_attribute.name,
-                self.master_attribute.name,
-                self.master_attribute.reference)
+        return (
+                f"{self.source_attribute.name} "
+                f"({self.master_attribute.name}) "
+                f"{self.master_attribute.reference}")
 
 
 class ChoiceValue(BaseModel):
@@ -86,7 +85,7 @@ class ChoiceValue(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.choice_set, self.caption)
+        return f"{self.choice_set} - {self.caption} "
 
 class ChoiceSetOptionRelation(BaseModel):
     source_choiceset_option = models.ForeignKey(
@@ -118,9 +117,9 @@ class ChoiceSetOptionRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0} - {1}'.format(
-                self.source_choiceset_option.name,
-                self.master_choiceset_option.name)
+        return (
+                f"{self.source_choiceset_option.name} - "
+                f"{self.master_choiceset_option.name}")
 
 
 class EntityClass(BaseModel):
@@ -150,7 +149,7 @@ class EntityClass(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 
 class RelationClass(BaseModel):
@@ -175,7 +174,7 @@ class RelationClass(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 
 class FoodItem(BaseModel):
@@ -265,7 +264,7 @@ class MasterAttributeGroup(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class AttributeGroupRelation(BaseModel):
     group = models.ForeignKey('MasterAttributeGroup', on_delete=models.CASCADE)
@@ -1258,7 +1257,7 @@ class TimePeriod(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class DietSet(BaseModel):
     """
@@ -1272,7 +1271,7 @@ class DietSet(BaseModel):
     taxon = models.ForeignKey(
         'SourceEntity',
         on_delete=models.CASCADE,
-        limit_choices_to = ( 
+        limit_choices_to = (
                 Q(entity__name='Genus') |
                 Q(entity__name='Species') |
                 Q(entity__name='Subspecies')),
@@ -1292,7 +1291,9 @@ class DietSet(BaseModel):
         null = True,
         limit_choices_to={'choice_set': 'Gender'},
         )
-    sample_size = models.PositiveSmallIntegerField(default=0, help_text='Sample Size')
+    sample_size = models.PositiveSmallIntegerField(
+            default=0,
+            help_text='Sample Size')
     cited_reference = models.CharField(
         blank=True,
         null=True,
@@ -1328,7 +1329,15 @@ class DietSet(BaseModel):
 
     class Meta:
         ordering = ['taxon__name', 'reference']
-#        unique_together = ('reference','taxon','location', 'gender', 'sample_size', 'cited_reference', 'time_period', 'method')
+#        unique_together = (
+#                'reference',
+#                'taxon',
+#                'location',
+#                'gender',
+#                'sample_size',
+#                'cited_reference',
+#                'time_period',
+#                'method')
 
     def get_absolute_url(self):
         """
@@ -1340,7 +1349,7 @@ class DietSet(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.taxon, self.reference)
+        return f"{self.taxon} - {self.reference} "
 
     def calculate_data_quality_score(self):
         score = 0
@@ -1376,7 +1385,9 @@ class DietSet(BaseModel):
             score += 2
 
         # 5. The weight of food item taxonomy
-        diet_set_items = DietSetItem.objects.filter(diet_set=self, food_item__tsn__rank_id__gt=100)
+        diet_set_items = DietSetItem.objects.filter(
+                diet_set=self,
+                food_item__tsn__rank_id__gt=100)
         if diet_set_items.count():
             score += (2 * diet_set_items.count()) // diet_set_items.count()
 
@@ -1400,7 +1411,7 @@ class DietSetItem(BaseModel):
         default=100_000,
         help_text='List order on Diet Set'
     )
-    percentage = models.DecimalField(default=0, decimal_places=3, max_digits=9,)
+    percentage = models.DecimalField(default=0, decimal_places=3, max_digits=9)
 
     class Meta:
         unique_together = ('diet_set', 'food_item')
@@ -1471,11 +1482,12 @@ class ViewMasterTraitValue(models.Model):
         """
         Returns the url to access a particular Master Attribute instance.
         """
-        return reverse('master-attribute-detail', args=[str(self.master_attribute_id)])
+        return reverse(
+                'master-attribute-detail',
+                args=[str(self.master_attribute_id)])
 
     def __str__(self):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.master_attribute_name, self.trait_selected)
-
+        return f"{self.master_attribute_name} - {self.trait_selected} "
