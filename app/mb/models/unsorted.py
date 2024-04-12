@@ -916,7 +916,7 @@ class SourceMeasurementValue(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s: %s ' % (self.source_attribute.name, str(self.n_total))
+        return f"{self.source_attribute.name}: {str(self.n_total)} "
 
     # Used to calculate the quality of the measurement data
     def calculate_data_quality_score_for_measurement(self):
@@ -930,7 +930,7 @@ class SourceMeasurementValue(BaseModel):
         citation = self.cited_reference
         if citation == 'Original study':
             score += 2
-        elif citation != None:
+        elif citation is not None:
             score += 1
 
         #3 weight of source quality in the diet
@@ -992,7 +992,7 @@ class SourceMethod(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class SourceStatistic(BaseModel):
     """
@@ -1022,7 +1022,7 @@ class SourceStatistic(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class SourceUnit(BaseModel):
     """
@@ -1057,7 +1057,7 @@ class SourceUnit(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class EntityRelation(BaseModel):
     source_entity = models.ForeignKey('SourceEntity', on_delete=models.CASCADE)
@@ -1099,11 +1099,10 @@ class EntityRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0} ({1}) {2}'.format(
-            self.source_entity.name,
-            self.master_entity.name,
-            self.master_entity.reference
-        )
+        return (
+                f"{self.source_entity.name} "
+                f"({self.master_entity.name}) "
+                f"{self.master_entity.reference}")
 
 class SourceReference(BaseModel):
     """
@@ -1150,7 +1149,7 @@ class SourceReference(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.citation)
+        return f"{self.citation}"
 
 class ReferenceRelation(BaseModel):
     source_reference = models.ForeignKey(SourceReference, on_delete=models.CASCADE)
