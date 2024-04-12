@@ -356,9 +356,11 @@ class MasterAttribute(BaseModel):
         String for representing the Model object (in Admin site etc.)
         """
         if self.unit:
-            return '%s: %s (%s)' % (self.entity.name, self.name, self.unit.print_name)
-        else:
-            return '%s: %s' % (self.entity.name, self.name)
+            return (
+                    f"{self.entity.name}: "
+                    f"{self.name} "
+                    f"({self.unit.print_name})")
+        return f"{self.entity.name}: {self.name}"
 
 class MasterChoiceSetOption(BaseModel):
     """
@@ -399,7 +401,7 @@ class MasterChoiceSetOption(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.master_attribute.name, self.name)
+        return f"{self.master_attribute.name} - {self.name} "
 
 
 class MasterEntity(BaseModel):
@@ -445,7 +447,7 @@ class MasterEntity(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class MasterReference(BaseModel):
     """
@@ -563,7 +565,7 @@ class MasterReference(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.citation)
+        return f"{self.citation}"
 
 class MasterUnit(BaseModel):
     """
@@ -597,7 +599,10 @@ class MasterUnit(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s: %s (%s)' % (self.quantity_type, self.name, self.print_name)
+        return (
+                f"{self.quantity_type}: "
+                f"{self.name} "
+                f"({self.print_name})")
 
 class SourceAttribute(BaseModel):
     """
@@ -647,7 +652,7 @@ class SourceAttribute(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.entity.name, self.name)
+        return f"{self.entity.name} - {self.name} "
 
 
 class SourceChoiceSetOption(BaseModel):
@@ -685,7 +690,7 @@ class SourceChoiceSetOption(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.source_attribute.name, self.name)
+        return f"{self.source_attribute.name} - {self.name} "
 
 class SourceChoiceSetOptionValue(BaseModel):
     """
@@ -892,9 +897,9 @@ class SourceMeasurementValue(BaseModel):
         if self.mean < self.minimum or self.mean > self.maximum :
             raise ValidationError(gettext_lazy(
                     'Measurement error: mean outside min or max.'))
-        if self.n_total == 0 or self.n_total == 1:
+        if self.n_total in (0, 1):
             self.std = None
-        if self.std != None and self.std > self.maximum - self.minimum:
+        if self.std is not None and self.std > self.maximum - self.minimum:
             raise ValidationError(gettext_lazy(
                     'Measurement error: std is too large.'))
 
@@ -918,7 +923,7 @@ class SourceMeasurementValue(BaseModel):
         score = 0
         #1 weight of taxon quality
         taxon = self.source_entity.entity.name
-        if taxon == 'Species' or taxon == 'Subspecies':
+        if taxon in ('Species', 'Subspecies'):
             score += 1
 
         #2 weight of having a reported citation of the data
@@ -1168,7 +1173,9 @@ class ReferenceRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0} ({1})'.format(self.source_reference.citation,self.master_reference.citation)
+        return (
+                f"{self.source_reference.citation} "
+                f"({self.master_reference.citation})")
 
 class UnitConversion(BaseModel):
     """
@@ -1194,11 +1201,10 @@ class UnitConversion(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return 'One %s equals %s %ss ' % (
-            self.from_unit.name,
-            str(float(self.coefficient)),
-            self.to_unit.name
-        )
+        return (
+            f"One {self.from_unit.name} "
+            f"equals {str(float(self.coefficient))} "
+            f"{self.to_unit.name}s ")
 
 class UnitRelation(BaseModel):
     source_unit = models.ForeignKey('SourceUnit', on_delete=models.CASCADE)
@@ -1356,7 +1362,7 @@ class DietSet(BaseModel):
 
         # 1. Taxon quality
         entity = self.taxon.entity.name
-        if entity == 'Species' or entity == 'Subspecies':
+        if entity in ('Species', 'Subspecies'):
             score += 1
 
         # 2. The weight of having a reported citation of the data in the diet
@@ -1369,7 +1375,7 @@ class DietSet(BaseModel):
         # 3. The weight of source quality in the diet
         try:
             master = self.reference.master_reference.type
-        except:
+        except: # FIX: except what? ValueError?
             score += 0
         else:
             if master == 'journal-article':
