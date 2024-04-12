@@ -159,8 +159,8 @@ def index_master_location_list(request):
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
 
-    for obj in page_obj:
-        print(str(obj.reference))
+    #for obj in page_obj:
+        #print(str(obj.reference))
     
     return render(
         request,
