@@ -16,10 +16,13 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.urls import reverse
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy
 from itis.models import TaxonomicUnits
 from tdwg.models import Taxon as TdwgTaxon
 from .base_model import BaseModel
 from .validators import validate_doi
+from .proximate_analysis import ViewProximateAnalysisTable
 
 
 class AttributeRelation(BaseModel):
@@ -882,15 +885,19 @@ class SourceMeasurementValue(BaseModel):
     def clean(self):
         # Don't allow wrong n values.
         if self.n_total != self.n_unknown + self.n_male + self.n_female:
-            raise ValidationError(_('n total needs to be sum of all n fields.'))
+            raise ValidationError(gettext_lazy(
+                    'n total needs to be sum of all n fields.'))
         if self.minimum > self.maximum:
-            raise ValidationError(_('Measurement error: min > max.'))
+            raise ValidationError(gettext_lazy(
+                    'Measurement error: min > max.'))
         if self.mean < self.minimum or self.mean > self.maximum :
-            raise ValidationError(_('Measurement error: mean outside min or max.'))
+            raise ValidationError(gettext_lazy(
+                    'Measurement error: mean outside min or max.'))
         if self.n_total == 0 or self.n_total == 1:
             self.std = None
         if self.std != None and self.std > self.maximum - self.minimum:
-            raise ValidationError(_('Measurement error: std is too large.'))
+            raise ValidationError(gettext_lazy(
+                    'Measurement error: std is too large.'))
 
     class Meta:
         ordering = ['source_attribute__name', '-n_total']
@@ -1074,9 +1081,9 @@ class EntityRelation(BaseModel):
     class Meta:
         unique_together = ('source_entity', 'master_entity','relation')
 
-# What is this?
-    def level_1(self):
-        return self.name_one.qualifier.level
+    # FIX: What is this? Is this needed? Gives error. Comminting out now.
+    #def level_1(self):
+    #    return self.name_one.qualifier.level
 
     def get_absolute_url(self):
         """
@@ -1265,10 +1272,10 @@ class DietSet(BaseModel):
     taxon = models.ForeignKey(
         'SourceEntity',
         on_delete=models.CASCADE,
-        limit_choices_to=Q(
-            entity__name='Genus') |
-            Q(entity__name='Species') |
-            Q(entity__name='Subspecies'),
+        limit_choices_to = ( 
+                Q(entity__name='Genus') |
+                Q(entity__name='Species') |
+                Q(entity__name='Subspecies')),
         related_name='taxon_%(class)s',
         )
     location = models.ForeignKey(
@@ -1401,9 +1408,11 @@ class DietSetItem(BaseModel):
 
     def clean(self):
         if self.percentage < 0:
-            raise ValidationError(_('Only positive numbers are accepted.'))
+            raise ValidationError(gettext_lazy(
+                    'Only positive numbers are accepted.'))
 #        if self.percentage > 100:
-#            raise ValidationError(_('Only numbers between 0 and 100 are accepted.'))
+#            raise ValidationError(gettext_lazy(
+#                    'Only numbers between 0 and 100 are accepted.'))
 
     def get_absolute_url(self):
         """
@@ -1415,7 +1424,7 @@ class DietSetItem(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.diet_set, self.food_item)
+        return f"{self.diet_set} - {self.food_item}"
 
 # https://resources.rescale.com/using-database-views-in-django-orm/
 class ViewMasterTraitValue(models.Model):
