@@ -13,15 +13,18 @@ from mb.models import (
     TimePeriod,
     SourceMethod,
     ChoiceValue,
-    
     SourceLocation)
-from imports.tools import make_harvard_citation_journalarticle, messages
 from datetime import timedelta
 from config.settings import ITIS_CACHE
 from requests_cache import CachedSession
-import itis.views as itis
+import itis.tools as itis
 import json
 import logging
+from itis.models import TaxonomicUnits
+from itis.views import *
+from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
+from decimal import Decimal
+from django.contrib import messages
 
 class BaseImporter:
     """
@@ -31,6 +34,17 @@ class BaseImporter:
     @transaction.atomic
     def importRow(self, row : pd.Series):
         pass
+
+    def make_harvard_citation_journalarticle(title, d, authors, year, container_title, volume, issue, page):
+        citation = ""
+        for a in authors:
+            if authors.index(a) == len(authors) - 1:
+                citation += str(a)
+            else:
+                citation += str(a) + ", "
+        
+        citation += " " + str(year) + ". " + str(title) + ". " + str(container_title) + ". " + str(volume) + "(" + str(issue) + "), pp." + str(page) + ". Available at: " + str(d) + "." 
+        return citation
     
     def get_author(self, social_id: str):
         """
@@ -71,7 +85,7 @@ class BaseImporter:
 
             # Create citation based on type
             if ref_type == 'journal-article':
-                citation = make_harvard_citation_journalarticle(title, doi, authors, year, container_title, volume, issue, page)
+                citation = self.make_harvard_citation_journalarticle(title, doi, authors, year, container_title, volume, issue, page)
             else:
                 authors_str = ", ".join(authors)
                 citation = f"{authors_str} {year}. {title}. Available at: {doi}."
@@ -83,6 +97,7 @@ class BaseImporter:
                 page=page, citation=citation, created_by=user_author
             )
             mr.save()
+            print(f"MasterReference created: {mr}")
             return mr
 
         except Exception as e:
@@ -277,3 +292,17 @@ class BaseImporter:
             return None
         choicevalue = ChoiceValue.objects.filter(pk=gender)
         return choicevalue[0]
+    
+    def possible_nan_to_zero(self, size):
+        if size != size or size == 'nan':
+            return 0
+        return size
+
+    def possible_nan_to_none(self, possible):
+        if possible != possible or possible == 'nan':
+            return None
+        return possible
+
+    
+
+

@@ -21,4 +21,7 @@ jobs:
       continue-on-error: true
       working-directory: ./app
       run: |
-        python3 -m pylint */
+        python3 -m pylint \
+            --load-plugins pylint_django \
+            --django-settings-module=config.settings \
+            */

@@ -1,4 +1,13 @@
+""" mb.models.habitat_models - 
+
+This module should not be imported anywhere else than __init__.py!
+
+To import models elsewhere use subpackage:
+from mb.models import ModelName
+"""
+
 from django.db import models
+from django.urls import reverse
 from .base_model import BaseModel
 
 class SourceHabitat(BaseModel):
@@ -21,7 +30,7 @@ class SourceHabitat(BaseModel):
         null=True,
         help_text="Enter the Percentage of the Source Habitat"
         )
-    
+
 class MasterHabitat(BaseModel):
     """
     The MasterHabitat model represents a master habitat in the database.
@@ -51,9 +60,9 @@ class MasterHabitat(BaseModel):
         null=True,
         help_text="Enter the group or category of the Master Habitat"
         )
-    
+
     class Meta:
-      ordering = ['name']
+        ordering = ['name']
 
     def get_absolute_url(self):
         """
@@ -65,15 +74,16 @@ class MasterHabitat(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
-    
+        return f"{self.name}"
 
 class HabitatRelation(BaseModel):
-    source_habitat = models.ForeignKey('SourceHabitat', on_delete=models.CASCADE)
-    master_habitat = models.ForeignKey('MasterHabitat', on_delete=models.CASCADE)
+    source_habitat = models.ForeignKey(
+            'SourceHabitat', on_delete=models.CASCADE)
+    master_habitat = models.ForeignKey(
+            'MasterHabitat', on_delete=models.CASCADE)
 
     class Meta:
-      unique_together = ('source_habitat', 'master_habitat',)
+        unique_together = ('source_habitat', 'master_habitat',)
 
     def get_absolute_url(self):
         """
@@ -85,4 +95,9 @@ class HabitatRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0} ({1}) {2}'.format(self.source_habitat.habitat_type,self.master_habitat.name,self.master_habitat.reference)
+        # pylint: disable = consider-using-f-string
+        # This is arguably more clear presentation than f-string
+        return '{0} ({1}) {2}'.format(
+                self.source_habitat.habitat_type,
+                self.master_habitat.name,
+                self.master_habitat.reference)

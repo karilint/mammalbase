@@ -76,11 +76,6 @@ INSTALLED_APPS = [
     "django_celery_results",
     "celery_progress",
 
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.orcid',
-
     # https://django-simple-history.readthedocs.io/
     'simple_history',
 
@@ -91,6 +86,11 @@ INSTALLED_APPS = [
     'imports',
     'itis',
     'exports',
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.orcid',
 
 #    'django_extensions', #for Jupyter and Scripts
 #    'crispy_forms',
@@ -179,6 +179,11 @@ DATABASES = {
         },
     }
 }
+# sq lite for testing
+if 'test' in environ.get('DJANGO_SETTINGS_MODULE', ''):
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3'
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
