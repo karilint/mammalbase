@@ -330,7 +330,7 @@ class Validation():
 
         if field_value == 'nan' or field_value == "":
             return errs
-        if len(choicevalue) == 0 or field_value != choicevalue[0].caption:
+        if len(choicevalue) == 0 or field_value.capitalize() != choicevalue[0].caption:
             errs.append(self.return_field_message(model, 'invalid_value').format(value=field_value, field=field_name))
         return errs
 
