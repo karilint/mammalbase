@@ -248,7 +248,7 @@ CELERY_BEAT_SCHEDULE = {
         "options": {
         }
     },
-    
+
     "update_dqs_in_db" : {
         "task": "mb.tasks.update_dqs",
         "schedule": timedelta(days = 30),

@@ -1,3 +1,10 @@
+""" mb.views.unsorted - views that don't belong to any other file
+
+This file should be divided smaller rational integrities and deleded.
+
+Please, do not anything here anymore!
+"""
+
 import datetime, json
 from decimal import * # TODO: fix star imports!
 from django.core.exceptions import PermissionDenied
@@ -24,8 +31,10 @@ from pandas import DataFrame as PandasDataFrame
 
 from itis.utils import generate_standard_values_pa
 from itis.models import SynonymLinks
-from itis.tools import getTaxonomicRankNameFromTSN, GetAcceptedNamesfromTSN, GetCommonNamesfromTSN
-
+from itis.tools import (
+    getTaxonomicRankNameFromTSN,
+    GetAcceptedNamesfromTSN,
+    GetCommonNamesfromTSN)
 from config.settings import ITIS_CACHE
 from itis.utils import (
     create_return_data,
@@ -1397,8 +1406,6 @@ def source_entity_measurement_new(request, source_reference, source_entity):
 class source_entity_delete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
-    def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceEntity
     success_url = reverse_lazy('source_entity-list')
 
@@ -1908,6 +1915,8 @@ def tsn_search(request):
                 item = item[1]
                 return_data[item["tsn"]] = item
         return JsonResponse(return_data, safe=False, status=200 )
+
+    return None
 
 def view_proximate_analysis_table_list(request):
     f = ViewProximateAnalysisTableFilter(request.GET, queryset=ViewProximateAnalysisTable.objects.all().select_related())

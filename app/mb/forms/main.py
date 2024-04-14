@@ -180,12 +180,11 @@ class SourceChoiceSetOptionValueForm(forms.ModelForm):
         sac = kwargs.pop('sac', None)
 #        sac = kwargs.get('sac')
         print(sac)
-        super(SourceChoiceSetOptionValueForm, self).__init__( *args, **kwargs)
+        super().__init__( *args, **kwargs)
 # https://stackoverflow.com/questions/39785703/how-to-pass-variable-as-argument-in-meta-class-in-django-form
         source_choiceset_option = self.fields['source_choiceset_option']
         source_choiceset_option.queryset = SourceChoiceSetOption.objects.filter(
-            source_attribute__id=sac
-        )
+                source_attribute__id=sac)
 
     class Meta:
         model = SourceChoiceSetOptionValue

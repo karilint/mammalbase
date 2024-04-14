@@ -1,7 +1,7 @@
 from datetime import timezone, datetime, timedelta
-from django.db.models.functions import Now, Concat, TruncYear
+from django.db.models.functions import Concat
 from django.db.models import (
-    Value, Subquery, OuterRef, CharField, Case, When, Exists, Q)
+    Value, Subquery, OuterRef, CharField, Case, When, Q)
 from allauth.socialaccount.models import SocialAccount
 
 from mb.models import SourceChoiceSetOptionValue

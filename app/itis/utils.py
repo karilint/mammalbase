@@ -6,7 +6,7 @@ from .tools import (
     hierarchyToString,
     SynonymLinks)
 
-def generate_standard_values_pa(self, items):
+def generate_standard_values_pa(items):
     standard_items = items
     remarks_text = "CP+EE+CF+NFE+ASH = 100"
     # Sum of reported values excluding dry matter and moisture
