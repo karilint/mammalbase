@@ -1,8 +1,3 @@
-import tempfile
-import csv
-import os
-import json
-# import requests_mock
 from unittest import skip
 import pandas as pd
 from django.urls import reverse
@@ -31,7 +26,7 @@ from mb.models import (
     SourceLocation)
 
 from itis.models import Kingdom, TaxonUnitTypes
-import imports.views as views
+from imports import views
 
 class ProximateAnalysisImporterTest(TestCase):
     def setUp(self):

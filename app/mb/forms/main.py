@@ -197,12 +197,6 @@ class SourceChoiceSetOptionValueForm(forms.ModelForm):
             },)
          }
 
-class SourceEntityForm(forms.ModelForm):
-    class Meta:
-        model = SourceEntity
-        fields = ('name', 'entity', 'reference',)
-        widgets = {'reference': ReferenceWidget, }
-
 class MSW3TaxaWidget(ModelSelect2Widget):
     queryset = MasterEntity.objects.filter(reference_id=4)
     search_fields = ['name__icontains',]
