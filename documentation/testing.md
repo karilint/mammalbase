@@ -61,9 +61,11 @@ docker exec mammalbase-web-1 bash -c "coverage html"
 ### Pylint
 
 Pylint can be run in the containers by using the following command:
-```bash
-docker exec mammalbase-web-1 bash -c "pylint app"
+```sh
+docker exec <container> scripts/pylint.sh 
 ```
-```app``` can be replaced with the path to a specific directory or file to target.
+Thist test whole source tree. By appending paths to the end you can test
+only chosen directories.
 
-If you want to run pylint outside the container you will need to install pylint on your own system.
+If you want to run pylint outside the container you will need to install
+pylint on your own system.
