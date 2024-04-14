@@ -47,7 +47,7 @@ class DietSetForm(forms.ModelForm):
 
     # https://stackoverflow.com/questions/28901089/use-field-value-in-limit-choices-to-in-django
     def __init__(self, *args, **kwargs):
-        super(DietSetForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if self.instance.reference:
             self.fields['time_period'].queryset = TimePeriod.objects.filter(
                                                 reference=self.instance.reference)

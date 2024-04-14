@@ -197,7 +197,7 @@ class attribute_relation_delete(UserPassesTestMixin, DeleteView):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = AttributeRelation
     def get_success_url(self):
-        attribute_relation = super(attribute_relation_delete, self).get_object()
+        attribute_relation = super().get_object()
         sa_id = attribute_relation.source_attribute.id
         return reverse_lazy(
             'source_attribute-detail',
@@ -246,7 +246,7 @@ class choiceset_option_relation_delete(UserPassesTestMixin, DeleteView):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = ChoiceSetOptionRelation
     def get_success_url(self):
-        choiceset_option_relation = super(choiceset_option_relation_delete, self).get_object()
+        choiceset_option_relation = super().get_object()
         sco_id = choiceset_option_relation.source_choiceset_option.id
         return reverse_lazy(
             'source_choiceset_option-detail',
@@ -326,7 +326,7 @@ class diet_set_delete(UserPassesTestMixin, DeleteView):
     def delete(self, *args, **kwargs):
         self.object = self.get_object()
         self.object.dietsetitem_set.all().delete()
-        return super(diet_set_delete, self).delete(*args, **kwargs)
+        return super().delete(*args, **kwargs)
 
 @login_required
 @permission_required('mb.edit_diet_set', raise_exception=True)
@@ -433,7 +433,7 @@ class diet_set_item_delete(UserPassesTestMixin, DeleteView):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = DietSetItem
     def get_success_url(self):
-        diet_set_item = super(diet_set_item_delete, self).get_object()
+        diet_set_item = super().get_object()
         ds_id = diet_set_item.diet_set.id
         return reverse_lazy(
             'diet_set-detail',
@@ -502,7 +502,7 @@ class entity_relation_delete(UserPassesTestMixin, DeleteView):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = EntityRelation
     def get_success_url(self):
-        entity_relation = super(entity_relation_delete, self).get_object()
+        entity_relation = super().get_object()
         se_id = entity_relation.source_entity.id
         return reverse_lazy(
             'source_entity-detail',
@@ -616,7 +616,7 @@ class master_attribute_delete(UserPassesTestMixin, DeleteView):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = MasterAttribute
     def get_success_url(self):
-        master_attribute = super(master_attribute_delete, self).get_object()
+        master_attribute = super().get_object()
         mr_id = master_attribute.reference.id
         return reverse_lazy(
             'master_reference-detail',
@@ -688,7 +688,7 @@ class master_choiceset_option_delete(UserPassesTestMixin, DeleteView):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = MasterChoiceSetOption
     def get_success_url(self):
-        obj = super(master_choiceset_option_delete, self).get_object()
+        obj = super().get_object()
         ma_id = obj.master_attribute.id
         return reverse_lazy(
             'master_attribute-detail',
@@ -1223,7 +1223,7 @@ class source_attribute_delete(UserPassesTestMixin, DeleteView):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceAttribute
     def get_success_url(self):
-        source_attribute = super(source_attribute_delete, self).get_object()
+        source_attribute = super().get_object()
         sr_id = source_attribute.reference.id
         return reverse_lazy(
             'source_reference-detail',
@@ -1291,7 +1291,7 @@ class source_choiceset_option_delete(UserPassesTestMixin, DeleteView):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceChoiceSetOption
     def get_success_url(self):
-        obj = super(source_choiceset_option_delete, self).get_object()
+        obj = super().get_object()
         sa_id = obj.source_attribute.id
         return reverse_lazy(
             'source_attribute-detail',
@@ -1325,7 +1325,7 @@ class source_choiceset_option_value_delete(UserPassesTestMixin, DeleteView):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceChoiceSetOptionValue
     def get_success_url(self):
-        obj = super(source_choiceset_option_value_delete, self).get_object()
+        obj = super().get_object()
         source_entity_id = obj.source_entity.id
         return reverse_lazy(
             'source_entity-detail',
@@ -1505,7 +1505,7 @@ class source_measurement_value__delete(UserPassesTestMixin, DeleteView):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceMeasurementValue
     def get_success_url(self):
-        obj = super(source_measurement_value__delete, self).get_object()
+        obj = super().get_object()
         source_entity_id = obj.source_entity.id
         return reverse_lazy(
             'source_entity-detail',
