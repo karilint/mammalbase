@@ -15,4 +15,6 @@ jobs:
     - name: Run pylint
       continue-on-error: true
       working-directory: ./app
-      run: scripts/pylint.sh
+      run: |
+        pip install --requirement requirements.txt
+        scripts/pylint.sh
