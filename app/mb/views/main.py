@@ -150,6 +150,7 @@ def index_proximate_analysis(request):
     return render(request, 'mb/index_proximate_analysis.html', context={'num_PA_item':num_PA_item},)
 
 def index_master_location_list(request):
+
     def get_master_habitats(ml : MasterLocation):
         """ Get MasterHabitats by MasterLocation """
         mr = ml.reference
@@ -167,8 +168,6 @@ def index_master_location_list(request):
 
         return habitats
     
-    mls = MasterLocation.objects.is_active().select_related()
-
     master_locations = MasterLocation.objects.filter()
 
     mls_with_habitat = []
@@ -178,11 +177,13 @@ def index_master_location_list(request):
         ml_view_obj.name = x.name
         ml_view_obj.reference = x.reference
         ml_view_obj.master_habitat = get_master_habitats(x)
+        ml_view_obj.save()
         mls_with_habitat.append(ml_view_obj)
     
     filter = MasterLocationFilter(request.GET, queryset=MasterLocationViewObj.objects.is_active().select_related())
 
-    paginator = Paginator(mls_with_habitat, 10)
+    
+    paginator = Paginator(filter.qs, 10)
 
     page_number = request.GET.get('page')
     try:
@@ -191,11 +192,13 @@ def index_master_location_list(request):
         page_obj = paginator.page(1)
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
+
+    print("rendering ")
     
     return render(
         request,
         'mb/master_location_list.html',
-        {'page_obj': mls_with_habitat, 'filter': filter,}
+        {'page_obj': page_obj, 'filter': filter,}
     )
 
 def master_location_detail(request, pk):
