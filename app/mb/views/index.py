@@ -6,8 +6,30 @@ from mb.views import index_news
 """
 from django.shortcuts import render
 
+def index(request):
+    """ This is the landing page on url / and /mb/ """
+    return render(request, 'mb/index.html',)
+
+def about_history(request):
+    """ About, history in url /about_history """
+    return render(request, 'mb/history.html',)
+
+def index_about(request):
+    """ At location /index_about """
+    return render(request, 'mb/index_about.html',)
+
+def privacy_policy(request):
+    """ Renders at /privacy_policy """
+    return render(request, 'mb/privacy_policy.html',)
+
+def index_news(request):
+    """ Main part of /news url """
+    return render(request, 'mb/index_news.html',)
+
+
 # Error Pages
-# https://blog.khophi.co/get-django-custom-error-views-right-first-time/
+# pylint: disable = missing-function-docstring
+# Function names are now on quite selfexplanatory
 def server_error(request):
     return render(request, 'errors/500.html')
 
@@ -19,19 +41,3 @@ def permission_denied(request):
 
 def bad_request(request):
     return render(request, 'errors/400.html')
-
-def about_history(request):
-    return render(request, 'mb/history.html',)
-
-def index_about(request):
-    return render(request, 'mb/index_about.html',)
-
-def privacy_policy(request):
-    return render(request, 'mb/privacy_policy.html',)
-
-#@ratelimit(key='ip', rate='2/m')
-def index(request):
-    return render(request, 'mb/index.html',)
-
-def index_news(request):
-    return render(request, 'mb/index_news.html',)

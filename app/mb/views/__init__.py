@@ -1,3 +1,4 @@
+""" mb.views - This subpackage contains views to be imported from urls """
 from .index import (
     server_error,
     not_found,
