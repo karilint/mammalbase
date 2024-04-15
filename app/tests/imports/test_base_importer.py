@@ -1,11 +1,12 @@
-from django.test import TestCase
-from mb.models import EntityRelation
 import requests_mock
-from imports.importers.base_importer import BaseImporter
 from django.contrib.auth.models import User
-from .utils.mock_api import generate_mock_api
+from django.test import Client, TestCase
 from allauth.socialaccount.models import SocialAccount
-from django.test import Client
+
+from mb.models import EntityRelation
+from imports.importers.base_importer import BaseImporter
+
+from .utils.mock_api import generate_mock_api
 
 class BaseImporterTest(TestCase):
     @requests_mock.Mocker()

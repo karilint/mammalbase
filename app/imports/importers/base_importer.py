@@ -20,8 +20,6 @@ from requests_cache import CachedSession
 import itis.tools as itis
 import json
 import logging
-from itis.models import TaxonomicUnits
-from itis.views import *
 from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from decimal import Decimal
 from django.contrib import messages

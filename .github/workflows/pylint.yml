@@ -12,16 +12,9 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v3
 
-    - name: Install Dependencies
-      working-directory: ./app
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
     - name: Run pylint
       continue-on-error: true
       working-directory: ./app
       run: |
-        python3 -m pylint \
-            --load-plugins pylint_django \
-            --django-settings-module=config.settings \
-            */
+        pip install --requirement requirements.txt
+        scripts/pylint.sh

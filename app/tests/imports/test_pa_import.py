@@ -1,43 +1,9 @@
 from django.test import TestCase, Client
-from django.contrib.auth.models import User
-from django.urls import reverse
 from django.contrib.messages import get_messages
-import tempfile
-import csv
-import os
+from django.contrib.auth.models import User
 from allauth.socialaccount.models import SocialAccount
-import imports.views as views
-import pandas as pd
-from django.test import TestCase
-from django.test.client import RequestFactory
-from django.contrib.messages.storage.fallback import FallbackStorage
-from django.contrib.auth.models import User, Permission
-from django.contrib.contenttypes.models import ContentType
-from mb.models import (
-    EntityClass,
-    MasterReference,
-    SourceAttribute,
-    SourceEntity,
-    SourceMethod,
-    SourceReference,
-    SourceStatistic,
-    TimePeriod,
-    DietSet,
-    FoodItem,
-    DietSetItem,
-    ChoiceValue,
-    MasterEntity,
-    SourceLocation)
 
-from itis.models import Kingdom, TaxonUnitTypes
-import tempfile
-import csv
-import os
-import pandas as pd
-import json
-# import requests_mock
-from unittest import skip
-
+from mb.models import SourceReference
 
 class ProximateAnalysisImporterTest(TestCase):
     def setUp(self):
