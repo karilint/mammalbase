@@ -9,7 +9,7 @@ from matchtools.views import (
 )
 
 urlpatterns = [
-    path('tm/', trait_match_list, name="info-trait-match"),
+    path('tm/', trait_match_list, name="trait_match_list"),
     path('match_operation/', match_operation_endpoint, name='match_operation_endpoint'),
     path('source_attribute_modify/', source_attribute_edit, name='source_attribute_edit'),
     path('get_match/', get_match_endpoint, name='get_match_endpoint'),
