@@ -1,3 +1,14 @@
+from .index import (
+    server_error,
+    not_found,
+    permission_denied,
+    bad_request,
+    about_history,
+    index_about,
+    privacy_policy,
+    index,
+    index_news)
+ 
 from .unsorted import (
     attribute_relation_delete,
     choiceset_option_relation_delete,
@@ -19,17 +30,8 @@ from .unsorted import (
     source_reference_delete,
     time_period_delete,
     tsn_delete,
-    server_error,
-    not_found,
-    permission_denied,
-    bad_request,
-    about_history,
-    index_about,
-    privacy_policy,
-    index,
     index_diet,
     index_mammals,
-    index_news,
     index_proximate_analysis,
     save_new_ordering,
     user_is_data_admin_or_contributor,
