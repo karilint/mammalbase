@@ -97,7 +97,8 @@ from mb.models import (
     Occurrence,
     ChoiceValue,
     Event,
-    SourceHabitat)
+    SourceHabitat,
+    MasterLocationViewObj)
 from mb.models.location_models import MasterLocation, LocationRelation, SourceLocation
 
 
@@ -148,17 +149,12 @@ def index_proximate_analysis(request):
     return render(request, 'mb/index_proximate_analysis.html', context={'num_PA_item':num_PA_item},)
 
 def index_master_location_list(request):
-
     """ TODO: Hae ensin MasterReferencet. Sitten hae niihin liitty"""
 
-    class MasterLocationViewObj:
-        reference = models.CharField(max_length=500)
-        name = models.CharField(max_length=500) 
-        master_habitat = models.CharField(max_length=500)
-
     def get_master_habitat(ml : MasterLocation):
-        mr = MasterReference(id=ml.id)
-        print(str(mr))
+        mr = MasterReference.objects.get(id=ml.id)
+        print("master reference id: " + str(mr.id))
+
         return "Habitat"
     
     mls = MasterLocation.objects.is_active().select_related()
@@ -171,14 +167,12 @@ def index_master_location_list(request):
         ml_view_obj = MasterLocationViewObj()
         ml_view_obj.name = x.name
         ml_view_obj.reference = x.reference
-        ml_view_obj.master_habitat = "habitat"
-        mls_with_habitat.append(mls_with_habitat)
+        ml_view_obj.master_habitat = get_master_habitat(x)
+        mls_with_habitat.append(ml_view_obj)
+    
+    filter = MasterLocationFilter(request.GET, queryset=MasterLocationViewObj.objects.is_active().select_related())
 
-    
-    #filter = MasterLocationFilter(request.GET, queryset=mls)
-    filter = MasterLocationFilter(request.GET, mls_with_habitat)
-    
-    paginator = Paginator(filter.qs, 10)
+    paginator = Paginator(mls_with_habitat, 10)
 
     page_number = request.GET.get('page')
     try:
@@ -187,11 +181,12 @@ def index_master_location_list(request):
         page_obj = paginator.page(1)
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
-
+    
+    print("tyyppi: " + str(type(mls_with_habitat)))
     return render(
         request,
         'mb/master_location_list.html',
-        {'page_obj': page_obj, 'filter': filter,}
+        {'page_obj': mls_with_habitat, 'filter': filter,}
     )
 
 def master_location_detail(request, pk):

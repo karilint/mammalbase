@@ -227,3 +227,8 @@ class LocationRelation(BaseModel):
         String for representing the Model object
         """
         return '{0} ({1}) {2}'.format(self.source_location.name,self.master_location.name,self.master_location.reference)
+    
+class MasterLocationViewObj(BaseModel):
+    reference = models.CharField(max_length=500)
+    name = models.CharField(max_length=500) 
+    master_habitat = models.CharField(max_length=500)
