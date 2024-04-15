@@ -17,8 +17,6 @@ from mb.models import (
     ProximateAnalysis)
 from django.db import transaction
 from django.contrib.auth.models import User
-from mb.models.occurrence_models import Occurrence, Event
-from mb.models.habitat_models import SourceHabitat
 
 class ProximateAnalysisImporter(BaseImporter):
     
