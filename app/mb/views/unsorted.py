@@ -1,8 +1,8 @@
 """ mb.views.unsorted - views that don't belong to any other file
 
-This file should be divided smaller rational integrities and deleded.
+This file should be divided into smaller rational integrities and deleted.
 
-Please, do not anything here anymore!
+Please, do not do anything here anymore!
 """
 
 import datetime
