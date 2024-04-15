@@ -98,7 +98,8 @@ from mb.models import (
     ChoiceValue,
     Event,
     SourceHabitat,
-    MasterLocationViewObj)
+    MasterLocationViewObj,
+    MasterHabitat)
 from mb.models.location_models import MasterLocation, LocationRelation, SourceLocation
 
 
@@ -149,13 +150,22 @@ def index_proximate_analysis(request):
     return render(request, 'mb/index_proximate_analysis.html', context={'num_PA_item':num_PA_item},)
 
 def index_master_location_list(request):
-    """ TODO: Hae ensin MasterReferencet. Sitten hae niihin liitty"""
+    def get_master_habitats(ml : MasterLocation):
+        """ Get MasterHabitats by MasterLocation """
+        mr = ml.reference
 
-    def get_master_habitat(ml : MasterLocation):
-        mr = MasterReference.objects.get(id=ml.id)
-        print("master reference id: " + str(mr.id))
+        try:
+            master_habitats = MasterHabitat.objects.filter(reference=mr)
+        except:
+            return "nan"
+        
+        habitats = []
 
-        return "Habitat"
+        for master_habitat in master_habitats:
+            print(master_habitat.name)
+            habitats.append(master_habitat.name)
+
+        return habitats
     
     mls = MasterLocation.objects.is_active().select_related()
 
@@ -167,7 +177,7 @@ def index_master_location_list(request):
         ml_view_obj = MasterLocationViewObj()
         ml_view_obj.name = x.name
         ml_view_obj.reference = x.reference
-        ml_view_obj.master_habitat = get_master_habitat(x)
+        ml_view_obj.master_habitat = get_master_habitats(x)
         mls_with_habitat.append(ml_view_obj)
     
     filter = MasterLocationFilter(request.GET, queryset=MasterLocationViewObj.objects.is_active().select_related())
@@ -182,7 +192,6 @@ def index_master_location_list(request):
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
     
-    print("tyyppi: " + str(type(mls_with_habitat)))
     return render(
         request,
         'mb/master_location_list.html',

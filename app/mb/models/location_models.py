@@ -231,4 +231,4 @@ class LocationRelation(BaseModel):
 class MasterLocationViewObj(BaseModel):
     reference = models.CharField(max_length=500)
     name = models.CharField(max_length=500) 
-    master_habitat = models.CharField(max_length=500)
+    master_habitat = []

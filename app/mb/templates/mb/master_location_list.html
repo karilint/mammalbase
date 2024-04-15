@@ -24,6 +24,7 @@
         <tr>
             <th>Name</th>
             <th>Reference</th>
+            <th>Master Habitats</th>
         </tr>
         </thead>
         <tbody>
@@ -31,7 +32,11 @@
         <tr>
             <td><a href="/ml_detail/{{ x.id }}">{{ x.name }}</a></td>
             <td>{{ x.reference }}</td>
-            <td>{{ x.master_habitat }}</td>
+            <td>
+              {% for habitat_name in x.master_habitat %}
+                {{ habitat_name }}<br>
+              {% endfor %}
+            </td>
         </tr>
         {% endfor %}
     </table>
