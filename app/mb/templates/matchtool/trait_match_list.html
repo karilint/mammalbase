@@ -55,21 +55,17 @@
         </td>
         <td>
           <select name="master_attribute" class="w3-select">
-            {% for master_attribute in master_attributes %} {% if
-            x.matched_master %} {% if x.matched_master.id == master_attribute.id
-            %}
-            <option value="{{ master_attribute.id }}" selected>
-              {{ master_attribute.name }}
-            </option>
-            {% else %}
-            <option value="{{ master_attribute.id }}">
-              {{ master_attribute.name }}
-            </option>
-            {% endif %} {% else %}
-            <option value="{{ master_attribute.id }}">
-              {{ master_attribute.name }}
-            </option>
-            {% endif %} {% endfor %}
+            {% for master_attribute in master_attributes %}
+              {% if x.matched_master %}
+                {% if x.matched_master.id == master_attribute.id %}
+                  <option value="{{ master_attribute.id }}" selected>{{ master_attribute.name }}</option>
+                {% else %}
+                  <option value="{{ master_attribute.id }}">{{ master_attribute.name }}</option>
+                {% endif %}
+              {% else %}
+                <option value="{{ master_attribute.id }}">{{ master_attribute.name }}</option>
+              {% endif %}
+            {% endfor %}
           </select>
         </td>
         <td>{{ x.reference}}</td>
