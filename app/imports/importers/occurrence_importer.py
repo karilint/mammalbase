@@ -66,7 +66,7 @@ class OccurrencesImporter(BaseImporter):
                 choice_set="Lifestage", caption=life_stage.capitalize()
             )
 
-        created = Occurrence.objects.get_or_create(
+        obj, created = Occurrence.objects.get_or_create(
             source_reference=reference,
             event=new_event,
             source_location=new_source_location,

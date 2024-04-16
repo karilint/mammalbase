@@ -25,7 +25,7 @@ class ProximateAnalysisImporter(BaseImporter):
         source_location = self.get_or_create_source_location(
             getattr(row, "verbatimLocality"), source_reference, author)
 
-        created = ProximateAnalysis.objects.get_or_create(
+        obj, created = ProximateAnalysis.objects.get_or_create(
             method=source_method,
             reference=source_reference,
             location=source_location,
