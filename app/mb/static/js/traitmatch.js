@@ -113,7 +113,7 @@ $(document).ready(function () {
     var csrftoken = getCookie('csrftoken');
 
     $.ajax({
-      url: newMatchEndpoint,
+      url: newMatchEndpointUrl,
       method: 'POST',
       data: {
         source_attribute_name: sourceAttributeName,
