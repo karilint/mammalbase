@@ -98,22 +98,6 @@ def match_operation_endpoint(request):
         return JsonResponse({"success": False, "error": "Invalid request method."})
     
 @login_required
-def source_attribute_edit(request):
-    """Handles AJAX POST request when editing a source attribute"""
-    if request.method == "POST":
-        source_attribute_id = request.POST.get("source_attribute_id")
-        new_name = request.POST.get("new_name")
-        original_name = request.POST.get("original_name")
-        response_data = {}
-        response_data['source_attribute_id'] = source_attribute_id
-        response_data['new_name'] = new_name
-        response_data['original_name'] = original_name
-        return JsonResponse(response_data)
-    else:
-        messages.error(request, "Invalid request method.")
-        return JsonResponse({"success": False, "error": "Invalid request method."})
-    
-@login_required
 def get_match_endpoint(request):
     if request.method == "POST":
         source_attribute_name = request.POST.get("source_attribute_name")

@@ -38,7 +38,17 @@ $(document).ready(function() {
     function handleEditButtonClick(event) {
       var sourceAttributeId = $(this).attr("id").split("_")[1];
       var $editableSpan = $(this).closest("tr").find("td.source-attribute-name .editable");
-      activateEditableField($editableSpan);
+      var $input = $editableSpan.find("input.edit-input");
+
+      if ($input.length) {
+        var originalValue = $editableSpan.text();
+        var newValue = $input.val();
+
+        getMatch(newValue, sourceAttributeId);
+        $input.closest("td").find(".editable").text(originalValue);
+      } else {
+        activateEditableField($editableSpan);
+      }
     }
 
     function activateEditableField($editableSpan) {
@@ -52,31 +62,9 @@ $(document).ready(function() {
       var newValue = $input.val();
       var sourceAttributeId = $input.closest("td").find(".editable").data("source-attribute-id");
       var originalValue = $input.closest("td").find(".editable").data("original-value");
-
-      if (newValue.trim() === "") {
-        showMessage("error", "Source Trait cannot be empty.");
-        return;
-      }
-      
-      var csrftoken = getCookie('csrftoken');
-
-      $.ajax({
-        url: sourceAttributeEditUrl,
-        method: "POST",
-        data: {
-          source_attribute_id: sourceAttributeId,
-          new_name: newValue,
-          original_name: originalValue,
-          csrfmiddlewaretoken: csrftoken
-        },
-        success: function(data) {
-          $input.closest("td").find(".editable").text(originalValue);
-          getMatch(newValue, sourceAttributeId);
-        },
-        error: function(xhr, status, error) {
-          showMessage("error", "An error occurred while editing.");
-        }
-      });
+  
+      getMatch(newValue, sourceAttributeId);
+      $input.closest("td").find(".editable").text(originalValue);
     }
 
     function handleEditableClick() {
