@@ -6,7 +6,7 @@ from mb.models import (
 class ProximateAnalysisImporter(BaseImporter):
 
     @transaction.atomic
-    def import_row(self, row):
+    def importRow(self, row):
         """Put data of row to database.
 
         Args:

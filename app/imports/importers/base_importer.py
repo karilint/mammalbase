@@ -26,7 +26,7 @@ class BaseImporter:
     """
 
     @transaction.atomic
-    def import_row(self, row: pd.Series):
+    def importRow(self, row: pd.Series):
         pass
 
     def make_harvard_citation_journalarticle(

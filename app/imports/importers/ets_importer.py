@@ -16,7 +16,7 @@ from .base_importer import BaseImporter
 class EtsImporter(BaseImporter):
 
     @transaction.atomic
-    def import_row(self, row):
+    def importRow(self, row):
         headers = list(row.columns.values)
 
         # if verbatimTraitUnit == 'nan' or verbatimTraitUnit != verbatimTraitUnit or
