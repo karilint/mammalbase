@@ -29,7 +29,6 @@ window.onload = function() {
 $(document).ready(function() {
     // Event listeners
     $("button[id^='editButton_']").click(handleEditButtonClick);
-    $("table").on("blur", "td.source-attribute-name input.edit-input", handleEditInputBlur);
     $("table").on("click", "td.source-attribute-name .editable", handleEditableClick);
     $("button[id^='matchButton_']").click(handleMatchButtonClick);
     $("table").on("keypress", "td.source-attribute-name input.edit-input", handleEnterKeyPress);
@@ -39,13 +38,14 @@ $(document).ready(function() {
       var sourceAttributeId = $(this).attr("id").split("_")[1];
       var $editableSpan = $(this).closest("tr").find("td.source-attribute-name .editable");
       var $input = $editableSpan.find("input.edit-input");
+      var originalValue = $input.closest("td").find(".editable").data("original-value");
 
       if ($input.length) {
-        var originalValue = $editableSpan.text();
         var newValue = $input.val();
-
+        
         getMatch(newValue, sourceAttributeId);
-        $input.closest("td").find(".editable").text(originalValue);
+        $input.closest("td").find(".editable").text(originalValue); 
+
       } else {
         activateEditableField($editableSpan);
       }
@@ -54,8 +54,19 @@ $(document).ready(function() {
     function activateEditableField($editableSpan) {
       var currentValue = $editableSpan.text();
       $editableSpan.html("<input type='text' class='edit-input' value='" + currentValue + "'>");
-      $editableSpan.find("input").focus();
+      var $input = $editableSpan.find("input.edit-input");
+      $input.focus();
+
+      $input.on("blur", function() {
+        var $input = $(this);
+        setTimeout(function() {
+          if (!$input.is(":focus")) { 
+            handleEditInputBlur.call($input);
+          }
+        },200);
+      });
     }
+    
 
     function handleEditInputBlur() {
       var $input = $(this);
