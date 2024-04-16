@@ -4,12 +4,9 @@
 
 {% block title %}
 <title>MammalBase - Match Tool</title>
-{% endblock %}
-
-{% block content %}
-{% load custom_tags %}
+{% endblock %} {% block content %} {% load custom_tags %}
 <!--Article header -->
-<header style="display:none">
+<header style="display: none">
   <h1>MammalBase - Trait Match Tool</h1>
 </header>
 <!--End of article header -->
@@ -18,65 +15,80 @@
     <h2>Trait Match Tool</h2>
   </header>
 
-    <div id="message-container"></div>
+  <div id="message-container"></div>
 
-    {% include 'includes/find.html' %}
-    {% if page_obj %}
-      <br>
-      <table class="mb-list w3-table-all w3-small w3-responsive">
-        <thead>
-          <tr>
-            <th style="width: 30%;">Source Trait</th>
-            <th style="width: 5%;"></th>
-            <th style="width: 30%;">Suggested Standard Trait</th>
-            <th style="width: 30%;">Reference</th>
-            <th style="width: 5%;"></th>
-          </tr>
-        </thead>
-        <tbody>
-            {% for x in page_obj %}
-            <tr>
-              <td class="mb-public-internal source-attribute-name">
-                <span class="editable" data-source-attribute-id="{{ x.pk }}" data-original-value="{{ x.name }}">{{ x.name }}</span>
-                <a title="Press for Details" href="{% url 'source_attribute-detail' pk=x.pk %}">
-                    <span class="fa fa-link w3-small"></span>
-                </a>   
-              </td>
-              <td>
-                <button id="editButton_{{ x.pk }}" title="Modify the source trait name" type="button" 
-                  class="w3-button w3-medium w3-round w3-padding-small w3-teal">
-                  &nbsp;<i class="fa fa-pencil-square-o"></i>
-                </button>
-              </td>
-              <td>
-                <select name="master_attribute" class="w3-select">
-                  {% for master_attribute in master_attributes %}
-                    {% if x.matched_master %}
-                      {% if x.matched_master.id == master_attribute.id %}
-                        <option value="{{ master_attribute.id }}" selected>{{ master_attribute.name }}</option>
-                      {% else %}
-                        <option value="{{ master_attribute.id }}">{{ master_attribute.name }}</option>
-                      {% endif %}
-                    {% else %}
-                      <option value="{{ master_attribute.id }}">{{ master_attribute.name }}</option>
-                    {% endif %}
-                  {% endfor %}
-                </select>
-              </td> 
-              <td>{{ x.reference}}</td>
-              <td>
-                <button id="matchButton_{{ x.pk }}" title="Press to match the source trait" type="button"
-                  class="w3-button w3-medium w3-round w3-padding-small w3-teal">
-                  Match&nbsp;<i class="fa fa-angle-right"></i>
-                </button>
-              </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <p>No matches found.</p>
-    {% endif %}
+  {% include 'includes/find.html' %} {% if page_obj %}
+  <br />
+  <table class="mb-list w3-table-all w3-small w3-responsive">
+    <thead>
+      <tr>
+        <th style="width: 30%">Source Trait</th>
+        <th style="width: 5%"></th>
+        <th style="width: 30%">Suggested Standard Trait</th>
+        <th style="width: 30%">Reference</th>
+        <th style="width: 5%"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for x in page_obj %}
+      <tr>
+        <td class="mb-public-internal source-attribute-name">
+          <span
+            class="editable"
+            data-source-attribute-id="{{ x.pk }}"
+            data-original-value="{{ x.name }}"
+            >{{ x.name }}</span>
+          <a
+            title="Press for Details"
+            href="{% url 'source_attribute-detail' pk=x.pk %}">
+            <span class="fa fa-link w3-small"></span>
+          </a>
+        </td>
+        <td>
+          <button
+            id="editButton_{{ x.pk }}"
+            title="Modify the source trait name"
+            type="button"
+            class="w3-button w3-medium w3-round w3-padding-small w3-teal">
+            &nbsp;<i class="fa fa-pencil-square-o"></i>
+          </button>
+        </td>
+        <td>
+          <select name="master_attribute" class="w3-select">
+            {% for master_attribute in master_attributes %} {% if
+            x.matched_master %} {% if x.matched_master.id == master_attribute.id
+            %}
+            <option value="{{ master_attribute.id }}" selected>
+              {{ master_attribute.name }}
+            </option>
+            {% else %}
+            <option value="{{ master_attribute.id }}">
+              {{ master_attribute.name }}
+            </option>
+            {% endif %} {% else %}
+            <option value="{{ master_attribute.id }}">
+              {{ master_attribute.name }}
+            </option>
+            {% endif %} {% endfor %}
+          </select>
+        </td>
+        <td>{{ x.reference}}</td>
+        <td>
+          <button
+            id="matchButton_{{ x.pk }}"
+            title="Press to match the source trait"
+            type="button"
+            class="w3-button w3-medium w3-round w3-padding-small w3-teal">
+            Match&nbsp;<i class="fa fa-angle-right"></i>
+          </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No matches found.</p>
+  {% endif %}
 </section>
 {% endblock %}
 {% block info %}

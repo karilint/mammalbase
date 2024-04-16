@@ -7,9 +7,9 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.exceptions import PermissionDenied
 from fuzzywuzzy import fuzz, process
 
-from .filters import SourceAttributeFilter
 from mb.views import user_is_data_admin_or_contributor
 from mb.models import SourceAttribute, MasterAttribute, AttributeRelation
+from .filters import SourceAttributeFilter
 
 
 @login_required
@@ -17,9 +17,9 @@ def trait_match_list(request):
     """List all source attributes and their best match from master attributes."""
     if not user_is_data_admin_or_contributor(request.user):
         raise PermissionDenied
-    
+
     reference_citation = request.GET.get('reference_citation')
-    
+
     f = SourceAttributeFilter(
         request.GET,
         queryset=SourceAttribute.objects.annotate(
@@ -29,7 +29,7 @@ def trait_match_list(request):
             (Q(num_master_attributes=1) & Q(master_attribute__is_active=False))
         ),
     )
-    
+
     if reference_citation:
         f.filters['reference__citation'].extra['initial'] = reference_citation
 
@@ -82,31 +82,32 @@ def get_match(source_name):
 def match_operation_endpoint(request):
     """Handles the AJAX POST request sent when a user tries to make a match."""
     if request.method == "POST":
-        source_attribute_id = request.POST.get("source_attribute_id")
-        selected_master_attribute_id = request.POST.get("selected_master_attribute_id")
+        source_attribute_id = request.POST.get('source_attribute_id')
+        selected_master_attribute_id = request.POST.get(
+            'selected_master_attribute_id')
 
-        selected_master_attribute = get_object_or_404(MasterAttribute, pk=selected_master_attribute_id)
-        source_attribute = get_object_or_404(SourceAttribute, pk=source_attribute_id)
-        attribute_relation = AttributeRelation.objects.create(
+        selected_master_attribute = get_object_or_404(
+            MasterAttribute, pk=selected_master_attribute_id)
+        source_attribute = get_object_or_404(
+            SourceAttribute, pk=source_attribute_id)
+        AttributeRelation.objects.create(
             source_attribute=source_attribute, master_attribute=selected_master_attribute
         )
-        
+
         messages.success(request, "Match successful!")
         return JsonResponse({"success": True})
-    else:
-        messages.error(request, "Invalid request method.")
-        return JsonResponse({"success": False, "error": "Invalid request method."})
-    
+    messages.error(request, "Invalid request method.")
+    return JsonResponse({"success": False, "error": "Invalid request method."})
+
+
 @login_required
 def new_match_endpoint(request):
     """Handles the AJAX POST request sent when a user tries to make a new match."""
     if request.method == "POST":
         source_attribute_name = request.POST.get("source_attribute_name")
-        match = get_match(source_attribute_name) 
+        match = get_match(source_attribute_name)
         if match:
             matched_master_attribute = MasterAttribute.objects.get(name=match)
             return JsonResponse({"match": {"id": matched_master_attribute.id}})
-        else:
-            return JsonResponse({"match": None})
-    else:
-        return JsonResponse({"error": "Invalid request method."})
+        return JsonResponse({"match": None})
+    return JsonResponse({"error": "Invalid request method."})

@@ -1,6 +1,7 @@
 import django_filters
 from mb.models import SourceAttribute, MasterAttribute
 
+
 class SourceAttributeFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(
         lookup_expr='icontains',
@@ -17,8 +18,8 @@ class SourceAttributeFilter(django_filters.FilterSet):
         queryset=MasterAttribute.objects.filter(name='- Checked, Unlinked -'),
         label='Standard Trait',
         empty_label='None')
-    
-    def filter_reference(self, queryset, name, value):
+
+    def filter_reference(self, queryset, value):
         if value:
             return queryset.filter(reference__citation__icontains=value)
         return queryset
