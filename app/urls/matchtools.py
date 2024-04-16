@@ -5,11 +5,11 @@
 from django.urls import path
 
 from matchtools.views import (
-    trait_match_list, match_operation_endpoint, get_match_endpoint
+    trait_match_list, match_operation_endpoint, new_match_endpoint
 )
 
 urlpatterns = [
     path('tm/', trait_match_list, name="trait_match_list"),
     path('match_operation/', match_operation_endpoint, name='match_operation_endpoint'),
-    path('get_match/', get_match_endpoint, name='get_match_endpoint'),
+    path('new_match/', new_match_endpoint, name='new_match_endpoint'),
 ]

@@ -91,29 +91,33 @@ $(document).ready(function() {
     }
 
     function getMatch(sourceAttributeName, sourceAttributeId) {
-        var csrftoken = getCookie('csrftoken');
+      var csrftoken = getCookie('csrftoken');
 
-        $.ajax({
-          url: getMatchEndpointUrl,
-          method: "POST",
-          data: {
-            source_attribute_name: sourceAttributeName,
-            csrfmiddlewaretoken: csrftoken
-          },
-          success: function(data) {
-            if (data.match) {
-              var selectedMasterAttributeId = data.match.id;
-              var $dropdown = $("span.editable[data-source-attribute-id='" + sourceAttributeId + "']").closest("tr").find("select[name='master_attribute']");
-              $dropdown.val(selectedMasterAttributeId);
-            } else {
-              console.log("No match found for current name");
-            }
-            },
-          error: function(xhr, status, error) {
-            console.error("Error fetching match:", error);
-        }
+      $.ajax({
+        url: newMatchEndpointUrl,
+        method: 'POST',
+        data: {
+          source_attribute_name: sourceAttributeName,
+          csrfmiddlewaretoken: csrftoken,
+        },
+        success: function (data) {
+          if (data.match) {
+            var selectedMasterAttributeId = data.match.id;
+            var $dropdown = $(
+              "span.editable[data-source-attribute-id='" +
+                sourceAttributeId +
+                "']"
+            ).closest('tr').find("select[name='master_attribute']");
+            $dropdown.val(selectedMasterAttributeId);
+          } else {
+            console.log('No match found for current name');
+          }
+        },
+        error: function (xhr, status, error) {
+          console.error('Error fetching match:', error);
+        },
       });
-   }
+    }
 
     function handleMatchButtonClick() {
       var sourceAttributeId = $(this).attr("id").split("_")[1];

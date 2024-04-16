@@ -98,7 +98,8 @@ def match_operation_endpoint(request):
         return JsonResponse({"success": False, "error": "Invalid request method."})
     
 @login_required
-def get_match_endpoint(request):
+def new_match_endpoint(request):
+    """Handles the AJAX POST request sent when a user tries to make a new match."""
     if request.method == "POST":
         source_attribute_name = request.POST.get("source_attribute_name")
         match = get_match(source_attribute_name) 
