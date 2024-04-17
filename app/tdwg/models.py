@@ -55,7 +55,8 @@ class Taxon(models.Model):
     infrageneric_epithet = models.CharField(max_length=50,
                                             null=True,
                                             blank=True,
-                                            help_text="The infrageneric part of a binomial name at ranks above species but below genus.")
+                                            help_text="The infrageneric part of a binomial "
+                                             "name at ranks above species but below genus.")
     genus = models.CharField(max_length=50,
                              null=True,
                              blank=True,
@@ -63,7 +64,8 @@ class Taxon(models.Model):
     generic_name = models.CharField(max_length=50,
                                     null=True,
                                     blank=True,
-                                    help_text="The genus part of the scientificName without authorship.")
+                                    help_text="The genus part of the "
+                                     "scientific Name without authorship.")
     subgenus = models.CharField(max_length=50,
                                 null=True,
                                 blank=True,
@@ -79,7 +81,8 @@ class Taxon(models.Model):
     cultivar_epithet = models.CharField(max_length=50,
                                         null=True,
                                         blank=True,
-                                        help_text="Part of the name of a cultivar, cultivar group or grex that follows the scientific name.")
+                                        help_text="Part of the name of a cultivar, "
+                                        "cultivar group or grex that follows the scientific name.")
     taxon_rank = models.CharField(max_length=50,
                                   null=True,
                                   blank=True,
@@ -114,7 +117,8 @@ class Taxon(models.Model):
     accepted_name_usage = models.CharField(max_length=50,
                                            null=True,
                                            blank=True,
-                                           help_text="The name (scientificName or higherTaxon) currently accepted as representing the same concept as the name.")
+                                           help_text="The name (scientificName or higherTaxon) "
+                                           "currently accepted as representing the same concept as the name.")
     original_name_usage = models.CharField(max_length=50,
                                            null=True,
                                            blank=True,
@@ -126,21 +130,28 @@ class Taxon(models.Model):
     name_according_to = models.CharField(max_length=50,
                                          null=True,
                                          blank=True,
-                                         help_text="A reference to the source in which the taxon name is considered authoritative or correct.")
+                                         help_text="A reference to the source in which the taxon "
+                                         "name is considered authoritative or correct.")
     nomenclatural_status = models.CharField(max_length=50,
                                             null=True,
                                             blank=True,
-                                            help_text="The status related to the original publication of the name and its conformance to the relevant rules of nomenclature. It is based essentially on an algorithm according to the business rules of the code. It requires no taxonomic opinion.")
+                                            help_text="The status related to the original publication of the name "
+                                            "and its conformance to the relevant rules of nomenclature. "
+                                            "It is based essentially on an algorithm according to the "
+                                            "business rules of the code. It requires no taxonomic opinion.")
     name_published_in_year = models.IntegerField(null=True,
                                                  blank=True,
                                                  help_text="The year in which the scientificName was published.")
     higher_classification = models.TextField(null=True,
                                              blank=True,
-                                             help_text="A list (concatenated and separated) of taxa names terminating at the rank immediately higher than the taxon referenced in the taxon record.")
+                                             help_text="A list (concatenated and separated) of taxa "
+                                             "names terminating at the rank immediately higher than "
+                                             "the taxon referenced in the taxon record.")
     nameAccordingToID = models.CharField(max_length=255,
                                          null=True,
                                          blank=True,
-                                         help_text="An identifier for the reference that supports the taxon name in the nameAccordingTo field.")    # Add other fields specific to your use case
+                                         help_text="An identifier for the reference that "
+                                         "supports the taxon name in the nameAccordingTo field.")    # Add other fields specific to your use case
     scientific_name_id = models.CharField(max_length=255,
                                           null=True,
                                           blank=True,
@@ -156,7 +167,8 @@ class Taxon(models.Model):
     name_published_in_id = models.CharField(max_length=255,
                                             null=True,
                                             blank=True,
-                                            help_text="An identifier for the publication in which the scientific name was established.")
+                                            help_text="An identifier for the publication "
+                                            "in which the scientific name was established.")
     taxon_concept_id = models.CharField(max_length=255,
                                         null=True,
                                         blank=True,
