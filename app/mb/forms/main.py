@@ -208,7 +208,7 @@ class SourceEntityRelationForm(forms.ModelForm):
     class Meta:
         model = EntityRelation
         fields = ('master_entity', 'relation_status', 'remarks', )
-        widgets = {'master_entity': MSW3TaxaWidget, 'relation_status': MatchStatusWidget, }
+        widgets = {'master_entity': MSW3TaxaWidget}
 
 class SourceEntityForm(forms.ModelForm):
     class Meta:
