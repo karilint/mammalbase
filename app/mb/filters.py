@@ -21,7 +21,7 @@ from .models import (
     ViewMasterTraitValue,
     ViewProximateAnalysisTable,
     SourceLocation,
-    MasterLocationViewObj)
+    MasterLocation)
 from itis.models import TaxonomicUnits
 
 class DietSetFilter(django_filters.FilterSet):
@@ -157,11 +157,10 @@ class SourceLocationFilter(django_filters.FilterSet):
 class MasterLocationFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains', label='Name contains')
     reference__citation = django_filters.CharFilter(lookup_expr='icontains', label='Reference contains')
-    master_habitat = django_filters.CharFilter(lookup_expr='icontains', label='Habitat contains')
 
     class Meta:
-        model = MasterLocationViewObj
-        fields = ['name', 'reference__citation', 'master_habitat',]
+        model = MasterLocation
+        fields = ['name', 'reference__citation',]
 
 
 

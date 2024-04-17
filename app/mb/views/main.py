@@ -15,6 +15,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.http import JsonResponse
 from django.db import models
+from django.db.models import Q
 
 import requests
 from requests_cache import CachedSession
@@ -98,7 +99,6 @@ from mb.models import (
     ChoiceValue,
     Event,
     SourceHabitat,
-    MasterLocationViewObj,
     MasterHabitat)
 from mb.models.location_models import MasterLocation, LocationRelation, SourceLocation
 
@@ -150,9 +150,9 @@ def index_proximate_analysis(request):
     return render(request, 'mb/index_proximate_analysis.html', context={'num_PA_item':num_PA_item},)
 
 def index_master_location_list(request):
-
+    """
     def get_master_habitats(ml : MasterLocation):
-        """ Get MasterHabitats by MasterLocation """
+        # Get MasterHabitats by MasterLocation
         mr = ml.reference
 
         try:
@@ -179,9 +179,34 @@ def index_master_location_list(request):
         ml_view_obj.master_habitat = get_master_habitats(x)
         ml_view_obj.save()
         mls_with_habitat.append(ml_view_obj)
-    
-    filter = MasterLocationFilter(request.GET, queryset=MasterLocationViewObj.objects.is_active().select_related())
+	"""
 
+    queryset1 = MasterLocation.objects.is_active().select_related()
+    queryset2 = MasterReference.objects.is_active().select_related()
+
+    q1_list = list(queryset1)
+    q2_list = list(queryset2)
+
+    print(type(queryset1))
+    print(type(queryset2))
+
+    combined_list = q1_list + q2_list
+
+    primary_keys = [instance.pk for instance in combined_list]
+
+    # Get the model class of the instances (assuming they are of the same model)
+    model_class = combined_list[0].__class__
+
+    # Use in_bulk() to fetch the instances back as a dictionary {pk: instance}
+    instances_dict = model_class.objects.in_bulk(primary_keys)
+
+    # Convert the dictionary values back to a list to get the queryset
+    combined_queryset = list(instances_dict.values())
+
+    print(type(combined_queryset))
+
+    
+    filter = MasterLocationFilter(request.GET, queryset=combined_queryset)
     
     paginator = Paginator(filter.qs, 10)
 
@@ -193,7 +218,8 @@ def index_master_location_list(request):
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
 
-    print("rendering ")
+    print("OBJ:")
+    print(str(page_obj))
     
     return render(
         request,

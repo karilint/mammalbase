@@ -46,8 +46,7 @@ from .habitat_models import (
 from .location_models import (
     SourceLocation,
     MasterLocation,
-    LocationRelation,
-    MasterLocationViewObj)
+    LocationRelation)
 
 from .occurrence_models import (
     Occurrence,
