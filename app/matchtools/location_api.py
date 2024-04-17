@@ -25,7 +25,7 @@ class LocationAPI:
         response = requests.get(url)
         data = response.json()
         if 'geonames' in data:
-            nature_reservations = [place for place in data['geonames'] if place.get('fcode') == 'RESN' or place.get('fcode') == 'RESW']
+            nature_reservations = [place for place in data['geonames'] if place.get('fcode') == 'RESN' or place.get('fcode') == 'RESW' or place.get('fcode') == 'RESF']
             return nature_reservations
         else:
             return []

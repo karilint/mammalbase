@@ -9,9 +9,14 @@ def create_master_location(geoNamesLocation: dict, prev_location: MasterLocation
     country = geoNamesLocation.get("countryName")
     country_code = geoNamesLocation.get("countryCode")
     continent = geoNamesLocation.get("continent")
+    is_reserve = True if geoNamesLocation.get("fcode") in ["RESN", "RESW", "RESF"] else False
 
     master_location, created = MasterLocation.objects.get_or_create(
-        name=name, decimal_latitude=latitude, decimal_longitude=longitude, location_id=location_id
+        name=name,
+        decimal_latitude=latitude,
+        decimal_longitude=longitude,
+        location_id=location_id,
+        is_reserve=is_reserve
     )
 
     if created:
