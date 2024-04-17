@@ -25,7 +25,6 @@ def wrapper(request, validator, importer, path):
  
     csv_file = request.FILES["csv_file"]
     df = pd.read_csv(csv_file, sep='\t')
-
     try:   
         errors = validate(df, validator)
         author_check = check_author_consistency(df)
@@ -83,7 +82,7 @@ def validate(df, validator):
     return []
  
  
-def row_importer(df, importer):
+def row_importer(df: pd.DataFrame, importer):
     """Import validated rows to db.
  
     Args:

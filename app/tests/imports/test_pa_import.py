@@ -8,27 +8,20 @@ import os
 from allauth.socialaccount.models import SocialAccount
 import imports.views as views
 import pandas as pd
-from django.test import TestCase
-from django.test.client import RequestFactory
-from django.contrib.messages.storage.fallback import FallbackStorage
-from django.contrib.auth.models import User, Permission
+from allauth.socialaccount.models import SocialAccount
+from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
-from mb.models import (
-    EntityClass,
-    MasterReference,
-    SourceAttribute,
-    SourceEntity,
-    SourceMethod,
-    SourceReference,
-    SourceStatistic,
-    TimePeriod,
-    DietSet,
-    FoodItem,
-    DietSetItem,
-    ChoiceValue,
-    MasterEntity,
-    SourceLocation)
-
+from django.contrib.messages import get_messages
+from django.contrib.messages.storage.fallback import FallbackStorage
+from django.test import Client, TestCase
+from django.test.client import RequestFactory
+from django.urls import reverse
+from itis.models import Kingdom, TaxonUnitTypes
+from mb.models import (ChoiceValue, DietSet, DietSetItem, EntityClass,
+                       FoodItem, MasterEntity, MasterReference,
+                       SourceAttribute, SourceEntity, SourceLocation,
+                       SourceMethod, SourceReference, SourceStatistic,
+                       TimePeriod)
 from mb.models.location_models import SourceLocation
 from itis.models import Kingdom, TaxonUnitTypes
 import tempfile
