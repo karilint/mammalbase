@@ -17,6 +17,10 @@ urlpatterns = [
         views.index_master_location_list,
         name="master_location_list"),
     path(
+        "ml_filter",
+        views.index_master_location_list,
+        name="master_location_list"),
+    path(
         "ml_detail/<int:pk>/",
         views.master_location_detail,
         name="master_location_detail"),

@@ -151,6 +151,8 @@ def index_proximate_analysis(request):
 
 def index_master_location_list(request):
 
+    print("get parameters: " + str(request.GET))
+
     class MasterLocationView(models.Model):
         name = models.CharField(max_length=500) 
         reference = models.CharField(max_length=500) 
@@ -165,10 +167,12 @@ def index_master_location_list(request):
         except:
             return "nan"
         
-        habitats = []
+        habitats = ""
 
         for master_habitat in master_habitats:
-            habitats.append(master_habitat.name)
+            habitats = habitats + f"{master_habitat.name} "
+
+        
 
         return str(habitats)
     
