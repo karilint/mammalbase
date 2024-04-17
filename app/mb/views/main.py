@@ -151,7 +151,12 @@ def index_proximate_analysis(request):
 
 def index_master_location_list(request):
 
-    print("get parameters: " + str(request.GET))
+    def filter(objects, params):
+        pass
+
+    params_set = False
+
+    params = request.GET.dict()
 
     class MasterLocationView(models.Model):
         name = models.CharField(max_length=500) 
@@ -177,7 +182,6 @@ def index_master_location_list(request):
         return str(habitats)
     
     master_locations = MasterLocation.objects.filter()
-    print("MasterLocation filter OK")
 
     mls_with_habitat = []
 
@@ -187,11 +191,8 @@ def index_master_location_list(request):
         ml_view_obj.reference = x.reference
         ml_view_obj.master_habitat = get_master_habitats(x)
         mls_with_habitat.append(ml_view_obj)
-
-    print("Loop ok")
     
-    #filter = MasterLocationFilter(request.GET, queryset=combined_queryset)
-    filter = None
+    mls_with_habitat = filter(mls_with_habitat, params)
     
     paginator = Paginator(mls_with_habitat, 10)
 
