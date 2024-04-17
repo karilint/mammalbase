@@ -64,7 +64,7 @@ $(document).ready(function () {
   }
 
   function activateEditableField($editableSpan) {
-    var currentValue = $editableSpan.text();
+    var currentValue = $("<div>").text($editableSpan.text()).html();
     $editableSpan.html(
       "<input type='text' class='edit-input' value='" + currentValue + "'>"
     );
