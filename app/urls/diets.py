@@ -1,4 +1,4 @@
-""" urls.diets - URLs accosiated with diets
+""" urls.diets - URLs associated with diets
     imported by urls.__init__ as part of urls subpackage
 """
 
