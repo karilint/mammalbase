@@ -1,3 +1,15 @@
+""" mb.views - This subpackage contains views to be imported from urls """
+from .index import (
+    server_error,
+    not_found,
+    permission_denied,
+    bad_request,
+    about_history,
+    index_about,
+    privacy_policy,
+    index,
+    index_news)
+ 
 from .unsorted import (
     AttributeRelationDelete,
     ChoicesetOptionRelationDelete,
@@ -19,17 +31,8 @@ from .unsorted import (
     SourceReferenceDelete,
     TimePeriodDelete,
     TsnDelete,
-    server_error,
-    not_found,
-    permission_denied,
-    bad_request,
-    about_history,
-    index_about,
-    privacy_policy,
-    index,
     index_diet,
     index_mammals,
-    index_news,
     index_proximate_analysis,
     save_new_ordering,
     user_is_data_admin_or_contributor,

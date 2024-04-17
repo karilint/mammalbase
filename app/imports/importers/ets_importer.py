@@ -9,8 +9,6 @@ from mb.models import (
     SourceUnit,
     ChoiceValue,
     SourceStatistic,
-    SourceChoiceSetOption,
-    SourceChoiceSetOptionValue,
     SourceMeasurementValue)
 from .base_importer import BaseImporter
 
@@ -21,7 +19,8 @@ class EtsImporter(BaseImporter):
     def importRow(self, row):
         headers = list(row.columns.values)
 
-        # if verbatimTraitUnit == 'nan' or verbatimTraitUnit != verbatimTraitUnit or verbatimTraitUnit == 'NA':
+        # if verbatimTraitUnit == 'nan' or verbatimTraitUnit != verbatimTraitUnit or
+        # verbatimTraitUnit == 'NA':
         # entityclass = get_entityclass('Taxon', author)
         # attribute = get_sourceattribute(name, reference, entityclass, method, 2, author)
         # if 'verbatimTraitValue' in headers:
@@ -55,8 +54,10 @@ class EtsImporter(BaseImporter):
             'measurementRemarks':self.possible_nan_to_none,
             'associatedReferences':self.possible_nan_to_none,
             'verbatimEventDate':self.possible_nan_to_none,
-            'verbatimLocality': lambda val: self.get_or_create_source_location(val, source_reference, author),
-            'statisticalMethod': self.get_or_create_source_statistic(getattr(row, 'statisticalMethod'), source_reference, author),
+            'verbatimLocality': lambda val: self.get_or_create_source_location(
+                val, source_reference, author),
+            'statisticalMethod': self.get_or_create_source_statistic(
+                getattr(row, 'statisticalMethod'), source_reference, author),
             'measurementValue_min':self.possible_nan_to_zero,
             'measurementValue_max':self.possible_nan_to_zero,
             'dispersion':self.possible_nan_to_zero,
@@ -127,74 +128,81 @@ class EtsImporter(BaseImporter):
         if source_measurement.exists():
             print("Existing SourceMeasurementMethod found")
             return False
-        else:
-            source_measurement = SourceMeasurementValue({
-                'created_by': author,
-                **row_data
-            })
-            source_measurement.save()
-            print("New SourceMeasurementMethod created:",
-                  source_measurement)
-            return True
 
-    def get_or_create_source_attribute(self, name: str, source_reference: SourceReference, entity_class: SourceEntity, source_method: SourceMethod, type_value: int, author: User):
+        source_measurement = SourceMeasurementValue({
+            'created_by': author,
+            **row_data
+        })
+        source_measurement.save()
+        print("New SourceMeasurementMethod created:",
+                source_measurement)
+        return True
+
+    def get_or_create_source_attribute(self, name: str, source_reference: SourceReference,
+                                       entity_class: SourceEntity, source_method: SourceMethod,
+                                       type_value: int, author: User):
         """
         Returns a SourceAttribute object if it exists, otherwise creates it.
         """
         source_attribute = SourceAttribute.objects.filter(
-            name__iexact=name, reference=source_reference, entity=entity_class, method=source_method, type=type_value
+            name__iexact=name,
+            reference=source_reference,
+            entity=entity_class,
+            method=source_method,
+            type=type_value
         )
 
         if source_attribute.exists():
             return source_attribute.first()
-        else:
-            source_attribute = SourceAttribute(
-                name=name, reference=source_reference, entity=entity_class, method=source_method, type=type_value, created_by=author)
-            source_attribute.save()
-            return source_attribute
+        source_attribute = SourceAttribute(
+            name=name,
+            reference=source_reference,
+            entity=entity_class,
+            method=source_method,
+            type=type_value,
+        )
+        source_attribute.save()
+        return source_attribute
 
     def get_or_create_source_unit(self, trait_unit, author):
         """
         Returns a SourceUnit object if it exists, otherwise creates it.
         """
-        if trait_unit == 'nan' or trait_unit != trait_unit or trait_unit == 'NA':
+        if trait_unit in ["nan", "NA"]:
             return None
-        else:
-            source_unit = SourceUnit.objects.filter(name__iexact=trait_unit)
-            if source_unit.exists():
-                return source_unit.first()
-            else:
-                source_unit = SourceUnit(name=trait_unit, created_by=author)
-                source_unit.save()
-                return source_unit
+        source_unit = SourceUnit.objects.filter(name__iexact=trait_unit)
+        if source_unit.exists():
+            return source_unit.first()
+        source_unit = SourceUnit(name=trait_unit, created_by=author)
+        source_unit.save()
+        return source_unit
 
     def get_choicevalue_ets(self, choice, choice_set, author):
         """
         Returns a ChoiceValue object if it exists, otherwise creates it.
         """
-        if choice != choice or choice == 'nan':
+        if choice == 'nan':
             return None
         choiceset_obj = ChoiceValue.objects.filter(
             caption__iexact=choice, choice_set__iexact=choice_set)
         if len(choiceset_obj) > 0:
             return choiceset_obj[0]
-        cv = ChoiceValue.objects.create(
+        choice_value = ChoiceValue.objects.create(
             caption=choice, choice_set=choice_set, created_by=author)
-        return cv
+        return choice_value
 
-    def get_or_create_source_statistic(self, statistic: str, source_reference: SourceReference, author: User):
+    def get_or_create_source_statistic(self, statistic: str, source_reference: SourceReference,
+                                       author: User):
         """
         Returns a SourceStatistic object if it exists, otherwise creates it.
         """
-        if statistic != statistic or statistic == 'nan':
+        if statistic == 'nan':
             return None
-        else:
-            source_statistic = SourceStatistic.objects.filter(
-                name__iexact=statistic, reference=source_reference)
-            if source_statistic.exists():
-                return source_statistic.first()
-            else:
-                source_statistic = SourceStatistic(
-                    name=statistic, reference=source_reference, created_by=author)
-                source_statistic.save()
-                return source_statistic
+        source_statistic = SourceStatistic.objects.filter(
+            name__iexact=statistic, reference=source_reference)
+        if source_statistic.exists():
+            return source_statistic.first()
+        source_statistic = SourceStatistic(
+            name=statistic, reference=source_reference, created_by=author)
+        source_statistic.save()
+        return source_statistic
