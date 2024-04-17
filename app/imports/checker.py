@@ -18,19 +18,19 @@ class Check:
 
     def check_all_ds(self, df, force=False):
         return (
-            self.check_headers_ds(df) and 
-            self.check_author(df) and 
+            self.check_headers_ds(df) and
+            self.check_author(df) and
             self.check_verbatimScientificName(df) and
             self.check_taxonRank(df) and
             self.check_gender(df) and
             self.check_verbatim_associated_taxa(df) and
             self.check_sequence(df) and
-            self.check_measurementValue(df) and 
-            self.check_part(df) and 
+            self.check_measurementValue(df) and
+            self.check_part(df) and
             self.check_references(df, force) and
             self.check_lengths(df)
         )
-    
+
     def check_all_ets(self, df):
         return (
             self.check_headers_ets(df) and
@@ -40,7 +40,7 @@ class Check:
             self.check_lengths(df) and
             self.check_min_max(df)
         )
-    
+
     def check_all_pa(self, df, force=False):
         return (
             self.check_headers_pa(df) and
@@ -64,21 +64,25 @@ class Check:
             data = SocialAccount.objects.all().filter(uid=author)
             if not data.exists():
                 self.id = None
-                messages.error(self.request, "The author " + str(author) + " is not a valid ORCID ID at row " +  str(counter) + ".")
+                messages.error(self.request, "The author " + str(author) + 
+                               " is not a valid ORCID ID at row " +  str(counter) + ".")
                 return False
             self.id = data[0].user_id
         return True
 
     def check_headers_ds(self, df):
         import_headers = list(df.columns.values)
-        accepted_headers = ['author', 'verbatimScientificName', 'taxonRank', 'verbatimAssociatedTaxa', 'sequence',  'references']
+        accepted_headers = ['author', 'verbatimScientificName',
+                            'taxonRank', 'verbatimAssociatedTaxa',
+                            'sequence',  'references']
 
         for header in accepted_headers:
             if header not in import_headers:
-                messages.error(self.request, "The import file does not contain the required headers. The missing header is: " + str(header) + ".")
+                messages.error(self.request, "The import file does not contain the "
+                               "required headers. The missing header is: " + str(header) + ".")
                 return False
         return True
-    
+
     def check_headers_ets(self, df):
         import_headers = list(df.columns.values)
         accepted_headers = ['references', 'verbatimScientificName', 'taxonRank', 'verbatimTraitName', 'verbatimTraitUnit', 'author']

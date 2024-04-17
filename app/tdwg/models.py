@@ -118,7 +118,8 @@ class Taxon(models.Model):
     parent_name_usage = models.CharField(max_length=50,
                                          null=True,
                                          blank=True,
-                                         help_text="The name (scientificName or higherTaxon) of the parent taxon.")
+                                         help_text="The name (scientificName or higherTaxon) "
+                                         "of the parent taxon.")
     accepted_name_usage = models.CharField(max_length=50,
                                            null=True,
                                            blank=True,
