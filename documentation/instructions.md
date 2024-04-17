@@ -24,10 +24,10 @@ the repository.
 ```
 docker compose up -d --build
 ```
-- NOTE: Running this command without the -d tag will show logs in the same
+- NOTE: Running this command without the `-d` tag will show logs in the same
   terminal.
-- NOTE 2: --build will create a new container and is unnecessary unless
-  something has been changed in the Dockerfile or docker-compose.yml file.
+- NOTE 2: `--build` will create a new container and is unnecessary unless
+  something has been changed in the Dockerfile or `docker-compose.yml` file.
 
 Now if you go to [localhost:8000](localhost:8000), you should see the app
 running. You can also go to [localhost:8001](localhost:8001) to see or modify

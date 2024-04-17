@@ -1,15 +1,15 @@
-from django.db.models import Value, CharField, Q, Case, When, F
+from django.db.models import Value, CharField, Q
 from django.db.models.functions import Concat, Replace
 
-from mb.models import SourceChoiceSetOptionValue, MasterChoiceSetOption
+from mb.models import SourceChoiceSetOptionValue
 from .base_query import base_query
 
 
 def traitlist_query(measurement_choices):
-    """ 
-        Traitlist query function that defines the fields in the traitlist.tsv file 
-        according to the ETS standard: https://ecologicaltraitdata.github.io/ETS/. 
-        Utilizes the base query. Values that are not yet in the models are set to 'NA'. 
+    """
+        Traitlist query function that defines the fields in the traitlist.tsv file
+        according to the ETS standard: https://ecologicaltraitdata.github.io/ETS/.
+        Utilizes the base query. Values that are not yet in the models are set to 'NA'.
         Returns the query and fields whereof non active values are excluded.
     """
     base = base_query(measurement_choices)
@@ -98,8 +98,11 @@ def traitlist_query(measurement_choices):
     queries = []
     if "Nominal traits" in measurement_choices:
         queries.append((nominal_query, nominal_fields))
-    
-    if "Cranial measurements" in measurement_choices or "External measurements" in measurement_choices:
+
+    if ("Cranial measurements" in
+        measurement_choices or
+        "External measurements" in
+        measurement_choices):
         queries.append((query, fields))
 
     return queries

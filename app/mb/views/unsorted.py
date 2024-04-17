@@ -1,25 +1,23 @@
 """ mb.views.unsorted - views that don't belong to any other file
 
-This file should be divided smaller rational integrities and deleded.
+This file should be divided into smaller rational integrities and deleted.
 
-Please, do not anything here anymore!
+Please, do not do anything here anymore!
 """
 
-import datetime, json
-from decimal import * # TODO: fix star imports!
+import datetime
+import json
 from django.core.exceptions import PermissionDenied
 from django.db import connection, transaction
 from django.db.models import Count, Max, F
 from django.contrib.auth.decorators import (
     login_required, permission_required)
-from django.contrib.auth.mixins import (
-    PermissionRequiredMixin, UserPassesTestMixin)
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views import generic
-from django.views.decorators.http import require_GET, require_POST
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.decorators.http import require_POST
+from django.views.generic.edit import DeleteView
 from django.http import JsonResponse
 
 import requests
@@ -29,13 +27,13 @@ from plotly import express as plotly_express
 from plotly.offline import plot as plotly_offline_plot
 from pandas import DataFrame as PandasDataFrame
 
+from config.settings import ITIS_CACHE
 from itis.utils import generate_standard_values_pa
 from itis.models import SynonymLinks
 from itis.tools import (
     getTaxonomicRankNameFromTSN,
     GetAcceptedNamesfromTSN,
     GetCommonNamesfromTSN)
-from config.settings import ITIS_CACHE
 from itis.utils import (
     create_return_data,
     create_tsn)
@@ -101,36 +99,7 @@ from mb.models import (
     SourceMeasurementValue,
     SourceReference,
     TimePeriod,
-    ViewMasterTraitValue,
     ViewProximateAnalysisTable)
-
-
-# Error Pages
-# https://blog.khophi.co/get-django-custom-error-views-right-first-time/
-def server_error(request):
-    return render(request, 'errors/500.html')
-
-def not_found(request):
-    return render(request, 'errors/404.html')
-
-def permission_denied(request):
-    return render(request, 'errors/403.html')
-
-def bad_request(request):
-    return render(request, 'errors/400.html')
-
-def about_history(request):
-    return render(request, 'mb/history.html',)
-
-def index_about(request):
-    return render(request, 'mb/index_about.html',)
-
-def privacy_policy(request):
-    return render(request, 'mb/privacy_policy.html',)
-
-#@ratelimit(key='ip', rate='2/m')
-def index(request):
-    return render(request, 'mb/index.html',)
 
 def index_diet(request):
     num_diet_taxa=DietSet.objects.is_active().values('taxon_id').distinct().count()
@@ -143,9 +112,6 @@ def index_diet(request):
 def index_mammals(request):
     measurements=SourceReference.objects.is_active().filter(sourceattribute__type = 1).filter(status = 2).distinct().order_by('-pk')[:10]
     return render(request, 'mb/index_mammals.html', context={'measurements':measurements},)
-
-def index_news(request):
-    return render(request, 'mb/index_news.html',)
 
 def index_proximate_analysis(request):
     num_PA_item=ProximateAnalysisItem.objects.is_active().values('forage_id').distinct().count()
@@ -313,8 +279,8 @@ def data_check_detail(request):
     return render(request, 'mb/data_check_detail.html', {'dsi': dsi, 'ds_data': ds_data, })
 
 def diet_set_detail(request, pk):
-	ds = get_object_or_404(DietSet, pk=pk, is_active=1)
-	return render(request, 'mb/diet_set_detail.html', {'ds': ds})
+    ds = get_object_or_404(DietSet, pk=pk, is_active=1)
+    return render(request, 'mb/diet_set_detail.html', {'ds': ds})
 
 class DietSetDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
@@ -569,10 +535,9 @@ def food_item_detail(request, pk):
         proximate_analysis=pa.all()[0]
     else:
         proximate_analysis=pa.none()
-    
-    
 
     return render(request, 'mb/food_item_detail.html', {'proximate_analysis': proximate_analysis, 'food_item': food_item, 'synonym_link': sl})
+
 
 @login_required
 @permission_required('mb.edit_food_item', raise_exception=True)
