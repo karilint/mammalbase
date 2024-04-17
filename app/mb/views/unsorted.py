@@ -526,7 +526,7 @@ def food_item_detail(request, pk):
         part=food_item.part.caption
         if part=='CARRION':
             part='WHOLE'
-        pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i]).filter(part__exact=part)
+        pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i])
         if len(pa)==1:
             break
         i=i-1
