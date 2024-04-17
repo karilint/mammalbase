@@ -15,6 +15,10 @@ class SourceLocation(BaseModel):
         max_length=250,
         help_text="Enter the Name of the Source Location"
         )
+    match_attempts = models.IntegerField(
+        default=0,
+        help_text="The number of attempted matches for this location."
+        )
     verbatim_elevation = models.CharField(
         max_length=250,
         blank=True,
@@ -99,7 +103,11 @@ class MasterLocation(BaseModel):
         null = True,
         blank = True,
         on_delete = models.CASCADE
-    )
+        )
+    is_reserve = models.BooleanField(
+        default=False,
+        help_text="Is this location a nature/wildlife/forest reserve?"
+        )
     continent = models.CharField(
         max_length=250,
         blank=True,
@@ -206,7 +214,7 @@ class LocationRelation(BaseModel):
     master_location = models.ForeignKey('MasterLocation', on_delete=models.CASCADE)
 
     class Meta:
-      unique_together = ('source_location', 'master_location',)
+        unique_together = ('source_location', 'master_location',)
 
     def get_absolute_url(self):
         """
