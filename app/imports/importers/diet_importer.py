@@ -3,6 +3,8 @@ from mb.models import DietSet, DietSetItem, Event, SourceHabitat
 from .base_importer import BaseImporter
 from mb.models import ChoiceValue
 
+base_importer = BaseImporter()
+
 class DietImporter(BaseImporter):
     
     @transaction.atomic
@@ -35,20 +37,24 @@ class DietImporter(BaseImporter):
         if part_of_organism == "nan" or part_of_organism == "":
             part_of_organism = None
         else:
-            part_of_organism, created = ChoiceValue.objects.get_or_create(choice_set="FoodItemPart", caption=part_of_organism.capitalize())
+            part_of_organism = ChoiceValue.objects.filter(choice_set="FoodItemPart", caption=part_of_organism).first()
+            if part_of_organism:
+                part_of_organism = part_of_organism
+            else:
+                part_of_organism = None
             
             
                 
 
-        obj, created = DietSet.objects.get_or_create(reference=reference, cited_reference=getattr(row, 'associatedReferences'), taxon=taxon, location=new_source_location, sample_size=getattr(row, 'individualCount'),
+        obj, created = DietSet.objects.get_or_create(reference=reference, cited_reference=getattr(row, 'associatedReferences'), taxon=taxon, location=new_source_location, sample_size=base_importer.possible_nan_to_zero(getattr(row, 'individualCount')),
                                                      time_period=time_period, method=method, study_time=getattr(row, 'verbatimEventDate'), created_by=author)
         if not created:
             return False
         
+        print('partoforganism:', part_of_organism)
         food_item = self.get_fooditem(getattr(row, 'verbatimAssociatedTaxa'), part_of_organism)
         list_order = getattr(row, 'sequence')
-        percentage = round((getattr(row, 'measurementValue')), 3)
-
+        percentage = base_importer.possible_nan_to_zero(round(getattr(row, 'measurementValue', 0), 3))
 
         bj2, created = DietSetItem.objects.get_or_create(diet_set=obj, food_item=food_item, list_order=list_order, percentage=percentage)
 
