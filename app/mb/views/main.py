@@ -152,7 +152,38 @@ def index_proximate_analysis(request):
 def index_master_location_list(request):
 
     def filter(objects, params):
-        pass
+        """ TODO: jatka tästä! haku ei toimi, ehkä virhe miten merkkijonoja verrataan keskenään?? """
+        print("params: " + str(params))
+        for object in objects:
+            try:
+                master_location = params["master_location"]
+            except:
+                break
+            if master_location == "":
+                break
+            if object.name not in master_location:
+                objects.remove(object)
+        for object in objects:
+            try:
+                reference = params["reference"]
+            except:
+                break
+            if reference == "":
+                break
+            if object.reference != reference:
+                objects.remove(object)
+        """
+        for object in objects:
+            if params["master_habitat"] == "":
+                break
+            if object.master_habitat != params["master_habitat"]:
+                objects.pop(object)
+		"""
+                  
+        for object in objects:
+            print("name: " + str(object.name))
+        
+        return objects
 
     params_set = False
 
