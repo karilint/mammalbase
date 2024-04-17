@@ -30,7 +30,7 @@ def metadata_query(measurement_choices):
         dataset_name=Value(
             'MammalBase — Dataset 03: Trait Data in Ecological Trait-data Standard (ETS) format'),
         dataset_description=Value(
-            'MammalBase - www.mammalbase.net: ',
+            'MammalBase - www.mammalbase.net: '
             'Trait dataset output in Ecological Trait-data Standard (ETS)'
         ),
         orcid_uid=Subquery(
@@ -72,7 +72,7 @@ def metadata_query(measurement_choices):
         dataset_name=Value(
             'MammalBase — Dataset 03: Trait Data in Ecological Trait-data Standard (ETS) format'),
         dataset_description=Value(
-            'MammalBase - www.mammalbase.net: ',
+            'MammalBase - www.mammalbase.net: '
             'Trait dataset output in Ecological Trait-data Standard (ETS)'
         ),
         orcid_uid=Subquery(
@@ -96,7 +96,7 @@ def metadata_query(measurement_choices):
             'URL: https://doi.org/10.5281/zenodo.1485739')
         ),
         rights_holder=Value(
-            'Lintulaakso, ',
+            'Lintulaakso, '
             'Kari;https://orcid.org/0000-0001-9627-8821;Finnish Museum of Natural History LUOMUS'
         ),
         rights=Value('Attribution 4.0 International (CC BY 4.0)'),

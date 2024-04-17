@@ -57,7 +57,8 @@ class BaseImporter:
         https://api.crossref.org/swagger-ui/index.htm
         """
         formatted_citation = citation.replace(" ", "%20")
-        url = f'https://api.crossref.org/works?query.bibliographic="{formatted_citation}"&mailto=kari.lintulaakso@helsinki.fi&rows=2'
+        url = (f'https://api.crossref.org/works?query.bibliographic='
+               f'"{formatted_citation}"&mailto=kari.lintulaakso@helsinki.fi&rows=2')
         try:
             response = requests.get(url, timeout=300).json()
             items = response.get('message', {}).get('items', [])
@@ -230,7 +231,8 @@ class BaseImporter:
             return {'data': [{'results': [return_data]}]}
 
         query = food.lower().capitalize().replace(' ', '%20')
-        url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
+        url = ('http://www.itis.gov/ITISWebService/jsonservice/'
+               'getITISTermsFromScientificName?srchKey=' + query)
         try:
             session = CachedSession(
                 ITIS_CACHE, expire_after=timedelta(days=30), stale_if_error=True)

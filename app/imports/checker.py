@@ -96,7 +96,7 @@ class Check:
             if header not in import_headers:
                 messages.error(
                     self.request,
-                    "The import file does not contain the required headers. ",
+                    "The import file does not contain the required headers. "
                     "The missing header is: " + str(header) + "."
                 )
                 return False
@@ -150,7 +150,7 @@ class Check:
             if header not in import_headers:
                 messages.error(
                     self.request,
-                    "The import file does not contain the required headers. ",
+                    "The import file does not contain the required headers. "
                     "The missing header is: " + str(header) + "."
                 )
                 return False
@@ -504,9 +504,9 @@ class Check:
             if value.lower() != 'nan' and value.upper() not in accepted:
                 messages.error(
                     self.request,
-                    f"Part is invalid on row {row}. ",
-                    "The accepted part names are: bark, blood, bones, bud, carrion, eggs, ",
-                    "exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, ",
+                    f"Part is invalid on row {row}. "
+                    "The accepted part names are: bark, blood, bones, bud, carrion, eggs, "
+                    "exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, "
                     "none, pollen, root, seed, shoot, stem, unknown, whole"
                 )
                 return False
@@ -521,8 +521,8 @@ class Check:
                 if not self.check_reference_in_db(ref):
                     messages.error(
                         self.request,
-                        f"Reference on row {row} already in database. ",
-                        "Are you sure you want to import this file? ",
+                        f"Reference on row {row} already in database. "
+                        "Are you sure you want to import this file? "
                         "If you are sure use force upload."
                     )
                     return False
@@ -587,7 +587,7 @@ class Check:
             if "verbatimTraitValue" not in import_headers:
                 messages.error(
                     self.request,
-                    "There should be header called 'measurementValue_min' and ",
+                    "There should be header called 'measurementValue_min' and "
                     "'measurementValue_max' or a header called 'verbatimTraitValue'."
                 )
                 return False
@@ -602,7 +602,7 @@ class Check:
                 if value[0] > value[1]:
                     messages.error(
                         self.request,
-                        "Minimum measurement value should be smaller than maximum ",
+                        "Minimum measurement value should be smaller than maximum "
                         "measurement value at row " + str(counter) + "."
                     )
                     return False
@@ -610,14 +610,14 @@ class Check:
                     if float(value[1]) < float(value[2]):
                         messages.error(
                             self.request,
-                            "Mean measurement value should be smaller than maximum measurement ",
+                            "Mean measurement value should be smaller than maximum measurement "
                             "value at row " + str(counter) + "."
                         )
                         return False
                     if float(value[0]) > float(value[2]):
                         messages.error(
                             self.request,
-                            "Mean measurement value should be larger than minimum measurement ",
+                            "Mean measurement value should be larger than minimum measurement "
                             "value at row " + str(counter) + "."
                         )
                         return False
@@ -632,14 +632,14 @@ class Check:
                 elif float(value[1]) < float(value[2]):
                     messages.error(
                         self.request,
-                        "Mean measurement value should be smaller than maximum measurement ",
+                        "Mean measurement value should be smaller than maximum measurement "
                         "value at row " + str(counter) + "."
                     )
                     return False
                 elif float(value[0]) > float(value[2]):
                     messages.error(
                         self.request,
-                        "Mean measurement value should be larger than minimum ",
+                        "Mean measurement value should be larger than minimum "
                         "measurement value at row " + str(counter) + "."
                     )
                     return False
@@ -651,7 +651,7 @@ class Check:
                 if value[0] > value[1]:
                     messages.error(
                         self.request,
-                        "Minimum measurement value should be smaller than maximum ",
+                        "Minimum measurement value should be smaller than maximum "
                         "measurement value at row " + str(counter) + "."
                     )
                     return False
