@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from django.http import JsonResponse
+from django.db.models import F
 from mb.models import SourceLocation
 from .location_api import LocationAPI
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -36,6 +37,7 @@ def source_location_list(request):
 def location_match_detail(request, id):
     api = LocationAPI()
     sourceLocation = SourceLocation.objects.get(id=id)
+    SourceLocation.objects.filter(id=id).update(match_attempts=F('match_attempts') + 1)
     result = api.get_locations(sourceLocation)
     
     query = sourceLocation
@@ -60,6 +62,7 @@ def location_match_detail(request, id):
     previous=id_list.index(id)-1
     next_id = id_list[index] if index < len(id_list) else None
     previous_id = id_list[previous] if previous >= 0 else None
+    
     
     return render(request, 'matchtool/location_match_detail.html', {
         'query': query,
