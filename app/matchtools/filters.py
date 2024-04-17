@@ -19,7 +19,7 @@ class SourceAttributeFilter(django_filters.FilterSet):
         label='Standard Trait',
         empty_label='None')
 
-    def filter_reference(self, queryset, value):
+    def filter_reference(self, queryset, name, value):
         if value:
             return queryset.filter(reference__citation__icontains=value)
         return queryset
