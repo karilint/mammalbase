@@ -150,7 +150,12 @@ def index_proximate_analysis(request):
     return render(request, 'mb/index_proximate_analysis.html', context={'num_PA_item':num_PA_item},)
 
 def index_master_location_list(request):
-    """
+
+    class MasterLocationView(models.Model):
+        name = models.CharField(max_length=500) 
+        reference = models.CharField(max_length=500) 
+        master_habitats = models.TextField()
+    
     def get_master_habitats(ml : MasterLocation):
         # Get MasterHabitats by MasterLocation
         mr = ml.reference
@@ -163,52 +168,28 @@ def index_master_location_list(request):
         habitats = []
 
         for master_habitat in master_habitats:
-            print(master_habitat.name)
             habitats.append(master_habitat.name)
 
-        return habitats
+        return str(habitats)
     
     master_locations = MasterLocation.objects.filter()
+    print("MasterLocation filter OK")
 
     mls_with_habitat = []
 
     for x in master_locations:
-        ml_view_obj = MasterLocationViewObj()
+        ml_view_obj = MasterLocationView()
         ml_view_obj.name = x.name
         ml_view_obj.reference = x.reference
         ml_view_obj.master_habitat = get_master_habitats(x)
-        ml_view_obj.save()
         mls_with_habitat.append(ml_view_obj)
-	"""
 
-    queryset1 = MasterLocation.objects.is_active().select_related()
-    queryset2 = MasterReference.objects.is_active().select_related()
-
-    q1_list = list(queryset1)
-    q2_list = list(queryset2)
-
-    print(type(queryset1))
-    print(type(queryset2))
-
-    combined_list = q1_list + q2_list
-
-    primary_keys = [instance.pk for instance in combined_list]
-
-    # Get the model class of the instances (assuming they are of the same model)
-    model_class = combined_list[0].__class__
-
-    # Use in_bulk() to fetch the instances back as a dictionary {pk: instance}
-    instances_dict = model_class.objects.in_bulk(primary_keys)
-
-    # Convert the dictionary values back to a list to get the queryset
-    combined_queryset = list(instances_dict.values())
-
-    print(type(combined_queryset))
-
+    print("Loop ok")
     
-    filter = MasterLocationFilter(request.GET, queryset=combined_queryset)
+    #filter = MasterLocationFilter(request.GET, queryset=combined_queryset)
+    filter = None
     
-    paginator = Paginator(filter.qs, 10)
+    paginator = Paginator(mls_with_habitat, 10)
 
     page_number = request.GET.get('page')
     try:
@@ -217,9 +198,6 @@ def index_master_location_list(request):
         page_obj = paginator.page(1)
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
-
-    print("OBJ:")
-    print(str(page_obj))
     
     return render(
         request,
