@@ -60,12 +60,6 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
-false_test.csv
-test.csv
-test_post.csv
-test_bad.csv
-*.csv
-app/test_bad.csv
 
 # Translations
 *.mo
@@ -165,3 +159,9 @@ cython_debug/
 
 # keep habitat csv files
 !app/mb/management/commands/habitat_csv/*.csv
+
+# keep proximate analysis tsv files
+!app/tests/imports/assets/*.tsv
+
+# Ignore migrations. Pushes to main creates them automatically.
+app/*/migrations/*.py

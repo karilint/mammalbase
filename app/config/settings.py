@@ -180,6 +180,11 @@ DATABASES = {
         },
     }
 }
+# sq lite for testing
+if 'test' in environ.get('DJANGO_SETTINGS_MODULE', ''):
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3'
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -244,7 +249,7 @@ CELERY_BEAT_SCHEDULE = {
         "options": {
         }
     },
-    
+
     "update_dqs_in_db" : {
         "task": "mb.tasks.update_dqs",
         "schedule": timedelta(days = 30),

@@ -6,15 +6,14 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import render
 
-from .tools import messages
+from django.contrib import messages
  
+@login_required
 def wrapper(request, validator, importer, path):
     """Wrapper for differnt viewers. 
  
     Args:
         request (_type_): HTTP-request
-        validator (Occurrence_validation): Occurrence_validation object.
-        importer (OccurrencesImporter): OccurrenceImporter object
         path (str): The path of the html template to be returned.
  
     Returns:
@@ -26,20 +25,21 @@ def wrapper(request, validator, importer, path):
  
     csv_file = request.FILES["csv_file"]
     df = pd.read_csv(csv_file, sep='\t')
+
     try:   
         errors = validate(df, validator)
         author_check = check_author_consistency(df)
         if errors:
-            error_messages = "|".join(map(str, errors))
-            messages.error(request, error_messages)
+            for error in errors:
+                messages.error(request, error)
             return HttpResponseRedirect(reverse(path))
         if not author_check:
             messages.error(request, "Authors need to be consisten. Please make sure each row has your own ORCID")
             return HttpResponseRedirect(reverse(path))
  
-        rows_imported = row_importer(df, importer)
+        rows_imported, rows_skipped = row_importer(df, importer)
         if rows_imported > 0:
-            message = f"File imported successfully. {rows_imported} rows of data were imported."
+            message = f"File imported successfully. {rows_imported} rows of data were imported.({rows_skipped} rows were skipped.)"
             messages.add_message(request, 50, message, extra_tags="import-message")
             messages.add_message(request, 50, df.to_html(), extra_tags="show-data")
             return HttpResponseRedirect(reverse(path))
@@ -60,7 +60,6 @@ def validate(df, validator):
  
     Args:
         df (Pandas): Pandas-object
-        validator (Occurrence-validation): validation object for occurrences
  
     Returns:
         list: possible validation errors
@@ -73,7 +72,6 @@ def validate(df, validator):
         index += 1
         for i, x in enumerate(row):
             data[headers[i]] = x
- 
         isvalid = validator.is_valid(data, validator.rules)
         errors = validator.errors
         if not isvalid:
@@ -90,21 +88,23 @@ def row_importer(df, importer):
  
     Args:
         df (Pandas): Pandas-object
-        importer (Occurrence_importer): importer object for occurrences
  
     Returns:
         int: how many rows was impoerted
     """
     success_rows = 0
+    skipped_rows = 0
  
     for row in df.itertuples(index=False):
         created = importer.importRow(row)
  
         if created:
-            success_rows += 1
-    return success_rows
+            success_rows += 1    
+        else:
+            skipped_rows += 1
+    return success_rows, skipped_rows
  
-def check_author_consistency(df):
+def check_author_consistency(df: pd.DataFrame):
     """Check if every row has the same value for the 'author' column as the first row.
  
     Args:

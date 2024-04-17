@@ -47,7 +47,7 @@ class DietSetForm(forms.ModelForm):
 
     # https://stackoverflow.com/questions/28901089/use-field-value-in-limit-choices-to-in-django
     def __init__(self, *args, **kwargs):
-        super(DietSetForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if self.instance.reference:
             self.fields['time_period'].queryset = TimePeriod.objects.filter(
                                                 reference=self.instance.reference)
@@ -180,12 +180,11 @@ class SourceChoiceSetOptionValueForm(forms.ModelForm):
         sac = kwargs.pop('sac', None)
 #        sac = kwargs.get('sac')
         print(sac)
-        super(SourceChoiceSetOptionValueForm, self).__init__( *args, **kwargs)
+        super().__init__( *args, **kwargs)
 # https://stackoverflow.com/questions/39785703/how-to-pass-variable-as-argument-in-meta-class-in-django-form
         source_choiceset_option = self.fields['source_choiceset_option']
         source_choiceset_option.queryset = SourceChoiceSetOption.objects.filter(
-            source_attribute__id=sac
-        )
+                source_attribute__id=sac)
 
     class Meta:
         model = SourceChoiceSetOptionValue
@@ -196,12 +195,6 @@ class SourceChoiceSetOptionValueForm(forms.ModelForm):
                 'data-width': '75%',
             },)
          }
-
-class SourceEntityForm(forms.ModelForm):
-    class Meta:
-        model = SourceEntity
-        fields = ('name', 'entity', 'reference',)
-        widgets = {'reference': ReferenceWidget, }
 
 class MSW3TaxaWidget(ModelSelect2Widget):
     queryset = MasterEntity.objects.filter(reference_id=4)
