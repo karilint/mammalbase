@@ -94,11 +94,13 @@ class Taxon(models.Model):
     scientific_name_authorship = models.CharField(max_length=150,
                                                   null=True,
                                                   blank=True,
-                                                  help_text="The authorship information of the scientific name.")
+                                                  help_text="The authorship information "
+                                                  "of the scientific name.")
     vernacular_name = models.CharField(max_length=50,
                                        null=True,
                                        blank=True,
-                                       help_text="The vernacular (common) name associated with the taxon.")
+                                       help_text="The vernacular (common) name "
+                                       "associated with the taxon.")
     nomenclatural_code = models.CharField(max_length=50,
                                           null=True,
                                           blank=True,
@@ -107,10 +109,12 @@ class Taxon(models.Model):
     taxonomic_status = models.CharField(max_length=50,
                                         null=True,
                                         blank=True,
-                                        help_text="The status of the taxon in the taxonomic hierarchy.")
+                                        help_text="The status of the taxon "
+                                        "in the taxonomic hierarchy.")
     taxon_remarks = models.TextField(null=True,
                                      blank=True,
-                                     help_text="Additional information or comments about the taxon.")
+                                     help_text="Additional information or "
+                                     "comments about the taxon.")
     parent_name_usage = models.CharField(max_length=50,
                                          null=True,
                                          blank=True,
@@ -124,7 +128,8 @@ class Taxon(models.Model):
     original_name_usage = models.CharField(max_length=50,
                                            null=True,
                                            blank=True,
-                                           help_text="The originally (i.e., historically) applied name.")
+                                           help_text="The originally (i.e., historically) "
+                                           "applied name.")
     name_published_in = models.CharField(max_length=50,
                                          null=True,
                                          blank=True,
@@ -146,7 +151,8 @@ class Taxon(models.Model):
                                             "rules of the code. It requires no taxonomic opinion.")
     name_published_in_year = models.IntegerField(null=True,
                                                  blank=True,
-                                                 help_text="The year in which the scientificName was published.")
+                                                 help_text="The year in which the "
+                                                 "scientificName was published.")
     higher_classification = models.TextField(null=True,
                                              blank=True,
                                              help_text="A list (concatenated and separated) "
@@ -158,7 +164,8 @@ class Taxon(models.Model):
                                          blank=True,
                                          help_text="An identifier for the reference that "
                                          "supports the taxon name in the "
-                                         "nameAccordingTo field.")    # Add other fields specific to your use case
+                                         "nameAccordingTo field.")    
+                                         # Add other fields specific to your use case
     scientific_name_id = models.CharField(max_length=255,
                                           null=True,
                                           blank=True,
