@@ -77,6 +77,8 @@ INSTALLED_APPS = [
     'django_userforeignkey',
     'django_select2',
 
+    'django_filters',
+
     'simple_history',
 
     "django_celery_results",

@@ -3,6 +3,7 @@
 # for example if you want to paginate them, you can do that.
 # They are in f.qs
 import django_filters
+from django import forms
 from django.contrib.auth.models import User
 from django_filters import rest_framework as filters
 from .models import (
@@ -145,10 +146,23 @@ class ViewProximateAnalysisTableFilter(django_filters.FilterSet):
     class Meta:
         fields = ['id', 'tsn','tsn__completename','tsn__hierarchy','tsn__hierarchystring','part','cp_std','ee_std','cf_std','ash_std','nfe_std','n_taxa','n_reference','n_analysis',]
 
+
+class RangeInput(forms.MultiWidget):
+    def __init__(self, attrs=None):
+        widgets = [
+            forms.NumberInput(attrs={'class': 'range-start'}),
+            forms.NumberInput(attrs={'class': 'range-end'}),
+        ]
+        super().__init__(widgets, attrs)
+
+    def decompress(self, value):
+        if value:
+            return value.split(',')
+        return [None, None]
 class SourceLocationFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains', label='Location contains')
     reference__citation = django_filters.CharFilter(lookup_expr='icontains', label='Reference contains')
-    match_attempts = django_filters.NumberFilter(label='Match Attempts')
+    match_attempts = django_filters.RangeFilter(widget=RangeInput(), label='Match attempts (range)')
 
     class Meta:
         model = SourceLocation
