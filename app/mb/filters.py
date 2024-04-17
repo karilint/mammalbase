@@ -148,7 +148,8 @@ class ViewProximateAnalysisTableFilter(django_filters.FilterSet):
 class SourceLocationFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains', label='Location contains')
     reference__citation = django_filters.CharFilter(lookup_expr='icontains', label='Reference contains')
+    match_attempts = django_filters.NumberFilter(label='Match Attempts')
 
     class Meta:
         model = SourceLocation
-        fields = ['name', 'reference__citation',]
+        fields = ['name', 'reference__citation', 'match_attempts']
