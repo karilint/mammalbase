@@ -10,8 +10,6 @@ from mb.models import (
     SourceUnit,
     ChoiceValue,
     SourceStatistic,
-    SourceChoiceSetOption,
-    SourceChoiceSetOptionValue,
     SourceMeasurementValue)
 from .base_importer import BaseImporter
 
@@ -44,7 +42,8 @@ class EtsImporter(BaseImporter):
             """Get an attribute from row with a default value if it doesn't exist."""
             return getattr(row, attr, default_values.get(attr))
 
-        # if verbatimTraitUnit == 'nan' or verbatimTraitUnit != verbatimTraitUnit or verbatimTraitUnit == 'NA':
+        # if verbatimTraitUnit == 'nan' or verbatimTraitUnit != verbatimTraitUnit or
+        # verbatimTraitUnit == 'NA':
         # entityclass = get_entityclass('Taxon', author)
         # attribute = get_sourceattribute(name, reference, entityclass, method, 2, author)
         # if 'verbatimTraitValue' in headers:
@@ -125,7 +124,9 @@ class EtsImporter(BaseImporter):
                   source_measurement)
             return True
 
-    def get_or_create_source_attribute(self, name: str, source_reference: SourceReference, entity_class: SourceEntity, source_method: SourceMethod, type_value: int, author: User):
+    def get_or_create_source_attribute(self, name: str, source_reference: SourceReference,
+                                       entity_class: SourceEntity, source_method: SourceMethod,
+                                       type_value: int, author: User):
         """
         Returns a SourceAttribute object if it exists, otherwise creates it.
         """
@@ -134,7 +135,11 @@ class EtsImporter(BaseImporter):
             return None
         
         source_attribute = SourceAttribute.objects.filter(
-            name__iexact=name, reference=source_reference, entity=entity_class, method=source_method, type=type_value
+            name__iexact=name,
+            reference=source_reference,
+            entity=entity_class,
+            method=source_method,
+            type=type_value
         )
 
         if source_attribute.exists():
@@ -151,14 +156,12 @@ class EtsImporter(BaseImporter):
         """
         if trait_unit == 'nan' or trait_unit is None or trait_unit == 'NA':
             return None
-        else:
-            source_unit = SourceUnit.objects.filter(name__iexact=trait_unit)
-            if source_unit.exists():
-                return source_unit.first()
-            else:
-                source_unit = SourceUnit(name=trait_unit, created_by=author)
-                source_unit.save()
-                return source_unit
+        source_unit = SourceUnit.objects.filter(name__iexact=trait_unit)
+        if source_unit.exists():
+            return source_unit.first()
+        source_unit = SourceUnit(name=trait_unit, created_by=author)
+        source_unit.save()
+        return source_unit
 
     def get_choicevalue_ets(self, choice, choice_set):
         """
@@ -173,19 +176,18 @@ class EtsImporter(BaseImporter):
         else:
             return None
 
-    def get_or_create_source_statistic(self, statistic: str, source_reference: SourceReference, author: User):
+    def get_or_create_source_statistic(self, statistic: str, source_reference: SourceReference,
+                                       author: User):
         """
         Returns a SourceStatistic object if it exists, otherwise creates it.
         """
         if statistic is None or statistic == 'nan':
             return None
-        else:
-            source_statistic = SourceStatistic.objects.filter(
-                name__iexact=statistic, reference=source_reference)
-            if source_statistic.exists():
-                return source_statistic.first()
-            else:
-                source_statistic = SourceStatistic(
-                    name=statistic, reference=source_reference, created_by=author)
-                source_statistic.save()
-                return source_statistic
+        source_statistic = SourceStatistic.objects.filter(
+            name__iexact=statistic, reference=source_reference)
+        if source_statistic.exists():
+            return source_statistic.first()
+        source_statistic = SourceStatistic(
+            name=statistic, reference=source_reference, created_by=author)
+        source_statistic.save()
+        return source_statistic

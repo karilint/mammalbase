@@ -1,11 +1,10 @@
-from django.test import TestCase
 import requests_mock
-from django.contrib.auth.models import User
-from .utils.mock_api import generate_mock_api
 from allauth.socialaccount.models import SocialAccount
-from django.test import Client
+from django.test import Client, TestCase
 from django.contrib.messages import get_messages
+from django.contrib.auth.models import User
 from mb.models import ChoiceValue
+from .utils.mock_api import generate_mock_api
 
 class OccurenceImporterTest(TestCase):
     @requests_mock.Mocker()

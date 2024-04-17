@@ -22,7 +22,6 @@ from .main import (
     ProximateAnalysisForm,
     ProximateAnalysisItemForm,
     SourceChoiceSetOptionValueForm,
-    SourceEntityForm,
     MSW3TaxaWidget,
     MatchStatusWidget,
     SourceEntityRelationForm,

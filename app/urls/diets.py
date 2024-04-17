@@ -1,4 +1,4 @@
-""" urls.diets - URLs accosiated with diets
+""" urls.diets - URLs associated with diets
     imported by urls.__init__ as part of urls subpackage
 """
 
@@ -8,16 +8,16 @@ from mb.views import (
     index_diet,
     diet_set_list,
     diet_set_detail,
-    diet_set_delete,
+    DietSetDelete,
     diet_set_edit,
     diet_set_item_detail,
-    diet_set_item_delete,
+    DietSetItemDelete,
     diet_set_item_edit,
     diet_set_item_new,
     diet_set_reference_list,
     food_item_list,
     food_item_detail,
-    food_item_delete,
+    FoodItemDelete,
     food_item_edit,
 )
 
@@ -40,7 +40,7 @@ urlpatterns = [
             name='diet_set-detail'),
     path(
             'ds/<int:pk>/delete/',
-            diet_set_delete.as_view(),
+            DietSetDelete.as_view(),
             name='diet_set-delete'),
     path(
             'ds/<int:pk>/edit/',
@@ -52,7 +52,7 @@ urlpatterns = [
             name='diet_set_item-detail'),
     path(
             'dsi/<int:pk>/delete/',
-            diet_set_item_delete.as_view(),
+            DietSetItemDelete.as_view(),
             name='diet_set_item-delete'),
     path(
             'dsi/<int:pk>/edit/',
@@ -72,7 +72,7 @@ urlpatterns = [
             name='food_item-detail'),
     path(
             'fi/<int:pk>/delete/',
-            food_item_delete.as_view(),
+            FoodItemDelete.as_view(),
             name='food_item-delete'),
     path(
             'fi/<int:pk>/edit/',

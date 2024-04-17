@@ -12,8 +12,7 @@ from mb.models import ModelName
 
 from django.db import models
 from django.db.models import Q
-from django.shortcuts import render, get_object_or_404, redirect
-from django.utils import timezone
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
@@ -49,10 +48,10 @@ class AttributeRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0} ({1}) {2}'.format(
-                self.source_attribute.name,
-                self.master_attribute.name,
-                self.master_attribute.reference)
+        return (
+                f"{self.source_attribute.name} "
+                f"({self.master_attribute.name}) "
+                f"{self.master_attribute.reference}")
 
 
 class ChoiceValue(BaseModel):
@@ -86,7 +85,7 @@ class ChoiceValue(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.choice_set, self.caption)
+        return f"{self.choice_set} - {self.caption} "
 
 class ChoiceSetOptionRelation(BaseModel):
     source_choiceset_option = models.ForeignKey(
@@ -118,9 +117,9 @@ class ChoiceSetOptionRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0} - {1}'.format(
-                self.source_choiceset_option.name,
-                self.master_choiceset_option.name)
+        return (
+                f"{self.source_choiceset_option.name} - "
+                f"{self.master_choiceset_option.name}")
 
 
 class EntityClass(BaseModel):
@@ -150,7 +149,7 @@ class EntityClass(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 
 class RelationClass(BaseModel):
@@ -175,7 +174,7 @@ class RelationClass(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 
 class FoodItem(BaseModel):
@@ -265,7 +264,7 @@ class MasterAttributeGroup(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class AttributeGroupRelation(BaseModel):
     group = models.ForeignKey('MasterAttributeGroup', on_delete=models.CASCADE)
@@ -357,9 +356,11 @@ class MasterAttribute(BaseModel):
         String for representing the Model object (in Admin site etc.)
         """
         if self.unit:
-            return '%s: %s (%s)' % (self.entity.name, self.name, self.unit.print_name)
-        else:
-            return '%s: %s' % (self.entity.name, self.name)
+            return (
+                    f"{self.entity.name}: "
+                    f"{self.name} "
+                    f"({self.unit.print_name})")
+        return f"{self.entity.name}: {self.name}"
 
 class MasterChoiceSetOption(BaseModel):
     """
@@ -400,7 +401,7 @@ class MasterChoiceSetOption(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.master_attribute.name, self.name)
+        return f"{self.master_attribute.name} - {self.name} "
 
 
 class MasterEntity(BaseModel):
@@ -446,7 +447,7 @@ class MasterEntity(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class MasterReference(BaseModel):
     """
@@ -564,7 +565,7 @@ class MasterReference(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.citation)
+        return f"{self.citation}"
 
 class MasterUnit(BaseModel):
     """
@@ -598,7 +599,10 @@ class MasterUnit(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s: %s (%s)' % (self.quantity_type, self.name, self.print_name)
+        return (
+                f"{self.quantity_type}: "
+                f"{self.name} "
+                f"({self.print_name})")
 
 class SourceAttribute(BaseModel):
     """
@@ -648,7 +652,7 @@ class SourceAttribute(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.entity.name, self.name)
+        return f"{self.entity.name} - {self.name} "
 
 
 class SourceChoiceSetOption(BaseModel):
@@ -686,7 +690,7 @@ class SourceChoiceSetOption(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.source_attribute.name, self.name)
+        return f"{self.source_attribute.name} - {self.name} "
 
 class SourceChoiceSetOptionValue(BaseModel):
     """
@@ -714,9 +718,9 @@ class SourceChoiceSetOptionValue(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (
-            self.source_choiceset_option.source_attribute.name, self.source_choiceset_option.name
-        )
+        return (
+                f"{self.source_choiceset_option.source_attribute.name} - "
+                f"{self.source_choiceset_option.name} ")
 
 class SourceEntity(BaseModel):
     """
@@ -760,7 +764,7 @@ class SourceEntity(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class SourceMeasurementValue(BaseModel):
     """
@@ -893,9 +897,9 @@ class SourceMeasurementValue(BaseModel):
         if self.mean < self.minimum or self.mean > self.maximum :
             raise ValidationError(gettext_lazy(
                     'Measurement error: mean outside min or max.'))
-        if self.n_total == 0 or self.n_total == 1:
+        if self.n_total in (0, 1):
             self.std = None
-        if self.std != None and self.std > self.maximum - self.minimum:
+        if self.std is not None and self.std > self.maximum - self.minimum:
             raise ValidationError(gettext_lazy(
                     'Measurement error: std is too large.'))
 
@@ -912,21 +916,21 @@ class SourceMeasurementValue(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s: %s ' % (self.source_attribute.name, str(self.n_total))
+        return f"{self.source_attribute.name}: {str(self.n_total)} "
 
     # Used to calculate the quality of the measurement data
     def calculate_data_quality_score_for_measurement(self):
         score = 0
         #1 weight of taxon quality
         taxon = self.source_entity.entity.name
-        if taxon == 'Species' or taxon == 'Subspecies':
+        if taxon in ('Species', 'Subspecies'):
             score += 1
 
         #2 weight of having a reported citation of the data
         citation = self.cited_reference
         if citation == 'Original study':
             score += 2
-        elif citation != None:
+        elif citation is not None:
             score += 1
 
         #3 weight of source quality in the diet
@@ -988,7 +992,7 @@ class SourceMethod(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class SourceStatistic(BaseModel):
     """
@@ -1018,7 +1022,7 @@ class SourceStatistic(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class SourceUnit(BaseModel):
     """
@@ -1053,7 +1057,7 @@ class SourceUnit(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class EntityRelation(BaseModel):
     source_entity = models.ForeignKey('SourceEntity', on_delete=models.CASCADE)
@@ -1095,11 +1099,10 @@ class EntityRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0} ({1}) {2}'.format(
-            self.source_entity.name,
-            self.master_entity.name,
-            self.master_entity.reference
-        )
+        return (
+                f"{self.source_entity.name} "
+                f"({self.master_entity.name}) "
+                f"{self.master_entity.reference}")
 
 class SourceReference(BaseModel):
     """
@@ -1146,7 +1149,7 @@ class SourceReference(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.citation)
+        return f"{self.citation}"
 
 class ReferenceRelation(BaseModel):
     source_reference = models.ForeignKey(SourceReference, on_delete=models.CASCADE)
@@ -1169,7 +1172,9 @@ class ReferenceRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0} ({1})'.format(self.source_reference.citation,self.master_reference.citation)
+        return (
+                f"{self.source_reference.citation} "
+                f"({self.master_reference.citation})")
 
 class UnitConversion(BaseModel):
     """
@@ -1195,11 +1200,10 @@ class UnitConversion(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return 'One %s equals %s %ss ' % (
-            self.from_unit.name,
-            str(float(self.coefficient)),
-            self.to_unit.name
-        )
+        return (
+            f"One {self.from_unit.name} "
+            f"equals {str(float(self.coefficient))} "
+            f"{self.to_unit.name}s ")
 
 class UnitRelation(BaseModel):
     source_unit = models.ForeignKey('SourceUnit', on_delete=models.CASCADE)
@@ -1224,11 +1228,10 @@ class UnitRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0}: {1} ({2})'.format(
-            self.source_unit.name,
-            self.master_unit.name,
-            self.master_unit.quantity_type
-        )
+        return (
+                f"{self.source_unit.name}: "
+                f"{self.master_unit.name} "
+                f"({self.master_unit.quantity_type})")
 
 class TimePeriod(BaseModel):
     """
@@ -1258,7 +1261,7 @@ class TimePeriod(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class DietSet(BaseModel):
     """
@@ -1272,7 +1275,7 @@ class DietSet(BaseModel):
     taxon = models.ForeignKey(
         'SourceEntity',
         on_delete=models.CASCADE,
-        limit_choices_to = ( 
+        limit_choices_to = (
                 Q(entity__name='Genus') |
                 Q(entity__name='Species') |
                 Q(entity__name='Subspecies')),
@@ -1292,7 +1295,9 @@ class DietSet(BaseModel):
         null = True,
         limit_choices_to={'choice_set': 'Gender'},
         )
-    sample_size = models.PositiveSmallIntegerField(default=0, help_text='Sample Size')
+    sample_size = models.PositiveSmallIntegerField(
+            default=0,
+            help_text='Sample Size')
     cited_reference = models.CharField(
         blank=True,
         null=True,
@@ -1328,7 +1333,15 @@ class DietSet(BaseModel):
 
     class Meta:
         ordering = ['taxon__name', 'reference']
-#        unique_together = ('reference','taxon','location', 'gender', 'sample_size', 'cited_reference', 'time_period', 'method')
+#        unique_together = (
+#                'reference',
+#                'taxon',
+#                'location',
+#                'gender',
+#                'sample_size',
+#                'cited_reference',
+#                'time_period',
+#                'method')
 
     def get_absolute_url(self):
         """
@@ -1340,14 +1353,14 @@ class DietSet(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.taxon, self.reference)
+        return f"{self.taxon} - {self.reference} "
 
     def calculate_data_quality_score(self):
         score = 0
 
         # 1. Taxon quality
         entity = self.taxon.entity.name
-        if entity == 'Species' or entity == 'Subspecies':
+        if entity in ('Species', 'Subspecies'):
             score += 1
 
         # 2. The weight of having a reported citation of the data in the diet
@@ -1360,7 +1373,7 @@ class DietSet(BaseModel):
         # 3. The weight of source quality in the diet
         try:
             master = self.reference.master_reference.type
-        except:
+        except: # FIX: except what? ValueError?
             score += 0
         else:
             if master == 'journal-article':
@@ -1376,7 +1389,9 @@ class DietSet(BaseModel):
             score += 2
 
         # 5. The weight of food item taxonomy
-        diet_set_items = DietSetItem.objects.filter(diet_set=self, food_item__tsn__rank_id__gt=100)
+        diet_set_items = DietSetItem.objects.filter(
+                diet_set=self,
+                food_item__tsn__rank_id__gt=100)
         if diet_set_items.count():
             score += (2 * diet_set_items.count()) // diet_set_items.count()
 
@@ -1400,7 +1415,7 @@ class DietSetItem(BaseModel):
         default=100_000,
         help_text='List order on Diet Set'
     )
-    percentage = models.DecimalField(default=0, decimal_places=3, max_digits=9,)
+    percentage = models.DecimalField(default=0, decimal_places=3, max_digits=9)
 
     class Meta:
         unique_together = ('diet_set', 'food_item')
@@ -1471,11 +1486,12 @@ class ViewMasterTraitValue(models.Model):
         """
         Returns the url to access a particular Master Attribute instance.
         """
-        return reverse('master-attribute-detail', args=[str(self.master_attribute_id)])
+        return reverse(
+                'master-attribute-detail',
+                args=[str(self.master_attribute_id)])
 
     def __str__(self):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.master_attribute_name, self.trait_selected)
-
+        return f"{self.master_attribute_name} - {self.trait_selected} "

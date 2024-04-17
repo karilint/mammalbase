@@ -1,4 +1,4 @@
-""" mb.models.location_models - 
+""" mb.models.location - 
 
 This module should not be imported anywhere else than __init__.py!
 

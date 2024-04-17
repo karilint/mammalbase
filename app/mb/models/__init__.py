@@ -42,17 +42,17 @@ from .proximate_analysis import (
     ProximateAnalysisItem,
     ViewProximateAnalysisTable)
 
-from .habitat_models import (
+from .habitat import (
     SourceHabitat,
     MasterHabitat,
     HabitatRelation)
 
-from .location_models import (
+from .location import (
     SourceLocation,
     MasterLocation,
     LocationRelation)
 
-from .occurrence_models import (
+from .occurrence import (
     Occurrence,
     Event)
 
