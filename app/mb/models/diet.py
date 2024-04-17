@@ -6,60 +6,17 @@ To import models elsewhere use subpackage:
 from mb.models import ModelName
 """
 
-from django.core.exceptions import ValidationError
 from django.db import models
-from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from django.urls import reverse
 from django.utils.translation import gettext_lazy
+from django.shortcuts import get_object_or_404
+from django.core.exceptions import ValidationError
 
-from app.itis.models import TaxonomicUnits
-from app.mb.models.proximate_analysis import ViewProximateAnalysisTable
+from itis.models import TaxonomicUnits
 from .base_model import BaseModel
+from .proximate_analysis import ViewProximateAnalysisTable
 
-class DietSetItem(BaseModel):
-    """
-    Model representing a DietSetItem in MammalBase
-    """
-
-    diet_set = models.ForeignKey(
-        'DietSet',
-        on_delete = models.CASCADE,
-        )
-    food_item = models.ForeignKey(
-        'FoodItem',
-        on_delete = models.CASCADE,
-        )
-    # Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
-    list_order = models.PositiveSmallIntegerField(
-        default=100_000,
-        help_text='List order on Diet Set'
-    )
-    percentage = models.DecimalField(default=0, decimal_places=3, max_digits=9)
-
-    class Meta:
-        unique_together = ('diet_set', 'food_item')
-        ordering = ['list_order','-percentage']
-
-    def clean(self):
-        if self.percentage < 0:
-            raise ValidationError(gettext_lazy(
-                    'Only positive numbers are accepted.'))
-#        if self.percentage > 100:
-#            raise ValidationError(gettext_lazy(
-#                    'Only numbers between 0 and 100 are accepted.'))
-
-    def get_absolute_url(self):
-        """
-        Returns the url to access a particular DietSetItem instance.
-        """
-        return reverse('diet-set-item-detail', args=[str(self.id)])
-
-    def __str__(self):
-        """
-        String for representing the Model object (in Admin site etc.)
-        """
-        return f"{self.diet_set} - {self.food_item}"
-    
 
 class DietSet(BaseModel):
     """
@@ -194,7 +151,52 @@ class DietSet(BaseModel):
             score += (2 * diet_set_items.count()) // diet_set_items.count()
 
         return score
-    
+
+class DietSetItem(BaseModel):
+    """
+    Model representing a DietSetItem in MammalBase
+    """
+
+    diet_set = models.ForeignKey(
+        'DietSet',
+        on_delete = models.CASCADE,
+        )
+    food_item = models.ForeignKey(
+        'FoodItem',
+        on_delete = models.CASCADE,
+        )
+    # Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
+    list_order = models.PositiveSmallIntegerField(
+        default=100_000,
+        help_text='List order on Diet Set'
+    )
+    percentage = models.DecimalField(default=0, decimal_places=3, max_digits=9)
+
+    class Meta:
+        unique_together = ('diet_set', 'food_item')
+        ordering = ['list_order','-percentage']
+
+    def clean(self):
+        if self.percentage < 0:
+            raise ValidationError(gettext_lazy(
+                    'Only positive numbers are accepted.'))
+#        if self.percentage > 100:
+#            raise ValidationError(gettext_lazy(
+#                    'Only numbers between 0 and 100 are accepted.'))
+
+    def get_absolute_url(self):
+        """
+        Returns the url to access a particular DietSetItem instance.
+        """
+        return reverse('diet-set-item-detail', args=[str(self.id)])
+
+    def __str__(self):
+        """
+        String for representing the Model object (in Admin site etc.)
+        """
+        return f"{self.diet_set} - {self.food_item}"
+
+
 class FoodItem(BaseModel):
     """
     Model representing a FoodItem in MammalBase
@@ -264,3 +266,4 @@ class FoodItem(BaseModel):
         String for representing the Model object (in Admin site etc.)
         """
         return f"{self.name}"
+

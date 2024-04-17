@@ -11,7 +11,6 @@ from .unsorted import (
     ChoiceSetOptionRelation,
     EntityClass,
     RelationClass,
-    FoodItem,
     MasterAttributeGroup,
     AttributeGroupRelation,
     MasterAttribute,
@@ -33,8 +32,6 @@ from .unsorted import (
     UnitConversion,
     UnitRelation,
     TimePeriod,
-    DietSet,
-    DietSetItem,
     ViewMasterTraitValue)
 
 from .proximate_analysis import (
@@ -55,6 +52,11 @@ from .location import (
 from .occurrence import (
     Occurrence,
     Event)
+    
+from .diet import (
+    FoodItem,
+    DietSet,
+    DietSetItem)
 
 from .validators import (
     validate_doi)
