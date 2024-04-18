@@ -8,6 +8,7 @@ from mb.models import ModelName
 
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils.translation import gettext_lazy
@@ -29,7 +30,8 @@ class DietSetItem(BaseModel):
         'FoodItem',
         on_delete = models.CASCADE,
         )
-    # Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
+    # Sortable, see:
+    # https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
     list_order = models.PositiveSmallIntegerField(
         default=100_000,
         help_text='List order on Diet Set'
@@ -58,7 +60,7 @@ class DietSetItem(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return f"{self.diet_set} - {self.food_item}"
+        return f"{self.diet_set}-{self.food_item}"
     
 
 class DietSet(BaseModel):
@@ -151,9 +153,14 @@ class DietSet(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return f"{self.taxon} - {self.reference} "
+        return f"{self.taxon}-{self.reference} "
 
     def calculate_data_quality_score(self):
+        """
+        Returns the data quality score. 
+        Score is composed of the taxon quality, citation, how good the source is,
+        desctiption and the precision of the food item
+        """
         score = 0
 
         # 1. Taxon quality
@@ -238,6 +245,9 @@ class FoodItem(BaseModel):
         return reverse('food-item-detail', args=[str(self.id)])
 
     def save(self, *args, **kwargs):
+        """
+        Saves what is given to it
+        """
         if self.tsn is None:
             super().save(*args, **kwargs)  # Call the "real" save() method.
         else:
@@ -264,3 +274,4 @@ class FoodItem(BaseModel):
         String for representing the Model object (in Admin site etc.)
         """
         return f"{self.name}"
+    
