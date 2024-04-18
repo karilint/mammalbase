@@ -191,18 +191,18 @@ def index_master_location_list(request):
         except Exception as e:
             print("Virhe: " + str(e))
         
-        """
+        
         objects = remove_none_values(objects)
         try:
+            master_habitat = params["master_habitat"]
             for i in range(len(objects)):
-                master_habitat = params["master_habitat"]
                 if master_habitat == "":
                     break
-                if string_contains(master_habitat, objects[i].master_habitats) == False:
+                if string_contains(master_habitat, objects[i].master_habitat) == False:
                     objects[i] = None
-        except:
-            pass
-		"""
+        except Exception as e:
+            print("Virhe: " + str(e))
+		
 
         objects = remove_none_values(objects)
         for object in objects:
@@ -218,10 +218,10 @@ def index_master_location_list(request):
     class MasterLocationView(models.Model):
         name = models.CharField(max_length=500) 
         reference = models.CharField(max_length=500) 
-        master_habitats = models.TextField()
+        master_habitat = models.TextField()
     
     def get_master_habitats(ml : MasterLocation):
-        # Get MasterHabitats by MasterLocation
+        """ Get MasterHabitats by MasterLocation """ 
         mr = ml.reference
 
         try:
