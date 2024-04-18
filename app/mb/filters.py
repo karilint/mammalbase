@@ -146,24 +146,17 @@ class ViewProximateAnalysisTableFilter(django_filters.FilterSet):
     class Meta:
         fields = ['id', 'tsn','tsn__completename','tsn__hierarchy','tsn__hierarchystring','part','cp_std','ee_std','cf_std','ash_std','nfe_std','n_taxa','n_reference','n_analysis',]
 
-
-class RangeInput(forms.MultiWidget):
-    def __init__(self, attrs=None):
-        widgets = [
-            forms.NumberInput(attrs={'class': 'range-start'}),
-            forms.NumberInput(attrs={'class': 'range-end'}),
-        ]
-        super().__init__(widgets, attrs)
-
-    def decompress(self, value):
-        if value:
-            return value.split(',')
-        return [None, None]
 class SourceLocationFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains', label='Location contains')
     reference__citation = django_filters.CharFilter(lookup_expr='icontains', label='Reference contains')
-    match_attempts = django_filters.RangeFilter(widget=RangeInput(), label='Match attempts (range)')
+    match_attempts_gte = django_filters.NumberFilter(field_name='match_attempts', lookup_expr='gte', label='Match attempts')
+    match_attempts_lte = django_filters.NumberFilter(field_name='match_attempts', lookup_expr='lte', label='Match attempts to')
 
     class Meta:
         model = SourceLocation
-        fields = ['name', 'reference__citation', 'match_attempts']
+        fields = ['name', 'reference__citation', 'match_attempts_gte', 'match_attempts_lte']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.form.fields['match_attempts_gte'].initial = 0
+        self.form.fields['match_attempts_lte'].initial = 0

@@ -1,28 +1,50 @@
+<script>
+  window.onload = function() {
+    var gteInput = document.querySelector('input[name="match_attempts_gte"]');
+    var lteInput = document.querySelector('input[name="match_attempts_lte"]');
+
+    gteInput.addEventListener('input', function() {
+      lteInput.min = gteInput.value;
+    });
+
+    lteInput.addEventListener('input', function() {
+      gteInput.max = lteInput.value;
+    });
+  };
+</script>
+
 <style>
-    .range-start, .range-end {
-        display: inline-block !important;
-        width: 20% !important;
-    }
+  .range-field {
+      display: inline-block !important;
+      width: 55px !important;
+  }
 </style>
 
 <button onclick="myFunction('Find')" class="w3-button w3-block w3-black w3-left-align"><span class="fa fa-filter"></span> Press here to filter</button>
 <form id="Find" class="w3-container w3-hide" method="get">
-  <table class="mb-detail w3-table-all">
-    {% for field in filter.form %}
-        {% if field.name == "match_attempts" %}
-            <tr>
-                <td>{{ field.label_tag }}</td>
-                <td>{{ field.value.0 }} - {{ field.value.1 }}</td>
-            </tr>
-        {% else %}
-            <tr>
-                <td>{{ field.label_tag }}</td>
-                <td>{{ field }}</td>
-            </tr>
-        {% endif %}
-    {% endfor %}
-  </table>
-  <div class="mb-detail w3-bar w3-right-align">
-    <button type="submit" class="w3-button w3-medium w3-round w3-padding-small w3-teal">Search &raquo;</button>
-  </div>
+<table class="mb-detail w3-table-all">
+  {% for field in filter.form %}
+    {% if field.name == "match_attempts_gte" %}
+        <tr>
+            <td>{{ field.label_tag }}</td>
+            <td>
+                <div class="range-field">
+                    <input type="number" name="{{ field.name }}" value="{{ field.value|default:0 }}" min="0">
+                </div> - 
+                <div class="range-field">
+                    <input type="number" name="match_attempts_lte" value="{{ filter.form.match_attempts_lte.value|default:0 }}" min="0">
+                </div>
+            </td>
+        </tr>
+    {% elif field.name != "match_attempts_lte" %}
+        <tr>
+            <td>{{ field.label_tag }}</td>
+            <td>{{ field }}</td>
+        </tr>
+    {% endif %}
+{% endfor %}
+</table>
+<div class="mb-detail w3-bar w3-right-align">
+  <button type="submit" class="w3-button w3-medium w3-round w3-padding-small w3-teal">Search &raquo;</button>
+</div>
 </form>
