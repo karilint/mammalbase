@@ -151,18 +151,33 @@ def index_proximate_analysis(request):
 
 def index_master_location_list(request):
 
+    def string_contains(str1, str2):
+        if str1.lower() in str2.lower():
+            return True
+        return False
+    
+    def remove_none_values(list):
+        new_list = []
+        for item in list:
+            if item == None:
+                continue
+            new_list.append(item)
+        return new_list
+
     def filter(objects, params):
-        """ TODO: jatka tästä! haku ei toimi, ehkä virhe miten merkkijonoja verrataan keskenään?? """
         print("params: " + str(params))
-        for object in objects:
-            try:
-                master_location = params["master_location"]
-            except:
-                break
-            if master_location == "":
-                break
-            if object.name not in master_location:
-                objects.remove(object)
+        
+        try:
+            master_location = params["master_location"]
+            for i in range(len(objects)):
+                if master_location == "":
+                    break
+                if string_contains(master_location, objects[i].name) == False:
+                    objects[i] = None
+        except:
+            pass
+        
+        """
         for object in objects:
             try:
                 reference = params["reference"]
@@ -170,8 +185,9 @@ def index_master_location_list(request):
                 break
             if reference == "":
                 break
-            if object.reference != reference:
+            if object.reference not in reference:
                 objects.remove(object)
+		"""
         """
         for object in objects:
             if params["master_habitat"] == "":
@@ -179,9 +195,10 @@ def index_master_location_list(request):
             if object.master_habitat != params["master_habitat"]:
                 objects.pop(object)
 		"""
-                  
+        objects = remove_none_values(objects)
         for object in objects:
             print("name: " + str(object.name))
+            continue
         
         return objects
 
