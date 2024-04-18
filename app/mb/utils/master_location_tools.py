@@ -2,12 +2,6 @@ from mb.models import MasterHabitat
 from django.db import models
 from mb.models.location_models import MasterLocation
 
-class MasterLocationView(models.Model):
-    """ Tool model to preset master locations. """
-    name = models.CharField(max_length=500) 
-    reference = models.CharField(max_length=500) 
-    master_habitat = models.TextField()
-
 def get_master_habitats(ml : MasterLocation):
     """ Get MasterHabitats by MasterLocation """ 
     mr = ml.reference

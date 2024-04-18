@@ -101,7 +101,7 @@ from mb.models import (
     SourceHabitat,
     MasterHabitat)
 from mb.models.location_models import MasterLocation, LocationRelation, SourceLocation
-from mb.utils.master_location_tools import MasterLocationView, get_master_habitats, string_contains, remove_none_values, filter
+from mb.utils.master_location_tools import get_master_habitats, filter
 
 
 # Error Pages
@@ -151,6 +151,12 @@ def index_proximate_analysis(request):
     return render(request, 'mb/index_proximate_analysis.html', context={'num_PA_item':num_PA_item},)
 
 def index_master_location_list(request):
+    class MasterLocationView(models.Model):
+        """ Tool model to preset master locations. """
+        name = models.CharField(max_length=500) 
+        reference = models.CharField(max_length=500) 
+        master_habitat = models.TextField()
+
     params = request.GET.dict()
 
     master_locations = MasterLocation.objects.filter()
