@@ -152,6 +152,9 @@ def index_proximate_analysis(request):
 def index_master_location_list(request):
 
     def string_contains(str1, str2):
+        print("str1: " + str(str1))
+        print("str2: " + str(str2))
+
         if str1.lower() in str2.lower():
             return True
         return False
@@ -168,33 +171,39 @@ def index_master_location_list(request):
         print("params: " + str(params))
         
         try:
-            master_location = params["master_location"]
+            master_location = str(params["master_location"])
             for i in range(len(objects)):
                 if master_location == "":
                     break
                 if string_contains(master_location, objects[i].name) == False:
                     objects[i] = None
-        except:
-            pass
+        except Exception as e:
+            print("Virhe: " + str(e))
+        
+        objects = remove_none_values(objects)
+        try:
+            reference = str(params["reference"])
+            for i in range(len(objects)):
+                if reference == "":
+                    break
+                if string_contains(reference, objects[i].reference) == False:
+                    objects[i] = None
+        except Exception as e:
+            print("Virhe: " + str(e))
         
         """
-        for object in objects:
-            try:
-                reference = params["reference"]
-            except:
-                break
-            if reference == "":
-                break
-            if object.reference not in reference:
-                objects.remove(object)
+        objects = remove_none_values(objects)
+        try:
+            for i in range(len(objects)):
+                master_habitat = params["master_habitat"]
+                if master_habitat == "":
+                    break
+                if string_contains(master_habitat, objects[i].master_habitats) == False:
+                    objects[i] = None
+        except:
+            pass
 		"""
-        """
-        for object in objects:
-            if params["master_habitat"] == "":
-                break
-            if object.master_habitat != params["master_habitat"]:
-                objects.pop(object)
-		"""
+
         objects = remove_none_values(objects)
         for object in objects:
             print("name: " + str(object.name))
@@ -236,7 +245,7 @@ def index_master_location_list(request):
     for x in master_locations:
         ml_view_obj = MasterLocationView()
         ml_view_obj.name = x.name
-        ml_view_obj.reference = x.reference
+        ml_view_obj.reference = x.reference.citation
         ml_view_obj.master_habitat = get_master_habitats(x)
         mls_with_habitat.append(ml_view_obj)
     
