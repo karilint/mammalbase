@@ -151,7 +151,24 @@ def index_proximate_analysis(request):
 
 def index_master_location_list(request):
 
+    def get_master_habitats(ml : MasterLocation):
+        """ Get MasterHabitats by MasterLocation """ 
+        mr = ml.reference
+
+        try:
+            master_habitats = MasterHabitat.objects.filter(reference=mr)
+        except:
+            return "nan"
+        
+        habitats = ""
+
+        for master_habitat in master_habitats:
+            habitats = habitats + f"{master_habitat.name} "
+
+        return str(habitats)
+
     def string_contains(str1, str2):
+        """ If string contains substring. Converts string to lowercase. """
         print("str1: " + str(str1))
         print("str2: " + str(str2))
 
@@ -160,6 +177,7 @@ def index_master_location_list(request):
         return False
     
     def remove_none_values(list):
+        """ Delete None-values from list. """
         new_list = []
         for item in list:
             if item == None:
@@ -168,6 +186,7 @@ def index_master_location_list(request):
         return new_list
 
     def filter(objects, params):
+        """ This operates filter from web site. """
         print("params: " + str(params))
         
         try:
@@ -219,24 +238,6 @@ def index_master_location_list(request):
         name = models.CharField(max_length=500) 
         reference = models.CharField(max_length=500) 
         master_habitat = models.TextField()
-    
-    def get_master_habitats(ml : MasterLocation):
-        """ Get MasterHabitats by MasterLocation """ 
-        mr = ml.reference
-
-        try:
-            master_habitats = MasterHabitat.objects.filter(reference=mr)
-        except:
-            return "nan"
-        
-        habitats = ""
-
-        for master_habitat in master_habitats:
-            habitats = habitats + f"{master_habitat.name} "
-
-        
-
-        return str(habitats)
     
     master_locations = MasterLocation.objects.filter()
 
