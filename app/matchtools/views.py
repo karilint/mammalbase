@@ -19,7 +19,10 @@ def trait_match(request):
 @login_required
 def source_location_list(request):
     """List all source locations to be matched with master locations"""
-    filter = SourceLocationFilter(request.GET, queryset=SourceLocation.objects.is_active().select_related())
+    filter = SourceLocationFilter(
+        request.GET,
+        queryset=SourceLocation.objects.is_active().select_related().exclude(locationrelation__isnull=False)
+    )
     id_list = [x.id for x in filter.qs]
     paginator = Paginator(filter.qs, 10)
     page_number = request.GET.get('page')
