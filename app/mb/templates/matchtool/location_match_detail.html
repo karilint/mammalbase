@@ -31,9 +31,8 @@
         <input type="submit" value="Submit" class="w3-button w3-medium w3-round w3-padding-small w3-teal" style="width: 80px;">
       </form>
     </div>
-    
+  </header>
     <!--Permission to see page-->
-    </header>
       {% if request.user|is_data_admin_or_contributor %}
         <br>
         <br>
@@ -84,11 +83,19 @@
     <!--Message if location successfully matched -->
     <div id="successMessage" style="display: none;">
       <h3>{{ sourceLocation }} successfully matched!</h3>
-      <div>New Master locations added:</div>
-      <div id="masterLocation"></div>
-      <div>Hierarchy locations:</div>
-      <div id="hierarchyLocations"></div>
-    </div>    
+      <h4>Locations added:</h4>
+      <table class="mb-list w3-table-all w3-medium w3-threequarter">
+        <thead>
+            <th>Matched location:</th>
+            <th>Hierarchy location(s):</th>
+        </thead>
+      <tbody>
+        <tr>
+          <td><div id="masterLocation"></div></td>
+          <td><div id="hierarchyLocations"></div></td>
+        </tr>
+      </tbody>
+    </table>
 
     <!--Pagination-->
     <div class="w3-container" style="margin-top: 10px;">
@@ -133,7 +140,7 @@
     })
     .then(data => {
       document.querySelector('#masterLocation').innerHTML = data.masterLocation;
-      document.querySelector('#hierarchyLocations').innerHTML = data.hierarchy_locations.join('<br>');
+      document.querySelector('#hierarchyLocations').innerHTML = data.hierarchy_locations.join(',<br>');
 
       document.querySelector('#Search').style.display = 'none';
       document.querySelector('.mb-list').style.display = 'none';
