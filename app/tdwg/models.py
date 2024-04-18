@@ -239,3 +239,7 @@ class Taxon(models.Model):
     # sort_order is not a DarwinCore Class
     sort_order = models.TextField(null=True, blank=True)
     # display_order is not a DarwinCore Class
+    display_order = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.scientific_name
