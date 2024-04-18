@@ -26,9 +26,6 @@ def get_master_habitats(ml : MasterLocation):
 
 def string_contains(str1, str2):
     """ If string contains substring. Converts string to lowercase. """
-    print("str1: " + str(str1))
-    print("str2: " + str(str2))
-
     if str1.lower() in str2.lower():
         return True
     return False
