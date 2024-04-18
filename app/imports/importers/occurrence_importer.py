@@ -43,6 +43,7 @@ class OccurrencesImporter(BaseImporter):
         # Create source location model
         new_source_location = self.get_or_create_source_location(getattr(row, 'verbatimLocality'), reference, author)
         new_event, created = Event.objects.get_or_create(verbatim_event_date=getattr(row, 'verbatimEventDate'), source_habitat=habitat)
+        print(f"Event created: {new_event}")
 
         gender = str(getattr(row, 'sex'))
 
@@ -53,18 +54,24 @@ class OccurrencesImporter(BaseImporter):
         else:
 
             gender, created = ChoiceValue.objects.get_or_create(choice_set="Gender", caption=gender.capitalize())
+            if created:
+                print(f"gender created {gender}")
 
         if life_stage == "nan" or life_stage == "":
             life_stage = None
         else:
             life_stage, created = ChoiceValue.objects.get_or_create(choice_set="Lifestage", caption=life_stage.capitalize())
+            if created:
+                print(f"life_stage created {life_stage}")
         
         obj, created = Occurrence.objects.get_or_create(source_reference=reference, event=new_event, source_location=new_source_location, source_entity=verbatimScientificname,
                                                     organism_quantity=getattr(row, 'organismQuantity'), organism_quantity_type=getattr(row, 'organismQuantityType'), gender=gender, 
                                                     life_stage=life_stage,
                                                     occurrence_remarks=getattr(row, 'occurrenceRemarks'), associated_references=getattr(row, 'associatedReferences'))
         if created:
+            print(f"Occurrence created: {obj}")
             return True
         else:
+            print(f"Occurrence exists: {obj}")
             return False
 
