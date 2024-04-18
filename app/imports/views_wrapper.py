@@ -43,12 +43,12 @@ def wrapper(request, validator, importer, path):
             return HttpResponseRedirect(reverse(path))
  
         else:
-            message = f"File failed to import. {rows_imported} rows of data were imported."
+            message = f"File failed to import row. {rows_imported} rows of data were imported."
             messages.error(request, message)
             return HttpResponseRedirect(reverse(path))
  
     except Exception as e:
-        logging.getLogger("error_logger").error("Unable to upload file due to error. "+repr(e))
+        logging.getLogger("error_logger").error(f"Unable to upload file due to error.{repr(e)}")
         print(e)
         messages.error(request, "Unable to upload file. "+repr(e))
         return HttpResponseRedirect(reverse(path))
