@@ -228,7 +228,7 @@ class FoodItem(BaseModel):
                         part=self.part.caption
                         if part=='CARRION':
                             part='WHOLE'
-                        pa = ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i]).filter(part__exact=part)
+                        pa = ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i])
                         if len(pa)==1:
                             self.pa_tsn=pa.all()[0].tsn
                             break
