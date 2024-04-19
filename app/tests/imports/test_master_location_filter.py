@@ -31,6 +31,15 @@ class MasterLocationFilterTest(TestCase):
         filtered_objs = filter(objs, dic)
 
         self.assertEqual(len(filtered_objs), 3)
+        self.assertEqual(filtered_objs[0].name, "Suomi, Helsinki")
+        self.assertEqual(filtered_objs[1].name, "Suomi, Oulu")
+        self.assertEqual(filtered_objs[2].name, "Suomi, Joensuu")
+        self.assertEqual(filtered_objs[0].reference, "Kirja abc")
+        self.assertEqual(filtered_objs[1].reference, "Lehti 123")
+        self.assertEqual(filtered_objs[2].reference, "Kirja abc")
+        self.assertEqual(filtered_objs[0].master_habitat, "Habitat_01")
+        self.assertEqual(filtered_objs[1].master_habitat, "Habitat_02")
+        self.assertEqual(filtered_objs[2].master_habitat, "Habitat_02")
     
     def test_filter_case_2(self):
         objs = self.create_test_models()
@@ -40,6 +49,12 @@ class MasterLocationFilterTest(TestCase):
         filtered_objs = filter(objs, dic)
 
         self.assertEqual(len(filtered_objs), 2)
+        self.assertEqual(filtered_objs[0].name, "Suomi, Helsinki")
+        self.assertEqual(filtered_objs[1].name, "Suomi, Joensuu")
+        self.assertEqual(filtered_objs[0].reference, "Kirja abc")
+        self.assertEqual(filtered_objs[1].reference, "Kirja abc")
+        self.assertEqual(filtered_objs[0].master_habitat, "Habitat_01")
+        self.assertEqual(filtered_objs[1].master_habitat, "Habitat_02")
     
     def test_filter_case_3(self):
         objs = self.create_test_models()
@@ -58,6 +73,21 @@ class MasterLocationFilterTest(TestCase):
         filtered_objs = filter(objs, dic)
 
         self.assertEqual(len(filtered_objs), 5)
+        self.assertEqual(filtered_objs[0].name, "Suomi, Helsinki")
+        self.assertEqual(filtered_objs[1].name, "Suomi, Oulu")
+        self.assertEqual(filtered_objs[2].name, "Suomi, Joensuu")
+        self.assertEqual(filtered_objs[3].name, "USA, New York")
+        self.assertEqual(filtered_objs[4].name, "USA, San Francisco")
+        self.assertEqual(filtered_objs[0].reference, "Kirja abc")
+        self.assertEqual(filtered_objs[1].reference, "Lehti 123")
+        self.assertEqual(filtered_objs[2].reference, "Kirja abc")
+        self.assertEqual(filtered_objs[3].reference, "Aapinen abc")
+        self.assertEqual(filtered_objs[4].reference, "Artikkeli abc")
+        self.assertEqual(filtered_objs[0].master_habitat, "Habitat_01")
+        self.assertEqual(filtered_objs[1].master_habitat, "Habitat_02")
+        self.assertEqual(filtered_objs[2].master_habitat, "Habitat_02")
+        self.assertEqual(filtered_objs[3].master_habitat, "Habitat_03")
+        self.assertEqual(filtered_objs[4].master_habitat, "Habitat_03")
     
     def test_filter_case_5(self):
         objs = self.create_test_models()
@@ -67,6 +97,21 @@ class MasterLocationFilterTest(TestCase):
         filtered_objs = filter(objs, dic)
 
         self.assertEqual(len(filtered_objs), 5)
+        self.assertEqual(filtered_objs[0].name, "Suomi, Helsinki")
+        self.assertEqual(filtered_objs[1].name, "Suomi, Oulu")
+        self.assertEqual(filtered_objs[2].name, "Suomi, Joensuu")
+        self.assertEqual(filtered_objs[3].name, "USA, New York")
+        self.assertEqual(filtered_objs[4].name, "USA, San Francisco")
+        self.assertEqual(filtered_objs[0].reference, "Kirja abc")
+        self.assertEqual(filtered_objs[1].reference, "Lehti 123")
+        self.assertEqual(filtered_objs[2].reference, "Kirja abc")
+        self.assertEqual(filtered_objs[3].reference, "Aapinen abc")
+        self.assertEqual(filtered_objs[4].reference, "Artikkeli abc")
+        self.assertEqual(filtered_objs[0].master_habitat, "Habitat_01")
+        self.assertEqual(filtered_objs[1].master_habitat, "Habitat_02")
+        self.assertEqual(filtered_objs[2].master_habitat, "Habitat_02")
+        self.assertEqual(filtered_objs[3].master_habitat, "Habitat_03")
+        self.assertEqual(filtered_objs[4].master_habitat, "Habitat_03")
 
     def test_filter_case_6(self):
         objs = self.create_test_models()
@@ -76,3 +121,18 @@ class MasterLocationFilterTest(TestCase):
         filtered_objs = filter(objs, dic)
 
         self.assertEqual(len(filtered_objs), 5)
+        self.assertEqual(filtered_objs[0].name, "Suomi, Helsinki")
+        self.assertEqual(filtered_objs[1].name, "Suomi, Oulu")
+        self.assertEqual(filtered_objs[2].name, "Suomi, Joensuu")
+        self.assertEqual(filtered_objs[3].name, "USA, New York")
+        self.assertEqual(filtered_objs[4].name, "USA, San Francisco")
+        self.assertEqual(filtered_objs[0].reference, "Kirja abc")
+        self.assertEqual(filtered_objs[1].reference, "Lehti 123")
+        self.assertEqual(filtered_objs[2].reference, "Kirja abc")
+        self.assertEqual(filtered_objs[3].reference, "Aapinen abc")
+        self.assertEqual(filtered_objs[4].reference, "Artikkeli abc")
+        self.assertEqual(filtered_objs[0].master_habitat, "Habitat_01")
+        self.assertEqual(filtered_objs[1].master_habitat, "Habitat_02")
+        self.assertEqual(filtered_objs[2].master_habitat, "Habitat_02")
+        self.assertEqual(filtered_objs[3].master_habitat, "Habitat_03")
+        self.assertEqual(filtered_objs[4].master_habitat, "Habitat_03")
