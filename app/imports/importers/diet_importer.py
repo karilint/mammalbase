@@ -195,7 +195,7 @@ class DietImporter(BaseImporter):
 
     def generate_rank_id(self, food):
         associated_taxa = re.sub(
-            r'\b(?:aff|gen|spp|ssp|subf|leg|indet|subsp|subvar|var|nothovar|group|forma)\.?|\b\w{1,2}\b|\s*\W', ' ', food).strip().split()
+            r'\b(?:aff|gen|bot|zoo|ssp|subf|exx|indet|subsp|subvar|var|nothovar|group|forma)\.?|\b\w{1,2}\b|\s*\W', ' ', food).strip().split()
         head = 0
         tail = 0
         rank_id = {}
