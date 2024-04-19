@@ -1,4 +1,4 @@
-from mb.models import MasterHabitat
+from mb.models import MasterHabitat, SourceEntity, MasterEntity, Event
 from django.db import models
 from mb.models.location_models import MasterLocation
 
@@ -69,3 +69,23 @@ def filter(objects, params):
     
     objects = remove_none_values(objects)
     return objects
+
+def remove_nan_value(string : str):
+    """ Cut 'nan'-string. """
+    return string.replace("nan", "")
+
+def get_master_entity(source_entity : SourceEntity):
+    """ Get master entity by source entity. """
+    master_entity = None
+    try:
+        master_entity = MasterEntity.objects.filter(source_entity=source_entity)[0]
+    except Exception as e:
+        print("virhe: " + str(e))
+    return master_entity
+
+def get_source_habitat(event : Event):
+    """ Get source habitat by event """
+    source_habitat = event.source_habitat
+    if source_habitat.habitat_type == "nan":
+        return ""
+    return source_habitat.habitat_type

@@ -101,7 +101,7 @@ from mb.models import (
     SourceHabitat,
     MasterHabitat)
 from mb.models.location_models import MasterLocation, LocationRelation, SourceLocation
-from mb.utils.master_location_tools import get_master_habitats, filter
+from mb.utils.master_location_tools import get_master_habitats, filter, remove_nan_value, get_master_entity, get_source_habitat
 
 
 # Error Pages
@@ -1986,26 +1986,6 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
     """
     Return occurrences by master location.
     """
-
-    def remove_nan_value(string : str):
-        """ Cut 'nan'-string. """
-        return string.replace("nan", "")
-    
-    def get_master_entity(source_entity : SourceEntity):
-        """ Get master entity by source entity. """
-        master_entity = None
-        try:
-            master_entity = MasterEntity.objects.filter(source_entity=source_entity)[0]
-        except Exception as e:
-            print("virhe: " + str(e))
-        return master_entity
-    
-    def get_source_habitat(event : Event):
-        """ Get source habitat by event """
-        source_habitat = event.source_habitat
-        if source_habitat.habitat_type == "nan":
-            return ""
-        return source_habitat.habitat_type
     
     occurrences = []
     source_locations = []
