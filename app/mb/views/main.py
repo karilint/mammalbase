@@ -153,6 +153,7 @@ def index_proximate_analysis(request):
 def index_master_location_list(request):
     class MasterLocationView(models.Model):
         """ Tool model to preset master locations. """
+        id = models.CharField(max_length=20)
         name = models.CharField(max_length=500) 
         reference = models.CharField(max_length=500) 
         master_habitat = models.TextField()
@@ -165,6 +166,7 @@ def index_master_location_list(request):
 
     for x in master_locations:
         ml_view_obj = MasterLocationView()
+        ml_view_obj.id = x.id
         ml_view_obj.name = x.name
         ml_view_obj.reference = x.reference.citation
         ml_view_obj.master_habitat = get_master_habitats(x)
