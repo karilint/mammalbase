@@ -34,9 +34,7 @@ def remove_none_values(list):
     return new_list
 
 def filter(objects, params):
-    """ This operates filter from web site. """
-    print("params: " + str(params))
-    
+    """ This operates filter from web site. """    
     try:
         master_location = str(params["master_location"])
         for i in range(len(objects)):
@@ -45,7 +43,7 @@ def filter(objects, params):
             if string_contains(master_location, objects[i].name) == False:
                 objects[i] = None
     except Exception as e:
-        print("Virhe: " + str(e))
+        pass
     
     objects = remove_none_values(objects)
     try:
@@ -56,7 +54,7 @@ def filter(objects, params):
             if string_contains(reference, objects[i].reference) == False:
                 objects[i] = None
     except Exception as e:
-        print("Virhe: " + str(e))
+        pass
             
     objects = remove_none_values(objects)
     try:
@@ -67,7 +65,7 @@ def filter(objects, params):
             if string_contains(master_habitat, objects[i].master_habitat) == False:
                 objects[i] = None
     except Exception as e:
-        print("Virhe: " + str(e))
+        pass
     
     objects = remove_none_values(objects)
     return objects

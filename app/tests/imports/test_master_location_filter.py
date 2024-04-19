@@ -33,9 +33,21 @@ class MasterLocationFilterTest(TestCase):
         self.assertEqual(len(filtered_objs), 3)
     
     def test_filter_case_2(self):
-        assert True
+        objs = self.create_test_models()
+
+        dic = {"master_location" : "Suomi", "reference" : "Kirja abc"}
+
+        filtered_objs = filter(objs, dic)
+
+        self.assertEqual(len(filtered_objs), 2)
     def test_filter_case_3(self):
-        assert True
+        objs = self.create_test_models()
+
+        dic = {"master_location" : "New York", "master_habitat" : "nan"}
+
+        filtered_objs = filter(objs, dic)
+
+        self.assertEqual(len(filtered_objs), 0)
     def test_filter_case_4(self):
         assert True
     def test_filter_case_5(self):
