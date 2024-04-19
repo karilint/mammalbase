@@ -1,6 +1,6 @@
-from django.db.models import F, Value, CharField, Case, When, Subquery, Min, Q
-from django.db.models.functions import Concat, Replace
 from datetime import timezone, datetime, timedelta
+from django.db.models import F, Value, CharField, Case, When, Q
+from django.db.models.functions import Concat, Replace
 from mb.models import SourceChoiceSetOptionValue
 
 from .custom_db_functions import Round2

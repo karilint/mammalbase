@@ -2,6 +2,8 @@
 
 Ideally this module should not exist.
 
+Do not add any new models here.
+
 This module should not be imported anywhere else than __init__.py!
 
 To import models elsewhere use subpackage:
@@ -10,14 +12,16 @@ from mb.models import ModelName
 
 from django.db import models
 from django.db.models import Q
-from django.shortcuts import render, get_object_or_404, redirect
-from django.utils import timezone
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy
 from itis.models import TaxonomicUnits
 from tdwg.models import Taxon as TdwgTaxon
 from .base_model import BaseModel
 from .validators import validate_doi
+from .proximate_analysis import ViewProximateAnalysisTable
 
 
 class AttributeRelation(BaseModel):
@@ -44,10 +48,10 @@ class AttributeRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0} ({1}) {2}'.format(
-                self.source_attribute.name,
-                self.master_attribute.name,
-                self.master_attribute.reference)
+        return (
+                f"{self.source_attribute.name} "
+                f"({self.master_attribute.name}) "
+                f"{self.master_attribute.reference}")
 
 
 class ChoiceValue(BaseModel):
@@ -81,7 +85,7 @@ class ChoiceValue(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.choice_set, self.caption)
+        return f"{self.choice_set} - {self.caption} "
 
 class ChoiceSetOptionRelation(BaseModel):
     source_choiceset_option = models.ForeignKey(
@@ -113,9 +117,9 @@ class ChoiceSetOptionRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0} - {1}'.format(
-                self.source_choiceset_option.name,
-                self.master_choiceset_option.name)
+        return (
+                f"{self.source_choiceset_option.name} - "
+                f"{self.master_choiceset_option.name}")
 
 
 class EntityClass(BaseModel):
@@ -145,7 +149,7 @@ class EntityClass(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 
 class RelationClass(BaseModel):
@@ -170,7 +174,7 @@ class RelationClass(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 
 class FoodItem(BaseModel):
@@ -224,11 +228,12 @@ class FoodItem(BaseModel):
                 tsn_hierarchy = tsn.hierarchy_string.split("-")
                 i=len(tsn_hierarchy)-1
                 if self.part is not None:
-                    while(i>=0):
+                    while i>=0 :
                         part=self.part.caption
                         if part=='CARRION':
                             part='WHOLE'
-                        pa = ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i])
+                        pa = ViewProximateAnalysisTable.objects.filter(
+                            tsn__hierarchy_string__endswith=tsn_hierarchy[i])
                         if len(pa)==1:
                             self.pa_tsn=pa.all()[0].tsn
                             break
@@ -258,7 +263,7 @@ class MasterAttributeGroup(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class AttributeGroupRelation(BaseModel):
     group = models.ForeignKey('MasterAttributeGroup', on_delete=models.CASCADE)
@@ -350,9 +355,11 @@ class MasterAttribute(BaseModel):
         String for representing the Model object (in Admin site etc.)
         """
         if self.unit:
-            return '%s: %s (%s)' % (self.entity.name, self.name, self.unit.print_name)
-        else:
-            return '%s: %s' % (self.entity.name, self.name)
+            return (
+                    f"{self.entity.name}: "
+                    f"{self.name} "
+                    f"({self.unit.print_name})")
+        return f"{self.entity.name}: {self.name}"
 
 class MasterChoiceSetOption(BaseModel):
     """
@@ -393,7 +400,7 @@ class MasterChoiceSetOption(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.master_attribute.name, self.name)
+        return f"{self.master_attribute.name} - {self.name} "
 
 
 class MasterEntity(BaseModel):
@@ -402,24 +409,29 @@ class MasterEntity(BaseModel):
     """
     reference = models.ForeignKey(
             'MasterReference',
-            on_delete = models.CASCADE)
+            on_delete = models.CASCADE
+    )
     entity = models.ForeignKey(
             'EntityClass',
-            on_delete = models.CASCADE)
+            on_delete = models.CASCADE
+    )
     source_entity = models.ManyToManyField(
             'SourceEntity',
             through = 'EntityRelation',
-            through_fields = ('master_entity', 'source_entity') )
+            through_fields = ('master_entity', 'source_entity')
+    )
     name = models.CharField(
             max_length=250,
-            help_text="Enter the Name of the Master Entity")
+            help_text="Enter the Name of the Master Entity"
+    )
     taxon = models.ForeignKey(
             TdwgTaxon,
             on_delete = models.SET_NULL,
             null = True,
             blank = True,
             related_name = 'master_entities',
-            help_text = "The associated taxon (optional)")
+            help_text = "The associated taxon (optional)"
+    )
 
     class Meta:
         ordering = ['name']
@@ -434,7 +446,7 @@ class MasterEntity(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class MasterReference(BaseModel):
     """
@@ -552,7 +564,7 @@ class MasterReference(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.citation)
+        return f"{self.citation}"
 
 class MasterUnit(BaseModel):
     """
@@ -561,13 +573,17 @@ class MasterUnit(BaseModel):
     source_unit = models.ManyToManyField(
         'SourceUnit'
     )
-    name = models.CharField(max_length=25, help_text="Enter the name of the Master Unit")
-    print_name = models.CharField(max_length=25, help_text="Enter the Print value of the name of a Master Unit")
-    quantity_type = models.CharField(max_length=25, help_text="Enter the Quantity type of the Master Unit")
+    name = models.CharField(
+        max_length=25, help_text="Enter the name of the Master Unit")
+    print_name = models.CharField(
+        max_length=25, help_text="Enter the Print value of the name of a Master Unit")
+    quantity_type = models.CharField(
+        max_length=25, help_text="Enter the Quantity type of the Master Unit")
     unit_value = models.DecimalField(
                          max_digits = 19,
                          decimal_places = 10)
-    remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Master Unit")
+    remarks = models.TextField(
+        blank=True, null=True, max_length=500, help_text="Enter remarks for the Master Unit")
 
     class Meta:
         ordering = ['quantity_type','unit_value']
@@ -582,7 +598,10 @@ class MasterUnit(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s: %s (%s)' % (self.quantity_type, self.name, self.print_name)
+        return (
+                f"{self.quantity_type}: "
+                f"{self.name} "
+                f"({self.print_name})")
 
 class SourceAttribute(BaseModel):
     """
@@ -607,8 +626,10 @@ class SourceAttribute(BaseModel):
         (1, 'Numerical variable'),
         (2, 'Categorical variable'),
     )
-    type = models.PositiveSmallIntegerField(choices=TYPE, default=3, help_text='Select the type of the Attribute')
-    remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Attribute")
+    type = models.PositiveSmallIntegerField(
+        choices=TYPE, default=3, help_text='Select the type of the Attribute')
+    remarks = models.TextField(
+        blank=True, null=True, max_length=500, help_text="Enter remarks for the Attribute")
     method = models.ForeignKey(
         'SourceMethod',
         on_delete=models.CASCADE,
@@ -630,7 +651,7 @@ class SourceAttribute(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.entity.name, self.name)
+        return f"{self.entity.name} - {self.name} "
 
 
 class SourceChoiceSetOption(BaseModel):
@@ -646,9 +667,14 @@ class SourceChoiceSetOption(BaseModel):
         through='ChoiceSetOptionRelation',
         through_fields=('source_choiceset_option', 'master_choiceset_option')
     )
-    display_order = models.PositiveSmallIntegerField(default=10, help_text='Display order on choises')
+    display_order = models.PositiveSmallIntegerField(
+        default=10, help_text='Display order on choises'
+    )
     name = models.CharField(max_length=250, help_text="Enter the Source Choice Set Option")
-    description = models.TextField(blank=True, null=True, max_length=500, help_text="Enter the description for the Source Choice Set Option")
+    description = models.TextField(
+        blank=True, null=True, max_length=500,
+        help_text="Enter the description for the Source Choice Set Option"
+    )
 
     class Meta:
         ordering = ['source_attribute__name','display_order']
@@ -663,7 +689,7 @@ class SourceChoiceSetOption(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.source_attribute.name, self.name)
+        return f"{self.source_attribute.name} - {self.name} "
 
 class SourceChoiceSetOptionValue(BaseModel):
     """
@@ -691,7 +717,9 @@ class SourceChoiceSetOptionValue(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.source_choiceset_option.source_attribute.name, self.source_choiceset_option.name)
+        return (
+                f"{self.source_choiceset_option.source_attribute.name} - "
+                f"{self.source_choiceset_option.name} ")
 
 class SourceEntity(BaseModel):
     """
@@ -735,7 +763,7 @@ class SourceEntity(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class SourceMeasurementValue(BaseModel):
     """
@@ -756,14 +784,39 @@ class SourceMeasurementValue(BaseModel):
         blank=True,
         default = None
         )
-    n_total = models.PositiveSmallIntegerField(default=0, blank=True, null=True, help_text='n for total number of specimens measured.')
-    n_unknown = models.PositiveSmallIntegerField(default=0, blank=True, null=True, help_text='n for total number of unknown gender specimens measured.')
-    n_male = models.PositiveSmallIntegerField(default=0, blank=True, null=True, help_text='n for total number of male specimens measured.')
-    n_female = models.PositiveSmallIntegerField(default=0, blank=True, null=True, help_text='n for total number of female specimens measured.')
-    minimum = models.DecimalField(max_digits=19, decimal_places=10, help_text='Minimum measurement value reported.')
-    maximum = models.DecimalField(max_digits=19, decimal_places=10, help_text='Maximum measurement value reported.')
-    mean = models.DecimalField(max_digits=19, decimal_places=10, help_text='Mean of measurement values reported.')
-    std = models.DecimalField(max_digits=19, decimal_places=10, default=None, blank=True, null=True, help_text='Standard deviation of measurement values reported.')
+    n_total = models.PositiveSmallIntegerField(
+        default=0, blank=True, null=True, help_text='n for total number of specimens measured.'
+    )
+    n_unknown = models.PositiveSmallIntegerField(
+        default=0, blank=True, null=True,
+        help_text='n for total number of unknown gender specimens measured.'
+    )
+    n_male = models.PositiveSmallIntegerField(
+        default=0, blank=True, null=True, help_text='n for total number of male specimens measured.'
+    )
+    n_female = models.PositiveSmallIntegerField(
+        default=0,
+        blank=True,
+        null=True,
+        help_text='n for total number of female specimens measured.'
+    )
+    minimum = models.DecimalField(
+        max_digits=19, decimal_places=10, help_text='Minimum measurement value reported.'
+    )
+    maximum = models.DecimalField(
+        max_digits=19, decimal_places=10, help_text='Maximum measurement value reported.'
+    )
+    mean = models.DecimalField(
+        max_digits=19, decimal_places=10, help_text='Mean of measurement values reported.'
+    )
+    std = models.DecimalField(
+        max_digits=19,
+        decimal_places=10,
+        default=None,
+        blank=True,
+        null=True,
+        help_text='Standard deviation of measurement values reported.'
+    )
     source_statistic = models.ForeignKey(
         'SourceStatistic',
         null=True, blank=True,
@@ -790,33 +843,64 @@ class SourceMeasurementValue(BaseModel):
         limit_choices_to={'choice_set': 'LifeStage'},
         related_name='lifestage%(class)s',
         )
-    measurement_accuracy = models.TextField(blank=True, null=True, max_length=50, help_text="The description of the potential error associated with the measurementValue.")
-    measured_by = models.TextField(blank=True, null=True, max_length=100, help_text="A list (concatenated and separated) of names of people, groups, or organizations who determined the value of the measurement. The recommended best practice is to separate the values with a vertical bar (' | ').")
-    remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Source Measurement")
-    data_quality_score = models.SmallIntegerField(blank=True, null=True, default=0, help_text="Data quality score for the data")
+    measurement_accuracy = models.TextField(
+        blank=True,
+        null=True,
+        max_length=50,
+        help_text="The description of the potential error associated with the measurementValue."
+    )
+    measured_by = models.TextField(
+        blank=True,
+        null=True,
+        max_length=100,
+        help_text=("A list (concatenated and separated) of names of people, groups, "
+                   "or organizations who determined the value of the measurement. "
+                   "The recommended best practice is to separate the values "
+                   "with a vertical bar (' | ')."
+        )
+    )
+    remarks = models.TextField(
+        blank=True,
+        null=True,
+        max_length=500,
+        help_text="Enter remarks for the Source Measurement"
+    )
+    data_quality_score = models.SmallIntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        help_text="Data quality score for the data"
+    )
     # unit is no longer in use - to be deleted
     cited_reference = models.CharField(
         blank=True,
         null=True,
         max_length=1000,
-        help_text="Enter the original reference, if not this study. If original, enter 'Original study'.")
+        help_text=("Enter the original reference, if not this study. "
+                   "If original, enter 'Original study'."
+        )
+        )
     unit = models.CharField(
         null=True,
         blank=True,
         max_length=250, help_text='Measurement unit reported.')
-    
+
     def clean(self):
         # Don't allow wrong n values.
         if self.n_total != self.n_unknown + self.n_male + self.n_female:
-            raise ValidationError(_('n total needs to be sum of all n fields.'))
+            raise ValidationError(gettext_lazy(
+                    'n total needs to be sum of all n fields.'))
         if self.minimum > self.maximum:
-            raise ValidationError(_('Measurement error: min > max.'))
+            raise ValidationError(gettext_lazy(
+                    'Measurement error: min > max.'))
         if self.mean < self.minimum or self.mean > self.maximum :
-            raise ValidationError(_('Measurement error: mean outside min or max.'))
-        if self.n_total == 0 or self.n_total == 1:
+            raise ValidationError(gettext_lazy(
+                    'Measurement error: mean outside min or max.'))
+        if self.n_total in (0, 1):
             self.std = None
-        if self.std != None and self.std > self.maximum - self.minimum:
-            raise ValidationError(_('Measurement error: std is too large.'))
+        if self.std is not None and self.std > self.maximum - self.minimum:
+            raise ValidationError(gettext_lazy(
+                    'Measurement error: std is too large.'))
 
     class Meta:
         ordering = ['source_attribute__name', '-n_total']
@@ -831,21 +915,21 @@ class SourceMeasurementValue(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s: %s ' % (self.source_attribute.name, str(self.n_total))
+        return f"{self.source_attribute.name}: {str(self.n_total)} "
 
     # Used to calculate the quality of the measurement data
     def calculate_data_quality_score_for_measurement(self):
         score = 0
         #1 weight of taxon quality
         taxon = self.source_entity.entity.name
-        if taxon == 'Species' or taxon == 'Subspecies':
+        if taxon in ('Species', 'Subspecies'):
             score += 1
 
         #2 weight of having a reported citation of the data
         citation = self.cited_reference
         if citation == 'Original study':
             score += 2
-        elif citation != None:
+        elif citation is not None:
             score += 1
 
         #3 weight of source quality in the diet
@@ -888,7 +972,10 @@ class SourceMethod(BaseModel):
         'SourceReference',
         on_delete = models.CASCADE,
         )
-    name = models.CharField(max_length=500, help_text="Enter the method described in the Reference")
+    name = models.CharField(
+        max_length=500,
+        help_text="Enter the method described in the Reference"
+    )
 
     class Meta:
         ordering = ['name']
@@ -904,7 +991,7 @@ class SourceMethod(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class SourceStatistic(BaseModel):
     """
@@ -915,7 +1002,10 @@ class SourceStatistic(BaseModel):
         'SourceReference',
         on_delete = models.CASCADE,
         )
-    name = models.CharField(max_length=500, help_text="Enter the statistic described in the Reference")
+    name = models.CharField(
+        max_length=500,
+        help_text="Enter the statistic described in the Reference"
+    )
 
     class Meta:
         ordering = ['name']
@@ -931,7 +1021,7 @@ class SourceStatistic(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class SourceUnit(BaseModel):
     """
@@ -942,8 +1032,16 @@ class SourceUnit(BaseModel):
         through='UnitRelation',
         through_fields=('source_unit', 'master_unit')
     )
-    name = models.CharField(max_length=25, help_text="Enter the name of the Source Unit")
-    remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Source Unit")
+    name = models.CharField(
+        max_length=25,
+        help_text="Enter the name of the Source Unit"
+    )
+    remarks = models.TextField(
+        blank=True,
+        null=True,
+        max_length=500,
+        help_text="Enter remarks for the Source Unit"
+    )
 
     class Meta:
         ordering = ['name']
@@ -958,7 +1056,7 @@ class SourceUnit(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class EntityRelation(BaseModel):
     source_entity = models.ForeignKey('SourceEntity', on_delete=models.CASCADE)
@@ -976,14 +1074,19 @@ class EntityRelation(BaseModel):
         limit_choices_to={'master_attribute__name': 'Verification'},
         related_name='datastatus%(class)s',
         )
-    remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Entity Relation")
+    remarks = models.TextField(
+        blank=True,
+        null=True,
+        max_length=500,
+        help_text="Enter remarks for the Entity Relation"
+    )
 
     class Meta:
         unique_together = ('source_entity', 'master_entity','relation')
 
-# What is this?
-    def level_1(self):
-        return self.name_one.qualifier.level
+    # FIX: What is this? Is this needed? Gives error. Comminting out now.
+    #def level_1(self):
+    #    return self.name_one.qualifier.level
 
     def get_absolute_url(self):
         """
@@ -995,13 +1098,19 @@ class EntityRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0} ({1}) {2}'.format(self.source_entity.name,self.master_entity.name,self.master_entity.reference)
+        return (
+                f"{self.source_entity.name} "
+                f"({self.master_entity.name}) "
+                f"{self.master_entity.reference}")
 
 class SourceReference(BaseModel):
     """
     Model representing a SourceReference in MammalBase
     """
-    citation = models.CharField(max_length=450, help_text="Enter the Citation of the Source Reference")
+    citation = models.CharField(
+        max_length=450,
+        help_text="Enter the Citation of the Source Reference"
+    )
     master_reference = models.ForeignKey(
         'MasterReference',
         on_delete = models.SET_NULL,
@@ -1013,8 +1122,18 @@ class SourceReference(BaseModel):
         (2, 'Verified - Accepted'),
         (3, 'Verified - Rejected'),
     )
-    status = models.PositiveSmallIntegerField(choices=STATUS, default=1, help_text='Status of the Std. Reference')
-    doi = models.CharField(max_length=100, validators=[validate_doi], help_text="Enter the DOI number that begins with 10 followed by a period", blank=True, null=True,)
+    status = models.PositiveSmallIntegerField(
+        choices=STATUS,
+        default=1,
+        help_text='Status of the Std. Reference'
+    )
+    doi = models.CharField(
+        max_length=100,
+        validators=[validate_doi],
+        help_text="Enter the DOI number that begins with 10 followed by a period",
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         ordering = ['citation']
@@ -1029,7 +1148,7 @@ class SourceReference(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.citation)
+        return f"{self.citation}"
 
 class ReferenceRelation(BaseModel):
     source_reference = models.ForeignKey(SourceReference, on_delete=models.CASCADE)
@@ -1052,7 +1171,9 @@ class ReferenceRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0} ({1})'.format(self.source_reference.citation,self.master_reference.citation)
+        return (
+                f"{self.source_reference.citation} "
+                f"({self.master_reference.citation})")
 
 class UnitConversion(BaseModel):
     """
@@ -1078,12 +1199,20 @@ class UnitConversion(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return 'One %s equals %s %ss ' % (self.from_unit.name, str(float(self.coefficient)), self.to_unit.name)
+        return (
+            f"One {self.from_unit.name} "
+            f"equals {str(float(self.coefficient))} "
+            f"{self.to_unit.name}s ")
 
 class UnitRelation(BaseModel):
     source_unit = models.ForeignKey('SourceUnit', on_delete=models.CASCADE)
     master_unit = models.ForeignKey('MasterUnit', on_delete=models.CASCADE)
-    remarks = models.TextField(blank=True, null=True, max_length=500, help_text="Enter remarks for the Unit Relation")
+    remarks = models.TextField(
+        blank=True,
+        null=True,
+        max_length=500,
+        help_text="Enter remarks for the Unit Relation"
+    )
 
     class Meta:
         unique_together = ('source_unit', 'master_unit',)
@@ -1098,7 +1227,10 @@ class UnitRelation(BaseModel):
         """
         String for representing the Model object
         """
-        return '{0}: {1} ({2})'.format(self.source_unit.name,self.master_unit.name,self.master_unit.quantity_type)
+        return (
+                f"{self.source_unit.name}: "
+                f"{self.master_unit.name} "
+                f"({self.master_unit.quantity_type})")
 
 class TimePeriod(BaseModel):
     """
@@ -1126,7 +1258,7 @@ class TimePeriod(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s' % (self.name)
+        return f"{self.name}"
 
 class DietSet(BaseModel):
     """
@@ -1140,7 +1272,10 @@ class DietSet(BaseModel):
     taxon = models.ForeignKey(
         'SourceEntity',
         on_delete=models.CASCADE,
-        limit_choices_to=Q(entity__name='Genus') | Q(entity__name='Species') | Q(entity__name='Subspecies'),
+        limit_choices_to = (
+                Q(entity__name='Genus') |
+                Q(entity__name='Species') |
+                Q(entity__name='Subspecies')),
         related_name='taxon_%(class)s',
         )
     location = models.ForeignKey(
@@ -1157,12 +1292,16 @@ class DietSet(BaseModel):
         null = True,
         limit_choices_to={'choice_set': 'Gender'},
         )
-    sample_size = models.PositiveSmallIntegerField(default=0, help_text='Sample Size')
+    sample_size = models.PositiveSmallIntegerField(
+            default=0,
+            help_text='Sample Size')
     cited_reference = models.CharField(
         blank=True,
         null=True,
         max_length=250,
-        help_text="Enter the original reference, if not this study. If original, enter 'Original study'.")
+        help_text=("Enter the original reference, if not this study. "
+                   "If original, enter 'Original study'.")
+        )
     time_period = models.ForeignKey(
         'TimePeriod',
         on_delete=models.CASCADE,
@@ -1182,11 +1321,24 @@ class DietSet(BaseModel):
         null=True,
         max_length=250,
         help_text="Enter the time when this study was performed.")
-    data_quality_score = models.SmallIntegerField(blank=True, null=True, default=0, help_text="Data quality score for the data")
-    
+    data_quality_score = models.SmallIntegerField(
+        blank=True,
+        null=True,
+        default=0,
+        help_text="Data quality score for the data"
+    )
+
     class Meta:
         ordering = ['taxon__name', 'reference']
-#        unique_together = ('reference','taxon','location', 'gender', 'sample_size', 'cited_reference', 'time_period', 'method')
+#        unique_together = (
+#                'reference',
+#                'taxon',
+#                'location',
+#                'gender',
+#                'sample_size',
+#                'cited_reference',
+#                'time_period',
+#                'method')
 
     def get_absolute_url(self):
         """
@@ -1198,14 +1350,14 @@ class DietSet(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.taxon, self.reference)
+        return f"{self.taxon} - {self.reference} "
 
     def calculate_data_quality_score(self):
         score = 0
 
         # 1. Taxon quality
         entity = self.taxon.entity.name
-        if entity == 'Species' or entity == 'Subspecies':
+        if entity in ('Species', 'Subspecies'):
             score += 1
 
         # 2. The weight of having a reported citation of the data in the diet
@@ -1218,7 +1370,7 @@ class DietSet(BaseModel):
         # 3. The weight of source quality in the diet
         try:
             master = self.reference.master_reference.type
-        except:
+        except: # FIX: except what? ValueError?
             score += 0
         else:
             if master == 'journal-article':
@@ -1234,7 +1386,9 @@ class DietSet(BaseModel):
             score += 2
 
         # 5. The weight of food item taxonomy
-        diet_set_items = DietSetItem.objects.filter(diet_set=self, food_item__tsn__rank_id__gt=100)
+        diet_set_items = DietSetItem.objects.filter(
+                diet_set=self,
+                food_item__tsn__rank_id__gt=100)
         if diet_set_items.count():
             score += (2 * diet_set_items.count()) // diet_set_items.count()
 
@@ -1254,8 +1408,11 @@ class DietSetItem(BaseModel):
         on_delete = models.CASCADE,
         )
     # Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
-    list_order = models.PositiveSmallIntegerField(default=100_000, help_text='List order on Diet Set')
-    percentage = models.DecimalField(default=0, decimal_places=3, max_digits=9,)
+    list_order = models.PositiveSmallIntegerField(
+        default=100_000,
+        help_text='List order on Diet Set'
+    )
+    percentage = models.DecimalField(default=0, decimal_places=3, max_digits=9)
 
     class Meta:
         unique_together = ('diet_set', 'food_item')
@@ -1263,9 +1420,11 @@ class DietSetItem(BaseModel):
 
     def clean(self):
         if self.percentage < 0:
-            raise ValidationError(_('Only positive numbers are accepted.'))
+            raise ValidationError(gettext_lazy(
+                    'Only positive numbers are accepted.'))
 #        if self.percentage > 100:
-#            raise ValidationError(_('Only numbers between 0 and 100 are accepted.'))
+#            raise ValidationError(gettext_lazy(
+#                    'Only numbers between 0 and 100 are accepted.'))
 
     def get_absolute_url(self):
         """
@@ -1277,316 +1436,7 @@ class DietSetItem(BaseModel):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.diet_set, self.food_item)
-
-class ProximateAnalysis(BaseModel):
-    """
-    Model representing a ProximateAnalysis in MammalBase
-    """
-
-    reference = models.ForeignKey(
-        'SourceReference',
-        on_delete = models.CASCADE,
-        )
-    location = models.ForeignKey(
-        'SourceLocation',
-        on_delete=models.CASCADE,
-        blank=True,
-        null = True,
-        )
-    cited_reference = models.CharField(blank=True, null=True, max_length=250, help_text="Enter the original reference, if not this study.")
-    method = models.ForeignKey(
-        'SourceMethod',
-        on_delete=models.CASCADE,
-        null = True,
-        )
-    study_time = models.CharField(blank=True, null=True, max_length=250, help_text="Enter the time when this study was performed.")
-
-    class Meta:
-        ordering = ['reference']
-
-    def get_absolute_url(self):
-        """
-        Returns the url to access a particular ProximateAnalysis instance.
-        """
-        return reverse('proximate-analysis-detail', args=[str(self.id)])
-
-    def __str__(self):
-        """
-        String for representing the Model object (in Admin site etc.)
-        """
-        return '%s' % (self.reference)
-
-class ProximateAnalysisItem(BaseModel):
-    """
-    Model representing a ProximateAnalysisItem in MammalBase
-    """
-
-    proximate_analysis = models.ForeignKey(
-        'ProximateAnalysis',
-        on_delete = models.CASCADE,
-    )
-    forage = models.ForeignKey(
-        'FoodItem',
-        on_delete = models.CASCADE,
-    )
-    location = models.ForeignKey(
-        'SourceLocation',
-        on_delete=models.CASCADE,
-        blank = True,
-        null = True,
-    )
-    cited_reference = models.CharField(
-        blank = True,
-        null=True,
-        max_length=250,
-        help_text="Enter the original reference, if not this study."
-    )
-    sample_size = models.PositiveSmallIntegerField(
-        blank = True,
-        null=True,
-        default=0,
-        help_text='Sample size'
-    )
-    dm_reported = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)]
-    )
-    moisture_reported = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)]
-    )
-    cp_reported = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)]
-    )
-    ee_reported = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)]
-    )
-    cf_reported = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)]
-    )
-    ash_reported = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)]
-    )
-    nfe_reported = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)]
-    )
-    total_carbohydrates_reported = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)]
-    )
-    cp_std = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(100)]
-    )
-    ee_std = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(100)]
-    )
-    cf_std = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(100)]
-    )
-    ash_std = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(100)]
-    )
-    nfe_std = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(100)]
-    )
-    transformation = models.CharField(
-        blank = True,
-        null=True,
-        max_length=250
-    )
-    remarks = models.CharField(
-        blank = True,
-        null=True,
-        max_length=250,
-        help_text="Enter remarks."
-    )
-
-    #new fields below
-    measurement_determined_by = models.CharField(
-        blank = True,
-        null=True,
-        max_length=250
-    )
-    measurement_remarks = models.CharField(
-        blank = True,
-        null=True,
-        max_length=250
-    )
-    #moisture
-    moisture_dispersion = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)]
-    )
-    moisture_measurement_method = models.CharField(
-        blank = True,
-        null=True,
-        max_length=250
-    )
-    #dry_matter
-    dm_dispersion = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)]
-    )
-    dm_measurement_method = models.CharField(
-        blank = True,
-        null=True,
-        max_length=250
-    )
-    #ether_extract
-    ee_dispersion = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)])
-    ee_measurement_method = models.CharField(
-        blank = True,
-        null=True,
-        max_length=250
-    )
-    #crude_protein
-    cp_dispersion = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)]
-    )
-    cp_measurement_method = models.CharField(
-        blank = True,
-        null=True,
-        max_length=250
-    )
-    #crude_fiber
-    cf_dispersion = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)]
-    )
-    cf_measurement_method = models.CharField(
-        blank = True,
-        null=True,
-        max_length=250
-    )
-    #ash
-    ash_dispersion = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)]
-    )
-    ash_measurement_method = models.CharField(
-        blank = True,
-        null=True,
-        max_length=250
-    )
-    #nitrogen_free_extract
-    nfe_dispersion = models.DecimalField(
-        blank = True,
-        null=True,
-        default=0,
-        decimal_places=3,
-        max_digits=7,
-        validators=[MinValueValidator(0), MaxValueValidator(1000)]
-    )
-    nfe_measurement_method = models.CharField(
-        blank = True,
-        null=True,
-        max_length=250
-    )
-
-    class Meta:
-        ordering = ['proximate_analysis','forage']
-
-    def get_absolute_url(self):
-        """
-        Returns the url to access a particular ProximateAnalysisItem instance.
-        """
-        return reverse('proximate-analysis-item-detail', args=[str(self.id)])
-
-    def __str__(self):
-        """
-        String for representing the Model object (in Admin site etc.)
-        """
-        return '%s - %s ' % (self.proximate_analysis, self.forage)
+        return f"{self.diet_set} - {self.food_item}"
 
 # https://resources.rescale.com/using-database-views-in-django-orm/
 class ViewMasterTraitValue(models.Model):
@@ -1594,9 +1444,19 @@ class ViewMasterTraitValue(models.Model):
     Model representing a MasterTraitValue results as a MySQL view in MammalBase
     """
     id = models.BigIntegerField(primary_key=True)
-    master_id = models.ForeignKey('MasterEntity', to_field="id", db_column="master_id", on_delete=models.DO_NOTHING)
+    master_id = models.ForeignKey(
+        'MasterEntity',
+        to_field="id",
+        db_column="master_id",
+        on_delete=models.DO_NOTHING
+    )
     master_entity_name = models.CharField(max_length=200)
-    master_attribute_id = models.ForeignKey('MasterAttribute', to_field="id", db_column="master_attribute_id", on_delete=models.DO_NOTHING)
+    master_attribute_id = models.ForeignKey(
+        'MasterAttribute',
+        to_field="id",
+        db_column="master_attribute_id",
+        on_delete=models.DO_NOTHING
+    )
     master_attribute_name = models.CharField(max_length=200)
     traits_references = models.CharField(max_length=400, blank=True, null=True)
     assigned_values = models.CharField(max_length=400, blank=True, null=True)
@@ -1606,7 +1466,13 @@ class ViewMasterTraitValue(models.Model):
     trait_values = models.CharField(max_length=400, blank=True, null=True)
     trait_selected = models.CharField(max_length=400, blank=True, null=True)
     trait_references = models.CharField(max_length=400, blank=True, null=True)
-    value_percentage = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7)
+    value_percentage = models.DecimalField(
+        blank = True,
+        null=True,
+        default=0,
+        decimal_places=3,
+        max_digits=7
+    )
 
     class Meta:
         managed = False
@@ -1617,45 +1483,12 @@ class ViewMasterTraitValue(models.Model):
         """
         Returns the url to access a particular Master Attribute instance.
         """
-        return reverse('master-attribute-detail', args=[str(self.master_attribute_id)])
+        return reverse(
+                'master-attribute-detail',
+                args=[str(self.master_attribute_id)])
 
     def __str__(self):
         """
         String for representing the Model object (in Admin site etc.)
         """
-        return '%s - %s ' % (self.master_attribute_name, self.trait_selected)
-
-# https://resources.rescale.com/using-database-views-in-django-orm/
-class ViewProximateAnalysisTable(models.Model):
-    """
-    Model representing a ProximateAnalysis results as a MySQL view in MammalBase
-    """
-    id = models.BigIntegerField(primary_key=True)
-    tsn = models.ForeignKey(TaxonomicUnits, to_field="tsn", db_column="tsn", on_delete=models.DO_NOTHING)
-    part = models.CharField(max_length=200)
-    cp_std = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7)
-    ee_std = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7)
-    cf_std = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7)
-    ash_std = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7)
-    nfe_std = models.DecimalField(blank = True, null=True, default=0, decimal_places=3, max_digits=7)
-    reference_ids = models.CharField(max_length=200)
-    n_taxa = models.PositiveSmallIntegerField()
-    n_reference = models.PositiveSmallIntegerField()
-    n_analysis = models.PositiveSmallIntegerField()
-
-    class Meta:
-        managed = False
-        db_table = 'mb_view_pa_table'
-        ordering = ['part','tsn__hierarchy']
-
-    def get_absolute_url(self):
-        """
-        Returns the url to access a particular ProximateAnalysisTable instance.
-        """
-        return reverse('view-proximate-analysis-table-detail', args=[str(self.id)])
-
-    def __str__(self):
-        """
-        String for representing the Model object (in Admin site etc.)
-        """
-        return '%s' % (self.tsn)
+        return f"{self.master_attribute_name} - {self.trait_selected} "

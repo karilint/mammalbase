@@ -1,4 +1,4 @@
-""" mb.models.occurrence_models - 
+""" mb.models.occurrence - 
 
 This module should not be imported anywhere else than __init__.py!
 

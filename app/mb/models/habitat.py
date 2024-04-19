@@ -1,4 +1,4 @@
-""" mb.models.habitat_models - 
+""" mb.models.habitat - 
 
 This module should not be imported anywhere else than __init__.py!
 

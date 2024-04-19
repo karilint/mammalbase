@@ -9,6 +9,20 @@ on:
 jobs:
   migrate:
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mariadb:10.9.6
+        env:
+          MARIADB_ROOT_PASSWORD: password
+          MARIADB_USER: test_user
+          MARIADB_PASSWORD: password
+          MARIADB_DATABASE: test_db
+          
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+
     steps:
       - name: Check out the repository
         uses: actions/checkout@v3
@@ -21,10 +35,27 @@ jobs:
       - name: Install dependencies
         working-directory: ./app
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip setuptools
           pip install -r requirements.txt
 
+      - name: Setup database privileges
+        env:
+          DB_USER: root
+          DB_PASS: password
+        run: |
+          mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'test_user'@'%';" \
+              -u${{ env.DB_USER }} \
+              -p${{ env.DB_PASS }} \
+              -h 127.0.0.1 -P 3306
+
       - name: Run Django migrations
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_NAME: test_db
+          DB_USER: test_user
+          DB_PASS: password
+          ITIS_CACHE: ./itis_cache
         working-directory: ./app
         run: |
           python manage.py makemigrations
@@ -33,7 +64,7 @@ jobs:
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
-          git add -A
+          git add -f app/*/migrations/*.py
           git commit -m "Automate Django migrations" \
               || echo "No changes to commit"
           git push origin main

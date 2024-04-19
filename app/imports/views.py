@@ -1,11 +1,6 @@
-import logging
-import pandas as pd
-
+"""Django views defined in this file
+"""
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect
-from django.urls import reverse
-from django.shortcuts import render
-
 from .importers.diet_importer import DietImporter
 from .importers.ets_importer import EtsImporter
 from .importers.occurrence_importer import OccurrencesImporter
@@ -19,70 +14,65 @@ from .views_wrapper import wrapper
 
 @login_required
 def import_diet_set(request):
-	"""Import diet set from web form.
+    """Import diet set from web form.
 
-	Args:
-		request (_type_): _description_
+    Args:
+        request (_type_): _description_s
 
-	Returns:
-		HTTP-response: html-template
-	"""
-	validator = Diet_set_validation()
-	importer = DietImporter()
-	path = "import_diet_set"
+    Returns:
+        HTTP-response: html-template
+    """
+    validator = Diet_set_validation()
+    importer = DietImporter()
+    path = "import_diet_set"
 
-	return wrapper(request, validator, importer, path)
+    return wrapper(request, validator, importer, path)
 
 @login_required
 def import_proximate_analysis(request):
-	"""Import proximate analysis from web form.
+    """Import proximate analysis from web form.
 
-	Args:
-		request (_type_): _description_
+    Args:
+        request (_type_): _description_
 
-	Returns:
-		HTTP-response: html-template
-	"""
-	validator = Proximate_analysis_validation()
-	importer = ProximateAnalysisImporter()
-	path = "import_proximate_analysis"
+    Returns:
+        HTTP-response: html-template
+    """
+    validator = Proximate_analysis_validation()
+    importer = ProximateAnalysisImporter()
+    path = "import_proximate_analysis"
 
-	return wrapper(request, validator, importer, path)
+    return wrapper(request, validator, importer, path)
 
 @login_required
 def import_ets(request):
-	"""Import ets from web form.
+    """Import ets from web form.
 
-	Args:
-		request (_type_): _description_
+    Args:
+        request (_type_): _description_
 
-	Returns:
-		HTTP-response: html-template
-	"""
-	validator = Ets_validation()
-	importer = EtsImporter()
-	path = "import_ets"
+    Returns:
+        HTTP-response: html-template
+    """
+    validator = Ets_validation()
+    importer = EtsImporter()
+    path = "import_ets"
 
-	return wrapper(request, validator, importer, path)
+    return wrapper(request, validator, importer, path)
 
 
 @login_required
 def import_occurrences(request):
-	"""Import occurrences from web form.
+    """Import occurrences from web form.
 
-	Args:
-		request (_type_): _description_
+    Args:
+        request (_type_): _description_
 
-	Returns:
-		HTTP-response: html-template
-	"""
-	validator = Occurrence_validation()
-	importer = OccurrencesImporter()
-	path = "import_occurrences"
+    Returns:
+        HTTP-response: html-template
+    """
+    validator = Occurrence_validation()
+    importer = OccurrencesImporter()
+    path = "import_occurrences"
 
-	return wrapper(request, validator, importer, path)
-
-
-	
-
-
+    return wrapper(request, validator, importer, path)

@@ -1,4 +1,4 @@
-""" urls.imports - URLs under import/ accosiated with data importing
+""" urls.imports - URLs under import/ associated with data importing
     imported by urls.__init__ as part of urls subpackage
 """
 from django.urls import path

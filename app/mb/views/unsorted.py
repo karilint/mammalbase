@@ -1,18 +1,23 @@
-import datetime, json
-from decimal import * # TODO: fix star imports!
+""" mb.views.unsorted - views that don't belong to any other file
+
+This file should be divided into smaller rational integrities and deleted.
+
+Please, do not do anything here anymore!
+"""
+
+import datetime
+import json
 from django.core.exceptions import PermissionDenied
 from django.db import connection, transaction
 from django.db.models import Count, Max, F
 from django.contrib.auth.decorators import (
     login_required, permission_required)
-from django.contrib.auth.mixins import (
-    PermissionRequiredMixin, UserPassesTestMixin)
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views import generic
-from django.views.decorators.http import require_GET, require_POST
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.decorators.http import require_POST
+from django.views.generic.edit import DeleteView
 from django.http import JsonResponse
 
 import requests
@@ -22,11 +27,13 @@ from plotly import express as plotly_express
 from plotly.offline import plot as plotly_offline_plot
 from pandas import DataFrame as PandasDataFrame
 
+from config.settings import ITIS_CACHE
 from itis.utils import generate_standard_values_pa
 from itis.models import SynonymLinks
-from itis.tools import getTaxonomicRankNameFromTSN, GetAcceptedNamesfromTSN, GetCommonNamesfromTSN
-
-from config.settings import ITIS_CACHE
+from itis.tools import (
+    getTaxonomicRankNameFromTSN,
+    GetAcceptedNamesfromTSN,
+    GetCommonNamesfromTSN)
 from itis.utils import (
     create_return_data,
     create_tsn)
@@ -92,36 +99,7 @@ from mb.models import (
     SourceMeasurementValue,
     SourceReference,
     TimePeriod,
-    ViewMasterTraitValue,
     ViewProximateAnalysisTable)
-
-
-# Error Pages
-# https://blog.khophi.co/get-django-custom-error-views-right-first-time/
-def server_error(request):
-    return render(request, 'errors/500.html')
-
-def not_found(request):
-    return render(request, 'errors/404.html')
-
-def permission_denied(request):
-    return render(request, 'errors/403.html')
-
-def bad_request(request):
-    return render(request, 'errors/400.html')
-
-def about_history(request):
-    return render(request, 'mb/history.html',)
-
-def index_about(request):
-    return render(request, 'mb/index_about.html',)
-
-def privacy_policy(request):
-    return render(request, 'mb/privacy_policy.html',)
-
-#@ratelimit(key='ip', rate='2/m')
-def index(request):
-    return render(request, 'mb/index.html',)
 
 def index_diet(request):
     num_diet_taxa=DietSet.objects.is_active().values('taxon_id').distinct().count()
@@ -134,9 +112,6 @@ def index_diet(request):
 def index_mammals(request):
     measurements=SourceReference.objects.is_active().filter(sourceattribute__type = 1).filter(status = 2).distinct().order_by('-pk')[:10]
     return render(request, 'mb/index_mammals.html', context={'measurements':measurements},)
-
-def index_news(request):
-    return render(request, 'mb/index_news.html',)
 
 def index_proximate_analysis(request):
     num_PA_item=ProximateAnalysisItem.objects.is_active().values('forage_id').distinct().count()
@@ -183,12 +158,12 @@ def user_is_data_admin_or_owner(user, data):
 
     return False
 
-class attribute_relation_delete(UserPassesTestMixin, DeleteView):
+class AttributeRelationDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = AttributeRelation
     def get_success_url(self):
-        attribute_relation = super(attribute_relation_delete, self).get_object()
+        attribute_relation = super().get_object()
         sa_id = attribute_relation.source_attribute.id
         return reverse_lazy(
             'source_attribute-detail',
@@ -232,12 +207,12 @@ def attribute_relation_new(request, sa):
         form = AttributeRelationForm()
     return render(request, 'mb/attribute_relation_edit.html', {'form': form})
 
-class choiceset_option_relation_delete(UserPassesTestMixin, DeleteView):
+class ChoicesetOptionRelationDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = ChoiceSetOptionRelation
     def get_success_url(self):
-        choiceset_option_relation = super(choiceset_option_relation_delete, self).get_object()
+        choiceset_option_relation = super().get_object()
         sco_id = choiceset_option_relation.source_choiceset_option.id
         return reverse_lazy(
             'source_choiceset_option-detail',
@@ -304,10 +279,10 @@ def data_check_detail(request):
     return render(request, 'mb/data_check_detail.html', {'dsi': dsi, 'ds_data': ds_data, })
 
 def diet_set_detail(request, pk):
-	ds = get_object_or_404(DietSet, pk=pk, is_active=1)
-	return render(request, 'mb/diet_set_detail.html', {'ds': ds})
+    ds = get_object_or_404(DietSet, pk=pk, is_active=1)
+    return render(request, 'mb/diet_set_detail.html', {'ds': ds})
 
-class diet_set_delete(UserPassesTestMixin, DeleteView):
+class DietSetDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = DietSet
@@ -317,7 +292,7 @@ class diet_set_delete(UserPassesTestMixin, DeleteView):
     def delete(self, *args, **kwargs):
         self.object = self.get_object()
         self.object.dietsetitem_set.all().delete()
-        return super(diet_set_delete, self).delete(*args, **kwargs)
+        return super().delete(*args, **kwargs)
 
 @login_required
 @permission_required('mb.edit_diet_set', raise_exception=True)
@@ -419,12 +394,12 @@ def diet_set_item_detail(request, pk):
         taxonomic_unit.save()
     return render(request, 'mb/diet_set_item_detail.html', {'dsi': diet_set_item, 'common_names': common_names, 'hierarchy': hierarchy, 'hierarchy_string': hierarchy_string,}, )
 
-class diet_set_item_delete(UserPassesTestMixin, DeleteView):
+class DietSetItemDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = DietSetItem
     def get_success_url(self):
-        diet_set_item = super(diet_set_item_delete, self).get_object()
+        diet_set_item = super().get_object()
         ds_id = diet_set_item.diet_set.id
         return reverse_lazy(
             'diet_set-detail',
@@ -488,12 +463,12 @@ def diet_set_reference_list(request):
     )
 
 # https://ultimatedjango.com/learn-django/lessons/delete-contact-full-lesson/
-class entity_relation_delete(UserPassesTestMixin, DeleteView):
+class EntityRelationDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = EntityRelation
     def get_success_url(self):
-        entity_relation = super(entity_relation_delete, self).get_object()
+        entity_relation = super().get_object()
         se_id = entity_relation.source_entity.id
         return reverse_lazy(
             'source_entity-detail',
@@ -522,7 +497,7 @@ def entity_relation_edit(request, pk):
         form = EntityRelationForm(instance=entity_relation)
     return render(request, 'mb/entity_relation_edit.html', {'form': form})
 
-class food_item_delete(UserPassesTestMixin, DeleteView):
+class FoodItemDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = FoodItem
@@ -560,10 +535,9 @@ def food_item_detail(request, pk):
         proximate_analysis=pa.all()[0]
     else:
         proximate_analysis=pa.none()
-    
-    
 
     return render(request, 'mb/food_item_detail.html', {'proximate_analysis': proximate_analysis, 'food_item': food_item, 'synonym_link': sl})
+
 
 @login_required
 @permission_required('mb.edit_food_item', raise_exception=True)
@@ -602,12 +576,12 @@ def food_item_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class master_attribute_delete(UserPassesTestMixin, DeleteView):
+class MasterAttributeDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = MasterAttribute
     def get_success_url(self):
-        master_attribute = super(master_attribute_delete, self).get_object()
+        master_attribute = super().get_object()
         mr_id = master_attribute.reference.id
         return reverse_lazy(
             'master_reference-detail',
@@ -674,12 +648,12 @@ def master_attribute_master_choiceset_option_new(request, master_attribute):
         form = MasterAttributeChoicesetOptionForm()
     return render(request, 'mb/master_attribute_master_choiceset_option_edit.html', {'form': form})
 
-class master_choiceset_option_delete(UserPassesTestMixin, DeleteView):
+class MasterChoicesetOptionDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = MasterChoiceSetOption
     def get_success_url(self):
-        obj = super(master_choiceset_option_delete, self).get_object()
+        obj = super().get_object()
         ma_id = obj.master_attribute.id
         return reverse_lazy(
             'master_attribute-detail',
@@ -708,7 +682,7 @@ def master_choiceset_option_edit(request, pk):
         form = MasterChoiceSetOptionForm(instance=master_choiceset_option)
     return render(request, 'mb/master_choiceset_option_edit.html', {'form': form})
 
-class master_entity_delete(UserPassesTestMixin, DeleteView):
+class MasterEntityDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = MasterEntity
@@ -986,7 +960,7 @@ def master_entity_reference_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class master_reference_delete(UserPassesTestMixin, DeleteView):
+class MasterReferenceDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = MasterReference
@@ -1081,7 +1055,7 @@ def master_reference_edit(request, pk):
 #        {'page_obj': page_obj, 'filter': f,}
 #    )
 
-class proximate_analysis_delete(UserPassesTestMixin, DeleteView):
+class ProximateAnalysisDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = ProximateAnalysis
@@ -1128,7 +1102,7 @@ def proximate_analysis_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class proximate_analysis_item_delete(UserPassesTestMixin, DeleteView):
+class ProximateAnalysisItemDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = ProximateAnalysisItem
@@ -1209,12 +1183,12 @@ def proximate_analysis_reference_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class source_attribute_delete(UserPassesTestMixin, DeleteView):
+class SourceAttributeDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceAttribute
     def get_success_url(self):
-        source_attribute = super(source_attribute_delete, self).get_object()
+        source_attribute = super().get_object()
         sr_id = source_attribute.reference.id
         return reverse_lazy(
             'source_reference-detail',
@@ -1277,12 +1251,12 @@ def source_attribute_source_choiceset_option_new(request, source_attribute):
         form = SourceAttributeChoicesetOptionForm()
     return render(request, 'mb/source_attribute_source_choiceset_option_edit.html', {'form': form})
 
-class source_choiceset_option_delete(UserPassesTestMixin, DeleteView):
+class SourceChoicesetOptionDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceChoiceSetOption
     def get_success_url(self):
-        obj = super(source_choiceset_option_delete, self).get_object()
+        obj = super().get_object()
         sa_id = obj.source_attribute.id
         return reverse_lazy(
             'source_attribute-detail',
@@ -1311,12 +1285,12 @@ def source_choiceset_option_edit(request, pk):
         form = SourceChoiceSetOptionForm(instance=source_choiceset_option)
     return render(request, 'mb/source_choiceset_option_edit.html', {'form': form})
 
-class source_choiceset_option_value_delete(UserPassesTestMixin, DeleteView):
+class SourceChoicesetOptionValueDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceChoiceSetOptionValue
     def get_success_url(self):
-        obj = super(source_choiceset_option_value_delete, self).get_object()
+        obj = super().get_object()
         source_entity_id = obj.source_entity.id
         return reverse_lazy(
             'source_entity-detail',
@@ -1394,9 +1368,7 @@ def source_entity_measurement_new(request, source_reference, source_entity):
         form = SourceReferenceAttributeForm()
     return render(request, 'mb/source_reference_measurement_edit.html', {'form': form})
 
-class source_entity_delete(UserPassesTestMixin, DeleteView):
-    def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+class SourceEntityDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceEntity
@@ -1493,12 +1465,12 @@ def source_entity_relation_new(request, source_entity):
         form = SourceEntityRelationForm()
     return render(request, 'mb/source_entity_relation_edit.html', {'form': form})
 
-class source_measurement_value__delete(UserPassesTestMixin, DeleteView):
+class SourceMeasurementValueDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceMeasurementValue
     def get_success_url(self):
-        obj = super(source_measurement_value__delete, self).get_object()
+        obj = super().get_object()
         source_entity_id = obj.source_entity.id
         return reverse_lazy(
             'source_entity-detail',
@@ -1550,7 +1522,7 @@ def source_measurement_value_new(request, sa, se):
         form = SourceMeasurementValueForm()
     return render(request, 'mb/source_measurement_value_edit.html', {'form': form})
 
-class source_reference_delete(UserPassesTestMixin, DeleteView):
+class SourceReferenceDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceReference
@@ -1699,7 +1671,7 @@ def source_reference_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class time_period_delete(UserPassesTestMixin, DeleteView):
+class TimePeriodDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = TimePeriod
@@ -1746,7 +1718,7 @@ def time_period_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class tsn_delete(UserPassesTestMixin, DeleteView):
+class TsnDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = TaxonomicUnits
@@ -1908,6 +1880,8 @@ def tsn_search(request):
                 item = item[1]
                 return_data[item["tsn"]] = item
         return JsonResponse(return_data, safe=False, status=200 )
+
+    return None
 
 def view_proximate_analysis_table_list(request):
     f = ViewProximateAnalysisTableFilter(request.GET, queryset=ViewProximateAnalysisTable.objects.all().select_related())

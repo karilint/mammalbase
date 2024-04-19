@@ -25,7 +25,7 @@ class Validation():
         Validation class. The class is derived from https://github.com/walid-mashal/laravel-validation
         """
         self.error_message_templates = self.get_error_message_templates()
-        self.custom_error_messages = {}
+        self.custom_error_messages = self.get_custom_error_messages()
         # List to store the error messages in
         self.errors = []
         self.coords_dict = {
@@ -68,8 +68,6 @@ class Validation():
     def validate(self, data, rules, custom_messages=None):
         """Validate the 'data' according to the 'rules' given, returns a list of errors named 'errors'"""
         self.errors = []
-        if custom_messages:
-            self.custom_error_messages = custom_messages
         
         #iterate through the rules dictionary, fetching each rule name (dictionary key) one by one
         for field_name in rules:
@@ -260,6 +258,7 @@ class Validation():
         """Used for validating fields for alphabets only, returns a list of error messages"""
         errs = []
 
+        # TODO: To be fixed. SyntaxWarning: invalid escape sequence '\s'
         try:
             if not re.match("^[a-zA-Z\s]+$",str(data[field_name])) and str(data[field_name]) != "nan":
                 errs.append(self.return_field_message(field_name,"alpha"))
@@ -325,13 +324,14 @@ class Validation():
 
         errs = []
         choice_set = str(rule.split(':')[1])
+        model = str(rule.split(':')[0])
 
         choicevalue = ChoiceValue.objects.filter(choice_set=choice_set.capitalize(), caption=field_value.capitalize())
 
         if field_value == 'nan' or field_value == "":
             return errs
-        if len(choicevalue) == 0 or field_value.capitalize() != str(choicevalue[0].caption):
-            errs.append(self.return_field_message(field_name, choice_set.lower()))
+        if len(choicevalue) == 0 or field_value.capitalize() != choicevalue[0].caption:
+            errs.append(self.return_field_message(model, 'invalid_value').format(value=field_value, field=field_name))
         return errs
 
 
@@ -453,7 +453,7 @@ class Validation():
         Returns:
             str: Error message from dictionary (see custom_error_messages-function).
         """
-        if self.custom_error_messages.__contains__(field_name+"."+rule_name):
+        if (field_name+"."+rule_name) in self.custom_error_messages.keys():
             return self.custom_error_messages[field_name+"."+rule_name]
         else:
             return self.error_message_templates[rule_name] % (field_name)
@@ -488,8 +488,6 @@ class Validation():
             "verbatimLongitude": "'%s' has invalid value for verbatimLongitude field",
             "verbatimCoordinateSystem": "'%s' has invalid value for verbatimCoordinates field. |Please use one of the following formats: | Decimal Degrees Coordinates: \"12.3456, -78.9012””, | Degrees Minutes Coordinates: \"12°34.567' N, 78°90.123' W\", | Degrees Decimal Seconds Coordinates: \"12°34'56.789\" N, 78°90'12.345\" W\", | UTM Coordinates: \"12S 123456mE 1234567mN\"|----------------------------------------------------------------------------------------------------------------------------------",
             "verbatimEventDate": "'%s' has invalid value for verbatimEventDate field",
-            "gender": "'%s' has invalid value for sex field",
-            "lifestage": "'%s' has invalid value for lifestage field",
             "measurementValue": "'%s' has invalid value for measurementValue field",
             "in_db": "'%s' has invalid value for in_db field",
             "nameYear": "'%s' has invalid value for nameYear field",
@@ -517,5 +515,6 @@ class Validation():
             "email.no_field":"You did not provide any field named email in your data dictionary",
             "nationality.no_field":"You did not provide any field named nationality in your data dictionary",
             "active.no_field":"You did not provide any field named active in your data dictionary",
-            "age.no_field":"You did not provide any field named age in your data dictionary"
+            "age.no_field":"You did not provide any field named age in your data dictionary",
+            "choiceValue.invalid_value":"'{value}' is invalid value for {field} field",
         }

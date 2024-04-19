@@ -1,3 +1,5 @@
+"""Imports diet data
+"""
 import json
 import re
 from datetime import timedelta
@@ -11,8 +13,10 @@ from config.settings import ITIS_CACHE
 from .base_importer import BaseImporter
 
 
-class DietImporter(BaseImporter):
 
+class DietImporter(BaseImporter):
+    """Class for diet importer
+    """
     @transaction.atomic
     def importRow(self, row):
 
