@@ -1109,7 +1109,7 @@ class TimePeriod(BaseModel):
         'SourceReference',
         on_delete = models.CASCADE,
         )
-    name = models.CharField(max_length=50, help_text="Enter the Time Period")
+    name = models.CharField(max_length=250, help_text="Enter the Time Period")
     time_in_months = models.PositiveSmallIntegerField(default=12, help_text='Enter an estimate of Time Period in months.')
 
     class Meta:
