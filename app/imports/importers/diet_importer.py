@@ -28,7 +28,6 @@ class DietImporter(BaseImporter):
             getattr(row, 'measurementMethod'), reference, author)
         time_period = self.get_or_create_time_period(
             (getattr(row, 'samplingEffort')), reference, author)
-        created = None
 
         # Create source location model
         new_source_location = self.get_or_create_source_location(
@@ -49,9 +48,7 @@ class DietImporter(BaseImporter):
         else:
             part_of_organism = ChoiceValue.objects.filter(
                 choice_set="FoodItemPart", caption=part_of_organism).first()
-            if part_of_organism:
-                part_of_organism = part_of_organism
-            else:
+            if not part_of_organism:
                 part_of_organism = None
 
         obj = DietSet.objects.filter(reference=reference, cited_reference=getattr(row, 'associatedReferences'), taxon=taxon, location=new_source_location, sample_size=self.possible_nan_to_zero(getattr(row, 'individualCount')),
@@ -69,10 +66,9 @@ class DietImporter(BaseImporter):
                 getattr(row, 'verbatimAssociatedTaxa'), part_of_organism)
         list_order = getattr(row, 'sequence')
         percentage = self.possible_nan_to_zero(
-            round(getattr(row, 'measurementValue', 0), 3))
-
+            getattr(row, 'measurementValue'))
         diet_set_item = DietSetItem.objects.filter(
-            diet_set=obj, food_item=food_item)
+            diet_set=obj, food_item=food_item, percentage=percentage)
 
         if diet_set_item.exists():
             print("Diet set item link exists")
@@ -98,6 +94,8 @@ class DietImporter(BaseImporter):
         except UnicodeDecodeError:
             taxon_data = json.loads(data.decode(
                 'utf-8', 'ignore'))['itisTerms'][0]
+        except json.JSONDecodeError:
+            return {'data': [{}]}
         return_data = {}
         if taxon_data and taxon_data['scientificName'].lower() == query.lower():
             tsn = taxon_data['tsn']
@@ -186,34 +184,34 @@ class DietImporter(BaseImporter):
         food_item_exists = FoodItem.objects.filter(name__iexact=food_upper)
         if len(food_item_exists) > 0:
             return food_item_exists[0]
-        else:
-            food_item = FoodItem(name=food_upper, is_cultivar=False,
-                                 pa_tsn=taxonomic_unit, part=part, tsn=taxonomic_unit)
-            food_item.save()
+        food_item = FoodItem(name=food_upper, is_cultivar=False,
+                             pa_tsn=taxonomic_unit, part=part, tsn=taxonomic_unit)
+        food_item.save()
         return food_item
 
     def generate_rank_id(self, food):
         associated_taxa = re.sub(
-            r'\s*\W|\b\w{1,3}\b', ' ', food).strip().split()
+            r'\b(?:aff|gen|spp|ssp|subf|leg|indet|subsp|subvar|var|nothovar|group|forma)\.?|\b\w{1,2}\b|\s*\W', ' ', food).strip().split()
         head = 0
         tail = 0
         rank_id = {}
-        while True:
-            if head == tail:
-                query = associated_taxa[tail]
-                head += 1
-            else:
-                query = associated_taxa[tail] + " " + associated_taxa[head]
-                tail += 1
-            results = self.search_food_item(query)
-            if len(results['data'][0]) > 0:
-                rank = int(getTaxonomicRankNameFromTSN(
-                    results['data'][0]['results'][0]['taxon_id'])['rankId'])
-                rank_id[rank] = results
-                break
-            if head >= len(associated_taxa):
-                print(f"Food item '{food}' not found in api")
-                break
+        if associated_taxa:
+            while True:
+                if head == tail:
+                    query = associated_taxa[tail]
+                    head += 1
+                else:
+                    query = associated_taxa[tail] + " " + associated_taxa[head]
+                    tail += 1
+                results = self.search_food_item(query)
+                if len(results['data'][0]) > 0:
+                    rank = int(getTaxonomicRankNameFromTSN(
+                        results['data'][0]['results'][0]['taxon_id'])['rankId'])
+                    rank_id[rank] = results
+                    break
+                if head >= len(associated_taxa):
+                    print(f"Food item '{food}' not found in api")
+                    break
         return rank_id
 
     def get_or_create_fooditem(self, food, part):

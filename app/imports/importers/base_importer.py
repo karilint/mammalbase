@@ -245,7 +245,7 @@ class BaseImporter:
             return choicevalue[0]
     
     def possible_nan_to_zero(self, size):
-        if size != size or size == 'nan':
+        if size != size or size == 'nan' or size == "":
             return 0
         return size
 
