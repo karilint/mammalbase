@@ -5,6 +5,7 @@ nginx/certs/dhparam.pem
 nginx/certbot/*
 
 .vscode/
+!.vscode/launch.json
 media/
 github_kli*
 

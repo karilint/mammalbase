@@ -11,12 +11,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 """
 
 
-import sys
 import re
-import datetime
 from django.apps import apps
 
-from mb.models import ChoiceValue, SourceReference
+from mb.models import ChoiceValue
 
 class Validation():
 
@@ -81,7 +79,12 @@ class Validation():
 
             #now looping through rules of one field one rule at a time with each iteration
             for rule in field_rules:
-                field_errors.extend(self.validate_field_rule(data, field_name, rule, field_rules))
+                #only validate if value is not empty
+                if str(data[field_name]) != "":
+                    #validate the field based on the rule assigned
+                    field_errors.extend(self.validate_field_rule(data, field_name, rule, field_rules))
+                elif rule == "required":
+                    field_errors.extend(self.validate_field_rule(data, field_name, rule, field_rules))
 
             self.errors.extend(field_errors)
 
@@ -271,10 +274,12 @@ class Validation():
         """Used for validating fields for some number of values to allow, returns a list of error messages"""
         #retrieve the value for that in rule
         ls = rule.split(':')[1].split(',')
+        #convert to lowercase
+        ls = [x.lower() for x in ls]
         errs = []
 
         try:
-            if str(data[field_name]) not in ls:
+            if str(data[field_name]).lower() not in ls:
                 errs.append(self.return_field_message(field_name, "in"))
         except KeyError:
             errs.append(self.return_field_message(field_name,'in'))
