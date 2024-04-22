@@ -170,7 +170,8 @@ class EntityRelationAdmin(SimpleHistoryAdmin):
         'master_entity__reference__citation']
     list_display = ('source_entity_name',
                     'master_entity_name', 'master_entity_reference')
-
+    list_filter = [('relation_status', admin.RelatedOnlyFieldListFilter),('data_status', admin.RelatedOnlyFieldListFilter)]
+    
     def source_entity_name(self, obj):
         return obj.source_entity.name
 
@@ -184,9 +185,8 @@ class EntityRelationAdmin(SimpleHistoryAdmin):
 @admin.register(FoodItem)
 class FoodItemAdmin(SimpleHistoryAdmin):
     search_fields = ['name']
-    list_filter = [('part', admin.RelatedOnlyFieldListFilter)]
+    list_filter = [('part', admin.RelatedOnlyFieldListFilter), ('is_cultivar', admin.BooleanFieldListFilter)]
     list_display = ('name', 'part')
-
 
 @admin.register(MasterAttribute)
 class MasterAttributeAdmin(SimpleHistoryAdmin):
@@ -210,6 +210,7 @@ class MasterAttributeInline(admin.TabularInline):
 @admin.register(MasterAttributeGroup)
 class MasterAttributeGroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'get_master_attributes')
+    list_filter = [('masterattribute', admin.RelatedOnlyFieldListFilter)]
     inlines = [MasterAttributeInline]
 
     def get_master_attributes(self, obj):
@@ -259,7 +260,6 @@ class ProximateAnalysisItemAdmin(SimpleHistoryAdmin):
 @admin.register(ProximateAnalysis)
 class ProximateAnalysisAdmin(SimpleHistoryAdmin):
     search_fields = ['reference__citation']
-
 
 @admin.register(SourceAttribute)
 class SourceAttributeAdmin(SimpleHistoryAdmin):
