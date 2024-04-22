@@ -129,25 +129,31 @@ class ChoiceValueAdmin(SimpleHistoryAdmin):
 @admin.register(DietSetItem)
 class DietSetItemAdmin(SimpleHistoryAdmin):
     search_fields = ['diet_set__reference__citation', 'food_item__name']
-    list_display = ('food_item_name', 'diet_set_reference')
+    list_display = ('food_item_name','taxon_name', 'diet_set_reference')
 
     def diet_set_reference(self, obj):
         return obj.diet_set.reference.citation
+    
+    def taxon_name(self, obj):
+        return obj.diet_set.taxon.name
 
     def food_item_name(self, obj):
         return obj.food_item.name
 
-
 @admin.register(DietSet)
 class DietSetAdmin(SimpleHistoryAdmin):
     search_fields = ['taxon__name', 'reference__citation']
-    list_display = ('taxon_name', 'reference_citation')
-
+    list_display = ('taxon_name', 'reference_citation', 'data_quality_score')
+    list_filter = ['data_quality_score']
+    
     def taxon_name(self, obj):
         return obj.taxon.name
 
     def reference_citation(self, obj):
         return obj.reference.citation
+    
+    def data_quality_score(self, obj):
+        return obj.calculate_data_quality_score()
 
 
 @admin.register(EntityClass)
