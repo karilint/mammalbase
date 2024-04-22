@@ -2,6 +2,12 @@
 {% block title %}
 <title>MammalBase - About</title>
 {% endblock %}
+{% block style %}
+  /* Apply style only to the first image */
+  .w3-container img:first-of-type {
+    float: right;
+  }
+{% endblock %}
 {% block content %} {% load custom_tags %}
 {% load static %}
 <!--Article header -->
