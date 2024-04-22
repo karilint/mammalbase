@@ -67,8 +67,8 @@ class AttributeGroupRelationAdmin(SimpleHistoryAdmin):
                    ('attribute', admin.RelatedOnlyFieldListFilter)]
     list_display = ('group_name', 'attribute_name')
 
-    def group_name(self, obj):
 
+    def group_name(self, obj):
         return obj.group.name
 
     def attribute_name(self, obj):
@@ -293,8 +293,13 @@ class SourceChoiceSetOptionAdmin(SimpleHistoryAdmin):
 @admin.register(SourceEntity)
 class SourceEntityAdmin(SimpleHistoryAdmin):
     search_fields = ['name']
+    list_display = ('name', 'entity')
+    list_filter = [('entity', admin.RelatedOnlyFieldListFilter)]
+    
+    def entity(self, obj):
+        return obj.entity.name
 
-
+    
 @admin.register(SourceLocation)
 class SourceLocationAdmin(SimpleHistoryAdmin):
     search_fields = ['name']
