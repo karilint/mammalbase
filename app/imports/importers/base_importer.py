@@ -17,8 +17,11 @@ from mb.models import (
     SourceMethod,
     ChoiceValue,
     SourceLocation)
+import re
+from requests_cache import CachedSession
+from datetime import timedelta
 from config.settings import ITIS_CACHE
-import itis.tools as itis
+
 
 class BaseImporter:
     """
@@ -188,75 +191,20 @@ class BaseImporter:
         """
         Creates a new entity relation for the given source_entity from ITIS API
         """
-        api_result = self.get_food_item(source_entity.name)["data"][0]
-        if api_result:
-            canonical_form = api_result["results"][0]["canonical_form"]
-            master_entity_result = MasterEntity.objects.filter(
-                name=canonical_form, entity_id=source_entity.entity_id, reference_id=4)
+        name = self.search_scientificName(source_entity.name)
+        if name:
+            master_entity_result = MasterEntity.objects.filter(name=name, entity_id=source_entity.entity_id,reference_id=4)
             if master_entity_result:
-                return EntityRelation(master_entity=master_entity_result[0],
-                                      source_entity=source_entity,
-                                      relation_id=1,
-                                      data_status_id=5,
-                                      relation_status_id=1,
-                                      remarks=master_entity_result[0].reference).save()
-        return None
-
-    def get_food_item(self, food):
-        def create_return_data(tsn, scientific_name, status='valid'):
-            hierarchy = None
-            classification_path = ""
-            classification_path_ids = ""
-            classification_path_ranks = ""
-            if status in {'valid', 'accepted'}:
-                hierarchy = itis.getFullHierarchyFromTSN(tsn)
-                classification_path = itis.hierarchyToString(
-                    scientific_name, hierarchy, 'hierarchyList', 'taxonName')
-                classification_path_ids = itis.hierarchyToString(
-                    tsn, hierarchy, 'hierarchyList', 'tsn',
-                    stop_index=classification_path.count("-")
-                )
-                classification_path_ranks = itis.hierarchyToString(
-                    'Species', hierarchy, 'hierarchyList', 'rankName',
-                    stop_index=classification_path.count("-")
-                )
-            return_data = {
-                'taxon_id': tsn,
-                'canonical_form': scientific_name,
-                'classification_path_ids': classification_path_ids,
-                'classification_path': classification_path,
-                'classification_path_ranks': classification_path_ranks,
-                'taxonomic_status': status
-            }
-            return {'data': [{'results': [return_data]}]}
-
-        query = food.lower().capitalize().replace(' ', '%20')
-        url = ('http://www.itis.gov/ITISWebService/jsonservice/'
-               'getITISTermsFromScientificName?srchKey=' + query)
-        try:
-            session = CachedSession(
-                ITIS_CACHE, expire_after=timedelta(days=30), stale_if_error=True)
-            file = session.get(url)
-            data = file.text
-        except (ConnectionError, UnicodeError):
-            return {'data': [{}]}
-        try:
-            taxon_data = json.loads(data)['itisTerms'][0]
-        except UnicodeDecodeError:
-            taxon_data = json.loads(data.decode(
-                'utf-8', 'ignore'))['itisTerms'][0]
-        return_data = {}
-        if taxon_data and taxon_data['scientificName'].lower() == food.lower():
-            tsn = taxon_data['tsn']
-            scientific_name = taxon_data['scientificName']
-            return_data = create_return_data(
-                tsn, scientific_name, status=taxon_data['nameUsage'])
+               return EntityRelation(master_entity=master_entity_result[0],
+                                source_entity=source_entity,
+                                relation_id=1,
+                                data_status_id=5,
+                                relation_status_id=1,
+                                remarks=master_entity_result[0].reference).save()
         else:
-            return {'data': [{}]}
-        return return_data
-
-    def get_or_create_source_location(self, location: str, source_reference: SourceReference,
-                                      author: User):
+            return None    
+    
+    def get_or_create_source_location(self, location: str, source_reference: SourceReference, author: User):
         """
         Return SourceLocation object for the given location or create a new one
         """
@@ -310,11 +258,12 @@ class BaseImporter:
             return None
         if gender != '22' or gender != '23':
             return None
-        choicevalue = ChoiceValue.objects.filter(pk=gender)
-        return choicevalue[0]
+        else:
+            choicevalue = ChoiceValue.objects.filter(pk=gender)
+            return choicevalue[0]
 
     def possible_nan_to_zero(self, size):
-        if size == 'nan':
+        if size != size or size == 'nan' or size == "":
             return 0
         return size
 
@@ -322,3 +271,30 @@ class BaseImporter:
         if possible == 'nan':
             return None
         return possible
+
+    def search_scientificName(self, entity_name):
+            queries = self.clean_query(entity_name)
+            url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey='
+            
+            try:
+                session = CachedSession(ITIS_CACHE, expire_after=timedelta(days=30), stale_if_error=True)
+                for query in queries:
+                    file = session.get(url+query)
+                    data = file.json()
+                    if data['itisTerms'][0] != None:
+                        break
+                    
+            except (ConnectionError, UnicodeError):
+                return None
+            
+            taxon_data = data['itisTerms'][0]
+            if taxon_data and taxon_data['scientificName'].lower():
+                return taxon_data['scientificName']
+            else:
+                return None
+
+    def clean_query(self, food):
+        cleaned_food = re.sub(r'\s*\b(sp|ssp|af|aff|gen)\.?|\s*[\(\)\-]', '', food.lower()).capitalize().strip()
+        parts = cleaned_food.split()
+        return parts
+

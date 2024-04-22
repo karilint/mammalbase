@@ -54,7 +54,7 @@ def wrapper(request, validator, importer, path):
         return HttpResponseRedirect(reverse(path))
 
     except Exception as e:
-        logging.getLogger("error_logger").error("Unable to upload file due to error. "+repr(e))
+        logging.getLogger("error_logger").error(f"Unable to upload file due to error.{repr(e)}")
         print(e)
         messages.error(request, "Unable to upload file. "+repr(e))
         return HttpResponseRedirect(reverse(path))

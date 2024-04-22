@@ -47,6 +47,7 @@ class OccurrencesImporter(BaseImporter):
             verbatim_event_date=getattr(row, 'verbatimEventDate'),
             source_habitat=habitat
         )
+        print(f"Event created: {new_event}")
 
         gender = str(getattr(row, 'sex'))
 
@@ -58,6 +59,8 @@ class OccurrencesImporter(BaseImporter):
             gender, created = ChoiceValue.objects.get_or_create(
                 choice_set="Gender", caption=gender.capitalize()
             )
+            if created:
+                print(f"gender created {gender}")
 
         if life_stage in ["nan", ""]:
             life_stage = None
@@ -65,7 +68,9 @@ class OccurrencesImporter(BaseImporter):
             life_stage, created = ChoiceValue.objects.get_or_create(
                 choice_set="Lifestage", caption=life_stage.capitalize()
             )
-
+            if created:
+                print(f"life_stage created {life_stage}")
+        
         obj, created = Occurrence.objects.get_or_create(
             source_reference=reference,
             event=new_event,
@@ -78,4 +83,10 @@ class OccurrencesImporter(BaseImporter):
             occurrence_remarks=getattr(row, 'occurrenceRemarks'),
             associated_references=getattr(row, 'associatedReferences')
         )
-        return bool(created)
+        if created:
+            print(f"Occurrence created: {obj}")
+            return True
+        else:
+            print(f"Occurrence exists: {obj}")
+            return False
+

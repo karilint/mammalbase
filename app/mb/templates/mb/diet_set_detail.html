@@ -6,7 +6,7 @@
 {% load static %}
 
 <!-- handle.css Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop -->
-<link rel="stylesheet" type="text/css" href="{% static 'css/handle.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'css/handle.css' %}" />
 
 <!--Article header -->
 <header style="display:none">
@@ -19,18 +19,25 @@
   </header>
   <br>
   <div class="mb-detail w3-bar w3-right-align">
-    <a title="Press to Go Back" class="w3-button w3-medium w3-round w3-padding-small w3-teal" onclick="backFunction()"><span class="fa fa-arrow-left"></span></a>
+    <a title="Press to Go Back" class="w3-button w3-medium w3-round w3-padding-small w3-teal"
+      onclick="backFunction()"><span class="fa fa-arrow-left"></span></a>
     {% if request.user|is_data_admin_or_owner:ds %}
-      <a title="Press to Edit" class="w3-button w3-medium w3-round w3-padding-small w3-teal" href="{% url 'diet_set-edit' pk=ds.pk %}"><span class="fa fa-pencil-square-o"></span></a>
-      <a title="Press to Delete" class="w3-button w3-medium w3-round w3-padding-small w3-teal" href="{% url 'diet_set-delete' pk=ds.pk %}"><span class="fa  fa-trash-o"></span></a>
+    <a title="Press to Edit" class="w3-button w3-medium w3-round w3-padding-small w3-teal"
+      href="{% url 'diet_set-edit' pk=ds.pk %}"><span class="fa fa-pencil-square-o"></span></a>
+    <a title="Press to Delete" class="w3-button w3-medium w3-round w3-padding-small w3-teal"
+      href="{% url 'diet_set-delete' pk=ds.pk %}"><span class="fa  fa-trash-o"></span></a>
     {% else %}
-      <button title="Please login to Edit" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
-      <button title="Please login to Delete" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
+    <button title="Please login to Edit" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span
+        class="fa fa-pencil-square-o"></span></button>
+    <button title="Please login to Delete"
+      class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span
+        class="fa  fa-trash-o"></span></button>
     {% endif %}
   </div>
 
   {% if request.user|is_data_admin_or_owner:ds %}
-  <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'source_entity-relation-new' ds.taxon.id %}"><span class="fa fa-plus"></span></a>
+  <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal"
+    href="{% url 'source_entity-relation-new' ds.taxon.id %}"><span class="fa fa-plus"></span></a>
   <br>
   {% else %}
   <br>
@@ -40,10 +47,10 @@
     {% if ds.taxon.name|length > 50 %}
     <caption class="w3-left-align w3-small">
       {% else %}
-    <caption class="w3-left-align">
-      {% endif %}
-      Table 1. List of accepted Taxa that {{ ds.taxon.name }} is matched against.
-    </caption>
+      <caption class="w3-left-align">
+        {% endif %}
+        Table 1. List of accepted Taxa that {{ ds.taxon.name }} is matched against.
+      </caption>
     <thead>
       <tr>
         <th>Taxon</th>
@@ -54,24 +61,27 @@
     </thead>
     <tbody>
       {% if ds.taxon.entityrelation_set.count > 0 %}
-        {% for relation in ds.taxon.entityrelation_set.all %}
-          {% if relation.relation.name  == "Taxon Match" and relation.is_active %}
-            <tr>
-              {% if user.is_authenticated %}
-              <td class="mb-public-internal"><a title="Press for Details" href="{% url 'entity_relation-detail' pk=relation.id %}">{{ relation.master_entity.name }} <span class="fa fa-link w3-small"></span></a></td>
-              {% else %}
-              <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">{{ relation.master_entity.name }} <span class="fa fa-link w3-small"></span></a></td>
-              {% endif %}
-              <td>{{ relation.master_entity.reference }}</td>
-              <td>{{ relation.relation_status.name }}</td>
-              <td>{{ relation.data_status.name }}</td>
-            </tr>
-          {% endif %}
-        {% endfor %}
+      {% for relation in ds.taxon.entityrelation_set.all %}
+      {% if relation.relation.name == "Taxon Match" and relation.is_active %}
+      <tr>
+        {% if user.is_authenticated %}
+        <td class="mb-public-internal"><a title="Press for Details"
+            href="{% url 'entity_relation-detail' pk=relation.id %}">{{ relation.master_entity.name }} <span
+              class="fa fa-link w3-small"></span></a></td>
+        {% else %}
+        <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href="">
+          {{ relation.master_entity.name }} <span class="fa fa-link w3-small"></span></a></td>
+        {% endif %}
+        <td>{{ relation.master_entity.reference }}</td>
+        <td>{{ relation.relation_status.name }}</td>
+        <td>{{ relation.data_status.name }}</td>
+      </tr>
+      {% endif %}
+      {% endfor %}
       {% else %}
-        <tr>
-          <td colspan="4">There are no accepted Taxa available.</td>
-        </tr>
+      <tr>
+        <td colspan="4">There are no accepted Taxa available.</td>
+      </tr>
       {% endif %}
     </tbody>
   </table>
@@ -84,7 +94,8 @@
     </tr>
     <tr>
       <th class="w3-quarter">Time period:</th>
-      <td class="w3-threequarter">{{ ds.time_period|default_if_none:"-" }}: ({{ ds.time_period.time_in_months|default_if_none:"12" }}) months</td>
+      <td class="w3-threequarter">{{ ds.time_period|default_if_none:"-" }}: 
+        ({{ ds.time_period.time_in_months|default_if_none:"12" }}) months</td>
     </tr>
     <tr>
       <th class="w3-quarter">Gender:</th>
@@ -113,9 +124,12 @@
     <tr>
       <th class="w3-quarter">Reference:</th>
       {% if user.is_authenticated %}
-        <td class="w3-threequarter"><a title="Press for Details" href="{% url 'source_reference-detail' pk=ds.reference.id %}"><cite>{{ ds.reference|safe }} </cite><span class="fa fa-link w3-small"></span></a></td>
+      <td class="w3-threequarter"><a title="Press for Details"
+          href="{% url 'source_reference-detail' pk=ds.reference.id %}"><cite>{{ ds.reference|safe }} </cite><span
+            class="fa fa-link w3-small"></span></a></td>
       {% else %}
-        <td class="w3-threequarter"><a title="Please login for Details" style="color:IndianRed;" href=""><cite>{{ ds.reference|safe }} </cite><span class="fa fa-link w3-small"></span></a></td>
+      <td class="w3-threequarter"><a title="Please login for Details" style="color:IndianRed;" href=""><cite>
+        {{ ds.reference|safe }} </cite><span class="fa fa-link w3-small"></span></a></td>
       {% endif %}
     </tr>
   </table>
@@ -123,9 +137,10 @@
 
   {% if request.user|is_data_admin_or_owner:ds %}
   <br>
-    <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal" href="{% url 'diet_set_item-new' ds.id %}"><span class="fa fa-plus"></span></a>
+  <a title="Press for New" class="w3-button w3-tiny w3-round w3-padding-small w3-teal"
+    href="{% url 'diet_set_item-new' ds.id %}"><span class="fa fa-plus"></span></a>
   {% else %}
-    <br>
+  <br>
   {% endif %}
 
   <table class="mb-list w3-table-all w3-small">
@@ -134,12 +149,12 @@
     <thead>
       <tr>
         {% if user.is_authenticated %}
-          <th style="width:1%"></th>
+        <th style="width:1%"></th>
         {% endif %}
         <th style="text-align:right">List order</th>
         <th style="text-align:right">Ratio</th>
         {% if user.is_authenticated %}
-          <th>Food Item</th>
+        <th>Food Item</th>
         {% else %}
         {% endif %}
         <th>TSN Complete name</th>
@@ -149,33 +164,45 @@
     <tbody id="dsi">
       {% for dsi in ds.dietsetitem_set.all %}
       {% if dsi.is_active %}
-        <tr data-lookup="{{ dsi.id }}">
-          {% if user.is_authenticated %}
-            <td style="width:1%"<span class="handle"></span></td>
-          {% endif %}
-          {% if user.is_authenticated %}
-            <td class="mb-public-internal"><a title="Press for Details" href="{% url 'diet_set_item-detail' pk=dsi.id %}">{{ dsi.list_order }} <span class="fa fa-link w3-small"></span></a></td>
-          {% else %}
-            <td style="text-align:right">{{ dsi.list_order }}</td>
-          {% endif %}
-          <td style="text-align:right">{{ dsi.percentage }}</td>
-          {% if user.is_authenticated %}
-            <td class="mb-public-internal"><a title="Press for Details" href="{% url 'food_item-detail' pk=dsi.food_item_id %}">{{ dsi.food_item.name }} <span class="fa fa-link w3-small"></span></a></td>
-          {% else %}
-          {% endif %}
-          <td class="mb-public-internal w3-threequarter"><a title="Press for Details" href="{% url 'tsn-detail' tsn=dsi.food_item.tsn.tsn|default:0 %}">{{ dsi.food_item.tsn.completename }} <span class="fa fa-link w3-small"></span></a></td>
-          <td>{{ dsi.food_item.part.caption }}</td>
-        </tr>
+      <tr data-lookup="{{ dsi.id }}">
+        {% if user.is_authenticated %}
+        <td style="width:1%" <span class="handle"></span></td>
         {% endif %}
+        {% if user.is_authenticated %}
+        <td class="mb-public-internal"><a title="Press for Details" href="{% url 'diet_set_item-detail' pk=dsi.id %}">
+          {{  dsi.list_order }} <span class="fa fa-link w3-small"></span></a></td>
+        {% else %}
+        <td style="text-align:right">{{ dsi.list_order }}</td>
+        {% endif %}
+        <td style="text-align:right">{{ dsi.percentage }}</td>
+        {% if user.is_authenticated %}
+        <td class="mb-public-internal"><a title="Press for Details"
+            href="{% url 'food_item-detail' pk=dsi.food_item_id %}">{{ dsi.food_item.name }} <span
+              class="fa fa-link w3-small"></span></a></td>
+        {% else %}
+        {% endif %}
+        <td class="mb-public-internal w3-threequarter">
+          {% if dsi.food_item.tsn.tsn %}
+          <a title="Press for Details" href="{% url 'tsn-detail' tsn=dsi.food_item.tsn.tsn|default:0 %}">
+            {{ dsi.food_item.tsn.completename }} <span class="fa fa-link w3-small"></span>
+          </a>
+          {% else %}
+          -
+          {% endif %}
+        </td>
+        <td>{{ dsi.food_item.part.caption }}</td>
+      </tr>
+      {% endif %}
       {% endfor %}
     </tbody>
   </table>
   {% if request.user|is_data_admin_or_owner:ds %}
   <form id="orderingForm" method="post" action="{% url 'save-group-ordering' %}">
     {% csrf_token %}
-      <input type="hidden" id="orderingInput" name="ordering">
-      <button id="saveOrdering" title="After drag and drop of row orders press here to save." class="w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-arrows-v"></button>
-    </form>
+    <input type="hidden" id="orderingInput" name="ordering">
+    <button id="saveOrdering" title="After drag and drop of row orders press here to save."
+      class="w3-button w3-tiny w3-round w3-padding-small w3-teal"><span class="fa fa-arrows-v"></button>
+  </form>
   {% endif %}
 
 </section>
@@ -193,9 +220,9 @@
   const orderingForm = document.getElementById('orderingForm');
   const formInput = orderingForm.querySelector('#orderingInput');
   const dsi = document.getElementById('dsi');
-    let sortable = Sortable.create(dsi, {
-      handle: '.handle',
-    });
+  let sortable = Sortable.create(dsi, {
+    handle: '.handle',
+  });
   function saveOrdering() {
     const rows = document.getElementById("dsi").querySelectorAll('tr');
     let ids = [];
