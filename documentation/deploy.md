@@ -29,7 +29,7 @@ You can monitor the logs of the running container by login to staging or product
 ```bash
 ssh ubuntu@*staging*.mammalbase.net -i mammalbase-staging-key.pem
 ```
-You can get password and key from kari
+You can get password and key from Kari.
 
 ### Seeing logs
 
