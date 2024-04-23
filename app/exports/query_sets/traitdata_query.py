@@ -8,7 +8,7 @@ from .base_query import base_query
 
 def traitdata_query(measurement_choices):
     """
-        Traitdata query function that defines the fields in the traitdata.tsv file 
+        Traitdata query function that defines the fields in the traitdata.tsv file
         according to the ETS standard: https://ecologicaltraitdata.github.io/ETS/.
         Utilizes the base_query. Returns the query and fields whereof non active values
         are excluded.
@@ -78,8 +78,13 @@ def traitdata_query(measurement_choices):
     ).order_by(
         'source_attribute__master_attribute__name'
     )
+<<<<<<< HEAD
     
     nominal_query = SourceChoiceSetOptionValue.objects.filter(master_attribute_filter).exclude(nominal_non_active).annotate(
+=======
+
+    nominal_query = SourceChoiceSetOptionValue.objects.annotate(
+>>>>>>> main
         trait_id=Concat(
             Value('https://www.mammalbase.net/ma/'),
             'source_choiceset_option__source_attribute__master_attribute__id',
@@ -142,8 +147,11 @@ def traitdata_query(measurement_choices):
     queries = []
     if "Nominal traits" in measurement_choices:
         queries.append((nominal_query, nominal_fields))
-    
-    if "Cranial measurements" in measurement_choices or "External measurements" in measurement_choices:
+
+    if ("Cranial measurements" in
+        measurement_choices or
+        "External measurements" in
+        measurement_choices):
         queries.append((query, fields))
 
     return queries

@@ -233,8 +233,7 @@ class FoodItem(BaseModel):
                         if part=='CARRION':
                             part='WHOLE'
                         pa = ViewProximateAnalysisTable.objects.filter(
-                            tsn__hierarchy_string__endswith=tsn_hierarchy[i]).filter(
-                                part__exact=part)
+                            tsn__hierarchy_string__endswith=tsn_hierarchy[i])
                         if len(pa)==1:
                             self.pa_tsn=pa.all()[0].tsn
                             break
@@ -1242,10 +1241,8 @@ class TimePeriod(BaseModel):
         'SourceReference',
         on_delete = models.CASCADE,
         )
-    name = models.CharField(max_length=50, help_text="Enter the Time Period")
-    time_in_months = models.PositiveSmallIntegerField(
-        default=12,
-        help_text='Enter an estimate of Time Period in months.')
+    name = models.CharField(max_length=250, help_text="Enter the Time Period")
+    time_in_months = models.PositiveSmallIntegerField(default=12, help_text='Enter an estimate of Time Period in months.')
 
     class Meta:
         ordering = ['name']

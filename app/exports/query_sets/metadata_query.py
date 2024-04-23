@@ -9,7 +9,7 @@ from .base_query import base_query
 
 def metadata_query(measurement_choices):
     """
-        Metadata query function that defines the fields in the metadata.tsv file 
+        Metadata query function that defines the fields in the metadata.tsv file
         according to the ETS standard: https://ecologicaltraitdata.github.io/ETS/.
         Utilizes the base query. Returns the query and fields whereof non active values
         are excluded. Only unique rows are printed to the file (usually only one row).
@@ -27,9 +27,11 @@ def metadata_query(measurement_choices):
 
     query = base.exclude(non_active).annotate(
         dataset_id=Value('https://urn.fi/urn:nbn:fi:att:8dce459f-1401-4c6a-b2bb-c831bd8d3d6f'),
-        dataset_name=Value('MammalBase — Dataset 03: Trait Data in Ecological Trait-data Standard (ETS) format'),
+        dataset_name=Value(
+            'MammalBase — Dataset 03: Trait Data in Ecological Trait-data Standard (ETS) format'),
         dataset_description=Value(
-            'MammalBase - www.mammalbase.net: Trait dataset output in Ecological Trait-data Standard (ETS)'
+            'MammalBase - www.mammalbase.net: '
+            'Trait dataset output in Ecological Trait-data Standard (ETS)'
         ),
         orcid_uid=Subquery(
             SocialAccount.objects.filter(
@@ -52,7 +54,8 @@ def metadata_query(measurement_choices):
             'URL: https://doi.org/10.5281/zenodo.1485739')
         ),
         rights_holder=Value(
-            'Lintulaakso, Kari;https://orcid.org/0000-0001-9627-8821;Finnish Museum of Natural History LUOMUS'
+            'Lintulaakso, ',
+            'Kari;https://orcid.org/0000-0001-9627-8821;Finnish Museum of Natural History LUOMUS'
         ),
         rights=Value('Attribution 4.0 International (CC BY 4.0)'),
         licence=Value('CC BY 4.0')
@@ -66,9 +69,11 @@ def metadata_query(measurement_choices):
 
     nominal_query = SourceChoiceSetOptionValue.objects.exclude(non_active).annotate(
         dataset_id=Value('https://urn.fi/urn:nbn:fi:att:8dce459f-1401-4c6a-b2bb-c831bd8d3d6f'),
-        dataset_name=Value('MammalBase — Dataset 03: Trait Data in Ecological Trait-data Standard (ETS) format'),
+        dataset_name=Value(
+            'MammalBase — Dataset 03: Trait Data in Ecological Trait-data Standard (ETS) format'),
         dataset_description=Value(
-            'MammalBase - www.mammalbase.net: Trait dataset output in Ecological Trait-data Standard (ETS)'
+            'MammalBase - www.mammalbase.net: '
+            'Trait dataset output in Ecological Trait-data Standard (ETS)'
         ),
         orcid_uid=Subquery(
             SocialAccount.objects.filter(
@@ -91,7 +96,8 @@ def metadata_query(measurement_choices):
             'URL: https://doi.org/10.5281/zenodo.1485739')
         ),
         rights_holder=Value(
-            'Lintulaakso, Kari;https://orcid.org/0000-0001-9627-8821;Finnish Museum of Natural History LUOMUS'
+            'Lintulaakso, '
+            'Kari;https://orcid.org/0000-0001-9627-8821;Finnish Museum of Natural History LUOMUS'
         ),
         rights=Value('Attribution 4.0 International (CC BY 4.0)'),
         licence=Value('CC BY 4.0')
@@ -120,8 +126,11 @@ def metadata_query(measurement_choices):
     queries = []
     if "Nominal traits" in measurement_choices:
         queries.append((nominal_query, fields))
-    
-    if "Cranial measurements" in measurement_choices or "External measurements" in measurement_choices:
+
+    if ("Cranial measurements" in
+        measurement_choices or
+        "External measurements" in
+        measurement_choices):
         queries.append((query, fields))
 
     return queries

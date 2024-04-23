@@ -64,7 +64,7 @@ class DietSetItemForm(forms.ModelForm):
 class EntityRelationForm(forms.ModelForm):
     class Meta:
         model = EntityRelation
-        fields = ('source_entity', 'master_entity', 'relation', 'relation_status', 'data_status', )
+        fields = ('relation_status', 'data_status')
 
 class TSNWidget(ModelSelect2Widget):
     search_fields = ['completename__icontains', 'hierarchy__icontains','hierarchy_string__icontains',]
@@ -208,7 +208,7 @@ class SourceEntityRelationForm(forms.ModelForm):
     class Meta:
         model = EntityRelation
         fields = ('master_entity', 'relation_status', 'remarks', )
-        widgets = {'master_entity': MSW3TaxaWidget, 'relation_status': MatchStatusWidget, }
+        widgets = {'master_entity': MSW3TaxaWidget}
 
 class SourceEntityForm(forms.ModelForm):
     class Meta:

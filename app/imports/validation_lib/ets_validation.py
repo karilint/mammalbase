@@ -10,10 +10,10 @@ class Ets_validation(Validation):
         super().__init__()
 
         self.rules = {
-            "references": "required|min:10|max:500|regex:.*([1-2][0-9]{3})",
+            "references": "required|min:10|max:500|'regex:.*([1-2][0-9]{3})'",
             "verbatimScientificName": "required|alpha",
-            "taxonRank": "in:Subspecies,Varietas,Forma,Species,Genus,Nothogenus,Nothospecies,Nothosubspecies,Family,nan",
-            "verbatimTraitName": "max:250",
+            "taxonRank": "in:subspecies,varietas,forma,species,genus,nothogenus,nothospecies,nothosubspecies,family,nan",
+            "verbatimTraitName": "required|max:250",
             "verbatimTraitUnit": "max:25",
             "individualCount": "digits",
             "dispersion": "max:250",
@@ -21,11 +21,10 @@ class Ets_validation(Validation):
             "verbatimTraitValue": "",
             "sex": "in:male,female,nan",
             "lifeStage": "alpha",
-            "measurementMethod": "alpha",
             "measurementDeterminedBy": "",
             "verbatimLocality": "max:250",
             "author": "required|author",
-            "associatedReferences": "max:500|regex:.*([1-2][0-9]{3}"
+            "associatedReferences": "max:500|'regex:.*([1-2][0-9]{3})|(Original study)'"
         }
 
 

@@ -1,31 +1,30 @@
 import logging
 import pandas as pd
- 
+
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import render
 
 from django.contrib import messages
- 
+
 @login_required
 def wrapper(request, validator, importer, path):
-    """Wrapper for differnt viewers. 
- 
+    """Wrapper for differnt viewers.
+
     Args:
         request (_type_): HTTP-request
         path (str): The path of the html template to be returned.
- 
+
     Returns:
         HTTP-response: html-template
     """
     if request.method == "GET":
         print(f"import/{path}.html")
         return render(request, f"import/{path}.html")
- 
+
     csv_file = request.FILES["csv_file"]
     df = pd.read_csv(csv_file, sep='\t')
-
     try:   
         errors = validate(df, validator)
         author_check = check_author_consistency(df)
@@ -34,33 +33,37 @@ def wrapper(request, validator, importer, path):
                 messages.error(request, error)
             return HttpResponseRedirect(reverse(path))
         if not author_check:
-            messages.error(request, "Authors need to be consisten. Please make sure each row has your own ORCID")
+            messages.error(
+                request,
+                "Authors need to be consisten. Please make sure each row has your own ORCID"
+            )
             return HttpResponseRedirect(reverse(path))
- 
+
         rows_imported, rows_skipped = row_importer(df, importer)
         if rows_imported > 0:
-            message = f"File imported successfully. {rows_imported} rows of data were imported.({rows_skipped} rows were skipped.)"
+            message = (f"File imported successfully. {rows_imported} rows of data were imported."
+                       f"({rows_skipped} rows were skipped.)")
             messages.add_message(request, 50, message, extra_tags="import-message")
             messages.add_message(request, 50, df.to_html(), extra_tags="show-data")
             return HttpResponseRedirect(reverse(path))
- 
-        else:
-            message = f"File failed to import. {rows_imported} rows of data were imported."
-            messages.error(request, message)
-            return HttpResponseRedirect(reverse(path))
- 
+
+
+        message = f"File failed to import. {rows_imported} rows of data were imported."
+        messages.error(request, message)
+        return HttpResponseRedirect(reverse(path))
+
     except Exception as e:
-        logging.getLogger("error_logger").error("Unable to upload file due to error. "+repr(e))
+        logging.getLogger("error_logger").error(f"Unable to upload file due to error.{repr(e)}")
         print(e)
         messages.error(request, "Unable to upload file. "+repr(e))
         return HttpResponseRedirect(reverse(path))
- 
+
 def validate(df, validator):
     """Validate rows in tsv-file.
- 
+
     Args:
         df (Pandas): Pandas-object
- 
+
     Returns:
         list: possible validation errors
     """
@@ -77,39 +80,39 @@ def validate(df, validator):
         if not isvalid:
             for x in errors:
                 importing_errors.append("Error on row: "+ str(index) + ". Error: " + (x))
- 
+
     if len(importing_errors) > 0:
         return importing_errors
     return []
  
  
-def row_importer(df, importer):
+def row_importer(df: pd.DataFrame, importer):
     """Import validated rows to db.
- 
+
     Args:
         df (Pandas): Pandas-object
- 
+
     Returns:
         int: how many rows was impoerted
     """
     success_rows = 0
     skipped_rows = 0
- 
+
     for row in df.itertuples(index=False):
         created = importer.importRow(row)
- 
+
         if created:
-            success_rows += 1    
+            success_rows += 1
         else:
             skipped_rows += 1
     return success_rows, skipped_rows
- 
+
 def check_author_consistency(df: pd.DataFrame):
     """Check if every row has the same value for the 'author' column as the first row.
- 
+
     Args:
         df (Pandas DataFrame): DataFrame object representing the TSV data.
- 
+
     Returns:
         bool: True if all authors match the first author, False otherwise.
     """
