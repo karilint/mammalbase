@@ -1,14 +1,7 @@
-<<<<<<< HEAD
 from django.db.models import Value, CharField, Q, Case, When, F, Aggregate, Subquery, OuterRef, FilteredRelation, Prefetch
 from django.db.models.functions import Concat, Replace
 
 from mb.models import SourceChoiceSetOptionValue, MasterAttribute, MasterChoiceSetOption
-=======
-from django.db.models import Value, CharField, Q
-from django.db.models.functions import Concat, Replace
-
-from mb.models import SourceChoiceSetOptionValue
->>>>>>> main
 from .base_query import base_query
 
 

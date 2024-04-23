@@ -78,13 +78,8 @@ def traitdata_query(measurement_choices):
     ).order_by(
         'source_attribute__master_attribute__name'
     )
-<<<<<<< HEAD
     
     nominal_query = SourceChoiceSetOptionValue.objects.filter(master_attribute_filter).exclude(nominal_non_active).annotate(
-=======
-
-    nominal_query = SourceChoiceSetOptionValue.objects.annotate(
->>>>>>> main
         trait_id=Concat(
             Value('https://www.mammalbase.net/ma/'),
             'source_choiceset_option__source_attribute__master_attribute__id',
