@@ -194,7 +194,23 @@ def master_location_detail(request, pk):
     master_location = get_object_or_404(MasterLocation, id=pk)
     related_objects = MasterLocation.objects.filter(pk=master_location.higherGeographyID.id)
     occurrences = get_occurrences_by_masterlocation(master_location)
-    return render(request, 'mb/master_location_detail.html', context={"master_location" : master_location, "related_objects" : related_objects, "occurrences" : occurrences},)
+    
+    #page_obj = occurrences
+    
+    paginator = Paginator(occurrences, 10)
+
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+	    
+    return render(
+        request, 
+        'mb/master_location_detail.html', 
+        {"master_location" : master_location, "related_objects" : related_objects, "occurrences" : page_obj, "filter" : None},)
 
 # Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
 @require_POST

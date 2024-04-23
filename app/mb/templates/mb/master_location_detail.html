@@ -13,7 +13,7 @@
     <h2>Master Location</h2>
   </header>
 
-  <!-- {% include 'includes/find.html' %} -->
+  
   {% if master_location %}
   {% if request.user|is_data_admin_or_contributor %}
       <br>
@@ -108,12 +108,14 @@
         <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="{% url 'master_reference-detail' pk=master_location.reference.id %}">{{ master_location.reference }}<span class="fa fa-link w3-small"></span></a></td>
       </tr>
     </table>
+    <br>
     <table class="dataframe">
-      <caption class="w3-left-align">Table 1. List of Occurrences related with <b><i>{{ master_location }}</i></b>.</caption>
       <thead>
+      <!-- {% include 'includes/find.html' %} -->
       {%if occurrences %}
         {% if user.is_authenticated %}
               <table class="mb-list w3-table-all w3-small w3-responsive">
+                <caption class="w3-left-align">Table 1. List of Occurrences related with <b><i>{{ master_location }}</i></b>.</caption>
                 <thead>
                   <tr>
                     <th>Event</th>
