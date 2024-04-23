@@ -37,7 +37,7 @@ def measurement_or_fact_query(
         | Q(source_entity__reference__is_active=False)
         | Q(source_entity__reference__master_reference__is_active=False)
         | Q(source_statistic__is_active=False)
-        
+
     )
 
     nominal_non_active = (

@@ -31,7 +31,9 @@ def traitdata_query(measurement_choices):
             | Q(source_choiceset_option__master_choiceset_option__name=None)
     )
     master_attribute_filter = (
-        Q(source_choiceset_option__master_choiceset_option__master_attribute_id=F('source_choiceset_option__source_attribute__master_attribute__id'))
+        Q(source_choiceset_option__master_choiceset_option__master_attribute_id =
+          F('source_choiceset_option__source_attribute__master_attribute__id')
+        )
     )
 
     query = base.exclude(non_active).annotate(
@@ -78,8 +80,9 @@ def traitdata_query(measurement_choices):
     ).order_by(
         'source_attribute__master_attribute__name'
     )
-    
-    nominal_query = SourceChoiceSetOptionValue.objects.filter(master_attribute_filter).exclude(nominal_non_active).annotate(
+
+    nominal_query = SourceChoiceSetOptionValue.objects.filter(
+            master_attribute_filter).exclude(nominal_non_active).annotate(
         trait_id=Concat(
             Value('https://www.mammalbase.net/ma/'),
             'source_choiceset_option__source_attribute__master_attribute__id',

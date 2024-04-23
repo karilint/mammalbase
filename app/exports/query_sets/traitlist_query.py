@@ -1,7 +1,7 @@
-from django.db.models import Value, CharField, Q, Case, When, F, Aggregate, Subquery, OuterRef, FilteredRelation, Prefetch
+from django.db.models import Value, CharField, Q, Case, When
 from django.db.models.functions import Concat, Replace
 
-from mb.models import SourceChoiceSetOptionValue, MasterAttribute, MasterChoiceSetOption
+from mb.models import MasterAttribute
 from .base_query import base_query
 
 
@@ -50,7 +50,8 @@ def traitlist_query(measurement_choices):
             except:
                 attributelink[i.name]=[j.name]
 
-    nominal_query = MasterAttribute.objects.prefetch_related('master_choiceset_option_set').filter(groups__name='Nominal traits').annotate(
+    nominal_query = MasterAttribute.objects.prefetch_related(
+            'master_choiceset_option_set').filter(groups__name='Nominal traits').annotate(
         identifier=Concat(
             Value('https://www.mammalbase.net/ma/'),
             'id',
@@ -66,7 +67,9 @@ def traitlist_query(measurement_choices):
         relatedTerm=Value('NA'),
         factorLevels=Case(
             *[
-            When(name=attribute_name, then=Value(', '.join(attributelink[attribute_name]),output_field=CharField())) for attribute_name in attributelink
+            When(name=attribute_name, then=Value(
+                ', '.join(attributelink[attribute_name]),output_field=CharField()
+            )) for attribute_name in attributelink
             ]
         ),
         broaderTerm=Value('NA'),
