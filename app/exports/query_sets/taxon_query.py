@@ -6,17 +6,10 @@ from .base_query import base_query
 
 def taxon_query(measurement_choices):
     """
-<<<<<<< HEAD
-        Taxon query function that defines the fields in the taxon.tsv file 
-        according to the ETS standard: https://ecologicaltraitdata.github.io/ETS/. 
-        Utilizes the base query. taxon.tsv is 
-        sorted according to tdwg/taxon model's sort_order field.
-=======
         Taxon query function that defines the fields in the taxon.tsv file
         according to the ETS standard: https://ecologicaltraitdata.github.io/ETS/.
         Utilizes the base query.
         taxon.tsv is sorted according to tdwg/taxon model's sort_order field.
->>>>>>> main
         Returns the query and fields whereof non active values are excluded.
     """
     base = base_query(measurement_choices)
@@ -64,15 +57,10 @@ def taxon_query(measurement_choices):
     if "Nominal traits" in measurement_choices:
         queries.append((nominal_query, fields))
 
-<<<<<<< HEAD
-    if ("Cranial measurements" in measurement_choices or
-        "External measurements" in measurement_choices):
-=======
     if ("Cranial measurements" in
         measurement_choices or
         "External measurements" in
         measurement_choices):
->>>>>>> main
         queries.append((query, fields))
 
 

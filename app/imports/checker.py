@@ -67,13 +67,9 @@ class Check:
             data = SocialAccount.objects.all().filter(uid=author)
             if not data.exists():
                 self.id = None
-<<<<<<< HEAD
-                messages.error(self.request, "The author " + str(author) + 
-                               " is not a valid ORCID ID at row " +  str(counter) + ".")
-=======
                 messages.error(self.request, "The author " + str(author) +
                                " is not a valid ORCID ID at row " + str(counter) + ".")
->>>>>>> main
+
                 return False
             self.id = data[0].user_id
         return True
@@ -81,15 +77,6 @@ class Check:
     def check_headers_ds(self, df):
         import_headers = list(df.columns.values)
         accepted_headers = ['author', 'verbatimScientificName',
-<<<<<<< HEAD
-                            'taxonRank', 'verbatimAssociatedTaxa',
-                            'sequence',  'references']
-
-        for header in accepted_headers:
-            if header not in import_headers:
-                messages.error(self.request, "The import file does not contain the "
-                               "required headers. The missing header is: " + str(header) + ".")
-=======
                             'taxonRank', 'verbatimAssociatedTaxa', 'sequence', 'references']
 
         for header in accepted_headers:
@@ -98,7 +85,7 @@ class Check:
                     self.request,"The import file does not contain the required headers. ",
                     "The missing header is: " + str(header) + "."
                 )
->>>>>>> main
+
                 return False
         return True
 
@@ -232,12 +219,6 @@ class Check:
                 df.loc[row, "verbatimScientificName"])
             if is_plant is None:
                 continue
-<<<<<<< HEAD
-            if is_plant and ('verbatimTraitValue__crude_fibre' not in headers or possible_nan_to_zero(df.loc[row, 'verbatimTraitValue__crude_fibre'])==0):
-                messages.error(self.request, 
-                               f"Item of type plantae is missing required "
-                               "value verbatimTraitValue__crude_fibre on row {row}.")
-=======
             if is_plant and (
                 'verbatimTraitValue__crude_fibre' not in headers or
                 possible_nan_to_zero(df.loc[row, 'verbatimTraitValue__crude_fibre']) == 0):
@@ -246,7 +227,6 @@ class Check:
                     "Item of type plantae is missing required value ",
                     f"verbatimTraitValue__crude_fibre on row {row}."
                 )
->>>>>>> main
                 return False
         return True
 
@@ -324,12 +304,6 @@ class Check:
                     f"or taxonomic rank \'{str(item[1])}\' should be 'Species' on row {row}."
                 )
                 return False
-<<<<<<< HEAD
-            if len(names_list) == 1 and item[1] not in {'Genus', 'genus'} and not any(x in {"sp.", "sp", "cf.", "cf", "indet.", "indet", "aff.", "aff", "spp.", "spp"} for x in names_list):
-                messages.error(self.request, 
-                               f"Scientific name \'{str(item[0])}\' is not in the correct'
-                                ' format or taxonomic rank \'{str(item[1])}\' should be 'Genus' on row {row}.")
-=======
             if (len(names_list) == 1 and item[1] not in {'Genus', 'genus'} and not
                 any(
                     x in {"sp.", "sp", "cf.", "cf", "indet.", "indet", "aff.", "aff", "spp.", "spp"}
@@ -341,7 +315,6 @@ class Check:
                     f"Scientific name \'{str(item[0])}\' is not in the correct format "
                     f"or taxonomic rank \'{str(item[1])}\' should be 'Genus' on row {row}."
                 )
->>>>>>> main
                 return False
         return True
 
@@ -350,16 +323,10 @@ class Check:
         for rank in (df.loc[:, 'taxonRank']):
             counter += 1
             if rank not in ['Genus', 'Species', 'Subspecies', 'genus', 'species', 'subspecies']:
-<<<<<<< HEAD
-                messages.error(self.request, 
-                               "Taxonomic rank is not in the correct form on the line " 
-                               + str(counter) + ".")
-=======
                 messages.error(
                     self.request,
                     "Taxonomic rank is not in the correct form on the line " + str(counter) + "."
                 )
->>>>>>> main
                 return False
         return True
 
@@ -372,18 +339,6 @@ class Check:
             counter += 1
             if str(value).lower() != 'nan':
                 try:
-<<<<<<< HEAD
-                    if int(value) != 22 and int(value)!= 23:
-                        messages.error(self.request, 
-                                       'Gender is not in the correct format on the line '+str(counter)+
-                                       ' it should be 22 for male or 23 for female')
-                        return False
-                except ValueError:
-                        messages.error(self.request, 
-                                       'Gender is not in the correct format on the line '+str(counter)+
-                                       ' it should be 22 for male or 23 for female')
-                        return False
-=======
                     if int(value) != 22 and int(value) != 23:
                         messages.error(self.request,
                                        'Gender is not in the correct format on the line ' + str(
@@ -396,7 +351,6 @@ class Check:
                                         counter) + ' it should be 22 for male or 23 for female'
                     )
                     return False
->>>>>>> main
         return True
 
     def check_verbatim_associated_taxa(self, df):
@@ -404,21 +358,12 @@ class Check:
         for item in (df.loc[:, 'verbatimAssociatedTaxa']):
             counter += 1
             if item == "nan" or pd.isna(item):
-<<<<<<< HEAD
-                messages.error(self.request, "The line " + str(counter) + 
-                               " should not be empty on the column 'verbatimAssociatedTaxa'.")
-                return False
-            if len(item) > 250:
-                messages.error(self.request, 
-                               "verbatimAssociatedTaxa is too long at row " + str(counter) + ".")
-=======
                 messages.error(self.request, "The line " + str(counter) +
                                " should not be empty on the column 'verbatimAssociatedTaxa'.")
                 return False
             if len(item) > 250:
                 messages.error(
                     self.request, "verbatimAssociatedTaxa is too long at row " + str(counter) + ".")
->>>>>>> main
                 return False
         return True
 
@@ -426,26 +371,11 @@ class Check:
         import_headers = list(df.columns.values)
         has_measurementvalue = "measurementValue" in import_headers
         if has_measurementvalue:
-<<<<<<< HEAD
-            df_new = df[['verbatimScientificName', 
-                         'verbatimAssociatedTaxa', 
-                         'sequence', 
-                         'references', 
-                         'measurementValue']
-                         ]
-        else:
-            df_new = df[['verbatimScientificName', 
-                         'verbatimAssociatedTaxa', 
-                         'sequence', 
-                         'references']
-                         ]
-=======
             df_new = df[['verbatimScientificName', 'verbatimAssociatedTaxa',
                          'sequence', 'references', 'measurementValue']]
         else:
             df_new = df[['verbatimScientificName',
                          'verbatimAssociatedTaxa', 'sequence', 'references']]
->>>>>>> main
         optional_headers = [
             'verbatimLocality',
             'habitat',
@@ -466,32 +396,14 @@ class Check:
                 if int(item[2]) == counter:
                     if has_measurementvalue:
                         if item[4] > measurementvalue_reference:
-<<<<<<< HEAD
-                            messages.error(self.request, "Measurement value on the line " 
-                                           + str(lines) + " should not be larger than " 
-                                           + str(measurementvalue_reference) + ".")
-=======
                             messages.error(self.request, "Measurement value on the line " + str(
                                 lines) + " should not be larger than " + str(
                                     measurementvalue_reference) + "."
                             )
->>>>>>> main
                             return False
                     if has_measurementvalue:
                         measurementvalue_reference = item[4]
                     if item[0] != scientific_name:
-<<<<<<< HEAD
-                        messages.error(self.request, "Scientific name on the line " 
-                                       + str(lines) + " should be '" + str(scientific_name) + "'.")
-                        return False
-                    if item[3] != references:
-                        messages.error(self.request, "References on the line " 
-                                       + str(lines) + " should be '" + str(references) + "'.")
-                        return False
-                    if item[1] in fooditems:
-                        messages.error(self.request, "Food item on the line " 
-                                       + str(lines) + " is already mentioned for this diet set.")
-=======
                         messages.error(self.request, "Scientific name on the line " +
                                        str(lines) + " should be '" + str(scientific_name) + "'.")
                         return False
@@ -502,7 +414,6 @@ class Check:
                     if item[1] in fooditems:
                         messages.error(self.request, "Food item on the line " +
                                        str(lines) + " is already mentioned for this diet set.")
->>>>>>> main
                         return False
                     fooditems.append(item[1])
                     counter += 1
@@ -519,13 +430,9 @@ class Check:
                                 list(df.loc[lines - 2:lines - 2, header].fillna(0)))
 
                     if reference_list == compare:
-<<<<<<< HEAD
-                        messages.error(self.request, 
-                                       "False sequence number 1 on the line " + str(lines) +".")
-=======
                         messages.error(
                             self.request, "False sequence number 1 on the line " + str(lines) + ".")
->>>>>>> main
+
                         return False
 
                     total = 1
@@ -540,14 +447,6 @@ class Check:
                     counter_sum = (counter * (counter + 1)) / 2
                     counter -= 1
                     if counter != -1 and counter_sum != total:
-<<<<<<< HEAD
-                        messages.error(self.request, 
-                                       "Check the sequence numbering on the line " + str(lines) + ".")
-                        return False
-            else:
-                messages.error(self.request, "Sequence number on the line " 
-                               + str(lines) + " is not numeric.")
-=======
                         messages.error(
                             self.request,
                             "Check the sequence numbering on the line " + str(lines) + "."
@@ -556,7 +455,6 @@ class Check:
             else:
                 messages.error(
                     self.request, "Sequence number on the line " + str(lines) + " is not numeric.")
->>>>>>> main
                 return False
         return True
 
@@ -567,18 +465,6 @@ class Check:
                 if pd.isnull(value) or not any(c.isalpha() for c in str(value)):
                     pass
                 else:
-<<<<<<< HEAD
-                    messages.error(self.request, f"The measurement value on row 
-                                   {row} is not a number.")
-                    return False
-                if value <= 0:
-                    messages.error(self.request, f"The measurement value on row 
-                                   {row} needs to be bigger than zero.")
-                    return False
-        elif any('verbatimTraitValue' in header for header in import_headers):
-            measurement_headers = [hdr for hdr in import_headers 
-                                   if 'verbatimTraitValue' in hdr or 'dispersion' in hdr]
-=======
                     messages.error(
                         self.request, f"The measurement value on row {row} is not a number.")
                     return False
@@ -591,20 +477,12 @@ class Check:
         elif any('verbatimTraitValue' in header for header in import_headers):
             measurement_headers = [
                 hdr for hdr in import_headers if 'verbatimTraitValue' in hdr or 'dispersion' in hdr]
->>>>>>> main
+
             for header in measurement_headers:
                 for row, value in enumerate(df.loc[:, header], 1):
                     if pd.isnull(value) or not any(c.isalpha() for c in str(value)):
                         pass
                     else:
-<<<<<<< HEAD
-                        messages.error(self.request, f"The {header} \'{value}\' 
-                                       on row {row} is not a number.")
-                        return False
-                    if value < 0:
-                        messages.error(self.request, f"The {header} \'{value}\' 
-                                       on row {row} should not be negative.")
-=======
                         messages.error(
                             self.request, f"The {header} \'{value}\' on row {row} is not a number.")
                         return False
@@ -613,38 +491,23 @@ class Check:
                             self.request,
                             f"The {header} \'{value}\' on row {row} should not be negative."
                         )
->>>>>>> main
+
                         return False
         return True
 
     def check_part(self, df):
         headers = list(df.columns.values)
-<<<<<<< HEAD
-        accepted = ['BARK', 'BLOOD', 'BONES', 'BUD', 
-                    'CARRION', 'EGGS', 'EXUDATES', 'FECES', 
-                    'FLOWER', 'FRUIT', 'LARVAE', 'LEAF', 
-                    'MINERAL', 'NECTAR/JUICE', 'NONE', 
-                    'POLLEN', 'ROOT', 'SEED', 'SHOOT', 
-                    'STEM', 'UNKNOWN', 'WHOLE']
-=======
         accepted = [
             'BARK', 'BLOOD', 'BONES', 'BUD', 'CARRION', 'EGGS', 'EXUDATES',
             'FECES', 'FLOWER', 'FRUIT', 'LARVAE','LEAF', 'MINERAL',
             'NECTAR/JUICE', 'NONE', 'POLLEN', 'ROOT', 'SEED', 'SHOOT', 'STEM',
             'UNKNOWN', 'WHOLE'
             ]
->>>>>>> main
+
         if 'PartOfOrganism' not in headers:
             return True
         for row, value in enumerate(df.loc[:, 'PartOfOrganism'], 1):
             if value.lower() != 'nan' and value.upper() not in accepted:
-<<<<<<< HEAD
-                messages.error(self.request, f"Part is invalid on row {row}. "
-                               "The accepted part names are: bark, blood, bones, bud, "
-                               "carrion, eggs, exudates, feces, flower, fruit, larvae, "
-                               "leaf, mineral, nectar/juice, none, pollen, root, seed, "
-                               "shoot, stem, unknown, whole")
-=======
                 messages.error(
                     self.request,
                     f"Part is invalid on row {row}. "
@@ -652,7 +515,7 @@ class Check:
                     "exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, "
                     "none, pollen, root, seed, shoot, stem, unknown, whole"
                 )
->>>>>>> main
+
                 return False
         return True
 
@@ -663,18 +526,12 @@ class Check:
         for row, ref in enumerate(df.loc[:, 'references'], 1):
             if not force:
                 if not self.check_reference_in_db(ref):
-<<<<<<< HEAD
-                    messages.error(self.request, f"Reference on row {row} already in database. "
-                                   "Are you sure you want to import this file? "
-                                   "If you are sure use force upload.")
-=======
                     messages.error(
                         self.request,
                         f"Reference on row {row} already in database. "
                         "Are you sure you want to import this file? "
                         "If you are sure use force upload."
                     )
->>>>>>> main
                     return False
 
             if len(ref) < 10 or len(ref) > 500:
@@ -722,23 +579,6 @@ class Check:
 
         if "measurementValue_min" in import_headers:
             if "measurementValue_max" not in import_headers:
-<<<<<<< HEAD
-                messages.error(self.request, "There should be a header "
-                               "called 'measurementValue_max'.")
-                return False
-        elif "measurementValue_max" in import_headers:
-            if "measurementValue_min" not in import_headers:
-                messages.error(self.request, "There should be a header "
-                               "called 'measurementValue_min'.")
-                return False
-
-        if ("measurementValue_min" not in import_headers and 
-            "measurementValue_max" not in import_headers):
-            if "verbatimTraitValue" not in import_headers:
-                messages.error(self.request, "There should be header called "
-                               "'measurementValue_min' and 'measurementValue_max' "
-                               "or a header called 'verbatimTraitValue'.")
-=======
                 messages.error(
                     self.request, "There should be a header called 'measurementValue_max'.")
                 return False
@@ -757,7 +597,6 @@ class Check:
                     "There should be header called 'measurementValue_min' and "
                     "'measurementValue_max' or a header called 'verbatimTraitValue'."
                 )
->>>>>>> main
                 return False
             return True
 
@@ -768,22 +607,6 @@ class Check:
             for value in df_new.values:
                 counter += 1
                 if value[0] > value[1]:
-<<<<<<< HEAD
-                    messages.error(self.request, "Minimum measurement value "
-                                   "should be smaller than maximum "
-                                   "measurement value at row " + str(counter) + ".")
-                    return False
-                if isinstance(value[2], float):
-                    if float(value[1]) < float(value[2]):
-                        messages.error(self.request, "Mean measurement value "
-                                       "should be smaller than maximum "
-                                       "measurement value at row " + str(counter) + ".")
-                        return False
-                    if float(value[0]) > float(value[2]):
-                        messages.error(self.request, "Mean measurement value "
-                                       "should be larger than minimum "
-                                       "measurement value at row " + str(counter) + ".")
-=======
                     messages.error(
                         self.request,
                         "Minimum measurement value should be smaller than maximum "
@@ -804,27 +627,12 @@ class Check:
                             "Mean measurement value should be larger than minimum measurement "
                             "value at row " + str(counter) + "."
                         )
->>>>>>> main
                         return False
                 elif value[2][0].isalpha() or value[2][-1].isalpha():
                     if value[1] == 'nan' or pd.isnull(value[1]):
                         continue
                     if value[2] == "nan" or pd.isnull(value[2]):
                         continue
-<<<<<<< HEAD
-                    messages.error(self.request, "Mean value should be "
-                                   "numeric at row " + str(counter) + ".")
-                    return False
-                elif float(value[1]) < float(value[2]):
-                    messages.error(self.request, "Mean measurement value "
-                                   "should be smaller than maximum "
-                                   "measurement value at row " + str(counter) + ".")
-                    return False
-                elif float(value[0]) > float(value[2]):
-                    messages.error(self.request, "Mean measurement value "
-                                   "should be larger than minimum "
-                                   "measurement value at row " + str(counter) + ".")
-=======
                     messages.error(
                         self.request, "Mean value should be numeric at row " + str(counter) + ".")
                     return False
@@ -841,7 +649,6 @@ class Check:
                         "Mean measurement value should be larger than minimum "
                         "measurement value at row " + str(counter) + "."
                     )
->>>>>>> main
                     return False
         else:
             counter = 1
@@ -849,16 +656,10 @@ class Check:
             for value in df_new.values:
                 counter += 1
                 if value[0] > value[1]:
-<<<<<<< HEAD
-                    messages.error(self.request, "Minimum measurement value "
-                                   "should be smaller than maximum "
-                                   "measurement value at row " + str(counter) + ".")
-=======
                     messages.error(
                         self.request,
                         "Minimum measurement value should be smaller than maximum "
                         "measurement value at row " + str(counter) + "."
                     )
->>>>>>> main
                     return False
         return True
