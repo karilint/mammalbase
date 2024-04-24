@@ -23,6 +23,7 @@ from requests_cache import CachedSession
 from plotly import express as plotly_express
 from plotly.offline import plot as plotly_offline_plot
 from pandas import DataFrame as PandasDataFrame
+from django.core import serializers
 
 from config.settings import ITIS_CACHE
 from imports.tools import (
@@ -194,23 +195,13 @@ def master_location_detail(request, pk):
     master_location = get_object_or_404(MasterLocation, id=pk)
     related_objects = MasterLocation.objects.filter(pk=master_location.higherGeographyID.id)
     occurrences = get_occurrences_by_masterlocation(master_location)
-    
-    #page_obj = occurrences
-    
-    paginator = Paginator(occurrences, 10)
 
-    page_number = request.GET.get('page')
-    try:
-        page_obj = paginator.page(page_number)
-    except PageNotAnInteger:
-        page_obj = paginator.page(1)
-    except EmptyPage:
-        page_obj = paginator.page(paginator.num_pages)
-	    
+    occurrences = serializers.serialize('json', occurrences)
+    
     return render(
         request, 
         'mb/master_location_detail.html', 
-        {"master_location" : master_location, "related_objects" : related_objects, "occurrences" : page_obj, "filter" : None},)
+        {"master_location" : master_location, "related_objects" : related_objects, "occurrences" : occurrences, "filter" : None},)
 
 # Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
 @require_POST
