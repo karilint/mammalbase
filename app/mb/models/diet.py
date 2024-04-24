@@ -13,8 +13,8 @@ from django.utils.translation import gettext_lazy
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 
-from .proximate_analysis import ViewProximateAnalysisTable
 from itis.models import TaxonomicUnits
+from .proximate_analysis import ViewProximateAnalysisTable
 from .base_model import BaseModel
 
 class DietSet(BaseModel):
@@ -132,7 +132,7 @@ class DietSet(BaseModel):
         # 3. The weight of source quality in the diet
         try:
             master = self.reference.master_reference.type
-        except Exception as e: # FIX: except what? ValueError?
+        except (ValueError, TypeError): # FIX: except what? ValueError?
             score += 0
         else:
             if master == 'journal-article':
@@ -169,8 +169,7 @@ class DietSetItem(BaseModel):
         'FoodItem',
         on_delete = models.CASCADE,
         )
-    # Sortable, see: 
-    # https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
+    # Sortable, see: https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
     list_order = models.PositiveSmallIntegerField(
         default=100_000,
         help_text='List order on Diet Set'
@@ -274,4 +273,3 @@ class FoodItem(BaseModel):
         String for representing the Model object (in Admin site etc.)
         """
         return f"{self.name}"
-
