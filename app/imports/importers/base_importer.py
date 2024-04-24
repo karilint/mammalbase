@@ -268,7 +268,7 @@ class BaseImporter:
         return size
 
     def possible_nan_to_none(self, possible):
-        if possible == 'nan':
+        if possible != possible or possible == 'nan':
             return None
         return possible
 

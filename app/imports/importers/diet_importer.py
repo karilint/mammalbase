@@ -48,14 +48,16 @@ class DietImporter(BaseImporter):
         if gender == "nan" or gender == "":
             gender = None
         else:
-            gender = ChoiceValue.objects.get_or_create(
-                choice_set="Gender", caption=gender.capitalize())
+            gender = ChoiceValue.objects.filter(
+                choice_set="Gender", caption__iexact=gender).first()
+            if not gender:
+                part_of_organism = None
 
         if part_of_organism == "nan" or part_of_organism == "":
             part_of_organism = None
         else:
             part_of_organism = ChoiceValue.objects.filter(
-                choice_set="FoodItemPart", caption=part_of_organism.upper()).first()
+                choice_set="FoodItemPart", caption__iexact=part_of_organism).first()
             if not part_of_organism:
                 part_of_organism = None
 
@@ -65,6 +67,7 @@ class DietImporter(BaseImporter):
                 row,
                 'associatedReferences'),
             taxon=taxon,
+            gender=gender,
             location=new_source_location,
             sample_size=self.possible_nan_to_zero(
                 getattr(
@@ -82,6 +85,7 @@ class DietImporter(BaseImporter):
                     row,
                     'associatedReferences'),
                 taxon=taxon,
+                gender=gender,
                 location=new_source_location,
                 sample_size=self.possible_nan_to_zero(
                     getattr(
