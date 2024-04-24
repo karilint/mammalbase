@@ -43,13 +43,14 @@ def wrapper(request, validator, importer, path):
         rows_imported, rows_skipped = row_importer(df, importer)
         if rows_imported > 0:
             message = (f"File imported successfully. {rows_imported} rows of data were imported."
-                       f"({rows_skipped} rows were skipped.)")
+                       f" ({rows_skipped} rows were skipped.)")
             messages.add_message(request, 50, message, extra_tags="import-message")
             messages.add_message(request, 50, df.to_html(), extra_tags="show-data")
             return HttpResponseRedirect(reverse(path))
 
 
-        message = f"File failed to import. {rows_imported} rows of data were imported."
+        message = (f"File failed to import. {rows_imported} rows of data were imported."
+                   f" ({rows_skipped} rows were skipped.)")
         messages.error(request, message)
         return HttpResponseRedirect(reverse(path))
 
