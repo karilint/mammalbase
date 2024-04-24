@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.db.models import F
-from mb.models import SourceLocation
+from mb.models import SourceLocation, LocationRelation
 from .location_api import LocationAPI
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from mb.filters import SourceLocationFilter
@@ -66,6 +66,7 @@ def location_match_detail(request, id):
     next_id = id_list[index] if index < len(id_list) else None
     previous_id = id_list[previous] if previous >= 0 else None
     
+    matched = LocationRelation.objects.filter(source_location=sourceLocation).exists()
     
     return render(request, 'matchtool/location_match_detail.html', {
         'query': query,
@@ -77,6 +78,7 @@ def location_match_detail(request, id):
         'id_count': len(id_list), 
         'previous_id': previous_id,
         'selected_option': selected_option,
+        'matched': matched,
     })
 
 def match_location(request):

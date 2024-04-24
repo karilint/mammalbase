@@ -39,6 +39,7 @@
       {% endif %}
 
       <!--Table for search results-->
+      {% if not matched %}
       <table class="mb-list w3-table-all w3-medium w3-threequarter">
         <thead>
           <tr>
@@ -79,6 +80,9 @@
           {% endfor %}
         </tbody>
       </table>
+      {% else %}
+        <h3 style="margin-top: -10px; margin-bottom: 30px;">Location already matched</h3>
+      {% endif %}
 
     <!--Message if location successfully matched -->
     <div id="successMessage" style="display: none;">
