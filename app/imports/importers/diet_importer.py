@@ -51,7 +51,7 @@ class DietImporter(BaseImporter):
             part_of_organism = None
         else:
             part_of_organism = ChoiceValue.objects.filter(
-                choice_set="FoodItemPart", caption=part_of_organism).first()
+                choice_set="FoodItemPart", caption=part_of_organism.upper()).first()
             if not part_of_organism:
                 part_of_organism = None
 
