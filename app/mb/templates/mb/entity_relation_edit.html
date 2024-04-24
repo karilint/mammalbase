@@ -9,8 +9,7 @@
   <title>MammalBase - Add/Edit Taxon Relation</title>
 {% endblock %}
 
-{% block content %}
-  {% load custom_tags %}
+{% block content %} {% load custom_tags %}
   <!--Article header -->
   <header style="display:none">
     <h1>MammalBase - Add/Edit Taxon Relation</h1>
@@ -48,5 +47,5 @@
     {% else %}
       <p><a href="{% url 'login'%}?next={{request.path}}">Please login first</a></p>
     {% endif %}
-  </section>  
+  </section>
 {% endblock %}
