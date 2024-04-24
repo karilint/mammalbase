@@ -51,7 +51,7 @@ class DietImporter(BaseImporter):
             gender = ChoiceValue.objects.filter(
                 choice_set="Gender", caption__iexact=gender).first()
             if not gender:
-                part_of_organism = None
+                gender = None
 
         if part_of_organism == "nan" or part_of_organism == "":
             part_of_organism = None
