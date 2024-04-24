@@ -5,7 +5,7 @@ This module should not be imported anywhere else than __init__.py!
 To import models elsewhere use subpackage:
 from mb.models import ModelName
 """
-# TODO pylint: disable=no-member
+# pylint: disable=no-member
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
