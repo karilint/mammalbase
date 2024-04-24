@@ -936,7 +936,8 @@ class SourceMeasurementValue(BaseModel):
         try:
             source_type = self.source_entity.reference.master_reference.type
         except:
-            score += 0
+            source_type = "empty"
+            #score += 0
         else:
             if source_type == 'journal-article':
                 score += 3
@@ -960,8 +961,40 @@ class SourceMeasurementValue(BaseModel):
         #7 weight of having Standard Deviation
         if self.std != 0:
             score += 1
-
+        
+        score = calculate(taxon, citation, source_type, self.source_attribute.method, self.n_total, self.minimum, self.maximum, self.std)
         return score
+
+def calculate(taxon, citation, source_type, source_attribute, n_total, minimum, maximum, std):
+    score = 0
+    if taxon in ('Species', 'Subspecies'):
+        score +=1
+
+    if citation == 'Original study':
+        score += 2
+    elif citation is not None:
+        score += 1
+
+    if source_type == 'journal-article':
+        score += 3
+    elif source_type == 'book':
+        score += 2
+    elif source_type == 'data set':
+        score += 1
+
+    if source_attribute:
+        score += 1
+
+    if n_total != 0:
+        score += 1
+
+    if minimum != 0 and maximum != 0:
+        score += 1
+
+    if std != 0:
+        score += 1
+
+    return score
 
 class SourceMethod(BaseModel):
     """
