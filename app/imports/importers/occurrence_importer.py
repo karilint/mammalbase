@@ -44,7 +44,7 @@ class OccurrencesImporter(BaseImporter):
             reference, author
         )
         new_event, created = Event.objects.get_or_create(
-            verbatim_event_date=getattr(row, 'verbatimEventDate'),
+            verbatim_event_date=self.possible_nan_to_none(getattr(row, 'verbatimEventDate')),
             source_habitat=habitat
         )
         print(f"Event created: {new_event}")
@@ -76,12 +76,12 @@ class OccurrencesImporter(BaseImporter):
             event=new_event,
             source_location=new_source_location,
             source_entity=verbatim_scientific_name,
-            organism_quantity=getattr(row, 'organismQuantity'),
-            organism_quantity_type=getattr(row, 'organismQuantityType'),
+            organism_quantity=self.possible_nan_to_none(getattr(row, 'organismQuantity')),
+            organism_quantity_type=self.possible_nan_to_none(getattr(row, 'organismQuantityType')),
             gender=gender,
             life_stage=life_stage,
-            occurrence_remarks=getattr(row, 'occurrenceRemarks'),
-            associated_references=getattr(row, 'associatedReferences')
+            occurrence_remarks=self.possible_nan_to_none(getattr(row, 'occurrenceRemarks')),
+            associated_references=self.possible_nan_to_none(getattr(row, 'associatedReferences'))
         )
         if created:
             print(f"Occurrence created: {obj}")
