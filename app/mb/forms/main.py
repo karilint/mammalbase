@@ -66,6 +66,12 @@ class EntityRelationForm(forms.ModelForm):
         model = EntityRelation
         fields = ('relation_status', 'data_status')
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['relation_status'].queryset = MasterChoiceSetOption.objects.filter(
+            master_attribute__name="Match Type"
+        )
+
 class TSNWidget(ModelSelect2Widget):
     search_fields = ['completename__icontains', 'hierarchy__icontains','hierarchy_string__icontains',]
 
@@ -209,6 +215,12 @@ class SourceEntityRelationForm(forms.ModelForm):
         model = EntityRelation
         fields = ('master_entity', 'relation_status', 'remarks', )
         widgets = {'master_entity': MSW3TaxaWidget}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['relation_status'].queryset = MasterChoiceSetOption.objects.filter(
+            master_attribute__name="Match Type"
+        )
 
 class SourceEntityForm(forms.ModelForm):
     class Meta:
