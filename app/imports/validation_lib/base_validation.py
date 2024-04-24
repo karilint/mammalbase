@@ -222,6 +222,10 @@ class Validation():
     def validate_digit_fields(self, data, field_name):
         """Used for validating integer fields, returns a list of error messages"""
         errs = []
+        #if , in value return error
+        if ',' in str(data[field_name]):
+            errs.append(self.return_field_message("digits", "not_decimal").format(value=data[field_name]))
+            return errs
 
         try:
             if not isinstance(float(data[field_name]),(int, float)) or data[field_name] == "nan" or data[field_name] == "":
@@ -478,7 +482,7 @@ class Validation():
             "boolean": "'%s' has invalid value for boolean field",
             "required": "'%s' must be filled",
             "alpha": "'%s' can have only alphabets",
-            "digits": "'%s' must be an integer",
+            "digits": "'%s' must be an number",
             "author": "'%s' field must follow the following format: 0000-0000-0000-0000",
             "max": "The maximum value for the field '%s' is invalid",
             "min": "The minimum value for the field '%s' is invalid",
@@ -518,4 +522,5 @@ class Validation():
             "active.no_field":"You did not provide any field named active in your data dictionary",
             "age.no_field":"You did not provide any field named age in your data dictionary",
             "choiceValue.invalid_value":"'{value}' is invalid value for {field} field",
+            "digits.not_decimal":"'{value}' is not a decimal number. Use . for decimal separator",
         }
