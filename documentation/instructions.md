@@ -34,22 +34,40 @@ running. You can also go to [localhost:8001](localhost:8001) to see or modify
 the created database. If the website doesn't show up, check the logs. Most
 likely the service just hasn't started yet. 
 
+The admin page can be accessed by going to [localhost:8000/admin](localhost:8000/admin).
+
 You can make changes to the django app in real time when the containers are
 running. The [App](./../app) directory has been binded to the web container
 so that all the changes to the host machine's [App](./../app) directory are
 also made in the container. 
 
 To see logs you can run this command. You can also specify a container if you
-only want to see specific logs `docker compose logs -f <container>`. 
+only want to see specific logs
 ```
-docker compose logs -f
+docker compose logs -f <container>
 ```
 If you want to shutdown the containers, you can run this command. 
 ```
 docker compose down
 ```
 In the case of wanting to also remove the volumes (meaning that the database
-will be reset), you can run `docker compose down -v`.
+will be reset), you can run
+```
+docker compose down -v
+```
+
+
+### Setting up users and database
+
+The `initialize.py`creates superuser with username and password from the environment variables. This file is run when the container is started.
+
+Running command 
+```
+docker compose exec web python manage.py create_users
+```
+creates users defined in [user.csv](./../app/mb/management/commands/users.csv ) file. It contain kari's user and orcid. Now importing files from kari's examples is possible without changing the orcids.
+
+This command also creates groups `data_admin`and `data_contributor`. You can add users to these groups in the admin page.
 
 ### Other useful commands
 
@@ -64,13 +82,20 @@ You can execute commands inside the container by running:
 docker compose exec <container> <command>
 ```
 For example, if you need to make migrations inside django, you can run
-`docker compose exec web python manage.py makemigrations`. Then to migrate
-the database you can run `docker compose exec web python manage.py migrate`.
+
+```
+docker compose exec web python manage.py makemigrations
+```
+Then to migrate the database you can run
+```
+docker compose exec web python manage.py migrate
+```
+
 These commands should usually been run when the developer has made changes
 to the models or created a new app inside django. See more in
 [Django docs](https://docs.djangoproject.com/en/3.2/).
 
-Please note, that currently the django application makes migrations and
+**Please note**, that currently the django application makes migrations and
 migrates the database every time the django container is started. If this
 proves to be cumbersome the lines can be commented out in
 [entrypoint.sh](./../app/scripts/entrypoint.sh).
