@@ -271,10 +271,11 @@ class Validation():
         """Used for validating fields for some number of values to allow, returns a list of error messages"""
         #retrieve the value for that in rule
         ls = rule.split(':')[1].split(',')
+        ls = [x.lower() for x in ls]
         errs = []
 
         try:
-            if str(data[field_name]) not in ls:
+            if str(data[field_name]).lower() not in ls:
                 errs.append(self.return_field_message(field_name, "in"))
         except KeyError:
             errs.append(self.return_field_message(field_name,'in'))
