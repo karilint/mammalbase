@@ -1390,16 +1390,16 @@ class DietSet(BaseModel):
         method = self.method
         if method:
             score += 2
-
+        score = calculate_dqs_for_measurements(entity, c_reference, self.reference.master_reference.type, None, 0, 0, 0, 0, self.method, "")
         # 5. The weight of food item taxonomy
         diet_set_items = DietSetItem.objects.filter(
                 diet_set=self,
                 food_item__tsn__rank_id__gt=100)
         
-        #if diet_set_items.count():
-        #    score += (2 * diet_set_items.count()) // diet_set_items.count()
+        if diet_set_items.count():
+            score += (2 * diet_set_items.count()) // diet_set_items.count()
 
-        score = calculate_dqs_for_measurements(entity, c_reference, self.reference.master_reference.type, None, 0, 0, 0, 0, self.method, diet_set_items)
+        
         return score
 
 class DietSetItem(BaseModel):
