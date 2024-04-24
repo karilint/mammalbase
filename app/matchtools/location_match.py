@@ -64,7 +64,7 @@ def add_locations(geo_names_location, source_location_id):
         if new_location[1]:
             added_locations.append(new_location[0])
         
-    if added_locations[-1] is not None:
+    if added_locations and added_locations[-1] is not None:
         match_locations(added_locations[-1], source_location)
     
     return added_locations
