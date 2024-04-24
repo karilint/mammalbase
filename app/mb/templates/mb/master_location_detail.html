@@ -167,89 +167,70 @@
       <tbody>  
           {% for occurrence in occurrences %} 
           <tr>
-            <td>{{ occurrence.event }}</td>
+            <td>{{ occurrence.etruncatecharsvent }}</td>
             <td>{{ occurrence.master_entity }}</td>
             <td>{{ occurrence.organism_quantity }}</td>
             <td>{{ occurrence.organism_quantity_type }}</td>
             <td>{{ occurrence.gender }}</td>
             <td>{{ occurrence.life_stage }}</td>
             <td>{{ occurrence.occurrence_remarks }}</td>
-            <td>{{ occurrence.reference }}</td>
+            <td>{{ occurrence.reference|truncatechars:50 }}</td>
             <td>{{ occurrence.associated_references }}</td>
           </tr>
           {% endfor %}
       </tbody>
     </table>
-    <div class="pagination" id="pagination"></div>
-
-    {{ list_occurrences|json_script:'occurences' }}
+    <div class="w3-bar w3-border">
+      <a href="#" class="w3-bar-item w3-button" id="previousPage">«</a>
+      <a href="#" class="w3-bar-item w3-button" id="nextPage">»</a>
+  </div>
     <script>
-      
-      const table = document.getElementById('myTable');
-      const pagination = document.getElementById('pagination');
-      const tbody = table.querySelector('tbody');
-      var occs = '{{ occurrences|safe }}';
-      data = JSON.parse(occs)
+      document.addEventListener("DOMContentLoaded", function() {
+        const rowsPerPage = 10;
+        let currentPage = 1;
+        const table = document.getElementById('myTable');
+        const tbody = table.getElementsByTagName('tbody')[0]; // Target only the tbody for manipulation
+        let tableRows = Array.from(tbody.getElementsByTagName('tr')); // Get all rows as an array
 
-      const itemsPerPage = 10;
-      let currentPage = 1;
-
-      function displayData(page) {
-        tbody.innerHTML = '';
-        const start = (page - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        const paginatedData = data.slice(start, end);
-        console.log(paginatedData)
-        paginatedData.forEach(item => {
-          const row = `<tr>
-                          <td>${item.fields.event}</td>
-                          <td>${item.fields.master_entity}</td>
-                          <td>${item.fields.organism_quantity}</td>
-                          <td>${item.fields.organism_quantity_type}</td>
-                          <td>${item.fields.gender}</td>
-                          <td>${item.fields.life_stage}</td>
-                          <td>${item.fields.occurrence_remarks}</t>
-                          <td>${item.fields.reference}</td>
-                          <td>${item.fields.associated_references}</td>
-                          </tr>`;
-          tbody.insertAdjacentHTML('beforeend', row);
+        const previousButton = document.getElementById('previousPage');
+        const nextButton = document.getElementById('nextPage');
+    
+        previousButton.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent default anchor click behavior
+            if (currentPage > 1) {
+                currentPage--;
+                displayTable();
+            }
         });
-      }
-
-      function setupPagination() {
-        pagination.innerHTML = '';
-        const pageCount = Math.ceil(data.length / itemsPerPage);
-        for (let i = 1; i <= pageCount; i++) {
-          const link = document.createElement('a');
-          link.href = '#';
-          link.textContent = i;
-          if (i === currentPage) {
-            link.classList.add('active');
-          }
-          link.addEventListener('click', function (event) {
-            event.preventDefault();
-            currentPage = i;
-            displayData(currentPage);
-            highlightCurrentPage();
-          });
-          pagination.appendChild(link);
+    
+        nextButton.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent default anchor click behavior
+            const totalRows = tableRows.length;
+            const numberOfPages = Math.ceil(totalRows / rowsPerPage);
+            if (currentPage < numberOfPages) {
+                currentPage++;
+                displayTable();
+            }
+        });
+    
+        function displayTable() {
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedItems = tableRows.slice(start, end);
+    
+            tbody.innerHTML = ''; // Clear the current table body
+    
+            // Append cloned elements to the table body
+            paginatedItems.forEach(item => {
+                const clonedRow = item.cloneNode(true); // Deep clone the tr element
+                tbody.appendChild(clonedRow);
+            });
         }
-      }
-
-      function highlightCurrentPage() {
-        const links = pagination.getElementsByTagName('a');
-        for (let link of links) {
-          if (parseInt(link.textContent) === currentPage) {
-            link.classList.add('active');
-          } else {
-            link.classList.remove('active');
-          }
-        }
-      }
-
-      displayData(currentPage);
-      setupPagination();
-      
+    
+        // Initially display the table
+        displayTable();
+    });
+    
     </script>
     </tbody>
   </table>
