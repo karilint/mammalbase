@@ -920,61 +920,26 @@ class SourceMeasurementValue(BaseModel):
     # Used to calculate the quality of the measurement data
     def calculate_data_quality_score_for_measurement(self):
         score = 0
-        #1 weight of taxon quality
-        taxon = self.source_entity.entity.name
-        if taxon in ('Species', 'Subspecies'):
-            score += 1
-
-        #2 weight of having a reported citation of the data
-        citation = self.cited_reference
-        if citation == 'Original study':
-            score += 2
-        elif citation is not None:
-            score += 1
-
-        #3 weight of source quality in the diet
         try:
             source_type = self.source_entity.reference.master_reference.type
         except:
-            source_type = "empty"
-            #score += 0
-        else:
-            if source_type == 'journal-article':
-                score += 3
-            elif source_type == 'book':
-                score += 2
-            elif source_type == 'data set':
-                score += 1
-
-        #4 weight of having a described method in the method
-        if self.source_attribute.method:
-            score += 1
-
-        #5 weight of having individual count
-        if self.n_total != 0:
-            score += 1
-
-        #6 weight of having minimum and maximum
-        if self.minimum != 0 and self.maximum != 0:
-            score += 1
-
-        #7 weight of having Standard Deviation
-        if self.std != 0:
-            score += 1
-        
-        score = calculate(taxon, citation, source_type, self.source_attribute.method, self.n_total, self.minimum, self.maximum, self.std)
+            source_type = None
+        score = calculate_dqs_for_measurements(self.source_entity.entity.name, self.cited_reference, source_type, self.source_attribute.method, self.n_total, self.minimum, self.maximum, self.std, "", "")
         return score
 
-def calculate(taxon, citation, source_type, source_attribute, n_total, minimum, maximum, std):
+def calculate_dqs_for_measurements(taxon, citation, source_type, source_attribute, n_total, minimum, maximum, std, method, items):
     score = 0
+    #1 weight of taxon quality
     if taxon in ('Species', 'Subspecies'):
         score +=1
 
+    #2 weight of having a reported citation of the data
     if citation == 'Original study':
         score += 2
     elif citation is not None:
         score += 1
 
+    #3 weight of source quality in the diet
     if source_type == 'journal-article':
         score += 3
     elif source_type == 'book':
@@ -982,17 +947,25 @@ def calculate(taxon, citation, source_type, source_attribute, n_total, minimum, 
     elif source_type == 'data set':
         score += 1
 
+    #4 weight of having a described method in the method
     if source_attribute:
         score += 1
 
+    #5 weight of having individual count
     if n_total != 0:
         score += 1
 
+    #6 weight of having minimum and maximum
     if minimum != 0 and maximum != 0:
         score += 1
 
+    #7 weight of having Standard Deviation
     if std != 0:
         score += 1
+    if items != "":
+        if items.count():
+            score += (2 * items.count()) // items.count()
+
 
     return score
 
@@ -1422,9 +1395,11 @@ class DietSet(BaseModel):
         diet_set_items = DietSetItem.objects.filter(
                 diet_set=self,
                 food_item__tsn__rank_id__gt=100)
-        if diet_set_items.count():
-            score += (2 * diet_set_items.count()) // diet_set_items.count()
+        
+        #if diet_set_items.count():
+        #    score += (2 * diet_set_items.count()) // diet_set_items.count()
 
+        score = calculate_dqs_for_measurements(entity, c_reference, self.reference.master_reference.type, "", 0, 0,0,0, self.method, diet_set_items)
         return score
 
 class DietSetItem(BaseModel):
