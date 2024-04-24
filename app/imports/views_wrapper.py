@@ -117,7 +117,7 @@ def check_author_consistency(df: pd.DataFrame):
     Returns:
         bool: True if all authors match the first author, False otherwise.
     """
-    first_author = df['author'].iloc[1]  # Get the author value from the first row
+    first_author = df['author'].iloc[0]  # Get the author value from the first row
     # Compare all author values with the first author
     author_match = (df['author'] == first_author).all()
     return author_match
