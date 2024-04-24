@@ -335,11 +335,11 @@ class Validation():
         choice_set = str(rule.split(':')[1])
         model = str(rule.split(':')[0])
 
-        choicevalue = ChoiceValue.objects.filter(choice_set=choice_set.capitalize(), caption=field_value.capitalize())
+        choicevalue = ChoiceValue.objects.filter(choice_set__iexact=choice_set, caption__iexact=field_value)
 
         if field_value == 'nan' or field_value == "":
             return errs
-        if len(choicevalue) == 0 or field_value.capitalize() != choicevalue[0].caption:
+        if len(choicevalue) == 0 or field_value.lower() != choicevalue[0].caption.lower():
             errs.append(self.return_field_message(model, 'invalid_value').format(value=field_value, field=field_name))
         return errs
 

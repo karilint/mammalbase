@@ -20,7 +20,7 @@ class Diet_set_validation(Validation):
             "individualCount":              "digits",
             "verbatimEventDate":            "max:250",
             "verbatimAssociatedTaxa":       "max:250",
-            "PartOfOrganism" :              "in:BARK,BLOOD,BONES,BUD CARRION,EGGS,EXUDATES,FECES,FLOWER,FRUIT,LARVAE,LEAF,MINERAL,NECTAR/JUICE,NONE,POLLEN,ROOT,SEED,SHOOT,STEM,UNKNOWN,WHOLE",
+            "PartOfOrganism" :              "choiceValue:fooditempart",
             "sequence":                     "max:250",
             "measurementValue":             "digits|min:0",
             "associatedReferences":         "max:250",
