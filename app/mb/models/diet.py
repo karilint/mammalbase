@@ -13,7 +13,7 @@ from django.utils.translation import gettext_lazy
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 
-from app.mb.models.proximate_analysis import ViewProximateAnalysisTable
+from .proximate_analysis import ViewProximateAnalysisTable
 from itis.models import TaxonomicUnits
 from .base_model import BaseModel
 
