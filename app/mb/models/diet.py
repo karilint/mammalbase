@@ -5,7 +5,7 @@ This module should not be imported anywhere else than __init__.py!
 To import models elsewhere use subpackage:
 from mb.models import ModelName
 """
-# TODO pylint diable
+# TODO pylint: disable=no-member
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
@@ -132,7 +132,7 @@ class DietSet(BaseModel):
         # 3. The weight of source quality in the diet
         try:
             master = self.reference.master_reference.type
-        except (ValueError, TypeError): # FIX: except what? ValueError?
+        except ValueError: # FIX: except what? ValueError?
             score += 0
         else:
             if master == 'journal-article':
@@ -169,7 +169,6 @@ class DietSetItem(BaseModel):
         'FoodItem',
         on_delete = models.CASCADE,
         )
-    # Sortable, see: https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
     list_order = models.PositiveSmallIntegerField(
         default=100_000,
         help_text='List order on Diet Set'
