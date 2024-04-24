@@ -67,10 +67,8 @@ def traitlist_query(measurement_choices):
         relatedTerm=Value('NA'),
         factorLevels=Case(
             *[
-            When(name=attribute_name, then=Value(
-                ', '.join(attributelink[attribute_name]),output_field=CharField()
-            )) for attribute_name in attributelink
-            ]
+            When(name=attribute_name, then=Value(', '.join(attributelink[attribute_name]))) for attribute_name in attributelink
+            ],output_field=CharField()
         ),
         broaderTerm=Value('NA'),
         expectedUnit=Value('NA'),
