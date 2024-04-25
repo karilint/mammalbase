@@ -69,6 +69,7 @@ class Check:
                 self.id = None
                 messages.error(self.request, "The author " + str(author) +
                                " is not a valid ORCID ID at row " + str(counter) + ".")
+
                 return False
             self.id = data[0].user_id
         return True
@@ -84,6 +85,7 @@ class Check:
                     self.request,"The import file does not contain the required headers. ",
                     "The missing header is: " + str(header) + "."
                 )
+
                 return False
         return True
 
@@ -430,6 +432,7 @@ class Check:
                     if reference_list == compare:
                         messages.error(
                             self.request, "False sequence number 1 on the line " + str(lines) + ".")
+
                         return False
 
                     total = 1
@@ -474,6 +477,7 @@ class Check:
         elif any('verbatimTraitValue' in header for header in import_headers):
             measurement_headers = [
                 hdr for hdr in import_headers if 'verbatimTraitValue' in hdr or 'dispersion' in hdr]
+
             for header in measurement_headers:
                 for row, value in enumerate(df.loc[:, header], 1):
                     if pd.isnull(value) or not any(c.isalpha() for c in str(value)):
@@ -487,6 +491,7 @@ class Check:
                             self.request,
                             f"The {header} \'{value}\' on row {row} should not be negative."
                         )
+
                         return False
         return True
 
@@ -498,6 +503,7 @@ class Check:
             'NECTAR/JUICE', 'NONE', 'POLLEN', 'ROOT', 'SEED', 'SHOOT', 'STEM',
             'UNKNOWN', 'WHOLE'
             ]
+
         if 'PartOfOrganism' not in headers:
             return True
         for row, value in enumerate(df.loc[:, 'PartOfOrganism'], 1):
@@ -509,6 +515,7 @@ class Check:
                     "exudates, feces, flower, fruit, larvae, leaf, mineral, nectar/juice, "
                     "none, pollen, root, seed, shoot, stem, unknown, whole"
                 )
+
                 return False
         return True
 
