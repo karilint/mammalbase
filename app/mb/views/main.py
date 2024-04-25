@@ -1997,7 +1997,8 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
 
     class OccurrenceView(models.Model):
         """ 'Tool model' to present a single occurrence with correct information. """
-        event = models.CharField(max_length=500) 
+        event = models.CharField(max_length=500)
+        master_entity_id = models.CharField(max_length=12)
         master_entity = models.CharField(max_length=500) 
         organism_quantity = models.CharField(max_length=500) 
         organism_quantity_type = models.CharField(max_length=500) 
@@ -2029,7 +2030,10 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
                     if reference == "None":
                         reference = ""
 
-                    master_entity = str(get_master_entity(occ.source_entity))
+                    master_entity_model = get_master_entity(occ.source_entity)
+                    master_entity_id = master_entity_model.id
+                    master_entity = str(master_entity_model)
+                    
                     if master_entity == "None":
                         master_entity = ""
 
@@ -2043,6 +2047,7 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
                     occ_view.organism_quantity_type = remove_nan_value(occ_view.organism_quantity_type)
                     occ_view.associated_references = remove_nan_value(occ_view.associated_references)
                     occ_view.occurrence_remarks = remove_nan_value(occ_view.occurrence_remarks)
+                    occ_view.master_entity_id = master_entity_id
                     
                     occurrences.append(occ_view)
             except Exception as e:

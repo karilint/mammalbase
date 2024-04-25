@@ -167,7 +167,7 @@
           {% for occurrence in occurrences %} 
           <tr>
             <td>{{ occurrence.etruncatecharsvent }}</td>
-            <td>{{ occurrence.master_entity }}</td>
+            <td><a href="/me/{{ occurrence.master_entity_id }}">{{ occurrence.master_entity }}</a><span class="fa fa-link w3-small"></span></td>
             <td>{{ occurrence.organism_quantity }}</td>
             <td>{{ occurrence.organism_quantity_type }}</td>
             <td>{{ occurrence.gender }}</td>
