@@ -5,16 +5,32 @@ MammalBase is a database of recent mammals. The main focus of this database is t
 
 # Documentation
 
-[Instructions](documentation/instructions.md)
+Documentation has been compiled behind the documentation directory. There, the structure of the code, Django model objects used in the code, and, for example, the logic of import and export operations are explained. Various scripts related to the use of MammalBase are also described in their own documents.
 
-[Architecture](documentation/architecture.md)
+Below are a few direct links to key instructions.
 
-[Data Architecture](documentation/data-architecture.md)
+[Instructions](documentation/common/instructions.md)
+- Setting up the development environment and other important aspects in development work
+
+[Architecture](documentation/mammalbase/arch/architecture.md)
+- Overview of the software architecture
+
+[Data Architecture](documentation/mammalbase/arch/data-architecture.md)
+- Overview of data architecture
 
 [Master Habitats Script](documentation/scripts/master_habitat_scripts.md)
+- Retrieval of Master Habitats using a script
+
+[Features](documentation/mammalbase/features/)
+- Current features of MammalBase (e.g. importing and exporting tsv-files)
+
+[Models](documentation/mammalbase/models/)
+- Models used in MammalBase
 
 ## Testing
-[Testing Guide](documentation/testing.md)
+[Testing Guide](documentation/common/testing.md)
+- Instructions for testing the software
 
 ## Using Celery to run tasks in the background
-[Celery instructions](documentation/celery.md)
+[Celery instructions](documentation/common/celery.md)
+- Background tasks in the software are executed with the Celery library.
