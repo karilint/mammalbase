@@ -228,10 +228,10 @@ class BaseImporter:
         if time_period != time_period or time_period == 'nan' or time_period == "":
             return None
         
-        time_period = TimePeriod.objects.filter(
+        time_period_filtered = TimePeriod.objects.filter(
             name__iexact=time_period, reference=source_reference)
-        if time_period.count() > 0:
-            return time_period[0]
+        if time_period_filtered.count() == 1:
+            return time_period_filtered[0]
 
         new_time_period = TimePeriod(
             name=time_period, reference=source_reference, created_by=author)
