@@ -112,7 +112,8 @@
     </tr>
     <tr>
       <th class="w3-quarter">Location ID</th>
-      <td class="w3-threequarter">{{ master_location.locationID }}</td>
+      <td class="w3-threequarter"><a title="Press for Details"
+        href="https://geonames.org/{{ master_location.locationID }}">{{ master_location.locationID }}<span class="fa fa-link w3-small"></span></a></td>
     </tr>
     <tr>
       <th class="w3-quarter">Location Remarks</th>
@@ -137,14 +138,12 @@
     <tr>
       <th class="w3-quarter">Reference:</th>
       <td class="mb-private-internal w3-threequarter"><a title="Press for Details"
-          href="{% url 'master_reference-detail' pk=master_location.reference.id %}">{{ master_location.reference
-          }}<span class="fa fa-link w3-small"></span></a></td>
+          href="{% url 'master_reference-detail' pk=master_location.reference.id %}">{{ master_location.reference }}<span class="fa fa-link w3-small"></span></a></td>
     </tr>
   </table>
   <br>
 
   <table class="dataframe">
-    <!-- {% include 'includes/find.html' %} -->
     {%if occurrences %}
     {% if user.is_authenticated %}
     <table class="mb-list w3-table-all w3-small w3-responsive" id="myTable">

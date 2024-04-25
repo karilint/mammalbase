@@ -195,8 +195,6 @@ def master_location_detail(request, pk):
     master_location = get_object_or_404(MasterLocation, id=pk)
     related_objects = MasterLocation.objects.filter(pk=master_location.higherGeographyID.id)
     occurrences = get_occurrences_by_masterlocation(master_location)
-
-    #occurrences = serializers.serialize('json', occurrences)
     
     return render(
         request, 
