@@ -17,9 +17,6 @@ from mb.models import (
     SourceMethod,
     ChoiceValue,
     SourceLocation)
-import re
-from requests_cache import CachedSession
-from datetime import timedelta
 from config.settings import ITIS_CACHE
 
 
@@ -54,7 +51,8 @@ class BaseImporter:
             return author[0]
         raise Exception("Author not found")
 
-    def get_master_reference_from_cross_ref(self, citation: str, user_author: User):
+    def get_master_reference_from_cross_ref(
+            self, citation: str, user_author: User):
         """
         Gets the master reference from crossref API
         https://api.crossref.org/swagger-ui/index.htm
@@ -111,7 +109,7 @@ class BaseImporter:
         Return MasterReference object for the given source_reference
         """
         master_reference = MasterReference.objects.filter(citation=citation)
-        if master_reference.count() == 1:
+        if master_reference.count() > 0:
             return master_reference[0]
         new_master_reference = self.get_master_reference_from_cross_ref(
             citation, author)
@@ -131,7 +129,7 @@ class BaseImporter:
         source_reference = SourceReference.objects.filter(
             citation__iexact=citation)
 
-        if source_reference.count() == 1:
+        if source_reference.count() > 0:
             return source_reference[0]
 
         new_reference = SourceReference(
@@ -148,7 +146,7 @@ class BaseImporter:
         Return EntityClass object for the given taxon_rank or create a new one
         """
         entity_class = EntityClass.objects.filter(name__iexact=taxon_rank)
-        if entity_class.count() == 1:
+        if entity_class.count() > 0:
             return entity_class[0]
         new_entity_class = EntityClass(name=taxon_rank, created_by=author)
         new_entity_class.save()
@@ -161,7 +159,7 @@ class BaseImporter:
         """
         source_entity = SourceEntity.objects.filter(
             name__iexact=name, reference=source_reference)
-        if source_entity.count() == 1:
+        if source_entity.count() > 0:
             return source_entity[0]
         new_source_entity = SourceEntity(
             name=name, reference=source_reference, created_by=author, entity=entity_class)
@@ -178,7 +176,7 @@ class BaseImporter:
             data_status_id=5).filter(
             master_entity__reference_id=4).filter(
             relation__name__iexact='Taxon Match')
-        if found_entity_relation.count() == 1:
+        if found_entity_relation.count() > 0:
             EntityRelation(master_entity=found_entity_relation[0].master_entity,
                            source_entity=source_entity, relation=found_entity_relation[0].relation,
                            data_status=found_entity_relation[0].data_status,
@@ -193,27 +191,32 @@ class BaseImporter:
         """
         name = self.search_scientificName(source_entity.name)
         if name:
-            master_entity_result = MasterEntity.objects.filter(name=name, entity_id=source_entity.entity_id,reference_id=4)
+            master_entity_result = MasterEntity.objects.filter(
+                name=name, entity_id=source_entity.entity_id, reference_id=4)
             if master_entity_result:
-               return EntityRelation(master_entity=master_entity_result[0],
-                                source_entity=source_entity,
-                                relation_id=1,
-                                data_status_id=5,
-                                relation_status_id=1,
-                                remarks=master_entity_result[0].reference).save()
+                return EntityRelation(master_entity=master_entity_result[0],
+                                      source_entity=source_entity,
+                                      relation_id=1,
+                                      data_status_id=5,
+                                      relation_status_id=1,
+                                      remarks=master_entity_result[0].reference).save()
         else:
-            return None    
-    
-    def get_or_create_source_location(self, location: str, source_reference: SourceReference, author: User):
+            return None
+
+    def get_or_create_source_location(
+            self, location: str, source_reference: SourceReference, author: User):
         """
         Return SourceLocation object for the given location or create a new one
         """
+        if location != location or location == 'nan' or location == "":
+            return None
+
         try:
             source_location = SourceLocation.objects.filter(
                 name__iexact=location, reference=source_reference)
         except Exception as error:
             raise Exception(str(error)) from error
-        if source_location.count() == 1:
+        if source_location.count() > 0:
             return source_location[0]
         new_source_location = SourceLocation(
             name=location, reference=source_reference, created_by=author)
@@ -227,10 +230,10 @@ class BaseImporter:
         """
         if time_period != time_period or time_period == 'nan' or time_period == "":
             return None
-        
+
         time_period_filtered = TimePeriod.objects.filter(
             name__iexact=time_period, reference=source_reference)
-        if time_period_filtered.count() == 1:
+        if time_period_filtered.count() > 0:
             return time_period_filtered[0]
 
         new_time_period = TimePeriod(
@@ -243,9 +246,12 @@ class BaseImporter:
         """
         Return SourceMethod object for the given method or create a new one
         """
+        if method != method or method == 'nan' or method == "":
+            return None
+
         source_method = SourceMethod.objects.filter(
             name__iexact=method, reference=source_reference)
-        if source_method.count() == 1:
+        if source_method.count() > 0:
             return source_method[0]
 
         new_source_method = SourceMethod(
@@ -276,28 +282,29 @@ class BaseImporter:
         return possible
 
     def search_scientificName(self, entity_name):
-            queries = self.clean_query(entity_name)
-            url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey='
-            
-            try:
-                session = CachedSession(ITIS_CACHE, expire_after=timedelta(days=30), stale_if_error=True)
-                for query in queries:
-                    file = session.get(url+query)
-                    data = file.json()
-                    if data['itisTerms'][0] != None:
-                        break
-                    
-            except (ConnectionError, UnicodeError):
-                return None
-            
-            taxon_data = data['itisTerms'][0]
-            if taxon_data and taxon_data['scientificName'].lower():
+        query = self.clean_query(entity_name)
+        url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey='
+        try:
+            session = CachedSession(
+                ITIS_CACHE, expire_after=timedelta(
+                    days=30), stale_if_error=True)
+            file = session.get(url + query)
+            data = file.json()
+
+        except (ConnectionError, UnicodeError, json.JSONDecodeError):
+            return None
+
+        itis_terms = data.get('itisTerms', [])
+        if itis_terms:
+            taxon_data = itis_terms[0]
+            if taxon_data and taxon_data['scientificName'].lower(
+            ) == query.lower():
                 return taxon_data['scientificName']
-            else:
-                return None
+        return None
 
-    def clean_query(self, food):
-        cleaned_food = re.sub(r'\s*\b(sp|ssp|af|aff|gen)\.?|\s*[\(\)\-]', '', food.lower()).capitalize().strip()
-        parts = cleaned_food.split()
-        return parts
-
+    def clean_query(self, name):
+        cleaned_name = re.sub(
+            r'\b(?:aff|gen|bot|zoo|ssp|subf|exx|indet|subsp|subvar|var|nothovar|group|forma)\.?|\b\w{1,2}\b|\s*\W',
+            ' ',
+            name).strip()
+        return cleaned_name
