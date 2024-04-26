@@ -19,7 +19,7 @@ class DietImporter(BaseImporter):
     @transaction.atomic
     def importRow(self, row):
 
-        # Common assignments
+        # Common assignments for diet set
         author = self.get_author(getattr(row, 'author'))
         reference = self.get_or_create_source_reference(
             getattr(row, 'references'), author)
@@ -36,11 +36,22 @@ class DietImporter(BaseImporter):
             getattr(row, 'measurementMethod'), reference, author)
         time_period = self.get_or_create_time_period(
             (getattr(row, 'samplingEffort')), reference, author)
+        cited_reference=self.possible_nan_to_none(getattr(
+                row,
+                'associatedReferences'))
+        sample_size=self.possible_nan_to_zero(
+                getattr(
+                    row,
+                    'individualCount'))
+        study_time=self.possible_nan_to_none(getattr(
+                row,
+                'verbatimEventDate'))
 
-        # Create source location model
+        # Create source location
         new_source_location = self.get_or_create_source_location(
             getattr(row, 'verbatimLocality'), reference, author)
 
+        # Check choice values
         gender = str(getattr(row, 'sex'))
 
         part_of_organism = str(getattr(row, 'PartOfOrganism'))
@@ -61,44 +72,32 @@ class DietImporter(BaseImporter):
             if not part_of_organism:
                 part_of_organism = None
 
+        # Create diet set
         obj = DietSet.objects.filter(
             reference=reference,
-            cited_reference=getattr(
-                row,
-                'associatedReferences'),
+            cited_reference=cited_reference,
             taxon=taxon,
             gender=gender,
             location=new_source_location,
-            sample_size=self.possible_nan_to_zero(
-                getattr(
-                    row,
-                    'individualCount')),
+            sample_size=sample_size,
             time_period=time_period,
             method=method,
-            study_time=getattr(
-                row,
-                'verbatimEventDate')).first()
+            study_time=study_time).first()
         if not obj:
             obj = DietSet.objects.create(
                 reference=reference,
-                cited_reference=getattr(
-                    row,
-                    'associatedReferences'),
+                cited_reference=cited_reference,
                 taxon=taxon,
                 gender=gender,
                 location=new_source_location,
-                sample_size=self.possible_nan_to_zero(
-                    getattr(
-                        row,
-                        'individualCount')),
+                sample_size=sample_size,
                 time_period=time_period,
                 method=method,
-                study_time=getattr(
-                    row,
-                    'verbatimEventDate'),
+                study_time=study_time,
                 created_by=author)
             print("Diet set created")
 
+        # Common assignments for diet set item
         verbatim_associated_taxa = str(getattr(row, 'verbatimAssociatedTaxa'))
         if verbatim_associated_taxa == "nan" or verbatim_associated_taxa == "":
             food_item = None
@@ -109,6 +108,7 @@ class DietImporter(BaseImporter):
         percentage = self.possible_nan_to_zero(
             getattr(row, 'measurementValue'))
 
+        # Create diet set item
         diet_set_item = DietSetItem.objects.filter(
             diet_set=obj, food_item=food_item, percentage=percentage)
 
