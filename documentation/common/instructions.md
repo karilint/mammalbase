@@ -7,8 +7,23 @@ First, you need to have Docker and Docker Compose installed on your system.
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
-Note that on some distributions there is separate `docker-compose` command
-which can be used in place of `docker compose`.
+
+### Getting docker from your distribution
+
+You most probably want to install docker directly from your distribution.
+Certainly this project doesn't need the latest version so you may be better
+off with more tested and stable one. Installation is also simpler and less
+risky.
+
+Debian and Ubuntu (the only command needed, run as root):
+```
+apt-get install docker-compose
+```
+
+Note that older versions of docker make use of `docker-compose` instead of
+`docker compose`. Functionality is pretty much the same and interchangeable
+in examples of the documentation.
+
 
 ## Environment variables
 
@@ -16,6 +31,7 @@ Create a `.env` file in the root of the repository and write needed
 environment variables to it. You can take the [Example .env](./example.env)
 and fill in couple of the variables according to the
 [Environment variable docs](./environment_variables.md).
+
 
 ## Running the environment
 
@@ -35,21 +51,28 @@ the created database. If the website doesn't show up, check the logs. Most
 likely the service just hasn't started yet. 
 
 You can make changes to the django app in real time when the containers are
-running. The [App](./../app) directory has been binded to the web container
-so that all the changes to the host machine's [App](./../app) directory are
+running. The [`/app`](./../app) directory has been binded to the web container
+so that all the changes to the host machine's [`/app`](./../app) directory are
 also made in the container. 
 
-To see logs you can run this command. You can also specify a container if you
-only want to see specific logs `docker compose logs -f <container>`. 
+To see logs you can run this command:
 ```
 docker compose logs -f
 ```
-If you want to shutdown the containers, you can run this command. 
+
+You can also specify a container if you only want to see specific logs:
+```
+docker compose logs -f <container> 
+```
+If you want to shutdown the containers, you can run this command:
 ```
 docker compose down
 ```
 In the case of wanting to also remove the volumes (meaning that the database
-will be reset), you can run `docker compose down -v`.
+will be reset), you can run:
+```
+docker compose down -v
+```
 
 ### Other useful commands
 
@@ -61,16 +84,33 @@ docker ps
 
 You can execute commands inside the container by running:
 ```
-docker compose exec <container> <command>
+docker exec <container> <command>
 ```
-For example, if you need to make migrations inside django, you can run
-`docker compose exec web python manage.py makemigrations`. Then to migrate
-the database you can run `docker compose exec web python manage.py migrate`.
-These commands should usually been run when the developer has made changes
-to the models or created a new app inside django. See more in
-[Django docs](https://docs.djangoproject.com/en/3.2/).
+For checking out local environment inside container:
+```
+docker exec mammalbase_web_1 sh -c export
+``` 
+
+Open hell inside container:
+```
+docker exec -it mammalbase_web_1 bash
+```
+
+For example, if you need to make migrations inside django, you can run:
+```
+docker exec mammalbase_web_1 python manage.py makemigrations
+```
+
+To migrate the database:
+```
+docker exec mammalbase_web_1 python manage.py migrate
+```
+
+Note that changes in source tree causes developement server to restart.
+See more in [Django docs](https://docs.djangoproject.com/en/3.2/).
 
 Please note, that currently the django application makes migrations and
 migrates the database every time the django container is started. If this
 proves to be cumbersome the lines can be commented out in
-[entrypoint.sh](./../app/scripts/entrypoint.sh).
+[`entrypoint.sh`](./../app/scripts/entrypoint.sh) and commands above run
+manually.

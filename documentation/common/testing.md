@@ -6,21 +6,21 @@
 
 To run all the existing unit tests, run:
 
-```bash
-docker exec mammalbase-web-1 bash -c "python manage.py test"
+```
+docker exec mammalbase_web_1 python manage.py test
 ```
 
 Run a specific test file by adding the path to the file:
 
 ```bash
-docker exec mammalbase-web-1 bash -c "python manage.py test tests.[folder].[test_file]"
+docker exec mammalbase_web_1 python manage.py test tests.[folder].[test_file]
 ```
 Replace [folder] and [test_file] with the correct path to the test file.
 
 The tests may not work locally before the database privileges are set for Django. Once docker containers are running, run this command:
 
 ```bash
-docker compose exec db mysql -u root -p
+docker exec mammalbase_db_1 mysql -u root -p
 ```
 
 Enter the DB_ROOT_PASS from env-file
@@ -30,7 +30,7 @@ Once in MySQL, run this command to grant privileges:
 ```bash
 GRANT ALL PRIVILEGES ON *.* TO 'mb_dev'@'%';
 ```
-- NOTE: Database name (mb_dev in this case) should be the same as in the .env file.  
+- NOTE: Database name (mb_dev in this case) should be the same as in the .env file.
 
 Type ```QUIT``` to exit MySQL. Tests should work now.
 
@@ -41,31 +41,34 @@ Test files are located in app/tests.
 ### Test coverage
 
 You can create test coverage report by first installing coverage.py to the container:
-```bash
-docker exec mammalbase-web-1 bash -c "pip install coverage"
+```
+docker exec mammalbase_web_1 pip install coverage
 ```
 Run tests with:
-```bash
-docker exec mammalbase-web-1 bash -c "coverage run --source='.' manage.py test"
+```
+docker exec mammalbase_web_1 coverage run --source='.' manage.py test
 ```
 
 To see the report run:
 ```bash
-docker exec mammalbase-web-1 bash -c "coverage report"
+docker exec mammalbase_web_1 coverage report
 ```
 For html report run:
 ```bash
-docker exec mammalbase-web-1 bash -c "coverage html"
+docker exec mammalbase_web_1 coverage html
 ```
 
 ### Pylint
 
 Pylint can be run in the containers by using the following command:
 ```
-docker exec <container> scripts/pylint.sh 
+docker exec mammalbase_web_1 scripts/pylint.sh 
 ```
 This tests whole source tree. By appending paths to the end of command line
-you can test only chosen directories.
+you can test only chosen directories:
+```
+docker exec mammalbase_web_1 scripts/pylint.sh urls mb/models
+```
 
 The script will install pylint and pylint_django if not yet installed.
 
