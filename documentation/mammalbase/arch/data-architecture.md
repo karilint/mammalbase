@@ -18,8 +18,9 @@ Most of the MammalBase related models are defined in the `mb` subpackage in
 The directory contains files for different types of models by category.
 Order is kept by the subpackage `mb.models` meaning that all models are
 impoted in `__init__.py`. This how models can be imported elsewhere directly
-from subpackage like `from mb.models import ...`. Failing to do show may
-result in duplicates of models.
+from subpackage like `from mb.models import ...`. Failing to do so may
+result in duplicates of models, failing migrations
+and **hard to track down errors**.
 
 All the models in `mb` inherit from `BaseModel` which is defined in
 [`/app/mb/models/base_model.py`](../../../app/mb/models/base_model.py) file.
