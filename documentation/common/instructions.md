@@ -21,8 +21,8 @@ apt-get install docker-compose
 ```
 
 Note that older versions of docker make use of `docker-compose` instead of
-`docker compose`. Functionality is pretty much the same and interchangeable
-in examples of the documentation.
+`docker compose`. Functionality is pretty much the same and they are
+interchangeable in examples of the documentation.
 
 
 ## Environment variables
@@ -50,9 +50,11 @@ docker compose up -d --build
   something has been changed in the Dockerfile or `docker-compose.yml` file.
 
 Now if you go to [localhost:8000](http://localhost:8000), you should see the
-app running. You can also go to [localhost:8001](http://localhost:8001) to
-see or modify the created database. If the website doesn't show up, check
-the logs. Most likely the service just hasn't started yet.
+MammalBase app running. You can also go to phpMyAdmin at
+[localhost:8001](http://localhost:8001) to see or modify the created database.
+If the website doesn't show up wait some time or check the logs. Most likely
+the service just hasn't started yet. Startup can take something like 5-30sec.
+Or even more on first run as the app runs through all migrations.
 
 You can make changes to the django app in real time when the containers are
 running. The [`/app`](../../app) directory has been binded to the web
