@@ -28,9 +28,14 @@ in examples of the documentation.
 ## Environment variables
 
 Create a `.env` file in the root of the repository and write needed
-environment variables to it. You can take the [Example .env](./example.env)
-and fill in couple of the variables according to the
-[Environment variable docs](./environment_variables.md).
+environment variables to it. You can take the [Example .env](example.env):
+```
+cp documentation/common/example.env .env
+```
+Then just open the `.env` -file in text editor and fill out at least the
+marked varibles according to the 
+[Environment variable docs](environment_variables.md).
+
 
 
 ## Running the environment
@@ -51,9 +56,9 @@ the created database. If the website doesn't show up, check the logs. Most
 likely the service just hasn't started yet. 
 
 You can make changes to the django app in real time when the containers are
-running. The [`/app`](./../app) directory has been binded to the web container
-so that all the changes to the host machine's [`/app`](./../app) directory are
-also made in the container. 
+running. The [`/app`](../../app) directory has been binded to the web
+container so that all the changes to the host machine's [`/app`](../../app)
+directory are also made in the container. 
 
 To see logs you can run this command:
 ```
