@@ -86,21 +86,30 @@
 
     <!--Message if location successfully matched -->
     <div id="successMessage" style="display: none;">
-      <h3>{{ sourceLocation }} successfully matched!</h3>
+      <h3 class="successMessage w3-teal" style="color: white;">{{ sourceLocation }} successfully matched!</h3>
       <h4>Locations added:</h4>
       <table class="mb-list w3-table-all w3-medium w3-threequarter">
         <thead>
             <th>Matched location:</th>
             <th>Hierarchy location(s):</th>
         </thead>
-        <tbody>
-          <tr>
-            <td><div id="masterLocation"></div></td>
-            <td><div id="hierarchyLocations"></div></td>
-          </tr>
-        </tbody>
+      <tbody>
+        <tr>
+          <td><div id="masterLocation"></div></td>
+          <td><div id="hierarchyLocations"></div></td>
+        </tr>
+      </tbody>
       </table>
-    </div>
+    
+    <style>
+      .successMessage {
+        position: relative;
+        top: -25px;
+        padding: 5px 10px;
+        border-radius: 10px;
+        display: inline-block;
+    }
+    </style>
 
     <!--Pagination-->
     <div class="w3-container" style="margin-top: 10px;">
