@@ -27,13 +27,16 @@ interchangeable in examples of the documentation.
 
 ## Environment variables
 
-Create a `.env` file in the root of the repository and write needed
-environment variables to it. You can take the [`example.env`](example.env):
+Enviroment variables must be set correctly in `/.env` -file before building
+docker containers.
+
+It's good starting point to make copy of [`example.env`](example.env) to the
+root of the project (next to `README.md`):
 ```
 cp documentation/common/example.env .env
 ```
-Then just open the `.env` -file in text editor and carefully examine and
-modify the file according instructions and the 
+Then just open the `.env` -file and carefully examine and modify the file
+contents according the instructions and the
 [Environment variable docs](environment_variables.md).
 
 
@@ -140,7 +143,7 @@ docker exec mammalbase_web_1 python manage.py makemigrations
 ```
 
 
-### Make migrations to the database:
+### Push migrations to the database:
 ```
 docker exec mammalbase_web_1 python manage.py migrate
 ```
