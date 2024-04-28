@@ -2,25 +2,44 @@
 
 The project directory structure is as follows:
 
-- `/.github/`: Contains GitHub-specific files, such as workflows for GitHub Actions.
-- `/app/`: The main application directory. It contains several subdirectories:
-  - `config/`: Configuration files for the application.
-  - `exports/`: Files related to exporting data.
-  - `imports/`: Files related to importing data.
-  - `itis/`: ITIS (Integrated Taxonomic Information System) related files.
-  - `main/`: User authentication, user profiles, and other general application features.
-  - `mb/`: Main mammalbase application files.
-  - `scripts/`: Scripts used in the application.
-  - `tdwg/`: TDWG (Taxonomic Databases Working Group) related files.
-  - `tests/`: Unit tests for the application.
-  - `urls/`: URL handling is centralized here. paths, subpath includes, etc
-- `/documentation/`: Contains markdown files with documentation about the application, its architecture, testing, environment variables, etc.
-  - `common/`: Common documentation. More or less developement how to.
-  - `mammalbase/:` Documentation about the project itself.
-    - `arch/:` Architechture, hierarchy, how the project is arranged.
-    - `features/`: Detailed description of different functionalities of app.
-    - `models/`: Mermaid charts of models and relations.
-- `/nginx/`: Configuration files for the Nginx server.
+- [`/.github/`](../../../.github/):
+  Contains GitHub-specific files, such as workflows for GitHub Actions.
+- [`/app/`](../../../app/):
+  The main application directory. It contains several subdirectories:
+  - [`config/`](../../../app/config/):
+    Configuration files for the application.
+  - [`exports/`](../../../app/exports/):
+    Files related to exporting data.
+  - [`imports/`](../../../app/imports/):
+    Files related to importing data.
+  - [`itis/`](../../../app/itis/):
+    ITIS (Integrated Taxonomic Information System) related files.
+  - [`main/`](../../../app/main/):
+    User authentication, user profiles, and other general application features.
+  - [`mb/`](../../../app/mb/):
+    Main mammalbase application files.
+  - [`scripts/`](../../../app/scripts/):
+    Scripts used in the application.
+  - [`tdwg/`](../../../app/tdwg/):
+    TDWG (Taxonomic Databases Working Group) related files.
+  - [`tests/`](../../../app/tests/):
+    Unit tests for the application.
+  - [`urls/`](../../../app/urls/):
+    URL handling is centralized here. paths, subpath includes, etc
+- [`/documentation/`](../../../documentation/):
+  Contains markdown files with documentation about the application, its architecture, testing, environment variables, etc.
+  - [`common/`](../../../documentation/common/):
+    Common documentation. More or less developement how to.
+  - [`mammalbase/`](../../../documentation/mammalbase/):
+    Documentation about the project itself.
+    - [`arch/`](../../../documentation/mammalbase/arch/)
+      Architechture, hierarchy, how the project is arranged.
+    - [`features/`](../../../documentation/mammalbase/features/):
+      Detailed description of different functionalities of app.
+    - [`models/`](../../../documentation/mammalbase/models/):
+      Mermaid charts of models and relations.
+- [`/nginx/`](../../../nginx/):
+  Configuration files for the Nginx server.
 
 
 ### Subpackages for models, views etc
