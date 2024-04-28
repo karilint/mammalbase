@@ -12,22 +12,23 @@ docker exec mammalbase_web_1 python manage.py test
 
 Run a specific test file by adding the path to the file:
 
-```bash
+```
 docker exec mammalbase_web_1 python manage.py test tests.[folder].[test_file]
 ```
 Replace [folder] and [test_file] with the correct path to the test file.
 
-The tests may not work locally before the database privileges are set for Django. Once docker containers are running, run this command:
+The tests may not work locally before the database privileges are set for
+Django. Once docker containers are running, run this command:
 
-```bash
-docker exec mammalbase_db_1 mysql -u root -p
+```
+docker exec -it mammalbase_db_1 mysql -u root -p
 ```
 
 Enter the DB_ROOT_PASS from env-file
 
 Once in MySQL, run this command to grant privileges:
 
-```bash
+```
 GRANT ALL PRIVILEGES ON *.* TO 'mb_dev'@'%';
 ```
 - NOTE: Database name (mb_dev in this case) should be the same as in the .env file.
@@ -50,11 +51,11 @@ docker exec mammalbase_web_1 coverage run --source='.' manage.py test
 ```
 
 To see the report run:
-```bash
+```
 docker exec mammalbase_web_1 coverage report
 ```
 For html report run:
-```bash
+```
 docker exec mammalbase_web_1 coverage html
 ```
 
