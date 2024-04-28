@@ -109,6 +109,7 @@ docker compose down
 ```
 docker compose logs
 ```
+See `docker-compose logs --help` for details.
 
 
 ### Follow logs as they appear:
@@ -127,8 +128,8 @@ docker compose logs -f <container>
 ```
 docker compose down -v
 ```
-In the case of wanting to also remove the volumes (meaning that the database
-will be reset).
+In the case of wanting to also remove the volumes (meaning that
+the **database will be reset**).
 
 
 ## Other useful commands
@@ -145,9 +146,10 @@ guaranteed that names are same in different setups.
 ### Execute commands inside the container:
 
 ```
-docker exec <container> <command>
+docker exec <container> <command> ...
 ```
-Container needs to be running this to work.
+Runs `<command> ...` inside the `<container>`. Container needs to be running
+this to work. See `docker exec --help` for details.
 
 
 ### Check out local environment inside container:
