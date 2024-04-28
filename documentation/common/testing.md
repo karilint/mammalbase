@@ -24,7 +24,7 @@ Django. Once docker containers are running, run this command:
 docker exec -it mammalbase_db_1 mysql -u root -p
 ```
 
-Enter the DB_ROOT_PASS from env-file
+Enter the DB_ROOT_PASS from `.env` -file
 
 Once in MySQL, run this command to grant privileges:
 
@@ -33,11 +33,12 @@ GRANT ALL PRIVILEGES ON *.* TO 'mb_dev'@'%';
 ```
 - NOTE: Database name (mb_dev in this case) should be the same as in the .env file.
 
-Type ```QUIT``` to exit MySQL. Tests should work now.
+Hit <kbd>Ctrl</kbd>+<kbd>D</kbd> or give `QUIT` -command to exit MySQL.
+Tests should work now.
 
 ### Creating and/or modifying tests
 
-Test files are located in app/tests.  
+Test files are located in `/app/tests`.
 
 ### Test coverage
 
