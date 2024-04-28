@@ -82,35 +82,43 @@ docker compose down -v
 
 ### Other useful commands
 
-You can list running container ids by following command (This is usefull if
-you need for example execute some command inside certain container):
+You can list running containers:
 ```
 docker ps
 ```
+By knowing name or id you can do actions to certain container. It's not
+guaranteed that names are same in different setups.
+
 
 You can execute commands inside the container by running:
 ```
 docker exec <container> <command>
 ```
+
+
 For checking out local environment inside container:
 ```
 docker exec mammalbase_web_1 sh -c export
 ``` 
 
-Open hell inside container:
+
+Open shell inside container:
 ```
 docker exec -it mammalbase_web_1 bash
 ```
+
 
 For example, if you need to make migrations inside django, you can run:
 ```
 docker exec mammalbase_web_1 python manage.py makemigrations
 ```
 
+
 To migrate the database:
 ```
 docker exec mammalbase_web_1 python manage.py migrate
 ```
+
 
 Note that changes in source tree causes developement server to restart.
 See more in [Django docs](https://docs.djangoproject.com/en/3.2/).
