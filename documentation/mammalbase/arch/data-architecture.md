@@ -24,14 +24,16 @@ and **hard to track down errors**.
 
 All the models in `mb` inherit from `BaseModel` which is defined in
 [`/app/mb/models/base_model.py`](../../../app/mb/models/base_model.py) file.
-`BaseModel` also makes use of  `simple_history` extension to keep track of
-changes in the database. 
+`BaseModel` also makes use of 
+[`simple_history`](https://django-simple-history.readthedocs.io/en/latest/)
+extension to keep track of changes in the database. 
 
 
 ### TDWG (Taxonomic Databases Working Group)
 
 The [`/app/tdwg`](../../../app/tdwg) directory contains `Taxon` model that
-follows TDWG (Taxonomic Databases Working Group) standards.
+follows [TDWG (Taxonomic Databases Working Group)](https://www.tdwg.org/)
+standards.
 
 
 ### More models
