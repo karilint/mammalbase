@@ -18,9 +18,9 @@ First, you need to have Docker and Docker Compose installed on your system.
 ### Getting docker from your distribution
 
 You most probably want to install docker directly from your distribution.
-Certainly this project doesn't need the latest version so you may be better
-off with more tested and stable one. Installation is also simpler and less
-risky.
+Certainly this project doesn't need the latest version of Docker so you may
+be better off with more tested and stable one. Installation is also simpler
+and less risky.
 
 Debian and Ubuntu (the only command needed, run as root):
 ```
@@ -31,8 +31,14 @@ Note that older versions of docker make use of `docker-compose` instead of
 `docker compose`. Functionality is pretty much the same and they are
 interchangeable in examples of the documentation.
 
+## Setting up the environment
 
-## Environment variables
+### Clone
+
+Just clone the repository and navigate your terminal to the root of it.
+
+
+### Environment variables
 
 Enviroment variables must be set correctly in `/.env` -file before building
 docker containers.
@@ -47,14 +53,12 @@ contents according the instructions and the
 [Environment variable docs](environment_variables.md).
 
 
-## Setting up the environment
-
+### Build the containers
 After docker is installed and environment variables are set correctly it's
 time to build the containers. Note that in the first time building will take
 considerable amount of time as container images needs to be fetched from the
 internet and prepared. Reasonable estimate is around 10-20min.
 
-### Build the containers:
 ```
 docker compose build
 ```
@@ -63,11 +67,11 @@ Also after making chages to `Dockerfile` or `docker-compose.yml` containers
 should be rebuild.
 
 
-## Running the environment
+## Running the app
 
 If everything went well so far you can start containers. Please note that in
-first time this will take quite much time as all migrations needs to be done
-to the database.
+the first time this will take quite much time as all migrations needs to be
+pushed to the database.
 
 ### Start containers up:
 ```
@@ -93,6 +97,11 @@ running. The [`/app`](../../app) directory has been binded to the web
 container so that all the changes to the host machine's `/app`
 directory are also made in the container.
 
+### Shutdown containers:
+```
+docker compose down
+```
+
 
 ## Basic commands
 
@@ -111,12 +120,6 @@ docker compose logs -f
 ### Follow log of invidual container:
 ```
 docker compose logs -f <container> 
-```
-
-
-### Shutdown containers:
-```
-docker compose down
 ```
 
 
