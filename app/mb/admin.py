@@ -77,6 +77,9 @@ class AttributeRelationAdmin(SimpleHistoryAdmin):
     list_filter = [('master_attribute', admin.RelatedOnlyFieldListFilter)]
     list_display = ('source_attribute', 'master_attribute')
 
+class AttributeRelationInline(admin.TabularInline):
+    model = AttributeRelation
+    extra = 0
 
 @admin.register(ChoiceSetOptionRelation)
 class ChoiceSetOptionRelationAdmin(SimpleHistoryAdmin):
@@ -203,7 +206,7 @@ class SourceAttributeAdmin(SimpleHistoryAdmin):
          admin.RelatedOnlyFieldListFilter),
         'type']
     list_display = ('name', 'type')
-
+    inlines = [AttributeRelationInline]
 
 @admin.register(SourceChoiceSetOptionValue)
 class SourceChoiceSetOptionValueAdmin(SimpleHistoryAdmin):
