@@ -4,22 +4,22 @@ The project directory structure is as follows:
 
 - `/.github/`: Contains GitHub-specific files, such as workflows for GitHub Actions.
 - `/app/`: The main application directory. It contains several subdirectories:
-    - `config/`: Configuration files for the application.
-    - `exports/`: Files related to exporting data.
-    - `imports/`: Files related to importing data.
-    - `itis/`: ITIS (Integrated Taxonomic Information System) related files.
-    - `main/`: User authentication, user profiles, and other general application features.
-    - `mb/`: Main mammalbase application files.
-    - `scripts/`: Scripts used in the application.
-    - `tdwg/`: TDWG (Taxonomic Databases Working Group) related files.
-    - `tests/`: Unit tests for the application.
-    - `urls/`: URL handling is centralized here. paths, subpath includes, etc
+  - `config/`: Configuration files for the application.
+  - `exports/`: Files related to exporting data.
+  - `imports/`: Files related to importing data.
+  - `itis/`: ITIS (Integrated Taxonomic Information System) related files.
+  - `main/`: User authentication, user profiles, and other general application features.
+  - `mb/`: Main mammalbase application files.
+  - `scripts/`: Scripts used in the application.
+  - `tdwg/`: TDWG (Taxonomic Databases Working Group) related files.
+  - `tests/`: Unit tests for the application.
+  - `urls/`: URL handling is centralized here. paths, subpath includes, etc
 - `/documentation/`: Contains markdown files with documentation about the application, its architecture, testing, environment variables, etc.
-    - `common/`: Common documentation. More or less developement how to.
-    - `mammalbase/:` Documentation about the project itself.
-      -`arch/:` Architechture, hierarchy, how the project is arranged.
-      -`features/`: Detailed description of different functionalities of app.
-      -`models/`: Mermaid charts of models and relations.
+  - `common/`: Common documentation. More or less developement how to.
+  - `mammalbase/:` Documentation about the project itself.
+    - `arch/:` Architechture, hierarchy, how the project is arranged.
+    - `features/`: Detailed description of different functionalities of app.
+    - `models/`: Mermaid charts of models and relations.
 - `/nginx/`: Configuration files for the Nginx server.
 
 
