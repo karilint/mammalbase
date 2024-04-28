@@ -109,7 +109,7 @@ docker compose down
 ```
 docker compose logs
 ```
-See `docker-compose logs --help` for details.
+See `docker compose logs --help` for details.
 
 
 ### Follow logs as they appear:
