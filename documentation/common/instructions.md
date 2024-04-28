@@ -1,5 +1,12 @@
 # Development Environment
 
+Installing developement environment takes lot of time and there are many
+steps to follow and many steps that can go wrong. If you are not familiar
+with Docker and other techniques used you can expect spending more or less 3
+hours installing. We really hope that documentation clears things up even a
+bit. Happy installing.
+
+
 ## Install Docker
 
 First, you need to have Docker and Docker Compose installed on your system. 
@@ -40,38 +47,55 @@ contents according the instructions and the
 [Environment variable docs](environment_variables.md).
 
 
+## Setting up the environment
+
+After docker is installed and environment variables are set correctly it's
+time to build the containers. Note that in the first time building will take
+considerable amount of time as container images needs to be fetched from the
+intenet and prepared.
+
+### Build the containers:
+```
+docker compose build
+```
+It's good idea to run this periodically as container images gets upgrades.
+Also after making chages to `Dockerfile` or `docker-compose.yml` containers
+should be rebuild.
+
+
 ## Running the environment
 
-To start the environment, you have to run the following command in the root
-the repository.  
-```
-docker compose up -d --build
-```
-- NOTE: Running this command without the `-d` tag will show logs in the same
-  terminal.
-- NOTE 2: `--build` will create a new container and is unnecessary unless
-  something has been changed in the Dockerfile or `docker-compose.yml` file.
+If everything went well so far you can start containers. Please note that in
+first time this will take quite much time as all migrations needs to be done
+to the database.
 
-Now if you go to [localhost:8000](http://localhost:8000), you should see the
-MammalBase app running. You can also go to phpMyAdmin at
-[localhost:8001](http://localhost:8001) to see or modify the created database.
+### Start containers up:
+```
+docker compose up
+```
+Append `-d` switch for detached mode meaning that execution returns to
+terminal and containers keep running on background.
+
+Append `--build` switch to build the containers before starting them. This
+will take time and it's usually not necessary.
+
+
+After a while app should be accessible with browser. At the address
+[localhost:8000](http://localhost:8000), you should see the MammalBase app
+running. You can also visit phpMyAdmin at
+[localhost:8001](http://localhost:8001) to see or modify the databases.
+
 If the website doesn't show up wait some time or check the logs. Most likely
 the service just hasn't started yet. Startup can take something like 5-30sec.
 Or even more on first run as the app runs through all migrations.
 
-You can make changes to the django app in real time when the containers are
+You can make changes to the Django app in real time when the containers are
 running. The [`/app`](../../app) directory has been binded to the web
-container so that all the changes to the host machine's [`/app`](../../app)
+container so that all the changes to the host machine's `/app`
 directory are also made in the container.
 
 
 ## Basic commands
-
-### Start up containers:
-```
-docker compose up
-```
-
 
 ### View all logs:
 ```
