@@ -52,7 +52,7 @@ contents according the instructions and the
 After docker is installed and environment variables are set correctly it's
 time to build the containers. Note that in the first time building will take
 considerable amount of time as container images needs to be fetched from the
-intenet and prepared.
+internet and prepared. Reasonable estimate is around 10-20min.
 
 ### Build the containers:
 ```
@@ -77,17 +77,16 @@ Append `-d` switch for detached mode meaning that execution returns to
 terminal and containers keep running on background.
 
 Append `--build` switch to build the containers before starting them. This
-will take time and it's usually not necessary.
+is essentially same as running `docker compose build` just before.
 
 
 After a while app should be accessible with browser. At the address
 [localhost:8000](http://localhost:8000), you should see the MammalBase app
 running. You can also visit phpMyAdmin at
-[localhost:8001](http://localhost:8001) to see or modify the databases.
+[localhost:8001](http://localhost:8001) to see and modify the databases.
 
 If the website doesn't show up wait some time or check the logs. Most likely
 the service just hasn't started yet. Startup can take something like 5-30sec.
-Or even more on first run as the app runs through all migrations.
 
 You can make changes to the Django app in real time when the containers are
 running. The [`/app`](../../app) directory has been binded to the web
