@@ -59,31 +59,52 @@ Or even more on first run as the app runs through all migrations.
 You can make changes to the django app in real time when the containers are
 running. The [`/app`](../../app) directory has been binded to the web
 container so that all the changes to the host machine's [`/app`](../../app)
-directory are also made in the container. 
+directory are also made in the container.
 
-To see logs you can run this command:
+
+## Basic commands
+
+### Start up containers:
+```
+docker compose up
+```
+
+
+### View all logs:
+```
+docker compose logs
+```
+
+
+### Follow logs as they appear:
 ```
 docker compose logs -f
 ```
 
-You can also specify a container if you only want to see specific logs:
+
+### Follow log of invidual container:
 ```
 docker compose logs -f <container> 
 ```
-If you want to shutdown the containers, you can run this command:
+
+
+### Shutdown containers:
 ```
 docker compose down
 ```
-In the case of wanting to also remove the volumes (meaning that the database
-will be reset), you can run:
+
+
+### Shutdown containers and remove the volumes
 ```
 docker compose down -v
 ```
+In the case of wanting to also remove the volumes (meaning that the database
+will be reset).
 
-### Other useful commands
 
+## Other useful commands
 
-#### List running containers:
+### List running containers:
 
 ```
 docker ps
@@ -92,7 +113,7 @@ By knowing name or id you can do actions to certain container. It's not
 guaranteed that names are same in different setups.
 
 
-#### Execute commands inside the container:
+### Execute commands inside the container:
 
 ```
 docker exec <container> <command>
@@ -100,26 +121,26 @@ docker exec <container> <command>
 Container needs to be running this to work.
 
 
-#### Check out local environment inside container:
+### Check out local environment inside container:
 ```
 docker exec mammalbase_web_1 sh -c export
 ``` 
 
 
-#### Open shell inside container:
+### Open shell inside container:
 ```
 docker exec -it mammalbase_web_1 bash
 ```
-Note `-it` switch. Its needed for interactive commands.
+Note `-it` switch. It's needed for interactive commands.
 
 
-#### Generate migrations inside Django container:
+### Generate migrations inside Django container:
 ```
 docker exec mammalbase_web_1 python manage.py makemigrations
 ```
 
 
-#### Make migrations to the database:
+### Make migrations to the database:
 ```
 docker exec mammalbase_web_1 python manage.py migrate
 ```
