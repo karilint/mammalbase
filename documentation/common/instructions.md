@@ -28,14 +28,13 @@ in examples of the documentation.
 ## Environment variables
 
 Create a `.env` file in the root of the repository and write needed
-environment variables to it. You can take the [Example .env](example.env):
+environment variables to it. You can take the [`example.env`](example.env):
 ```
 cp documentation/common/example.env .env
 ```
-Then just open the `.env` -file in text editor and fill out at least the
-marked varibles according to the 
+Then just open the `.env` -file in text editor and carefully examine and
+modify the file according instructions and the 
 [Environment variable docs](environment_variables.md).
-
 
 
 ## Running the environment
@@ -50,10 +49,10 @@ docker compose up -d --build
 - NOTE 2: `--build` will create a new container and is unnecessary unless
   something has been changed in the Dockerfile or `docker-compose.yml` file.
 
-Now if you go to [localhost:8000](localhost:8000), you should see the app
-running. You can also go to [localhost:8001](localhost:8001) to see or modify
-the created database. If the website doesn't show up, check the logs. Most
-likely the service just hasn't started yet. 
+Now if you go to [localhost:8000](http://localhost:8000), you should see the
+app running. You can also go to [localhost:8001](http://localhost:8001) to
+see or modify the created database. If the website doesn't show up, check
+the logs. Most likely the service just hasn't started yet.
 
 You can make changes to the django app in real time when the containers are
 running. The [`/app`](../../app) directory has been binded to the web
