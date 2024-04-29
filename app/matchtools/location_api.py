@@ -16,7 +16,7 @@ class LocationAPI:
         response = requests.get(url)
         data = response.json()
         return data
-    
+
     def get_nature_reserves(self, location_name):
         """
         Get the nature reserves from the geonames API
@@ -29,7 +29,7 @@ class LocationAPI:
             return nature_reservations
         else:
             return []
-    
+
     def get_location_hierarchy(self, location_id):
         """
         Get the location hierarchy from the geonames API
