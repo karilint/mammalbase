@@ -2026,6 +2026,10 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
                     if life_stage == "None":
                         life_stage = ""
 
+                    life_stage = str(occ.life_stage).replace("Lifestage - ", "")
+                    if life_stage == "None":
+                        life_stage = ""
+
                     reference = str(occ.source_reference)
                     if reference == "None":
                         reference = ""
