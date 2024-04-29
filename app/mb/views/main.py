@@ -2022,11 +2022,14 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
                     if gender == "None":
                         gender = ""
 
-                    life_stage = str(occ.life_stage).replace("LifeStage - ", "")
-                    if life_stage == "None":
-                        life_stage = ""
+                    life_stage = str(occ.life_stage)
 
-                    life_stage = str(occ.life_stage).replace("Lifestage - ", "")
+                    if "LifeStage - " in life_stage:
+                        life_stage = str(occ.life_stage).replace("LifeStage - ", "")
+
+                    if "Lifestage - " in life_stage:
+                        life_stage = str(occ.life_stage).replace("Lifestage - ", "")
+
                     if life_stage == "None":
                         life_stage = ""
 
