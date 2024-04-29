@@ -59,14 +59,20 @@ admin.site.register([TaxonomicUnits, ])
 #    search_fields = ['name', ]
 #    history_list_display = ['name', ]
 
+class AttributeGroupRelationInline(admin.TabularInline):
+    model = AttributeGroupRelation
+    extra = 0
 
+class AttributeRelationInline(admin.TabularInline):
+    model = AttributeRelation
+    extra = 0
+    
 @admin.register(AttributeGroupRelation)
 class AttributeGroupRelationAdmin(SimpleHistoryAdmin):
     search_fields = ['group__name', 'attribute__name']
     list_filter = [('group', admin.RelatedOnlyFieldListFilter),
                    ('attribute', admin.RelatedOnlyFieldListFilter)]
     list_display = ('group', 'attribute')
-
 
 @admin.register(AttributeRelation)
 class AttributeRelationAdmin(SimpleHistoryAdmin):
@@ -76,10 +82,6 @@ class AttributeRelationAdmin(SimpleHistoryAdmin):
         'master_attribute__reference__citation']
     list_filter = [('master_attribute', admin.RelatedOnlyFieldListFilter)]
     list_display = ('source_attribute', 'master_attribute')
-
-class AttributeRelationInline(admin.TabularInline):
-    model = AttributeRelation
-    extra = 0
 
 @admin.register(ChoiceSetOptionRelation)
 class ChoiceSetOptionRelationAdmin(SimpleHistoryAdmin):
@@ -144,18 +146,14 @@ class MasterAttributeAdmin(SimpleHistoryAdmin):
     list_filter = [('entity', admin.RelatedOnlyFieldListFilter),
                    'name', ('unit', admin.RelatedOnlyFieldListFilter)]
     list_display = ('name', 'entity', 'unit')
-
-
-class MasterAttributeInline(admin.TabularInline):
-    model = AttributeGroupRelation
-    extra = 0
+    inlines = [AttributeGroupRelationInline]
 
 
 @admin.register(MasterAttributeGroup)
 class MasterAttributeGroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'get_master_attributes')
     list_filter = [('masterattribute', admin.RelatedOnlyFieldListFilter)]
-    inlines = [MasterAttributeInline]
+    inlines = [AttributeGroupRelationInline]
 
     def get_master_attributes(self, obj):
         master_attributes = obj.masterattribute_set.all()
