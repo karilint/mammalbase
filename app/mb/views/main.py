@@ -2067,4 +2067,5 @@ def get_occurrences_by_masterlocation(ml : MasterLocation):
     if len(occurrences) == 0:
         return False
     
+    print("occurrenceja: " + str(len(occurrences)))
     return occurrences
