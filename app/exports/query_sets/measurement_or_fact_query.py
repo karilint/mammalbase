@@ -37,6 +37,20 @@ def measurement_or_fact_query(
         | Q(source_entity__reference__is_active=False)
         | Q(source_entity__reference__master_reference__is_active=False)
         | Q(source_statistic__is_active=False)
+
+    )
+
+    nominal_non_active = (
+          Q(source_entity__master_entity__entity__is_active=False)
+        | Q(source_entity__reference__is_active=False)
+        | Q(source_entity__reference__master_reference__is_active=False)
+        | Q(source_choiceset_option__source_attribute__master_attribute__id=None)
+        | Q(source_choiceset_option__source_attribute__master_attribute__name='- Checked, Unlinked -')
+        | Q(source_choiceset_option__source_attribute__master_attribute__name__exact='')
+        | Q(source_entity__master_entity__name__exact='')
+        | Q(source_entity__master_entity__id__isnull=True)
+        | Q(source_choiceset_option__source_attribute__reference__status=1)
+        | Q(source_choiceset_option__source_attribute__reference__status=3)
     )
 
     now = datetime.now(tz=timezone(timedelta(hours=2)))
@@ -69,9 +83,9 @@ def measurement_or_fact_query(
                 default = mb_reference
         )
 
-    nominal_query = SourceChoiceSetOptionValue.objects.annotate(
+    nominal_query = SourceChoiceSetOptionValue.objects.exclude(nominal_non_active).annotate(
         entity_id=Concat(
-            Value('http://localhost:8000/sav/'),
+            Value('https://www.mammalbase.net/sav/'),
             'id',
             Value('/'),
             output_field=CharField()
@@ -80,6 +94,10 @@ def measurement_or_fact_query(
         basis_of_record_description=F('source_entity__reference__master_reference__type'),
         references=references,
         measurement_resolution=Case(
+            When(
+                source_entity__master_entity__entity__name__exact=None,
+                then=Value('NA')
+            ),
             When(
                 source_entity__master_entity__entity__name__iendswith='species',
                 then=Value('NA')
@@ -94,6 +112,10 @@ def measurement_or_fact_query(
                 source_choiceset_option__source_attribute__method__name__exact=None,
                 then=Value('NA')
             ),
+            When(
+                source_choiceset_option__source_attribute__method__name__exact='nan',
+                then=Value('NA')
+            ),
             default='source_choiceset_option__source_attribute__method__name',
             output_field=CharField()
         ),
@@ -104,7 +126,9 @@ def measurement_or_fact_query(
         individual_count=Value('NA'),
         dispersion=Value('NA'),
         measurement_value_min=Value('NA'),
-        measurement_value_max=Value('NA')
+        measurement_value_max=Value('NA'),
+        measurement_accuracy=Value('NA'),
+        statistical_method=Value('NA')
     )
 
 
@@ -140,9 +164,16 @@ def measurement_or_fact_query(
         measurement_remarks=Case(
             When(
                 remarks__exact=None,
-                then=Value('NA')
+                then=Concat(
+                    Value('Data quality score '),
+                    'data_quality_score',
+                    Value('/10'))
             ),
-            default='remarks',
+            default=Concat(
+                Value('Data quality score '),
+                'data_quality_score',
+                Value("/10 | "),
+                'remarks'),
             output_field=CharField()
         ),
         aggregate_measure=Case(
@@ -181,7 +212,7 @@ def measurement_or_fact_query(
     if measurement_choice == "Nominal traits":
         # TODO: Find fields in query and export to spreadsheet here
         fields = [
-            ('entity_id','traitID'),
+            ('entity_id','measurementID'),
             ('basis_of_record', 'basisOfRecord'),
             ('source_entity__reference__master_reference__type', 'basisOfRecordDescription'),
             ('references', 'references'),
@@ -194,7 +225,9 @@ def measurement_or_fact_query(
             ('individual_count', 'individualCount'),
             ('dispersion', 'dispersion'),
             ('measurement_value_min', 'measurementValue_min'),
-            ('measurement_value_max', 'measurementValue_max')
+            ('measurement_value_max', 'measurementValue_max'),
+            ('measurement_accuracy', 'measurementAccuracy'),
+            ('statistical_method', 'statisticalMethod')
         ]
         query = nominal_query
     elif measurement_choice in ('External measurements', 'Cranial measurements'):
