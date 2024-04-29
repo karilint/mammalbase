@@ -223,6 +223,7 @@ class MasterAttributeAdmin(SimpleHistoryAdmin):
 
 @admin.register(MasterAttributeGroup)
 class MasterAttributeGroupAdmin(admin.ModelAdmin):
+    search_fields = ['name', 'masterattribute__name']
     list_display = ('name', 'get_master_attributes')
     list_filter = [('masterattribute', admin.RelatedOnlyFieldListFilter)]
     inlines = [AttributeGroupRelationInline]
