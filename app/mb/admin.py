@@ -93,6 +93,7 @@ class AttributeRelationAdmin(SimpleHistoryAdmin):
     list_filter = [('master_attribute', admin.RelatedOnlyFieldListFilter)]
     list_display = ('source_attribute_name',
                     'master_attribute_name', 'master_attribute_reference')
+    readonly_fields = ['source_attribute']
 
     def source_attribute_name(self, obj):
         return obj.source_attribute.name
@@ -121,13 +122,21 @@ class ChoiceSetOptionRelationAdmin(SimpleHistoryAdmin):
     list_filter = [
         ('master_choiceset_option',
          admin.RelatedOnlyFieldListFilter)]
-    list_display = ('source_choiceset_option_name', 'master_choiceset_option')
+    list_display = ('source_choiceset_option_name',
+                    'master_choiceset_option_name')
+    readonly_fields = ['source_choiceset_option']
 
     def source_choiceset_option_name(self, obj):
         return obj.source_choiceset_option.name
 
-    source_choiceset_option_name.admin_order_field = 'source_choiceset_option__name'
     source_choiceset_option_name.short_description = 'Source Choice Set Option'
+    source_choiceset_option_name.admin_order_field = 'source_choiceset_option__name'
+
+    def master_choiceset_option_name(self, obj):
+        return obj.master_choiceset_option.name
+
+    master_choiceset_option_name.short_description = 'Master Choice Set Option'
+    master_choiceset_option_name.admin_order_field = 'master_choiceset_option__name'
 
 
 @admin.register(ChoiceValue)
@@ -141,6 +150,7 @@ class ChoiceValueAdmin(SimpleHistoryAdmin):
 class DietSetItemAdmin(SimpleHistoryAdmin):
     search_fields = ['diet_set__reference__citation', 'food_item__name']
     list_display = ('food_item_name', 'diet_set_reference')
+    readonly_fields = ['diet_set', 'food_item']
 
     def food_item_name(self, obj):
         return obj.food_item.name
@@ -160,6 +170,7 @@ class DietSetAdmin(SimpleHistoryAdmin):
     search_fields = ['taxon__name', 'reference__citation']
     list_filter = ['data_quality_score']
     list_display = ('taxon', 'reference_name')
+    readonly_fields = ['taxon', 'reference']
 
     def reference_name(self, obj):
         return obj.reference.citation
@@ -184,6 +195,7 @@ class EntityRelationAdmin(SimpleHistoryAdmin):
                     'master_entity', 'master_entity_reference')
     list_filter = [('relation_status', admin.RelatedOnlyFieldListFilter),
                    ('data_status', admin.RelatedOnlyFieldListFilter)]
+    readonly_fields = ['source_entity', 'master_entity']
 
     def master_entity_reference(self, obj):
         return obj.master_entity.reference.citation
@@ -220,7 +232,6 @@ class MasterAttributeAdmin(SimpleHistoryAdmin):
     inlines = [AttributeGroupRelationInline]
 
 
-
 @admin.register(MasterAttributeGroup)
 class MasterAttributeGroupAdmin(admin.ModelAdmin):
     search_fields = ['name', 'masterattribute__name']
@@ -254,13 +265,14 @@ class MasterEntityAdmin(SimpleHistoryAdmin):
 class MasterReferenceAdmin(SimpleHistoryAdmin):
     search_fields = ['citation']
     list_filter = ['type', 'year']
-    list_display = ('citation', 'type', 'year')
+    list_display = ('citation',)
 
 
 @admin.register(ProximateAnalysisItem)
 class ProximateAnalysisItemAdmin(SimpleHistoryAdmin):
     search_fields = ['proximate_analysis__reference__citation', 'forage__name']
     list_display = ('forage_name', 'proximate_analysis_reference')
+    readonly_fields = ['forage']
 
     def forage_name(self, obj):
         return obj.forage.name
@@ -292,7 +304,7 @@ class SourceAttributeAdmin(SimpleHistoryAdmin):
     search_fields = ['entity__name', 'name']
     list_filter = [
         ('master_attribute',
-         admin.RelatedOnlyFieldListFilter), 
+         admin.RelatedOnlyFieldListFilter),
         'type']
     list_display = ('name', )
     inlines = [AttributeRelationInline]
@@ -305,6 +317,7 @@ class SourceChoiceSetOptionValueAdmin(SimpleHistoryAdmin):
         'source_choiceset_option__name']
     list_display = ('source_choiceset_option_source_attribute_name',
                     'source_choiceset_option_name')
+    readonly_fields = ['source_entity', 'source_choiceset_option']
 
     def source_choiceset_option_source_attribute_name(self, obj):
         return obj.source_choiceset_option.source_attribute.name
@@ -324,6 +337,7 @@ class SourceChoiceSetOptionValueAdmin(SimpleHistoryAdmin):
 class SourceChoiceSetOptionAdmin(SimpleHistoryAdmin):
     search_fields = ['source_attribute__name', 'name']
     list_display = ('source_attribute_name', 'source_choice_set_option')
+    readonly_fields = ['source_attribute']
 
     def source_attribute_name(self, obj):
         return obj.source_attribute.name
@@ -355,6 +369,7 @@ class SourceLocationAdmin(SimpleHistoryAdmin):
 class SourceMeasurementValueAdmin(SimpleHistoryAdmin):
     search_fields = ['source_attribute__name', 'n_total']
     list_display = ('source_attribute_name', 'n_total')
+    readonly_fields = ['source_entity', 'source_attribute']
 
     def source_attribute_name(self, obj):
         return obj.source_attribute.name
