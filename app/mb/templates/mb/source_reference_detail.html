@@ -53,6 +53,7 @@
       <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="{% url 'master_reference-detail' pk=source_reference.master_reference_id|default:0 %}">
         {{ source_reference.master_reference.citation|safe }} <span class="fa fa-link"></span></a></td>
     </tr>
+    {% if request.user|is_data_admin_or_contributor %}
     <tr>
       {% if source_reference.sourceattribute_set.exists %}
         <th class="w3-quarter">Trait match:</th>
@@ -60,6 +61,7 @@
           Match unmatched source traits linked to this reference <span class="fa fa-link"></span></a></td>
       {% endif %}
     </tr>
+    {% endif %}
   </table>
 
   {% if request.user|is_data_admin_or_owner:source_reference %}

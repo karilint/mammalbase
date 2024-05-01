@@ -1,5 +1,16 @@
 # Exports app
 
+Update: Architecture of exports app is somewhat changed. Basic principles
+and functionality is the same, but now there can be multiple "queries and
+fields" tuples so multiple queries can be put in a same file. Fields must be
+indetical as the queries outputs to the single file. It turned out
+to be too hard to make single massive query to include also nominal data
+within. Maybe single query solution is possible, but there might be lack of
+people to who can get head around all this Django ORM madness combined with
+quite wide database queries. For current state of exports please read the
+comments and code on [/app/exports/tasks.py](../../../app/exports/tasks.py).
+
+
 The data export feature has been defined in the `exports` app. This document aims to give a brief explanation on the
 different parts of the app that makes the data export possible by the standards given by the owner of the product.
 

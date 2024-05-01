@@ -25,7 +25,7 @@ class OccurenceImporterTest(TestCase):
             response = self.client.post('/import/occurrences', {'name': 'fred', 'csv_file': fp})
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 2)
-        self.assertEqual(str(messages[0]), 'File imported successfully. 6 rows of data were imported.(0 rows were skipped.)')
+        self.assertEqual(str(messages[0]), 'File imported successfully. 6 rows of data were imported. (0 rows were skipped.)')
         self.assertEqual(response.status_code, 302)
 
     def test_import_invalid_occurences(self):

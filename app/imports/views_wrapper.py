@@ -25,8 +25,7 @@ def wrapper(request, validator, importer, path):
 
     csv_file = request.FILES["csv_file"]
     df = pd.read_csv(csv_file, sep='\t')
-
-    try:
+    try:   
         errors = validate(df, validator)
         author_check = check_author_consistency(df)
         if errors:
@@ -43,18 +42,19 @@ def wrapper(request, validator, importer, path):
         rows_imported, rows_skipped = row_importer(df, importer)
         if rows_imported > 0:
             message = (f"File imported successfully. {rows_imported} rows of data were imported."
-                       f"({rows_skipped} rows were skipped.)")
+                       f" ({rows_skipped} rows were skipped.)")
             messages.add_message(request, 50, message, extra_tags="import-message")
             messages.add_message(request, 50, df.to_html(), extra_tags="show-data")
             return HttpResponseRedirect(reverse(path))
 
 
-        message = f"File failed to import. {rows_imported} rows of data were imported."
+        message = (f"File failed to import. {rows_imported} rows of data were imported."
+                   f" ({rows_skipped} rows were skipped.)")
         messages.error(request, message)
         return HttpResponseRedirect(reverse(path))
 
     except Exception as e:
-        logging.getLogger("error_logger").error("Unable to upload file due to error. "+repr(e))
+        logging.getLogger("error_logger").error(f"Unable to upload file due to error.{repr(e)}")
         print(e)
         messages.error(request, "Unable to upload file. "+repr(e))
         return HttpResponseRedirect(reverse(path))
@@ -85,9 +85,9 @@ def validate(df, validator):
     if len(importing_errors) > 0:
         return importing_errors
     return []
-
-
-def row_importer(df, importer):
+ 
+ 
+def row_importer(df: pd.DataFrame, importer):
     """Import validated rows to db.
 
     Args:
@@ -117,7 +117,7 @@ def check_author_consistency(df: pd.DataFrame):
     Returns:
         bool: True if all authors match the first author, False otherwise.
     """
-    first_author = df['author'].iloc[1]  # Get the author value from the first row
+    first_author = df['author'].iloc[0]  # Get the author value from the first row
     # Compare all author values with the first author
     author_match = (df['author'] == first_author).all()
     return author_match

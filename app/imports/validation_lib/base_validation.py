@@ -11,12 +11,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 """
 
 
-import sys
 import re
-import datetime
 from django.apps import apps
 
-from mb.models import ChoiceValue, SourceReference
+from mb.models import ChoiceValue
 
 class Validation():
 
@@ -81,7 +79,12 @@ class Validation():
 
             #now looping through rules of one field one rule at a time with each iteration
             for rule in field_rules:
-                field_errors.extend(self.validate_field_rule(data, field_name, rule, field_rules))
+                #only validate if value is not empty
+                if str(data[field_name]) != "":
+                    #validate the field based on the rule assigned
+                    field_errors.extend(self.validate_field_rule(data, field_name, rule, field_rules))
+                elif rule == "required":
+                    field_errors.extend(self.validate_field_rule(data, field_name, rule, field_rules))
 
             self.errors.extend(field_errors)
 
@@ -222,6 +225,10 @@ class Validation():
     def validate_digit_fields(self, data, field_name):
         """Used for validating integer fields, returns a list of error messages"""
         errs = []
+        #if , in value return error
+        if ',' in str(data[field_name]):
+            errs.append(self.return_field_message("digits", "not_decimal").format(value=data[field_name]))
+            return errs
 
         try:
             if not isinstance(float(data[field_name]),(int, float)) or data[field_name] == "nan" or data[field_name] == "":
@@ -271,10 +278,12 @@ class Validation():
         """Used for validating fields for some number of values to allow, returns a list of error messages"""
         #retrieve the value for that in rule
         ls = rule.split(':')[1].split(',')
+        #convert to lowercase
+        ls = [x.lower() for x in ls]
         errs = []
 
         try:
-            if str(data[field_name]) not in ls:
+            if str(data[field_name]).lower() not in ls:
                 errs.append(self.return_field_message(field_name, "in"))
         except KeyError:
             errs.append(self.return_field_message(field_name,'in'))
@@ -326,11 +335,11 @@ class Validation():
         choice_set = str(rule.split(':')[1])
         model = str(rule.split(':')[0])
 
-        choicevalue = ChoiceValue.objects.filter(choice_set=choice_set.capitalize(), caption=field_value.capitalize())
+        choicevalue = ChoiceValue.objects.filter(choice_set__iexact=choice_set, caption__iexact=field_value)
 
         if field_value == 'nan' or field_value == "":
             return errs
-        if len(choicevalue) == 0 or field_value.capitalize() != choicevalue[0].caption:
+        if len(choicevalue) == 0 or field_value.lower() != choicevalue[0].caption.lower():
             errs.append(self.return_field_message(model, 'invalid_value').format(value=field_value, field=field_name))
         return errs
 
@@ -477,7 +486,7 @@ class Validation():
             "boolean": "'%s' has invalid value for boolean field",
             "required": "'%s' must be filled",
             "alpha": "'%s' can have only alphabets",
-            "digits": "'%s' must be an integer",
+            "digits": "'%s' must be an number",
             "author": "'%s' field must follow the following format: 0000-0000-0000-0000",
             "max": "The maximum value for the field '%s' is invalid",
             "min": "The minimum value for the field '%s' is invalid",
@@ -517,4 +526,5 @@ class Validation():
             "active.no_field":"You did not provide any field named active in your data dictionary",
             "age.no_field":"You did not provide any field named age in your data dictionary",
             "choiceValue.invalid_value":"'{value}' is invalid value for {field} field",
+            "digits.not_decimal":"'{value}' is not a decimal number. Use . for decimal separator",
         }

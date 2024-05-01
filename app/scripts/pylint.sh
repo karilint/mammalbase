@@ -6,8 +6,7 @@
 	|| SOURCES=./
 
 echo Making sure that pylint and pylint_django is installed
-pip -q show pylint pylint_django \
-	|| pip install pylint pylint_django
+pip -q install --upgrade pylint pylint_django
 
 echo Running pylint on paths: $SOURCES
 python -m pylint \
