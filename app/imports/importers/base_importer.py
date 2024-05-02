@@ -1,10 +1,12 @@
 import re
-from datetime import timedelta
 import json
+from datetime import timedelta
+import logging
+import requests
+import pandas as pd
 from django.db import transaction
 from django.contrib.auth.models import User
-import pandas as pd
-import requests
+from django.contrib import messages
 from requests_cache import CachedSession
 from mb.models import (
     SourceReference,
@@ -17,19 +19,13 @@ from mb.models import (
     SourceMethod,
     ChoiceValue,
     SourceLocation)
-from datetime import timedelta
 from config.settings import ITIS_CACHE
-import itis.views as itis
-import json
-import logging
-from itis.models import TaxonomicUnits
+from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from itis.tools import (
     getFullHierarchyFromTSN as itis_getFullHierarchyFromTSN,
     hierarchyToString as itis_hierarchyToString
 )
-from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
 from decimal import Decimal
-from django.contrib import messages
 from requests_cache import CachedSession
 
 class BaseImporter:
