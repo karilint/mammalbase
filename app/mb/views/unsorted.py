@@ -1990,3 +1990,53 @@ def view_proximate_analysis_table_list(request):
         'mb/view_proximate_analysis_table_list.html',
         {'page_obj': page_obj, 'filter': f,}
     )
+
+def index_master_location_list(request):
+    class MasterLocationView(models.Model):
+        """ Tool model to preset master locations. """
+        id = models.CharField(max_length=20)
+        name = models.CharField(max_length=500) 
+        reference = models.CharField(max_length=500) 
+        master_habitat = models.TextField()
+
+    params = request.GET.dict()
+
+    master_locations = MasterLocation.objects.filter()
+
+    mls_with_habitat = []
+
+    for x in master_locations:
+        ml_view_obj = MasterLocationView()
+        ml_view_obj.id = x.id
+        ml_view_obj.name = x.name
+        ml_view_obj.reference = x.reference.citation
+        ml_view_obj.master_habitat = get_master_habitats(x)
+        mls_with_habitat.append(ml_view_obj)
+    
+    mls_with_habitat = filter(mls_with_habitat, params)
+    
+    paginator = Paginator(mls_with_habitat, 10)
+
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+    
+    return render(
+        request,
+        'mb/master_location_list.html',
+        {'page_obj': page_obj, 'filter': filter,}
+    )
+
+def master_location_detail(request, pk):
+    master_location = get_object_or_404(MasterLocation, id=pk)
+    related_objects = MasterLocation.objects.filter(pk=master_location.higherGeographyID.id)
+    occurrences = get_occurrences_by_masterlocation(master_location)
+    
+    return render(
+        request, 
+        'mb/master_location_detail.html', 
+        {"master_location" : master_location, "related_objects" : related_objects, "occurrences" : occurrences, "filter" : None},)

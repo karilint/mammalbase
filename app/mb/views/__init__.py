@@ -111,4 +111,6 @@ from .unsorted import (
     tsn_list,
     tsn_new,
     tsn_search,
-    view_proximate_analysis_table_list)
+    view_proximate_analysis_table_list,
+    index_master_location_list,
+    master_location_detail)
