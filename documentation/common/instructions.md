@@ -97,11 +97,19 @@ running. The [`/app`](../../app) directory has been binded to the web
 container so that all the changes to the host machine's `/app`
 directory are also made in the container.
 
+### Shutdown containers:
+```
+docker compose down
+```
+
+
+## Finalizing the Environment
+
 ### Setting up users
 
 The `initialize.py`creates superuser with username and password from the environment variables. This file is run when the container is started.
 
-Running command 
+Running command while containers are running
 ```
 docker compose exec web python manage.py create_users
 ```
@@ -117,12 +125,6 @@ Seeding the database with data is done by running the following command:
 docker compose exec web python manage.py seed_db
 ```
 You have to add the sql files to the [sql_files](./../app/mb/management/commands/sql_files) directory. The files should be named in the following format: `table_name.sql` or `name.sql.zip`.
-
-
-### Shutdown containers:
-```
-docker compose down
-```
 
 
 ## Basic commands
