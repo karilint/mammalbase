@@ -15,7 +15,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING('No SQL files found in the sql_files directory'))
             return
         
-        for sql_file in self.sql_files:
+        for sql_file in sorted(self.sql_files):
             self.execute_sql_file(sql_file)
             self.stdout.write(self.style.SUCCESS(f'Successfully executed SQL file {sql_file}'))
             
