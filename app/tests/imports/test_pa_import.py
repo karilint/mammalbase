@@ -24,7 +24,7 @@ class ProximateAnalysisImporterTest(TestCase):
         messages = list(get_messages(response.wsgi_request))
         self.assertEqual(len(messages), 2)
         self.assertEqual(
-            str(messages[0]), "File imported successfully. 1 rows of data were imported.(1 rows were skipped.)")
+            str(messages[0]), "File imported successfully. 1 rows of data were imported. (1 rows were skipped.)")
         self.assertEqual(response.status_code, 302)
 
     def test_import_pa_post_incorrect_file(self):

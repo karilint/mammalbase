@@ -148,6 +148,7 @@ def ets_export_query_set(
     export_list = []
 
     for choice in measurement_choices:
+        print(choice)
         export_list.append({
                 'file_name': ('measurement_or_fact_'
                         f'{choice.split()[0].lower()}'),
@@ -160,9 +161,12 @@ def ets_export_query_set(
             'taxon': taxon_query,
             'occurrence': occurrence_query,
             'metadata': metadata_query }.items():
-        export_list.append({
-                'file_name': file_name,
-                'queries_and_fields': query_function(measurement_choices) })
+        if ('External measurements' or 'Cranial measurements') not in measurement_choices and file_name == "occurrence":
+            pass
+        else:
+            export_list.append({
+                    'file_name': file_name,
+                    'queries_and_fields': query_function(measurement_choices) })
 
     export_zip_file(
         email_recipient=email_recipient,
