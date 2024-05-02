@@ -139,7 +139,7 @@
     formData.append('sourceLocation', sourceLocation);
 
     // Send a POST request to the server
-    fetch('/match_location/', {
+    fetch("{% url 'match_location' %}", {
       method: 'POST',
       body: formData,
       headers: {

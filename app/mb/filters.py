@@ -183,18 +183,3 @@ class ViewProximateAnalysisTableFilter(django_filters.FilterSet):
                   'n_reference',
                   'n_analysis',
         ]
-
-class SourceLocationFilter(django_filters.FilterSet):
-    name = django_filters.CharFilter(lookup_expr='icontains', label='Location contains')
-    reference__citation = django_filters.CharFilter(lookup_expr='icontains', label='Reference contains')
-    match_attempts_gte = django_filters.NumberFilter(field_name='match_attempts', lookup_expr='gte', label='Match attempts')
-    match_attempts_lte = django_filters.NumberFilter(field_name='match_attempts', lookup_expr='lte', label='Match attempts to')
-
-    class Meta:
-        model = SourceLocation
-        fields = ['name', 'reference__citation', 'match_attempts_gte', 'match_attempts_lte']
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.form.fields['match_attempts_gte'].initial = 0
-        self.form.fields['match_attempts_lte'].initial = 0
