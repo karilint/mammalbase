@@ -186,3 +186,51 @@ def updateTSN(tsn):
         `tsn_update_date` DATETIME(6) NULL DEFAULT NULL,
 
 '''
+
+#Used to calculate data quality score
+def calculate_data_quality_score(taxon, citation, source_type, source_attribute, n_total, minimum, maximum, std, method, items):
+    score = 0
+    #Weight of taxon quality
+    if taxon in ('Species', 'Subspecies'):
+        score +=1
+
+    #Weight of having a reported citation of the data
+    if citation == 'Original study':
+        score += 2
+    elif citation is not None:
+        score += 1
+
+    #Weight of source quality in the diet
+    if source_type == 'journal-article':
+        score += 3
+    elif source_type == 'book':
+        score += 2
+    elif source_type == 'data set':
+        score += 1
+
+    #Weight of having a described method in the method
+    if source_attribute:
+        score += 1
+
+    #Weight of having individual count
+    if n_total != 0:
+        score += 1
+
+    #Weight of having minimum and maximum
+    if minimum != 0 and maximum != 0:
+        score += 1
+
+    #Weight of having Standard Deviation
+    if std != 0:
+        score += 1
+    
+    #Weight of having a described method
+    if method:
+        score += 2
+
+    #Weight of the food items in the diet
+    if items != "":
+        if items.count():
+            score += (2 * items.count()) // items.count()
+
+    return score
