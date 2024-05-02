@@ -30,5 +30,8 @@ class SourceAttributeFilter(django_filters.FilterSet):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not any(key != 'page' and value for key, value in self.data.items()):
+        if self.data.get('master_attribute'):
+            self.queryset = self.queryset.filter(
+                master_attribute__name='- Checked, Unlinked -')
+        else:
             self.queryset = self.queryset.filter(master_attribute=None)
