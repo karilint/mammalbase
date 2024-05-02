@@ -924,7 +924,7 @@ class SourceMeasurementValue(BaseModel):
             source_type = self.source_entity.reference.master_reference.type
         except:
             source_type = None
-        score = calculate_dqs_for_measurements(self.source_entity.entity.name, self.cited_reference, source_type, self.source_attribute.method, self.n_total, self.minimum, self.maximum, self.std, "", "")
+        score = calculate_dqs_for_measurements(self.source_entity.entity.name, self.cited_reference, source_type, self.source_attribute.method, self.n_total, self.minimum, self.maximum, self.std, None, "")
         return score
 
 def calculate_dqs_for_measurements(taxon, citation, source_type, source_attribute, n_total, minimum, maximum, std, method, items):
@@ -962,6 +962,10 @@ def calculate_dqs_for_measurements(taxon, citation, source_type, source_attribut
     #7 weight of having Standard Deviation
     if std != 0:
         score += 1
+    
+    if method != None:
+        score += 2
+
     if items != "":
         if items.count():
             score += (2 * items.count()) // items.count()
@@ -1372,7 +1376,8 @@ class DietSet(BaseModel):
             score += 2
         elif c_reference:
             score += 1
-
+        
+        master = None
         # 3. The weight of source quality in the diet
         try:
             master = self.reference.master_reference.type
@@ -1390,16 +1395,16 @@ class DietSet(BaseModel):
         method = self.method
         if method:
             score += 2
-        score = calculate_dqs_for_measurements(entity, c_reference, self.reference.master_reference.type, None, 0, 0, 0, 0, self.method, "")
+
         # 5. The weight of food item taxonomy
         diet_set_items = DietSetItem.objects.filter(
                 diet_set=self,
-                food_item__tsn__rank_id__gt=100)
-        
+                food_item__tsn__rank_id__gt=100)        
         if diet_set_items.count():
             score += (2 * diet_set_items.count()) // diet_set_items.count()
-
         
+        score = calculate_dqs_for_measurements(entity, c_reference, master, None, 0, 0, 0, 0, method, "")
+
         return score
 
 class DietSetItem(BaseModel):
