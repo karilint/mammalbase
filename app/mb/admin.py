@@ -1,7 +1,7 @@
 # pylint: disable=C0115,C0116
 """ mb.admin
 
-This module defines Django admin classes for the mb app.
+This module defines Django admin classes for the models in the mb app.
 
 Each class specifies a set of fields to display in the admin interface,
 as well as filters, search fields, autocomplete fields, and inline editing
