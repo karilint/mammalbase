@@ -1,6 +1,10 @@
-from mb.models import MasterHabitat, SourceEntity, MasterEntity, Event
+from mb.models import (
+    MasterHabitat,
+    SourceEntity,
+    MasterEntity,
+    Event,
+    MasterLocation)
 from django.db import models
-from mb.models.location_models import MasterLocation
 
 def get_master_habitats(ml : MasterLocation):
     """ Get MasterHabitats by MasterLocation """ 
