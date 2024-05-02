@@ -38,6 +38,8 @@ The project directory structure is as follows:
       Detailed description of different functionalities of app.
     - [`models/`](../../../documentation/mammalbase/models/):
       Mermaid charts of models and relations.
+  - [`scripts/`](../../../documentation/scripts/):
+    How tos for rroject script files.
 - [`/nginx/`](../../../nginx/):
   Configuration files for the Nginx server.
 
