@@ -10,16 +10,16 @@ class Occurrence_validation(Validation):
         super().__init__()
 
         self.rules = {
-            "references"                : "required|min:10|max:500|regex:.*([1-2][0-9]{3})", 
+            "references"                : "required|min:10|max:500|'regex:.*([1-2][0-9]{3})|(Original study)'", 
             "verbatimScientificName"    : "required|alpha", 
             "taxonRank"                 : "in:Subspecies,Varietas,Forma,Species,Genus,Nothogenus,Nothospecies,Nothosubspecies,Family,nan", 
             "organismQuantity"          : "digits", 
-            "sex"                       : "gender", 
-            "lifeStage"                 : "lifeStage", 
+            "sex"                       : "choiceValue:gender", 
+            "lifeStage"                 : "choiceValue:lifestage", 
             "verbatimLocality"          : "max:250", 
             "verbatimElevation"         : "max:250", 
             "verbatimDepth"             : "max:250", 
-            "verbatimCoordinateSystem"  : "coordinateSystem", 
+            "verbatimCoordinateSystem"  : "coordinateSystem:verbatimLatitude,verbatimLongitude,verbatimCoordinates", 
             "author"                    : "required|author", 
         }
     

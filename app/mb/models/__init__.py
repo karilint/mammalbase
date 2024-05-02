@@ -1,9 +1,11 @@
+""" mb.models initialized here. Importing all models from submodules here. """
+
 from .base_model import (
     CustomQuerySet,
     ActiveManager,
     BaseModel)
 
-from .models import (
+from .unsorted import (
     AttributeRelation,
     ChoiceValue,
     ChoiceSetOptionRelation,
@@ -33,21 +35,26 @@ from .models import (
     TimePeriod,
     DietSet,
     DietSetItem,
+    ViewMasterTraitValue)
+
+from .proximate_analysis import (
     ProximateAnalysis,
     ProximateAnalysisItem,
-    ViewMasterTraitValue,
     ViewProximateAnalysisTable)
 
-from .habitat_models import (
+from .habitat import (
     SourceHabitat,
     MasterHabitat,
     HabitatRelation)
 
-from .location_models import (
+from .location import (
     SourceLocation,
     MasterLocation,
     LocationRelation)
 
-from .occurrence_models import (
+from .occurrence import (
     Occurrence,
     Event)
+
+from .validators import (
+    validate_doi)

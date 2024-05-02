@@ -1,9 +1,11 @@
+""" exports.tasks - Celery tasks for collecting export data to csv:s,
+    zipping them and sending email notification when download is ready.
+"""
+
 from celery import shared_task
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
-from django.db.models import QuerySet
 
-from .models import ExportFile
 from .utilities import (
         ExportFileWriter,
         download_ready_message,
@@ -15,7 +17,7 @@ from .query_sets import (
         taxon_query,
         occurrence_query,
         metadata_query,
-        measurement_or_fact_query)        
+        measurement_or_fact_query)
 
 
 @shared_task
@@ -58,26 +60,24 @@ def export_zip_file(
                 export_entry['file_name'],
                 export_entry['queries_and_fields']
             )
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as exc:
             exit_temp_dir(current_dir, temp_directory)
-            # TODO: raise what error?
-            raise
+            raise exc
         tsv_files.append(file_path)
 
     file_writer.zip(tsv_files)
     try:
         file_writer.save_zip_to_django_model(export_file_id)
-    except (ObjectDoesNotExist, FileNotFoundError):
+    except (ObjectDoesNotExist, FileNotFoundError) as exc:
         exit_temp_dir(current_dir, temp_directory)
-        # TODO: raise what error?
-        raise
+        raise exc
 
     send_download_ready_email(export_file_id, email_recipient)
 
     exit_temp_dir(current_dir, temp_directory)
 
 
-def write_queries_to_file( 
+def write_queries_to_file(
         file_writer,
         file_name: str,
         queries_and_fields: list):
@@ -109,11 +109,11 @@ def write_queries_to_file(
             raise ValueError(
                 'Count of header fields doesn\'t match across queries.'
             )
-        for i in range(len(headers)):
-            if headers[i] != check_headers[i]:
+        for header, check in zip(headers, check_headers):
+            if header != check:
                 raise ValueError(
                     'Headers fields are not same on queries. '
-                    f"'{headers[i]}' vs '{check_headers[i]}'"
+                    f"'{header}' vs '{check}'"
                 )
         for row in query_set.values_list(*fields):
             na_row=[]
@@ -148,6 +148,7 @@ def ets_export_query_set(
     export_list = []
 
     for choice in measurement_choices:
+        print(choice)
         export_list.append({
                 'file_name': ('measurement_or_fact_'
                         f'{choice.split()[0].lower()}'),
@@ -160,9 +161,12 @@ def ets_export_query_set(
             'taxon': taxon_query,
             'occurrence': occurrence_query,
             'metadata': metadata_query }.items():
-        export_list.append({
-                'file_name': file_name,
-                'queries_and_fields': query_function(measurement_choices) })
+        if ('External measurements' or 'Cranial measurements') not in measurement_choices and file_name == "occurrence":
+            pass
+        else:
+            export_list.append({
+                    'file_name': file_name,
+                    'queries_and_fields': query_function(measurement_choices) })
 
     export_zip_file(
         email_recipient=email_recipient,

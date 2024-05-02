@@ -1,0 +1,20 @@
+name: Pylint (NOT FAILING YET)
+on: push
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+   
+    - name: Set up Python
+      uses: actions/setup-python@v3
+
+    - name: Run pylint
+      continue-on-error: true
+      working-directory: ./app
+      run: |
+        pip install --requirement requirements.txt
+        scripts/pylint.sh

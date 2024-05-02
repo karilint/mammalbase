@@ -1,9 +1,9 @@
+from datetime import timedelta
 from requests.exceptions import ConnectionError, ReadTimeout
 from requests_cache import CachedSession
 
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
-from datetime import timedelta
 from config.settings import ITIS_CACHE
 
 from .models import SynonymLinks, TaxonomicUnits

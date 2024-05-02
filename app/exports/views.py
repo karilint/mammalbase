@@ -1,15 +1,16 @@
-from django.contrib.auth.decorators import (
-        login_required,
-        permission_required)
+""" exports.views - Views for exports. Form to fill, Accepted export request,
+    Exported zip download
+"""
+
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect
 from django.http import HttpResponseNotFound, FileResponse
+
+from mb.views import user_is_data_admin_or_contributor
 from .models import ExportFile
 from .tasks import ets_export_query_set
 from .forms import ETSForm
-from mb.views import (
-        user_is_data_admin_or_contributor,
-        user_is_data_admin_or_owner)
 
 
 @login_required
@@ -53,12 +54,9 @@ def get_exported_file(request, file_id):
         file_object = ExportFile.objects.filter(id=file_id)[0]
 
         if user_has_rights_to_export_file(request.user, file_object):
-            f = file_object.file.open()
-            return FileResponse(f, as_attachment=True)
-        else:
-            raise PermissionDenied
+            content = file_object.file.open()
+            return FileResponse(content, as_attachment=True)
+        raise PermissionDenied
 
-    except IOError:
-        return HttpResponseNotFound('<h1>File does not exist</h1>')
-    except IndexError:
+    except (IOError, IndexError):
         return HttpResponseNotFound('<h1>File does not exist</h1>')

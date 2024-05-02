@@ -1,5 +1,5 @@
-from django.test import TestCase
 from zipfile import ZipFile
+from django.test import TestCase
 
 from exports.models import ExportFile
 from exports.utilities import (
