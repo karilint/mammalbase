@@ -170,7 +170,7 @@ class EtsImporter(BaseImporter):
         if choice is None or choice == 'nan':
             return None
         choiceset_obj = ChoiceValue.objects.filter(
-            caption=choice.capitalize(), choice_set=choice_set.capitalize())
+            caption__iexact=choice, choice_set__iexact=choice_set)
         if len(choiceset_obj) > 0:
             return choiceset_obj[0]
         else:

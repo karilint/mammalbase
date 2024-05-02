@@ -19,6 +19,23 @@ def traitdata_query(measurement_choices):
             Q(source_attribute__master_attribute__unit__is_active=False)
     )
 
+    nominal_non_active = (
+            Q(source_choiceset_option__source_attribute__master_attribute__unit__is_active=False)
+            | Q(source_choiceset_option__source_attribute__master_attribute__id=None)
+            | Q(source_choiceset_option__source_attribute__master_attribute__name='- Checked, Unlinked -')
+            | Q(source_choiceset_option__source_attribute__master_attribute__name__exact='')
+            | Q(source_entity__master_entity__name__exact='')
+            | Q(source_entity__master_entity__id__isnull=True)
+            | Q(source_choiceset_option__source_attribute__reference__status=1)
+            | Q(source_choiceset_option__source_attribute__reference__status=3)
+            | Q(source_choiceset_option__master_choiceset_option__name=None)
+    )
+    master_attribute_filter = (
+        Q(source_choiceset_option__master_choiceset_option__master_attribute_id =
+          F('source_choiceset_option__source_attribute__master_attribute__id')
+        )
+    )
+
     query = base.exclude(non_active).annotate(
         trait_id=Concat(
             Value('https://www.mammalbase.net/ma/'),
@@ -64,7 +81,8 @@ def traitdata_query(measurement_choices):
         'source_attribute__master_attribute__name'
     )
 
-    nominal_query = SourceChoiceSetOptionValue.objects.annotate(
+    nominal_query = SourceChoiceSetOptionValue.objects.filter(
+            master_attribute_filter).exclude(nominal_non_active).annotate(
         trait_id=Concat(
             Value('https://www.mammalbase.net/ma/'),
             'source_choiceset_option__source_attribute__master_attribute__id',
@@ -81,7 +99,12 @@ def traitdata_query(measurement_choices):
             Value('/'),
             output_field=CharField()
         ),
-        measurement_id=Value('NA'),
+        measurement_id=Concat(
+            Value('https://www.mammalbase.net/sav/'),
+            'id',
+            Value('/'),
+            output_field=CharField()
+        ),
         occurrence_id=Value('NA'),
         warnings=Value('NA'),
     ).order_by(

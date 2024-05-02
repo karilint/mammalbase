@@ -1,4 +1,4 @@
-from django.db.models import Value, Case, When, CharField, Q
+from django.db.models import Value, Q
 
 from mb.models import SourceChoiceSetOptionValue
 from .base_query import base_query
