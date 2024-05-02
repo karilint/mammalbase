@@ -40,9 +40,6 @@ from .models import (
     UnitConversion,
     UnitRelation)
 
-admin.site.register([Taxon, ])
-admin.site.register([TaxonomicUnits, ])
-
 # admin.site.register(
 # [Name,
 # Reference,
@@ -93,7 +90,7 @@ class AttributeRelationAdmin(SimpleHistoryAdmin):
     list_filter = [('master_attribute', admin.RelatedOnlyFieldListFilter)]
     list_display = ('source_attribute_name',
                     'master_attribute_name', 'master_attribute_reference')
-    readonly_fields = ['source_attribute']
+    autocomplete_fields = ['source_attribute']
 
     def source_attribute_name(self, obj):
         return obj.source_attribute.name
@@ -124,7 +121,7 @@ class ChoiceSetOptionRelationAdmin(SimpleHistoryAdmin):
          admin.RelatedOnlyFieldListFilter)]
     list_display = ('source_choiceset_option_name',
                     'master_choiceset_option_name')
-    readonly_fields = ['source_choiceset_option']
+    autocomplete_fields = ['source_choiceset_option']
 
     def source_choiceset_option_name(self, obj):
         return obj.source_choiceset_option.name
@@ -150,7 +147,7 @@ class ChoiceValueAdmin(SimpleHistoryAdmin):
 class DietSetItemAdmin(SimpleHistoryAdmin):
     search_fields = ['diet_set__reference__citation', 'food_item__name']
     list_display = ('food_item_name', 'diet_set_reference')
-    readonly_fields = ['diet_set', 'food_item']
+    autocomplete_fields = ['diet_set', 'food_item']
 
     def food_item_name(self, obj):
         return obj.food_item.name
@@ -168,9 +165,9 @@ class DietSetItemAdmin(SimpleHistoryAdmin):
 @admin.register(DietSet)
 class DietSetAdmin(SimpleHistoryAdmin):
     search_fields = ['taxon__name', 'reference__citation']
-    list_filter = ['data_quality_score']
+    list_filter = ['data_quality_score', 'sample_size']
     list_display = ('taxon', 'reference_name')
-    readonly_fields = ['taxon', 'reference']
+    autocomplete_fields = ['taxon']
 
     def reference_name(self, obj):
         return obj.reference.citation
@@ -195,7 +192,7 @@ class EntityRelationAdmin(SimpleHistoryAdmin):
                     'master_entity', 'master_entity_reference')
     list_filter = [('relation_status', admin.RelatedOnlyFieldListFilter),
                    ('data_status', admin.RelatedOnlyFieldListFilter)]
-    readonly_fields = ['source_entity', 'master_entity']
+    autocomplete_fields = ['source_entity', 'master_entity']
 
     def master_entity_reference(self, obj):
         return obj.master_entity.reference.citation
@@ -209,7 +206,8 @@ class FoodItemAdmin(SimpleHistoryAdmin):
     search_fields = ['name']
     list_filter = [('part', admin.RelatedOnlyFieldListFilter),
                    ('is_cultivar', admin.BooleanFieldListFilter)]
-    list_display = ('food_item_name', 'food_item_part')
+    list_display = ('food_item_name',)
+    autocomplete_fields = ['tsn', 'pa_tsn']
 
     def food_item_name(self, obj):
         return obj.name
@@ -251,14 +249,18 @@ class MasterAttributeGroupAdmin(admin.ModelAdmin):
 class MasterChoiceSetOptionAdmin(SimpleHistoryAdmin):
     search_fields = ['master_attribute__name', 'name']
     list_filter = [('master_attribute', admin.RelatedOnlyFieldListFilter)]
-    list_display = ('name', 'master_attribute')
+    list_display = ('name', 'master_attribute_name')
+
+    def master_attribute_name(self, obj):
+        return obj.master_attribute.name
 
 
 @admin.register(MasterEntity)
 class MasterEntityAdmin(SimpleHistoryAdmin):
     search_fields = ['name']
     list_filter = [('entity', admin.RelatedOnlyFieldListFilter)]
-    list_display = ('name', 'entity')
+    list_display = ('name',)
+    autocomplete_fields = ['taxon']
 
 
 @admin.register(MasterReference)
@@ -272,7 +274,7 @@ class MasterReferenceAdmin(SimpleHistoryAdmin):
 class ProximateAnalysisItemAdmin(SimpleHistoryAdmin):
     search_fields = ['proximate_analysis__reference__citation', 'forage__name']
     list_display = ('forage_name', 'proximate_analysis_reference')
-    readonly_fields = ['forage']
+    autocomplete_fields = ['forage']
 
     def forage_name(self, obj):
         return obj.forage.name
@@ -317,7 +319,7 @@ class SourceChoiceSetOptionValueAdmin(SimpleHistoryAdmin):
         'source_choiceset_option__name']
     list_display = ('source_choiceset_option_source_attribute_name',
                     'source_choiceset_option_name')
-    readonly_fields = ['source_entity', 'source_choiceset_option']
+    autocomplete_fields = ['source_entity', 'source_choiceset_option']
 
     def source_choiceset_option_source_attribute_name(self, obj):
         return obj.source_choiceset_option.source_attribute.name
@@ -337,7 +339,7 @@ class SourceChoiceSetOptionValueAdmin(SimpleHistoryAdmin):
 class SourceChoiceSetOptionAdmin(SimpleHistoryAdmin):
     search_fields = ['source_attribute__name', 'name']
     list_display = ('source_attribute_name', 'source_choice_set_option')
-    readonly_fields = ['source_attribute']
+    autocomplete_fields = ['source_attribute']
 
     def source_attribute_name(self, obj):
         return obj.source_attribute.name
@@ -357,6 +359,7 @@ class SourceEntityAdmin(SimpleHistoryAdmin):
     search_fields = ['name']
     list_display = ('name',)
     list_filter = [('entity', admin.RelatedOnlyFieldListFilter)]
+    autocomplete_fields = ['taxon']
 
 
 @admin.register(SourceLocation)
@@ -369,7 +372,7 @@ class SourceLocationAdmin(SimpleHistoryAdmin):
 class SourceMeasurementValueAdmin(SimpleHistoryAdmin):
     search_fields = ['source_attribute__name', 'n_total']
     list_display = ('source_attribute_name', 'n_total')
-    readonly_fields = ['source_entity', 'source_attribute']
+    autocomplete_fields = ['source_entity', 'source_attribute']
 
     def source_attribute_name(self, obj):
         return obj.source_attribute.name
@@ -406,6 +409,18 @@ class TimePeriodAdmin(SimpleHistoryAdmin):
     search_fields = ['name']
     list_filter = ['time_in_months']
     list_display = ('name', )
+
+
+@admin.register(TaxonomicUnits)
+class TaxonomiUnitsAdmin(admin.ModelAdmin):
+    search_fields = ['tsn', 'completename']
+    list_display = ('tsn', 'completename')
+
+
+@admin.register(Taxon)
+class TaxonAdmin(admin.ModelAdmin):
+    search_fields = ['scientific_name']
+    list_display = ('scientific_name',)
 
 
 admin.site.register(MasterUnit, SimpleHistoryAdmin)
