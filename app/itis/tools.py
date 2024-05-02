@@ -188,7 +188,16 @@ def updateTSN(tsn):
 '''
 
 #Used to calculate data quality score
-def calculate_data_quality_score(taxon, citation, source_type, source_attribute, n_total, minimum, maximum, std, method, items):
+def calculate_data_quality_score(taxon,
+                                 citation,
+                                 source_type,
+                                 source_attribute,
+                                 n_total,
+                                 minimum,
+                                 maximum,
+                                 std,
+                                 method,
+                                 items):
     score = 0
     #Weight of taxon quality
     if taxon in ('Species', 'Subspecies'):
@@ -223,7 +232,7 @@ def calculate_data_quality_score(taxon, citation, source_type, source_attribute,
     #Weight of having Standard Deviation
     if std != 0:
         score += 1
-    
+
     #Weight of having a described method
     if method:
         score += 2

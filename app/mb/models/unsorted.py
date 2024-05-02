@@ -933,7 +933,16 @@ class SourceMeasurementValue(BaseModel):
         minimum = self.minimum
         maximum = self.maximum
         std = self.std
-        return calculate_data_quality_score(taxon, citation, source_type, source_attribute, n_total, minimum, maximum, std, None, "")
+        return calculate_data_quality_score(taxon,
+                                            citation,
+                                            source_type,
+                                            source_attribute,
+                                            n_total,
+                                            minimum,
+                                            maximum,
+                                            std,
+                                            None,
+                                            "")
 
 class SourceMethod(BaseModel):
     """
@@ -1337,7 +1346,15 @@ class DietSet(BaseModel):
         diet_set_items = DietSetItem.objects.filter(
                 diet_set=self,
                 food_item__tsn__rank_id__gt=100)
-        return calculate_data_quality_score(taxon, citation, source_type, None, 0, 0, 0, 0, method, diet_set_items)
+        return calculate_data_quality_score(taxon,
+                                            citation,
+                                            source_type,
+                                            None,
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            method, diet_set_items)
 
 class DietSetItem(BaseModel):
     """
