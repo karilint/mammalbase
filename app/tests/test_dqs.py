@@ -1,7 +1,8 @@
 import unittest
+from django.test import TestCase
 from itis.tools import calculate_data_quality_score
 
-class TestCalculateDataQualityScore(unittest.TestCase):
+class TestCalculateDataQualityScore(TestCase):
 
     def test_data_quality_score(self):
         score = calculate_data_quality_score('Species', 'some study', 'book', None, 0, 0, 0, 0, None, '')
