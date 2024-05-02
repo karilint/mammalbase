@@ -166,3 +166,6 @@ cython_debug/
 
 # Ignore migrations. Pushes to main creates them automatically.
 app/*/migrations/*.py
+
+# SQL Files for initializing developement database
+app/mb/management/commands/sql_files/*
