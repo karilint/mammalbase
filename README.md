@@ -31,6 +31,10 @@ Below are a few direct links to key instructions.
 [Testing Guide](documentation/common/testing.md)
 - Instructions for testing the software
 
+## Deployment
+[Deploying](documentation/common/deploy.md)
+- Instructions how put code to staging and production.
+
 ## Using Celery to run tasks in the background
 [Celery instructions](documentation/common/celery.md)
 - Background tasks in the software are executed with the Celery library.
