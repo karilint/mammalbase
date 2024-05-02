@@ -17,8 +17,8 @@ from .models import (
     ViewProximateAnalysisTable,
     SourceLocation,
     MasterLocation)
+
 from itis.models import TaxonomicUnits
-    ViewProximateAnalysisTable)
 
 class DietSetFilter(django_filters.FilterSet):
     taxon__name = django_filters.CharFilter(lookup_expr='icontains', label='Taxon contains')
