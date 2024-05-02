@@ -1,4 +1,15 @@
-"""Django admin configuration"""
+# pylint: disable=C0115,C0116
+""" mb.admin
+
+This module defines Django admin classes for the mb app.
+
+Each class specifies a set of fields to display in the admin interface,
+as well as filters, search fields, autocomplete fields, and inline editing
+to enhance usability and performance.
+
+The SimpleHistoryAdmin class is used to display the history of changes to each model.
+
+"""
 
 from django.contrib import admin
 
@@ -231,7 +242,7 @@ class MasterAttributeAdmin(SimpleHistoryAdmin):
 
 
 @admin.register(MasterAttributeGroup)
-class MasterAttributeGroupAdmin(admin.ModelAdmin):
+class MasterAttributeGroupAdmin(SimpleHistoryAdmin):
     search_fields = ['name', 'masterattribute__name']
     list_display = ('name', 'get_master_attributes')
     list_filter = [('masterattribute', admin.RelatedOnlyFieldListFilter)]
