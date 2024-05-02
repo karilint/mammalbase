@@ -97,6 +97,28 @@ running. The [`/app`](../../app) directory has been binded to the web
 container so that all the changes to the host machine's `/app`
 directory are also made in the container.
 
+### Setting up users
+
+The `initialize.py`creates superuser with username and password from the environment variables. This file is run when the container is started.
+
+Running command 
+```
+docker compose exec web python manage.py create_users
+```
+creates users defined in [user.csv](./../app/mb/management/commands/users.csv ) file. It contain kari's user and orcid. Now importing files from kari's examples is possible without changing the orcids.
+
+This command also creates groups `data_admin`and `data_contributor`. You can add users to these groups in the admin page.
+
+### Setting up database
+
+The database is created and migrated when the containers are started.
+Seeding the database with data is done by running the following command:
+``` 
+docker compose exec web python manage.py seed_db
+```
+You have to add the sql files to the [sql_files](./../app/mb/management/commands/sql_files) directory. The files should be named in the following format: `table_name.sql` or `name.sql.zip`.
+
+
 ### Shutdown containers:
 ```
 docker compose down

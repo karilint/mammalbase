@@ -4,13 +4,22 @@ import os
 import zipfile
 
 class Command(BaseCommand):
-    help = 'Initializes the database from specified SQL files'
-    sql_files = ['first.sql', 'last.sql.zip', 'second.sql']
+    help = 'Seeds the database from specified SQL files'
+    sql_files = []
 
     def handle(self, *args, **options):
+        #search for sql files in the sql_files directory
+        self.sql_files = [f for f in os.listdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'sql_files')) if f.endswith('.sql') or f.endswith('.zip')]
+        
+        if not self.sql_files:
+            self.stdout.write(self.style.WARNING('No SQL files found in the sql_files directory'))
+            return
+        
         for sql_file in self.sql_files:
             self.execute_sql_file(sql_file)
             self.stdout.write(self.style.SUCCESS(f'Successfully executed SQL file {sql_file}'))
+            
+        
 
     def execute_sql_file(self, sql_file_path):
         # Determine the path to SQL files
