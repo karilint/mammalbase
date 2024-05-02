@@ -1,21 +1,24 @@
-import datetime, json
-from decimal import * # TODO: fix star imports!
+""" mb.views.unsorted - views that don't belong to any other file
+
+This file should be divided into smaller rational integrities and deleted.
+
+Please, do not do anything here anymore!
+"""
+
+import datetime
+import json
 from django.core.exceptions import PermissionDenied
 from django.db import connection, transaction
 from django.db.models import Count, Max, F
 from django.contrib.auth.decorators import (
     login_required, permission_required)
-from django.contrib.auth.mixins import (
-    PermissionRequiredMixin, UserPassesTestMixin)
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views import generic
-from django.views.decorators.http import require_GET, require_POST
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.decorators.http import require_POST
+from django.views.generic.edit import DeleteView
 from django.http import JsonResponse
-from django.db import models
-from django.db.models import Q
 
 import requests
 from requests_cache import CachedSession
@@ -23,13 +26,17 @@ from requests_cache import CachedSession
 from plotly import express as plotly_express
 from plotly.offline import plot as plotly_offline_plot
 from pandas import DataFrame as PandasDataFrame
-from django.core import serializers
 
 from config.settings import ITIS_CACHE
-from imports.tools import (
+from itis.utils import generate_standard_values_pa
+from itis.models import SynonymLinks
+from itis.tools import (
+    getTaxonomicRankNameFromTSN,
+    GetAcceptedNamesfromTSN,
+    GetCommonNamesfromTSN)
+from itis.utils import (
     create_return_data,
-    create_tsn,
-    generate_standard_values_pa)
+    create_tsn)
 from itis.models import TaxonomicUnits
 from mb.filters import (
     DietSetFilter,
@@ -44,9 +51,7 @@ from mb.filters import (
     SourceReferenceFilter,
     TaxonomicUnitsFilter,
     TimePeriodFilter,
-    ViewProximateAnalysisTableFilter,
-    MasterLocationFilter
-    )
+    ViewProximateAnalysisTableFilter)
 from mb.forms import (
     AttributeRelationForm,
     ChoiceSetOptionRelationForm,
@@ -94,114 +99,35 @@ from mb.models import (
     SourceMeasurementValue,
     SourceReference,
     TimePeriod,
-    ViewMasterTraitValue,
-    ViewProximateAnalysisTable,
-    Occurrence,
-    ChoiceValue,
-    Event,
-    SourceHabitat,
-    MasterHabitat)
-from mb.models.location_models import MasterLocation, LocationRelation, SourceLocation
-from mb.utils.master_location_tools import get_master_habitats, filter, remove_nan_value, get_master_entity, get_source_habitat
-
-
-# Error Pages
-# https://blog.khophi.co/get-django-custom-error-views-right-first-time/
-def server_error(request):
-    return render(request, 'errors/500.html')
-
-def not_found(request):
-    return render(request, 'errors/404.html')
-
-def permission_denied(request):
-    return render(request, 'errors/403.html')
-
-def bad_request(request):
-    return render(request, 'errors/400.html')
-
-def about_history(request):
-    return render(request, 'mb/history.html',)
-
-def index_about(request):
-    return render(request, 'mb/index_about.html',)
-
-def privacy_policy(request):
-    return render(request, 'mb/privacy_policy.html',)
-
-#@ratelimit(key='ip', rate='2/m')
-def index(request):
-    return render(request, 'mb/index.html',)
+    ViewProximateAnalysisTable)
 
 def index_diet(request):
     num_diet_taxa=DietSet.objects.is_active().values('taxon_id').distinct().count()
     num_diet_set=DietSet.objects.is_active().count()
     num_diet_set_item=DietSetItem.objects.is_active().count()
     num_food_item=DietSetItem.objects.is_active().values('food_item_id').distinct().count()
-    latest=DietSet.objects.is_active().filter(reference__master_reference__is_active=True).order_by('-pk')[:10]
-    return render(request, 'mb/index_diet.html', context={'num_diet_taxa':num_diet_taxa, 'num_diet_set':num_diet_set, 'num_diet_set_item':num_diet_set_item, 'num_food_item':num_food_item, 'latest':latest},)
+    latest=DietSet.objects.is_active().filter(
+        reference__master_reference__is_active=True).order_by('-pk')[:10]
+    return render(request,
+                  'mb/index_diet.html',
+                  context={'num_diet_taxa':num_diet_taxa,
+                           'num_diet_set':num_diet_set,
+                           'num_diet_set_item':num_diet_set_item,
+                           'num_food_item':num_food_item,
+                           'latest':latest},)
 
 def index_mammals(request):
-    measurements=SourceReference.objects.is_active().filter(sourceattribute__type = 1).filter(status = 2).distinct().order_by('-pk')[:10]
+    measurements=SourceReference.objects.is_active().filter(
+        sourceattribute__type = 1).filter(status = 2).distinct().order_by('-pk')[:10]
     return render(request, 'mb/index_mammals.html', context={'measurements':measurements},)
-
-def index_news(request):
-    return render(request, 'mb/index_news.html',)
 
 def index_proximate_analysis(request):
     num_PA_item=ProximateAnalysisItem.objects.is_active().values('forage_id').distinct().count()
     return render(request, 'mb/index_proximate_analysis.html', context={'num_PA_item':num_PA_item},)
 
-def index_master_location_list(request):
-    class MasterLocationView(models.Model):
-        """ Tool model to preset master locations. """
-        id = models.CharField(max_length=20)
-        name = models.CharField(max_length=500) 
-        reference = models.CharField(max_length=500) 
-        master_habitat = models.TextField()
+# Sortable, see. 
+# https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
 
-    params = request.GET.dict()
-
-    master_locations = MasterLocation.objects.filter()
-
-    mls_with_habitat = []
-
-    for x in master_locations:
-        ml_view_obj = MasterLocationView()
-        ml_view_obj.id = x.id
-        ml_view_obj.name = x.name
-        ml_view_obj.reference = x.reference.citation
-        ml_view_obj.master_habitat = get_master_habitats(x)
-        mls_with_habitat.append(ml_view_obj)
-    
-    mls_with_habitat = filter(mls_with_habitat, params)
-    
-    paginator = Paginator(mls_with_habitat, 10)
-
-    page_number = request.GET.get('page')
-    try:
-        page_obj = paginator.page(page_number)
-    except PageNotAnInteger:
-        page_obj = paginator.page(1)
-    except EmptyPage:
-        page_obj = paginator.page(paginator.num_pages)
-    
-    return render(
-        request,
-        'mb/master_location_list.html',
-        {'page_obj': page_obj, 'filter': filter,}
-    )
-
-def master_location_detail(request, pk):
-    master_location = get_object_or_404(MasterLocation, id=pk)
-    related_objects = MasterLocation.objects.filter(pk=master_location.higherGeographyID.id)
-    occurrences = get_occurrences_by_masterlocation(master_location)
-    
-    return render(
-        request, 
-        'mb/master_location_detail.html', 
-        {"master_location" : master_location, "related_objects" : related_objects, "occurrences" : occurrences, "filter" : None},)
-
-# Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
 @require_POST
 def save_new_ordering(request):
     form = OrderingForm(request.POST)
@@ -242,12 +168,12 @@ def user_is_data_admin_or_owner(user, data):
 
     return False
 
-class attribute_relation_delete(UserPassesTestMixin, DeleteView):
+class AttributeRelationDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = AttributeRelation
     def get_success_url(self):
-        attribute_relation = super(attribute_relation_delete, self).get_object()
+        attribute_relation = super().get_object()
         sa_id = attribute_relation.source_attribute.id
         return reverse_lazy(
             'source_attribute-detail',
@@ -256,7 +182,9 @@ class attribute_relation_delete(UserPassesTestMixin, DeleteView):
 
 def attribute_relation_detail(request, pk):
     attribute_relation = get_object_or_404(AttributeRelation, pk=pk, is_active=1)
-    return render(request, 'mb/attribute_relation_detail.html', {'attribute_relation': attribute_relation})
+    return render(request,
+                  'mb/attribute_relation_detail.html',
+                  {'attribute_relation': attribute_relation})
 
 @login_required
 @permission_required('mb.edit_attribute_relation', raise_exception=True)
@@ -291,12 +219,12 @@ def attribute_relation_new(request, sa):
         form = AttributeRelationForm()
     return render(request, 'mb/attribute_relation_edit.html', {'form': form})
 
-class choiceset_option_relation_delete(UserPassesTestMixin, DeleteView):
+class ChoicesetOptionRelationDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = ChoiceSetOptionRelation
     def get_success_url(self):
-        choiceset_option_relation = super(choiceset_option_relation_delete, self).get_object()
+        choiceset_option_relation = super().get_object()
         sco_id = choiceset_option_relation.source_choiceset_option.id
         return reverse_lazy(
             'source_choiceset_option-detail',
@@ -305,7 +233,9 @@ class choiceset_option_relation_delete(UserPassesTestMixin, DeleteView):
 
 def choiceset_option_relation_detail(request, pk):
     choiceset_option_relation = get_object_or_404(ChoiceSetOptionRelation, pk=pk, is_active=1)
-    return render(request, 'mb/choiceset_option_relation_detail.html', {'choiceset_option_relation': choiceset_option_relation})
+    return render(request,
+                  'mb/choiceset_option_relation_detail.html',
+                  {'choiceset_option_relation': choiceset_option_relation})
 
 @login_required
 @permission_required('mb.edit_choiceset_option_relation', raise_exception=True)
@@ -335,7 +265,8 @@ def choiceset_option_relation_new(request, cso):
             choiceset_option_relation = form.save(commit=False)
             choiceset_option_relation.source_choiceset_option = choiceset_option
             choiceset_option_relation.save()
-            return redirect('source_choiceset_option-detail', pk=choiceset_option_relation.source_choiceset_option.id)
+            return redirect('source_choiceset_option-detail',
+                            pk=choiceset_option_relation.source_choiceset_option.id)
     else:
         form = ChoiceSetOptionRelationForm()
     return render(request, 'mb/choiceset_option_relation_edit.html', {'form': form})
@@ -363,10 +294,10 @@ def data_check_detail(request):
     return render(request, 'mb/data_check_detail.html', {'dsi': dsi, 'ds_data': ds_data, })
 
 def diet_set_detail(request, pk):
-	ds = get_object_or_404(DietSet, pk=pk, is_active=1)
-	return render(request, 'mb/diet_set_detail.html', {'ds': ds})
+    ds = get_object_or_404(DietSet, pk=pk, is_active=1)
+    return render(request, 'mb/diet_set_detail.html', {'ds': ds})
 
-class diet_set_delete(UserPassesTestMixin, DeleteView):
+class DietSetDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = DietSet
@@ -376,7 +307,7 @@ class diet_set_delete(UserPassesTestMixin, DeleteView):
     def delete(self, *args, **kwargs):
         self.object = self.get_object()
         self.object.dietsetitem_set.all().delete()
-        return super(diet_set_delete, self).delete(*args, **kwargs)
+        return super().delete(*args, **kwargs)
 
 @login_required
 @permission_required('mb.edit_diet_set', raise_exception=True)
@@ -432,9 +363,13 @@ def diet_set_item_detail(request, pk):
         tsn_id = diet_set_item.food_item.tsn.tsn
         taxonomic_unit = get_object_or_404(TaxonomicUnits, tsn=tsn_id)
 
-        response1 = requests.get("https://www.itis.gov/ITISWebService/jsonservice/getCommonNamesFromTSN?tsn="+str(tsn_id))
+        response1 = requests.get(
+            "https://www.itis.gov/ITISWebService/jsonservice/getCommonNamesFromTSN?tsn="
+            +str(tsn_id))
         r1 = response1.json()
-        response3 = requests.get("https://www.itis.gov/ITISWebService/jsonservice/getFullHierarchyFromTSN?tsn="+str(tsn_id))
+        response3 = requests.get(
+            "https://www.itis.gov/ITISWebService/jsonservice/getFullHierarchyFromTSN?tsn="
+            +str(tsn_id))
         r3 = response3.json()
 
         strings1 = []
@@ -476,14 +411,19 @@ def diet_set_item_detail(request, pk):
             taxonomic_unit.common_names = ''
         taxonomic_unit.tsn_update_date = datetime.datetime.now()
         taxonomic_unit.save()
-    return render(request, 'mb/diet_set_item_detail.html', {'dsi': diet_set_item, 'common_names': common_names, 'hierarchy': hierarchy, 'hierarchy_string': hierarchy_string,}, )
+    return render(request,
+                  'mb/diet_set_item_detail.html',
+                  {'dsi': diet_set_item,
+                   'common_names': common_names,
+                   'hierarchy': hierarchy,
+                   'hierarchy_string': hierarchy_string,}, )
 
-class diet_set_item_delete(UserPassesTestMixin, DeleteView):
+class DietSetItemDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = DietSetItem
     def get_success_url(self):
-        diet_set_item = super(diet_set_item_delete, self).get_object()
+        diet_set_item = super().get_object()
         ds_id = diet_set_item.diet_set.id
         return reverse_lazy(
             'diet_set-detail',
@@ -517,7 +457,8 @@ def diet_set_item_new(request, diet_set):
         if form.is_valid():
             diet_set_item = form.save(commit=False)
             diet_set_item.diet_set = diet_set
-            diet_set_item.list_order = DietSetItem.objects.is_active().filter(diet_set_id=diet_set.id).count()+1
+            diet_set_item.list_order = (
+                DietSetItem.objects.is_active().filter(diet_set_id=diet_set.id).count()+1)
             diet_set_item.save()
             return redirect('diet_set-detail', pk=diet_set_item.diet_set.id)
     else:
@@ -547,12 +488,12 @@ def diet_set_reference_list(request):
     )
 
 # https://ultimatedjango.com/learn-django/lessons/delete-contact-full-lesson/
-class entity_relation_delete(UserPassesTestMixin, DeleteView):
+class EntityRelationDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = EntityRelation
     def get_success_url(self):
-        entity_relation = super(entity_relation_delete, self).get_object()
+        entity_relation = super().get_object()
         se_id = entity_relation.source_entity.id
         return reverse_lazy(
             'source_entity-detail',
@@ -581,7 +522,7 @@ def entity_relation_edit(request, pk):
         form = EntityRelationForm(instance=entity_relation)
     return render(request, 'mb/entity_relation_edit.html', {'form': form})
 
-class food_item_delete(UserPassesTestMixin, DeleteView):
+class FoodItemDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = FoodItem
@@ -606,11 +547,12 @@ def food_item_detail(request, pk):
     i=len(tsn_hierarchy)-1
     pa = ViewProximateAnalysisTable.objects.none()
 
-    while(i>=0):
+    while i>=0:
         part=food_item.part.caption
         if part=='CARRION':
             part='WHOLE'
-        pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i]).filter(part__exact=part)
+        pa=ViewProximateAnalysisTable.objects.filter(
+            tsn__hierarchy_string__endswith=tsn_hierarchy[i])
         if len(pa)==1:
             break
         i=i-1
@@ -619,10 +561,13 @@ def food_item_detail(request, pk):
         proximate_analysis=pa.all()[0]
     else:
         proximate_analysis=pa.none()
-    
-    
 
-    return render(request, 'mb/food_item_detail.html', {'proximate_analysis': proximate_analysis, 'food_item': food_item, 'synonym_link': sl})
+    return render(request,
+                  'mb/food_item_detail.html',
+                  {'proximate_analysis': proximate_analysis,
+                   'food_item': food_item,
+                   'synonym_link': sl})
+
 
 @login_required
 @permission_required('mb.edit_food_item', raise_exception=True)
@@ -661,12 +606,12 @@ def food_item_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class master_attribute_delete(UserPassesTestMixin, DeleteView):
+class MasterAttributeDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = MasterAttribute
     def get_success_url(self):
-        master_attribute = super(master_attribute_delete, self).get_object()
+        master_attribute = super().get_object()
         mr_id = master_attribute.reference.id
         return reverse_lazy(
             'master_reference-detail',
@@ -676,7 +621,10 @@ class master_attribute_delete(UserPassesTestMixin, DeleteView):
 def master_attribute_detail(request, pk):
     master_attribute = get_object_or_404(MasterAttribute, pk=pk, is_active=1)
     attribute_group = master_attribute.groups.first()
-    return render(request, 'mb/master_attribute_detail.html', {'master_attribute': master_attribute, 'attribute_group' : attribute_group})
+    return render(request,
+                  'mb/master_attribute_detail.html',
+                  {'master_attribute': master_attribute,
+                   'attribute_group' : attribute_group})
 
 @login_required
 @permission_required('mb.edit_master_attribute', raise_exception=True)
@@ -697,7 +645,8 @@ def master_attribute_edit(request, pk):
     return render(request, 'mb/master_attribute_edit.html', {'form': form})
 
 def master_attribute_list(request):
-    f = MasterAttributeFilter(request.GET, queryset=MasterAttribute.objects.is_active().filter(entity__name = 'Taxon').order_by('name'))
+    f = MasterAttributeFilter(request.GET,
+                              queryset=MasterAttribute.objects.is_active().filter(entity__name = 'Taxon').order_by('name'))
 
     paginator = Paginator(f.qs, 10)
 
@@ -733,12 +682,12 @@ def master_attribute_master_choiceset_option_new(request, master_attribute):
         form = MasterAttributeChoicesetOptionForm()
     return render(request, 'mb/master_attribute_master_choiceset_option_edit.html', {'form': form})
 
-class master_choiceset_option_delete(UserPassesTestMixin, DeleteView):
+class MasterChoicesetOptionDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = MasterChoiceSetOption
     def get_success_url(self):
-        obj = super(master_choiceset_option_delete, self).get_object()
+        obj = super().get_object()
         ma_id = obj.master_attribute.id
         return reverse_lazy(
             'master_attribute-detail',
@@ -747,7 +696,9 @@ class master_choiceset_option_delete(UserPassesTestMixin, DeleteView):
 
 def master_choiceset_option_detail(request, pk):
     master_choiceset_option = get_object_or_404(MasterChoiceSetOption, pk=pk, is_active=1)
-    return render(request, 'mb/master_choiceset_option_detail.html', {'master_choiceset_option': master_choiceset_option})
+    return render(request,
+                  'mb/master_choiceset_option_detail.html',
+                  {'master_choiceset_option': master_choiceset_option})
 
 @login_required
 @permission_required('mb.edit_master_choiceset_option', raise_exception=True)
@@ -767,7 +718,7 @@ def master_choiceset_option_edit(request, pk):
         form = MasterChoiceSetOptionForm(instance=master_choiceset_option)
     return render(request, 'mb/master_choiceset_option_edit.html', {'form': form})
 
-class master_entity_delete(UserPassesTestMixin, DeleteView):
+class MasterEntityDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = MasterEntity
@@ -982,9 +933,19 @@ def master_entity_detail(request, pk):
     fig.add_scatterternary(a=t, b=l, c=r, name="",
                             mode='lines', fill="toself", text="Omnivory", showlegend=False)
 
-    plot_div = plotly_offline_plot(fig, output_type='div', include_plotlyjs=False, show_link=False, link_text="")
+    plot_div = plotly_offline_plot(fig,
+                                   output_type='div',
+                                   include_plotlyjs=False,
+                                   show_link=False,
+                                   link_text="")
 
-    return render(request, 'mb/master_entity_detail.html', {'master_entity': master_entity, 'measurements': measurements, 'diets': diets, 'ternary':ternary, 'plot_div': plot_div,})
+    return render(request,
+                  'mb/master_entity_detail.html',
+                  {'master_entity': master_entity,
+                   'measurements': measurements,
+                   'diets': diets,
+                   'ternary':ternary,
+                   'plot_div': plot_div,})
 
 @login_required
 @permission_required('mb.edit_master_entity', raise_exception=True)
@@ -1005,7 +966,9 @@ def master_entity_edit(request, pk):
     return render(request, 'mb/master_entity_edit.html', {'form': form})
 
 def master_entity_list(request):
-    f = MasterEntityFilter(request.GET, queryset=MasterEntity.objects.is_active().filter(reference_id=4).filter(entity__name = 'Species').order_by('name'))
+    f = MasterEntityFilter(request.GET,
+                           queryset=MasterEntity.objects.is_active().filter(reference_id=4).filter(
+                               entity__name = 'Species').order_by('name'))
 
     paginator = Paginator(f.qs, 10)
 
@@ -1045,7 +1008,7 @@ def master_entity_reference_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class master_reference_delete(UserPassesTestMixin, DeleteView):
+class MasterReferenceDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = MasterReference
@@ -1140,7 +1103,7 @@ def master_reference_edit(request, pk):
 #        {'page_obj': page_obj, 'filter': f,}
 #    )
 
-class proximate_analysis_delete(UserPassesTestMixin, DeleteView):
+class ProximateAnalysisDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = ProximateAnalysis
@@ -1148,7 +1111,9 @@ class proximate_analysis_delete(UserPassesTestMixin, DeleteView):
 
 def proximate_analysis_detail(request, pk):
     proximate_analysis = get_object_or_404(ProximateAnalysis, pk=pk, is_active=1)
-    return render(request, 'mb/proximate_analysis_detail.html', {'proximate_analysis': proximate_analysis})
+    return render(request,
+                  'mb/proximate_analysis_detail.html',
+                  {'proximate_analysis': proximate_analysis})
 
 @login_required
 @permission_required('mb.edit_proximate_analysis', raise_exception=True)
@@ -1169,7 +1134,8 @@ def proximate_analysis_edit(request, pk):
     return render(request, 'mb/proximate_analysis_edit.html', {'form': form})
 
 def proximate_analysis_list(request):
-    f = ProximateAnalysisFilter(request.GET, queryset=ProximateAnalysis.objects.is_active().select_related())
+    f = ProximateAnalysisFilter(request.GET,
+                                queryset=ProximateAnalysis.objects.is_active().select_related())
 
     paginator = Paginator(f.qs, 10)
 
@@ -1187,7 +1153,7 @@ def proximate_analysis_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class proximate_analysis_item_delete(UserPassesTestMixin, DeleteView):
+class ProximateAnalysisItemDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = ProximateAnalysisItem
@@ -1195,7 +1161,9 @@ class proximate_analysis_item_delete(UserPassesTestMixin, DeleteView):
 
 def proximate_analysis_item_detail(request, pk):
     proximate_analysis_item = get_object_or_404(ProximateAnalysisItem, pk=pk, is_active=1)
-    return render(request, 'mb/proximate_analysis_item_detail.html', {'proximate_analysis_item': proximate_analysis_item})
+    return render(request,
+                  'mb/proximate_analysis_item_detail.html',
+                  {'proximate_analysis_item': proximate_analysis_item})
 
 @login_required
 @permission_required('mb.edit_proximate_analysis_item', raise_exception=True)
@@ -1222,7 +1190,9 @@ def proximate_analysis_item_edit(request, pk):
     return render(request, 'mb/proximate_analysis_item_edit.html', {'form': form})
 
 def proximate_analysis_item_list(request):
-    f = ProximateAnalysisItemFilter(request.GET, queryset=ProximateAnalysisItem.objects.is_active().select_related())
+    f = ProximateAnalysisItemFilter(request.GET,
+                                    queryset=
+                                    ProximateAnalysisItem.objects.is_active().select_related())
 
     paginator = Paginator(f.qs, 10)
 
@@ -1268,12 +1238,12 @@ def proximate_analysis_reference_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class source_attribute_delete(UserPassesTestMixin, DeleteView):
+class SourceAttributeDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceAttribute
     def get_success_url(self):
-        source_attribute = super(source_attribute_delete, self).get_object()
+        source_attribute = super().get_object()
         sr_id = source_attribute.reference.id
         return reverse_lazy(
             'source_reference-detail',
@@ -1282,7 +1252,9 @@ class source_attribute_delete(UserPassesTestMixin, DeleteView):
 
 def source_attribute_detail(request, pk):
     source_attribute = get_object_or_404(SourceAttribute, pk=pk, is_active=1)
-    return render(request, 'mb/source_attribute_detail.html', {'source_attribute': source_attribute})
+    return render(request,
+                  'mb/source_attribute_detail.html',
+                  {'source_attribute': source_attribute})
 
 @login_required
 @permission_required('mb.edit_source_attribute', raise_exception=True)
@@ -1303,7 +1275,8 @@ def source_attribute_edit(request, pk):
     return render(request, 'mb/source_attribute_edit.html', {'form': form})
 
 def source_attribute_list(request):
-    f = SourceAttributeFilter(request.GET, queryset=SourceAttribute.objects.is_active().order_by('name'))
+    f = SourceAttributeFilter(request.GET,
+                              queryset=SourceAttribute.objects.is_active().order_by('name'))
 
     paginator = Paginator(f.qs, 10)
 
@@ -1336,12 +1309,12 @@ def source_attribute_source_choiceset_option_new(request, source_attribute):
         form = SourceAttributeChoicesetOptionForm()
     return render(request, 'mb/source_attribute_source_choiceset_option_edit.html', {'form': form})
 
-class source_choiceset_option_delete(UserPassesTestMixin, DeleteView):
+class SourceChoicesetOptionDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceChoiceSetOption
     def get_success_url(self):
-        obj = super(source_choiceset_option_delete, self).get_object()
+        obj = super().get_object()
         sa_id = obj.source_attribute.id
         return reverse_lazy(
             'source_attribute-detail',
@@ -1350,7 +1323,9 @@ class source_choiceset_option_delete(UserPassesTestMixin, DeleteView):
 
 def source_choiceset_option_detail(request, pk):
     source_choiceset_option = get_object_or_404(SourceChoiceSetOption, pk=pk, is_active=1)
-    return render(request, 'mb/source_choiceset_option_detail.html', {'source_choiceset_option': source_choiceset_option})
+    return render(request,
+                  'mb/source_choiceset_option_detail.html',
+                  {'source_choiceset_option': source_choiceset_option})
 
 @login_required
 @permission_required('mb.edit_source_choiceset_option', raise_exception=True)
@@ -1370,12 +1345,12 @@ def source_choiceset_option_edit(request, pk):
         form = SourceChoiceSetOptionForm(instance=source_choiceset_option)
     return render(request, 'mb/source_choiceset_option_edit.html', {'form': form})
 
-class source_choiceset_option_value_delete(UserPassesTestMixin, DeleteView):
+class SourceChoicesetOptionValueDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceChoiceSetOptionValue
     def get_success_url(self):
-        obj = super(source_choiceset_option_value_delete, self).get_object()
+        obj = super().get_object()
         source_entity_id = obj.source_entity.id
         return reverse_lazy(
             'source_entity-detail',
@@ -1383,24 +1358,32 @@ class source_choiceset_option_value_delete(UserPassesTestMixin, DeleteView):
         )
 
 def source_choiceset_option_value_detail(request, pk):
-    source_choiceset_option_value = get_object_or_404(SourceChoiceSetOptionValue, pk=pk, is_active=1)
-    return render(request, 'mb/source_choiceset_option_value_detail.html', {'source_choiceset_option_value': source_choiceset_option_value})
+    source_choiceset_option_value = get_object_or_404(SourceChoiceSetOptionValue,
+                                                      pk=pk,
+                                                      is_active=1)
+    return render(request,
+                  'mb/source_choiceset_option_value_detail.html',
+                  {'source_choiceset_option_value': source_choiceset_option_value})
 
 @login_required
 @permission_required('mb.edit_source_choiceset_option_value', raise_exception=True)
 def source_choiceset_option_value_edit(request, pk):
-    source_choiceset_option_value = get_object_or_404(SourceChoiceSetOptionValue, pk=pk, is_active=1)
+    source_choiceset_option_value = get_object_or_404(SourceChoiceSetOptionValue,
+                                                      pk=pk,
+                                                      is_active=1)
 
     if not user_is_data_admin_or_owner(request.user, source_choiceset_option_value):
         raise PermissionDenied
 
     sac = source_choiceset_option_value.source_choiceset_option.source_attribute.id
     if request.method == "POST":
-        form = SourceChoiceSetOptionValueForm(request.POST, instance=source_choiceset_option_value, sac=sac)
+        form = SourceChoiceSetOptionValueForm(request.POST,
+                                              instance=source_choiceset_option_value, sac=sac)
         if form.is_valid():
             source_choiceset_option_value = form.save(commit=False)
             source_choiceset_option_value.save()
-            return redirect('source_entity-detail', pk=source_choiceset_option_value.source_entity.id)
+            return redirect('source_entity-detail',
+                            pk=source_choiceset_option_value.source_entity.id)
     else:
         form = SourceChoiceSetOptionValueForm(instance=source_choiceset_option_value, sac=sac)
 #        form = SourceChoiceSetOptionValueForm()
@@ -1416,7 +1399,8 @@ def source_choiceset_option_value_new(request, se, sac):
             source_choiceset_option_value = form.save(commit=False)
             source_choiceset_option_value.source_entity = source_entity
             source_choiceset_option_value.save()
-            return redirect('source_entity-detail', pk=source_choiceset_option_value.source_entity.id)
+            return redirect('source_entity-detail',
+                            pk=source_choiceset_option_value.source_entity.id)
     else:
         form = SourceChoiceSetOptionValueForm(sac=sac)
     return render(request, 'mb/source_choiceset_option_value_edit.html', {'form': form})
@@ -1453,9 +1437,7 @@ def source_entity_measurement_new(request, source_reference, source_entity):
         form = SourceReferenceAttributeForm()
     return render(request, 'mb/source_reference_measurement_edit.html', {'form': form})
 
-class source_entity_delete(UserPassesTestMixin, DeleteView):
-    def test_func(self):
-        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+class SourceEntityDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceEntity
@@ -1552,12 +1534,12 @@ def source_entity_relation_new(request, source_entity):
         form = SourceEntityRelationForm()
     return render(request, 'mb/source_entity_relation_edit.html', {'form': form})
 
-class source_measurement_value__delete(UserPassesTestMixin, DeleteView):
+class SourceMeasurementValueDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceMeasurementValue
     def get_success_url(self):
-        obj = super(source_measurement_value__delete, self).get_object()
+        obj = super().get_object()
         source_entity_id = obj.source_entity.id
         return reverse_lazy(
             'source_entity-detail',
@@ -1571,7 +1553,10 @@ def source_measurement_value_detail(request, pk):
     if not user_is_data_admin_or_owner(request.user, source_measurement_value):
         raise PermissionDenied
 
-    return render(request, 'mb/source_measurement_value_detail.html', {'source_measurement_value': source_measurement_value})
+    return render(request,
+                  'mb/source_measurement_value_detail.html',
+                  {'source_measurement_value': source_measurement_value}
+                  )
 
 @login_required
 @permission_required('mb.edit_source_measurement_value', raise_exception=True)
@@ -1609,7 +1594,7 @@ def source_measurement_value_new(request, sa, se):
         form = SourceMeasurementValueForm()
     return render(request, 'mb/source_measurement_value_edit.html', {'form': form})
 
-class source_reference_delete(UserPassesTestMixin, DeleteView):
+class SourceReferenceDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = SourceReference
@@ -1740,7 +1725,8 @@ def source_reference_edit(request, pk):
     return render(request, 'mb/source_reference_edit.html', {'form': form})
 
 def source_reference_list(request):
-    f = SourceReferenceFilter(request.GET, queryset=SourceReference.objects.is_active().order_by('citation'))
+    f = SourceReferenceFilter(request.GET,
+                              queryset=SourceReference.objects.is_active().order_by('citation'))
 
     paginator = Paginator(f.qs, 10)
 
@@ -1758,7 +1744,7 @@ def source_reference_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class time_period_delete(UserPassesTestMixin, DeleteView):
+class TimePeriodDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = TimePeriod
@@ -1805,7 +1791,7 @@ def time_period_list(request):
         {'page_obj': page_obj, 'filter': f,}
     )
 
-class tsn_delete(UserPassesTestMixin, DeleteView):
+class TsnDelete(UserPassesTestMixin, DeleteView):
     def test_func(self):
         return user_is_data_admin_or_owner(self.request.user, self.get_object())
     model = TaxonomicUnits
@@ -1822,12 +1808,18 @@ def tsn_update(request, tsn):
         kingdom_id = r1['kingdomId']
         rank_id = r1['rankId']
 
-#    response1 = requests.get("https://www.itis.gov/ITISWebService/jsonservice/getTaxonomicRankNameFromTSN?tsn="+str(taxonomic_unit.tsn))
+#    response1 = requests.get(
+#        "https://www.itis.gov/ITISWebService/jsonservice/getTaxonomicRankNameFromTSN?tsn="+
+#        str(taxonomic_unit.tsn)
+#        )
 
     response2 = GetAcceptedNamesfromTSN(taxonomic_unit.tsn)
     if response2['acceptedNames'] is None:
         accepted_tsn = tsn
-    response3 = requests.get("https://www.itis.gov/ITISWebService/jsonservice/getFullHierarchyFromTSN?tsn="+str(taxonomic_unit.tsn))
+    response3 = requests.get(
+        "https://www.itis.gov/ITISWebService/jsonservice/getFullHierarchyFromTSN?tsn="+
+        str(taxonomic_unit.tsn)
+        )
 #    r1 = response1.json()
     r3 = response3.json()
     strings1 = []
@@ -1858,7 +1850,8 @@ def tsn_update(request, tsn):
     i=len(tsn_hierarchy)-1
     found=False
     while(i>=0 and found is False):
-        pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i])
+        pa=ViewProximateAnalysisTable.objects.filter(
+            tsn__hierarchy_string__endswith=tsn_hierarchy[i])
         if len(pa)>=1:
             break
         i=i-1
@@ -1879,7 +1872,8 @@ def tsn_detail(request, tsn):
     for i in reversed(range(len(tsn_hierarchy))):
         if tsn_hierarchy[i] == "":
             break
-        pa=ViewProximateAnalysisTable.objects.filter(tsn__hierarchy_string__endswith=tsn_hierarchy[i])
+        pa=ViewProximateAnalysisTable.objects.filter(
+            tsn__hierarchy_string__endswith=tsn_hierarchy[i])
         if len(pa)>=1:
             break
     return render(request, 'mb/tsn_detail.html', {'pa': pa, 'tsn': taxonomic_unit},)
@@ -1941,7 +1935,9 @@ def tsn_search(request):
 
         tsn_data = json.loads(request.POST.get("tsn_data"))
 
-        return_data = create_return_data(tsn_data["tsn"], tsn_data["scientificName"], status=tsn_data["nameUsage"])
+        return_data = create_return_data(tsn_data["tsn"],
+                                         tsn_data["scientificName"],
+                                         status=tsn_data["nameUsage"])
 
         create_tsn(return_data, tsn_data["tsn"])
         return JsonResponse("recieved", safe=False, status=201)
@@ -1949,7 +1945,10 @@ def tsn_search(request):
     elif request.method == "GET":
         return_data = {"message":"Found no entries"}
         query = request.GET.get("query").lower().capitalize().replace(' ', '%20')
-        url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
+        url = (
+            'http://www.itis.gov/ITISWebService/'
+            'jsonservice/getITISTermsFromScientificName?srchKey=' + 
+            query)
         try:
             session = CachedSession(ITIS_CACHE, expire_after=datetime.timedelta(days=1))
             file = session.get(url)
@@ -1968,8 +1967,13 @@ def tsn_search(request):
                 return_data[item["tsn"]] = item
         return JsonResponse(return_data, safe=False, status=200 )
 
+    return None
+
 def view_proximate_analysis_table_list(request):
-    f = ViewProximateAnalysisTableFilter(request.GET, queryset=ViewProximateAnalysisTable.objects.all().select_related())
+    f = ViewProximateAnalysisTableFilter(
+        request.GET,
+        queryset=ViewProximateAnalysisTable.objects.all().select_related()
+        )
 
     paginator = Paginator(f.qs, 10)
 
@@ -1986,86 +1990,3 @@ def view_proximate_analysis_table_list(request):
         'mb/view_proximate_analysis_table_list.html',
         {'page_obj': page_obj, 'filter': f,}
     )
-
-def get_occurrences_by_masterlocation(ml : MasterLocation):
-    """
-    Return occurrences by master location.
-    """
-    
-    occurrences = []
-    source_locations = []
-
-    class OccurrenceView(models.Model):
-        """ 'Tool model' to present a single occurrence with correct information. """
-        event = models.CharField(max_length=500)
-        master_entity_id = models.CharField(max_length=12)
-        master_entity = models.CharField(max_length=500) 
-        organism_quantity = models.CharField(max_length=500) 
-        organism_quantity_type = models.CharField(max_length=500) 
-        gender = models.CharField(max_length=500) 
-        life_stage = models.CharField(max_length=500) 
-        occurrence_remarks = models.CharField(max_length=500) 
-        reference = models.CharField(max_length=500) 
-        associated_references = models.CharField(max_length=500) 
-
-    try:
-        location_relations = LocationRelation.objects.filter(master_location=ml)
-        
-        for location_relation in location_relations:
-            source_locations.append(location_relation.source_location)
-
-        for source_location in source_locations:
-            try:
-                occs = Occurrence.objects.filter(source_location=source_location)
-                for occ in occs:
-                    gender = str(occ.gender).replace("Gender - ", "")
-                    if gender == "None":
-                        gender = ""
-
-                    life_stage = str(occ.life_stage)
-
-                    if "LifeStage - " in life_stage:
-                        life_stage = str(occ.life_stage).replace("LifeStage - ", "")
-
-                    if "Lifestage - " in life_stage:
-                        life_stage = str(occ.life_stage).replace("Lifestage - ", "")
-
-                    if life_stage == "None":
-                        life_stage = ""
-
-                    reference = str(occ.source_reference)
-                    if reference == "None":
-                        reference = ""
-
-                    master_entity_model = get_master_entity(occ.source_entity)
-                    master_entity_id = master_entity_model.id
-                    master_entity = str(master_entity_model)
-                    
-                    if master_entity == "None":
-                        master_entity = ""
-
-                    source_habitat = str(get_source_habitat(occ.event))
-
-                    occ_view = OccurrenceView(event=source_habitat, master_entity=master_entity, organism_quantity=occ.organism_quantity,
-                                              organism_quantity_type=occ.organism_quantity_type, gender=gender, life_stage=life_stage,
-                                              occurrence_remarks=occ.occurrence_remarks, reference=reference, associated_references=occ.associated_references)
-                    
-                    occ_view.organism_quantity = remove_nan_value(occ_view.organism_quantity)
-                    occ_view.organism_quantity_type = remove_nan_value(occ_view.organism_quantity_type)
-                    occ_view.associated_references = remove_nan_value(occ_view.associated_references)
-                    occ_view.occurrence_remarks = remove_nan_value(occ_view.occurrence_remarks)
-                    occ_view.master_entity_id = master_entity_id
-                    
-                    occurrences.append(occ_view)
-            except Exception as e:
-                print("virhe occurrence " + str(e))
-                continue
-    except Exception as e:
-        print("error: " + str(e))
-        return None
-    
-    if len(occurrences) == 0:
-        return False
-    
-    print("occurrenceja: " + str(len(occurrences)))
-    return occurrences

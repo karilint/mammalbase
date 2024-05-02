@@ -56,8 +56,7 @@ def get_exported_file(request, file_id):
         if user_has_rights_to_export_file(request.user, file_object):
             content = file_object.file.open()
             return FileResponse(content, as_attachment=True)
-        else:
-            raise PermissionDenied
+        raise PermissionDenied
 
     except (IOError, IndexError):
         return HttpResponseNotFound('<h1>File does not exist</h1>')

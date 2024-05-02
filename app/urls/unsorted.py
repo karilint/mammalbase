@@ -34,7 +34,7 @@ urlpatterns = [
 	    name='attribute_relation-detail'),
     path(
 	    'ar/<int:pk>/delete/',
-	    views.attribute_relation_delete.as_view(),
+	    views.AttributeRelationDelete.as_view(),
 	    name='attribute_relation-delete'),
     path(
 	    'ar/<int:pk>/edit/',
@@ -54,7 +54,7 @@ urlpatterns = [
 	    name='choiceset_option_relation-detail'),
     path(
 	    'csor/<int:pk>/delete/',
-	    views.choiceset_option_relation_delete.as_view(),
+	    views.ChoicesetOptionRelationDelete.as_view(),
 	    name='choiceset_option_relation-delete'),
     path(
 	    'csor/<int:pk>/edit/',
@@ -70,7 +70,7 @@ urlpatterns = [
 	    name='entity_relation-detail'),
     path(
 	    'er/<int:pk>/delete/',
-	    views.entity_relation_delete.as_view(),
+	    views.EntityRelationDelete.as_view(),
 	    name='entity_relation-delete'),
     path(
 	    'er/<int:pk>/edit/',
@@ -86,7 +86,7 @@ urlpatterns = [
 	    name='master_attribute-detail'),
     path(
 	    'ma/<int:pk>/delete/',
-	    views.master_attribute_delete.as_view(),
+	    views.MasterAttributeDelete.as_view(),
 	    name='master_attribute-delete'),
     path(
 	    'ma/<int:pk>/edit/',
@@ -98,7 +98,7 @@ urlpatterns = [
 	    name='master_choiceset_option-detail'),
     path(
 	    'mac/<int:pk>/delete/',
-	    views.master_choiceset_option_delete.as_view(),
+	    views.MasterChoicesetOptionDelete.as_view(),
 	    name='master_choiceset_option-delete'),
     path(
 	    'mac/<int:pk>/edit/',
@@ -118,7 +118,7 @@ urlpatterns = [
 	    name='master_entity-detail'),
     path(
 	    'me/<int:pk>/delete/',
-	    views.master_entity_delete.as_view(),
+	    views.MasterEntityDelete.as_view(),
 	    name='master_entity-delete'),
     path(
 	    'me/<int:pk>/edit/',
@@ -134,7 +134,7 @@ urlpatterns = [
 	    name='master_reference-detail'),
     path(
 	    'mr/<int:pk>/delete/',
-	    views.master_reference_delete.as_view(),
+	    views.MasterReferenceDelete.as_view(),
 	    name='master_reference-delete'),
     path(
 	    'mr/<int:pk>/edit/',
@@ -150,7 +150,7 @@ urlpatterns = [
 	    name='proximate_analysis-detail'),
     path(
 	    'pa/<int:pk>/delete/',
-	    views.proximate_analysis_delete.as_view(),
+	    views.ProximateAnalysisDelete.as_view(),
 	    name='proximate_analysis-delete'),
     path(
 	    'pa/<int:pk>/edit/',
@@ -166,7 +166,7 @@ urlpatterns = [
 	    name='proximate_analysis_item-detail'),
     path(
 	    'pai/<int:pk>/delete/',
-	    views.proximate_analysis_item_delete.as_view(),
+	    views.ProximateAnalysisItemDelete.as_view(),
 	    name='proximate_analysis_item-delete'),
     path(
 	    'pai/<int:pk>/edit/',
@@ -194,7 +194,7 @@ urlpatterns = [
 	    name='source_attribute-detail'),
     path(
 	    'sa/<int:pk>/delete/',
-	    views.source_attribute_delete.as_view(),
+	    views.SourceAttributeDelete.as_view(),
 	    name='source_attribute-delete'),
     path(
 	    'sa/<int:pk>/edit/',
@@ -206,7 +206,7 @@ urlpatterns = [
 	    name='source_choiceset_option-detail'),
     path(
 	    'sac/<int:pk>/delete/',
-	    views.source_choiceset_option_delete.as_view(),
+	    views.SourceChoicesetOptionDelete.as_view(),
 	    name='source_choiceset_option-delete'),
     path(
 	    'sac/<int:pk>/edit/',
@@ -222,7 +222,7 @@ urlpatterns = [
 	    name='source_choiceset_option_value-detail'),
     path(
 	    'sav/<int:pk>/delete/',
-	    views.source_choiceset_option_value_delete.as_view(),
+	    views.SourceChoicesetOptionValueDelete.as_view(),
 	    name='source_choiceset_option_value-delete'),
     path(
 	    'sav/<int:pk>/edit/',
@@ -246,7 +246,7 @@ urlpatterns = [
 	    name='source_entity-detail'),
     path(
 	    'se/<int:pk>/delete/',
-	    views.source_entity_delete.as_view(),
+	    views.SourceEntityDelete.as_view(),
 	    name='source_entity-delete'),
     path(
 	    'se/<int:pk>/edit/',
@@ -266,7 +266,7 @@ urlpatterns = [
 	    name='source_measurement_value-edit'),
     path(
 	    'smv/<int:pk>/delete/',
-	    views.source_measurement_value__delete.as_view(),
+	    views.SourceMeasurementValueDelete.as_view(),
 	    name='source_measurement_value-delete'),
     path(
 	    'smv/new/<int:sa>/<int:se>/',
@@ -282,7 +282,7 @@ urlpatterns = [
 	    name='source_reference-detail'),
     path(
 	    'sr/<int:pk>/delete/',
-	    views.source_reference_delete.as_view(),
+	    views.SourceReferenceDelete.as_view(),
 	    name='source_reference-delete'),
     path(
 	    'sr/<int:pk>/edit/',
@@ -314,7 +314,7 @@ urlpatterns = [
 	    name='time_period-detail'),
     path(
 	    'tp/<int:pk>/delete/',
-	    views.time_period_delete.as_view(),
+	    views.TimePeriodDelete.as_view(),
 	    name='time_period-delete'),
     path(
 	    'tp/<int:pk>/edit/',
@@ -330,7 +330,7 @@ urlpatterns = [
 	    name='tsn-detail'),
     path(
 	    'tsn/<int:pk>/delete/',
-	    views.tsn_delete.as_view(),
+	    views.TsnDelete.as_view(),
 	    name='tsn-delete'),
     path(
 	    'tsn/<int:tsn>/edit/',

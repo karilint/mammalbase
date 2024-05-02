@@ -41,7 +41,15 @@ from .models import (
 admin.site.register([Taxon, ])
 admin.site.register([TaxonomicUnits, ])
 
-# admin.site.register([Name, Reference, Location, QualifierName, StratigraphicQualifier, Qualifier, StructuredName, Relation,])
+# admin.site.register(
+#[Name,
+# Reference,
+# Location,
+# QualifierName,
+# StratigraphicQualifier,
+# Qualifier,
+# StructuredName,
+# Relation,])
 
 # @admin.register(Name)
 # class NameAdmin(admin.ModelAdmin):
@@ -122,7 +130,7 @@ class MasterAttributeGroupAdmin(admin.ModelAdmin):
         attribute_names = ', '.join(attr.name for attr in master_attributes)
         return attribute_names
 
-    get_master_attributes.short_description = 'Master Attributes' 
+    get_master_attributes.short_description = 'Master Attributes'
 
 @admin.register(MasterChoiceSetOption)
 class MasterChoiceSetOptionAdmin(SimpleHistoryAdmin):
