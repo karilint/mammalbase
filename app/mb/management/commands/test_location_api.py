@@ -11,16 +11,10 @@ class Command(BaseCommand):
         api = LocationAPI()
         data = api.get_locations(location_name)
         location = data["geonames"]
-        #print("results:", data["totalResultsCount"])
+        print("results:", data["totalResultsCount"])
         print("location:", location[0])
-        #create_master_location(location[0])
+        create_master_location(location[0])
 
         data = api.get_nature_reserves(location_name)
         print("data", data[0])
-        
-        if location:
-            geonameId = location[0]["geonameId"]
-            hierarchy = api.get_location_hierarchy(geonameId)["geonames"]
-            for location in hierarchy:
-                print(location["name"])
-            #print("hierarchy:", hierarchy)
+
