@@ -16,6 +16,8 @@ The project directory structure is as follows:
     ITIS (Integrated Taxonomic Information System) related files.
   - [`main/`](../../../app/main/):
     User authentication, user profiles, and other general application features.
+  - [`matchtools/`](../../../app/matchtools/):
+    Files related to matchtools.
   - [`mb/`](../../../app/mb/):
     Main mammalbase application files.
   - [`scripts/`](../../../app/scripts/):
@@ -38,6 +40,8 @@ The project directory structure is as follows:
       Detailed description of different functionalities of app.
     - [`models/`](../../../documentation/mammalbase/models/):
       Mermaid charts of models and relations.
+  - [`scripts/`](../../../documentation/scripts/):
+    How tos for project script files.
 - [`/nginx/`](../../../nginx/):
   Configuration files for the Nginx server.
 
@@ -81,6 +85,9 @@ Itis is a directory that contains files related to the ITIS (Integrated Taxonomi
 
 The `main` directory contains the main application files related to user authentication, user profiles, and other general application features. It contains templates to login with social account orcId.
 
+### /app/matchools/
+
+Directory containing files related to matchtools: trait match and location match.
 
 ### /app/mb/
 

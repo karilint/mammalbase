@@ -39,11 +39,9 @@ The CSV files containing biome data are stored in the `app/mb/management/command
    
 ## Instructions
 To run the command:
-1. Start the Docker environment with the command:
-```
-docker compose up -d
-```
+1. Make sure that web container is running. Refer
+  [DevEnv](../common/instructions.md) instructions for details.
 2. Run the Django command:
 ```
-docker compose exec web python manage.py master_habitat_script
+docker exec mammalbase_web_1 python manage.py master_habitat_script
 ```
