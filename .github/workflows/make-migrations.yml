@@ -58,7 +58,7 @@ jobs:
           ITIS_CACHE: ./itis_cache
         working-directory: ./app
         run: |
-          python manage.py makemigrations
+          python manage.py makemigrations --noinput
 
       - name: Commit migration files
         run: |
