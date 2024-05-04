@@ -107,15 +107,20 @@ docker compose down
 
 ### Setting up users
 
-The `initialize.py`creates superuser with username and password from the environment variables. This file is run when the container is started.
+The `initialize.py` creates superuser with username and password from the
+environment variables. This file is run when the container is started.
 
 Running command while containers are running
 ```
 docker compose exec web python manage.py create_users
 ```
-creates users defined in [user.csv](./../app/mb/management/commands/users.csv ) file. It contain kari's user and orcid. Now importing files from kari's examples is possible without changing the orcids.
+creates users defined in
+[user.csv](./../app/mb/management/commands/users.csv ) file. It contain Kari's
+user and orcid. Now importing files from Kari's examples is possible without
+changing the orcids.
 
-This command also creates groups `data_admin`and `data_contributor`. You can add users to these groups in the admin page.
+This command also creates groups `data_admin`and `data_contributor`. You can
+add users to these groups in the admin page.
 
 ### Setting up database
 
@@ -124,7 +129,11 @@ Seeding the database with data is done by running the following command:
 ``` 
 docker compose exec web python manage.py seed_db
 ```
-You have to add the sql files to the [sql_files](./../app/mb/management/commands/sql_files) directory. The files should be named in the following format: `table_name.sql` or `name.sql.zip`.
+You have to add the sql files to the
+[sql_files](./../app/mb/management/commands/sql_files) directory. Ask Kari
+for the initial files. The files should be named in the following format:
+`table_name.sql` or `name.sql.zip`. The files will be injected in
+alphanumerical order.
 
 
 ## Basic commands
