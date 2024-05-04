@@ -1,6 +1,7 @@
 """Django filters defined here
 """
 import django_filters
+from django import forms
 from itis.models import TaxonomicUnits
 from .models import (
     DietSet,
@@ -14,7 +15,9 @@ from .models import (
     SourceReference,
     TimePeriod,
     ViewMasterTraitValue,
-    ViewProximateAnalysisTable)
+    ViewProximateAnalysisTable,
+    SourceLocation)
+from itis.models import TaxonomicUnits
 
 class DietSetFilter(django_filters.FilterSet):
     taxon__name = django_filters.CharFilter(lookup_expr='icontains', label='Taxon contains')

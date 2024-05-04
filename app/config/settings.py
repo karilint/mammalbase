@@ -73,6 +73,8 @@ INSTALLED_APPS = [
     'django_userforeignkey',
     'django_select2',
 
+    'django_filters',
+
     "django_celery_results",
     "celery_progress",
 
