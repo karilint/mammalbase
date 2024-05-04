@@ -1,0 +1,170 @@
+{% extends "mb/base_generic.html" %}
+{% block title %}
+<title>MammalBase - {{ sourceLocation }}</title>
+{% endblock %}
+{% block content %} {% load custom_tags %}
+
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - {{ sourceLocation }}</h1>
+</header>
+
+<!--Page header-->
+<section class="w3-threequarter w3-container">
+  <header class="w3-row">
+    <h2 class="w3-container w3-text-teal">Location Match: <span style="color: black;">{{ sourceLocation }}</span></h2>
+
+    <!--Search function-->
+    <div class="w3-half" id="Search" style="display: block;">
+      <form method="POST">
+        {% csrf_token %}
+        <label style="font-size: 18px"><b>Refine Search:</b> <a class="fa fa-info-circle w3-large" title='Tip: If the location is not found, try modifying the search result (e.g. "Wilhelmina Rise" instead of "Wilhelmina Rise, Hawaii, USA")'></a></label>
+        <input type="text" id="search" name="query" value="{{ query }}" style="margin-bottom: 8px; margin-top: 8px">
+
+        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+          <input type="radio" id="all" name="limit_search" value="all" style="display: inline-block; width: 13px; height: 13px;" {% if selected_option == 'all' %}checked{% endif %} />
+          <label for="all" style="margin-left: 5px;">All results</label>
+          <input type="radio" id="reserves" name="limit_search" value="reserves" style="display: inline-block; width: 13px; height: 13px; margin-left: 20px;" {% if selected_option == 'reserves' %}checked{% endif %} />
+          <label for="reserves" style="margin-left: 5px;">Nature reserves</label>
+        </div>
+
+        <input type="submit" value="Submit" class="w3-button w3-medium w3-round w3-padding-small w3-teal" style="width: 80px;">
+      </form>
+    </div>
+  </header>
+    <!--Permission to see page-->
+      {% if request.user|is_data_admin_or_contributor %}
+        <br>
+        <br>
+      {% endif %}
+
+      <!--Table for search results-->
+      {% if not matched %}
+      <table class="mb-list w3-table-all w3-medium w3-threequarter">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Country</th>
+            <th>ID <a class="fa fa-info-circle w3-medium" title="Click ID to go to Geonames location page"></a></th>
+          </tr>
+        </thead>
+      
+        <!--Table content-->
+        <tbody>
+          {% for location in result_locations %}
+          <tr>
+            {% if location.name %}
+              <td>{{ location.name }}</td>
+            {% else %}
+              <td style="text-align:center">-</td>
+            {% endif %}
+            {% if location.fcodeName %}
+              <td>{{ location.fcodeName }}</td>
+            {% else %}
+              <td style="text-align:center">-</td>
+            {% endif %}
+            {% if location.countryName %}
+              <td>{{ location.countryName }}</td>
+            {% else %}
+              <td style="text-align:center">-</td>
+            {% endif %}
+            {% if location.geonameId %}
+              <td><a href="https://www.geonames.org/{{ location.geonameId }}">{{ location.geonameId }}</a></td>
+            {% else %}
+              <td style="text-align:center">-</td>
+            {% endif %}
+              <td style="text-align:right"><button onclick="handleMatchButtonClick('{{ location|escapejs }}', '{{ sourceLocation.id|escapejs }}')" class="w3-button w3-medium w3-round w3-padding-small w3-teal">
+                Match&nbsp;<i class="fa fa-angle-right"></i></button></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <h3 style="margin-top: -10px; margin-bottom: 30px;">Location already matched</h3>
+      {% endif %}
+
+    <!--Message if location successfully matched -->
+    <div id="successMessage" style="display: none;">
+      <h3 class="successMessage w3-teal" style="color: white;">{{ sourceLocation }} successfully matched!</h3>
+      <h4>Locations added:</h4>
+      <table class="mb-list w3-table-all w3-medium w3-threequarter">
+        <thead>
+            <th>Matched location:</th>
+            <th>Hierarchy location(s):</th>
+        </thead>
+      <tbody>
+        <tr>
+          <td><div id="masterLocation"></div></td>
+          <td><div id="hierarchyLocations"></div></td>
+        </tr>
+      </tbody>
+      </table>
+    </div>
+    
+    <style>
+      .successMessage {
+        position: relative;
+        top: -25px;
+        padding: 5px 10px;
+        border-radius: 10px;
+        display: inline-block;
+    }
+    </style>
+
+    <!--Pagination-->
+    <div class="w3-container" style="margin-top: 10px;">
+      {% if previous_id %}
+        <a href="{% url 'location-match-detail' id=previous_id %}">
+          <button type="button" class="w3-button w3-hover-black">previous</button></a>
+      {% endif %}
+        <a class="w3-black w3-padding" style="padding: 8px 16px; display: inline-block; vertical-align: middle;">
+          Location {{ current_index }} of {{ id_count }}.</a>   
+      {% if next_id %}
+      <a href="{% url 'location-match-detail' id=next_id %}">
+        <button type="button" class="w3-button w3-hover-black">next</button></a>
+      {% endif %}
+    </div>
+
+  </section>
+{% endblock %}
+{% block script %}
+
+<!--Script for handling match button click-->
+<script>
+  function handleMatchButtonClick(geoNamesLocation, sourceLocation) {
+    // Create a FormData object to send data with POST request
+    var formData = new FormData();
+    formData.append('geoNamesLocation', geoNamesLocation);
+    formData.append('sourceLocation', sourceLocation);
+
+    // Send a POST request to the server
+    fetch("{% url 'match_location' %}", {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': "{{ csrf_token }}"
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        console.error('Response error:', response.statusText)
+      }
+    })
+    .then(data => {
+      document.querySelector('#masterLocation').innerHTML = data.masterLocation;
+      document.querySelector('#hierarchyLocations').innerHTML = data.hierarchy_locations.join(',<br>');
+
+      document.querySelector('#Search').style.display = 'none';
+      document.querySelector('.mb-list').style.display = 'none';
+
+      document.querySelector('#successMessage').style.display = 'block';
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+  }
+</script>
+{% endblock %}

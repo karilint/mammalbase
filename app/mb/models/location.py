@@ -17,10 +17,16 @@ class SourceLocation(BaseModel):
     reference = models.ForeignKey(
         'SourceReference',
         on_delete = models.CASCADE,
+        blank=True,
+        null=True
         )
     name = models.CharField(
         max_length=250,
         help_text="Enter the Name of the Source Location"
+        )
+    match_attempts = models.IntegerField(
+        default=0,
+        help_text="The number of attempted matches for this location."
         )
     verbatim_elevation = models.CharField(
         max_length=250,
@@ -94,23 +100,29 @@ class MasterLocation(BaseModel):
     reference = models.ForeignKey(
         'MasterReference',
         on_delete = models.CASCADE,
+        blank=True,
+        null=True
         )
     name = models.CharField(
         max_length=250,
         help_text="Enter the Name of the Master Location"
         )
-    locationID = models.CharField(
+    location_id = models.CharField(
         max_length=250,
         blank=True,
         null=True,
         help_text="Enter the locationID of the Master Location"
         )
-    higherGeographyID = models.ForeignKey(
+    higher_geography = models.ForeignKey(
         'self',
         null = True,
         blank = True,
         on_delete = models.CASCADE
-    )
+        )
+    is_reserve = models.BooleanField(
+        default=False,
+        help_text="Is this location a nature/wildlife/forest reserve?"
+        )
     continent = models.CharField(
         max_length=250,
         blank=True,
@@ -123,13 +135,13 @@ class MasterLocation(BaseModel):
         null=True,
         help_text="Enter the country of the Master Location"
         )
-    countryCode = models.CharField(
+    country_code = models.CharField(
         max_length=10,
         blank=True,
         null=True,
         help_text="Enter the country code of the Master Location"
         )
-    stateProvince = models.CharField(
+    state_province = models.CharField(
         max_length=250,
         blank=True,
         null=True,
@@ -153,7 +165,7 @@ class MasterLocation(BaseModel):
         null=True,
         help_text="Enter the locality of the Master Location"
         )
-    minimumElevationInMeters = models.CharField(
+    minimum_elevation_in_meters = models.CharField(
         max_length=250,
         blank=True,
         null=True,
@@ -161,7 +173,7 @@ class MasterLocation(BaseModel):
                 "Enter the minimum elevation "
                 "in meters of the Master Location")
         )
-    maximumElevationInMeters = models.CharField(
+    maximum_elevation_in_meters = models.CharField(
         max_length=250,
         blank=True,
         null=True,
@@ -169,7 +181,7 @@ class MasterLocation(BaseModel):
                 "Enter the maximum elevation "
                 "in meters of the Master Location")
         )
-    locationAccordingTo = models.CharField(
+    location_according_to = models.CharField(
         max_length=250,
         blank=True,
         null=True,
@@ -177,25 +189,25 @@ class MasterLocation(BaseModel):
                 "Enter the information about the source "
                 "of this location information of the Master Location")
         )
-    locationRemarks = models.CharField(
+    location_remarks = models.CharField(
         max_length=250,
         blank=True,
         null=True,
         help_text="Enter the location remarks of the Master Location"
         )
-    decimalLatitude = models.CharField(
+    decimal_latitude = models.CharField(
         max_length=250,
         blank=True,
         null=True,
         help_text="Enter the decimal latitude of the Master Location"
         )
-    decimalLongitude = models.CharField(
+    decimal_longitude = models.CharField(
         max_length=250,
         blank=True,
         null=True,
         help_text="Enter the decimal longitude of the Master Location"
         )
-    geodeticDatum = models.CharField(
+    geodetic_datum = models.CharField(
         max_length=250,
         blank=True,
         null=True,

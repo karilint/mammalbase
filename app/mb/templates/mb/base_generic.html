@@ -60,6 +60,18 @@
         font-size: 15px;
         padding: 10px;
       }
+      .success-message {
+        background-color: green;
+        color: white;
+        font-size: 15px;
+        padding: 10px;
+      }
+      .error-message {
+        background-color: red;
+        color: white;
+        font-size: 15px;
+        padding: 10px;
+      }
       {% block style %}
       {% endblock %}
     </style>
@@ -148,7 +160,7 @@
             <button class="w3-button">Match Tools</button>
             <div class="w3-dropdown-content w3-bar-block w3-border">
               <a href="{% url 'trait_match_list'%}" class="w3-bar-item w3-button">Trait Match</a>
-              <a href="#" class="w3-bar-item w3-button">Location Match</a>
+              <a href="{% url 'location-match'%}" class="w3-bar-item w3-button">Location Match</a>
               <a href="#" class="w3-bar-item w3-button">Habitat Match</a>
             </div>
           </div>

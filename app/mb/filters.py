@@ -1,6 +1,7 @@
 """Django filters defined here
 """
 import django_filters
+from django import forms
 from itis.models import TaxonomicUnits
 from .models import (
     DietSet,
@@ -17,7 +18,6 @@ from .models import (
     ViewProximateAnalysisTable,
     SourceLocation,
     MasterLocation)
-
 from itis.models import TaxonomicUnits
 
 class DietSetFilter(django_filters.FilterSet):

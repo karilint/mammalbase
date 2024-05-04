@@ -1,4 +1,4 @@
-# Deloying
+# Deploying
 
 ## Versioning
 
