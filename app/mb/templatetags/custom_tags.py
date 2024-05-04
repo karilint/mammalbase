@@ -32,3 +32,11 @@ def is_data_admin_or_owner(user, data):
 def has_group(user, group_name):
     group = Group.objects.get(name=group_name)
     return True if group in user.groups.all() else False
+
+@register.filter(name="trim_gender")
+def trim_gender(value):
+    return value.replace("Gender -", "")
+
+@register.filter(name="trim_lifestage")
+def trim_lifestage(value):
+    return value.replace("LifeStage -", "")

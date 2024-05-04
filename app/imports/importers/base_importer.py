@@ -1,10 +1,12 @@
 import re
-from datetime import timedelta
 import json
+from datetime import timedelta
+import logging
+import requests
+import pandas as pd
 from django.db import transaction
 from django.contrib.auth.models import User
-import pandas as pd
-import requests
+from django.contrib import messages
 from requests_cache import CachedSession
 from mb.models import (
     SourceReference,
@@ -18,7 +20,13 @@ from mb.models import (
     ChoiceValue,
     SourceLocation)
 from config.settings import ITIS_CACHE
-
+from itis.models import TaxonomicUnits, Kingdom, TaxonUnitTypes
+from itis.tools import (
+    getFullHierarchyFromTSN as itis_getFullHierarchyFromTSN,
+    hierarchyToString as itis_hierarchyToString
+)
+from decimal import Decimal
+from requests_cache import CachedSession
 
 class BaseImporter:
     """
@@ -202,9 +210,51 @@ class BaseImporter:
                                       remarks=master_entity_result[0].reference).save()
         else:
             return None
-
-    def get_or_create_source_location(
-            self, location: str, source_reference: SourceReference, author: User):
+        
+    def get_food_item(self, food):
+        def create_return_data(tsn, scientific_name, status='valid'):
+            hierarchy = None
+            classification_path = ""
+            classification_path_ids = ""
+            classification_path_ranks = ""
+            if status in {'valid', 'accepted'}:
+                hierarchy = itis_getFullHierarchyFromTSN(tsn)
+                classification_path = itis_hierarchyToString(scientific_name, hierarchy, 'hierarchyList', 'taxonName')
+                classification_path_ids = itis_hierarchyToString(tsn, hierarchy, 'hierarchyList', 'tsn', stop_index=classification_path.count("-"))
+                classification_path_ranks = itis_hierarchyToString('Species', hierarchy, 'hierarchyList', 'rankName', stop_index=classification_path.count("-"))
+            return_data = {
+                'taxon_id': tsn,
+                'canonical_form': scientific_name,
+                'classification_path_ids': classification_path_ids,
+                'classification_path': classification_path,
+                'classification_path_ranks': classification_path_ranks,
+                'taxonomic_status':status
+            }
+            return {'data': [{'results': [return_data]}]}
+        
+        
+        query = food.lower().capitalize().replace(' ', '%20')
+        url = 'http://www.itis.gov/ITISWebService/jsonservice/getITISTermsFromScientificName?srchKey=' + query
+        try:
+            session = CachedSession(ITIS_CACHE, expire_after=timedelta(days=30), stale_if_error=True)
+            file = session.get(url)
+            data = file.text
+        except (ConnectionError, UnicodeError):
+            return {'data': [{}]}
+        try:
+            taxon_data = json.loads(data)['itisTerms'][0]
+        except UnicodeDecodeError:
+            taxon_data = json.loads(data.decode('utf-8', 'ignore'))['itisTerms'][0]
+        return_data = {}
+        if taxon_data and taxon_data['scientificName'].lower() == food.lower():
+            tsn = taxon_data['tsn']
+            scientific_name = taxon_data['scientificName']
+            return_data = create_return_data(tsn, scientific_name, status=taxon_data['nameUsage'])
+        else:
+            return {'data': [{}]}
+        return return_data
+    
+    def get_or_create_source_location(self, location: str, source_reference: SourceReference, author: User):
         """
         Return SourceLocation object for the given location or create a new one
         """

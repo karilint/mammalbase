@@ -34,6 +34,8 @@ from .unsorted import (
     index_diet,
     index_mammals,
     index_proximate_analysis,
+    index_master_location_list,
+    master_location_detail,
     save_new_ordering,
     user_is_data_admin_or_contributor,
     user_is_data_admin_or_owner,
@@ -109,4 +111,6 @@ from .unsorted import (
     tsn_list,
     tsn_new,
     tsn_search,
-    view_proximate_analysis_table_list)
+    view_proximate_analysis_table_list,
+    index_master_location_list,
+    master_location_detail)
