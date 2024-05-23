@@ -187,26 +187,26 @@ this to work. See `docker exec --help` for details.
 
 ### Check out local environment inside container:
 ```
-docker exec mammalbase_web_1 sh -c export
+docker exec mammalbase-web-1 sh -c export
 ``` 
 
 
 ### Open shell inside container:
 ```
-docker exec -it mammalbase_web_1 bash
+docker exec -it mammalbase-web-1 bash
 ```
 Note `-it` switch. It's needed for interactive commands.
 
 
 ### Generate migrations inside Django container:
 ```
-docker exec mammalbase_web_1 python manage.py makemigrations
+docker exec mammalbase-web-1 python manage.py makemigrations
 ```
 
 
 ### Push migrations to the database:
 ```
-docker exec mammalbase_web_1 python manage.py migrate
+docker exec mammalbase-web-1 python manage.py migrate
 ```
 
 Note that changes in source tree causes developement server to restart.
