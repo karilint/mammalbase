@@ -26,18 +26,22 @@ from .models import (
     DietSet,
     EntityClass,
     EntityRelation,
+    Event,
     FoodItem,
     MasterAttribute,
     MasterAttributeGroup,
     MasterChoiceSetOption,
     MasterEntity,
+    MasterLocation,
     MasterReference,
+    Occurrence,
     ProximateAnalysisItem,
     ProximateAnalysis,
     SourceAttribute,
     SourceChoiceSetOptionValue,
     SourceChoiceSetOption,
     SourceEntity,
+    SourceHabitat,
     SourceLocation,
     SourceMeasurementValue,
     SourceMethod,
@@ -211,6 +215,9 @@ class EntityRelationAdmin(SimpleHistoryAdmin):
     master_entity_reference.short_description = 'Master Entity Reference'
     master_entity_reference.admin_order_field = 'master_entity__reference__citation'
 
+@admin.register(Event)
+class EventAdmin(SimpleHistoryAdmin):
+    list_display = ('verbatim_event_date', 'source_habitat', )
 
 @admin.register(FoodItem)
 class FoodItemAdmin(SimpleHistoryAdmin):
@@ -273,6 +280,9 @@ class MasterEntityAdmin(SimpleHistoryAdmin):
     list_display = ('name',)
     autocomplete_fields = ['taxon']
 
+@admin.register(MasterLocation)
+class MasterLocationAdmin(SimpleHistoryAdmin):
+    search_fields = ['name']
 
 @admin.register(MasterReference)
 class MasterReferenceAdmin(SimpleHistoryAdmin):
@@ -280,6 +290,10 @@ class MasterReferenceAdmin(SimpleHistoryAdmin):
     list_filter = ['type', 'year']
     list_display = ('citation',)
 
+
+@admin.register(Occurrence)
+class OccurrenceAdmin(SimpleHistoryAdmin):
+    list_display = ('source_location', 'source_entity', )
 
 @admin.register(ProximateAnalysisItem)
 class ProximateAnalysisItemAdmin(SimpleHistoryAdmin):
@@ -373,6 +387,12 @@ class SourceEntityAdmin(SimpleHistoryAdmin):
     autocomplete_fields = ['taxon']
 
 
+@admin.register(SourceHabitat)
+class SourceHabitatAdmin(SimpleHistoryAdmin):
+    search_fields = ['habitat_type']
+    list_display = ('habitat_type',)
+    list_filter = ['habitat_type']
+    
 @admin.register(SourceLocation)
 class SourceLocationAdmin(SimpleHistoryAdmin):
     search_fields = ['name']

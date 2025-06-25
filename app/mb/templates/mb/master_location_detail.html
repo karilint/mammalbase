@@ -1,264 +1,123 @@
 {% extends "mb/base_generic.html" %}
 {% block title %}
-<title>MammalBase - Master Locations</title>
-<!-- Custom Style for paginator-->
-<style>
-  .pagination {
-    display: inline-block;
-  }
-
-  .pagination a {
-    color: black;
-    float: left;
-    padding: 8px 16px;
-    text-decoration: none;
-    transition: background-color .3s;
-    border: 1px solid #ddd;
-  }
-
-  .pagination a.active {
-    background-color: #4CAF50;
-    color: white;
-    border: 1px solid #4CAF50;
-  }
-
-  .pagination a:hover:not(.active) {
-    background-color: #ddd;
-  }
-</style>
+<title>MammalBase - Master Location: {{ master_location.name }}</title>
 {% endblock %}
 {% block content %} {% load custom_tags %}
 <!--Article header -->
 <header style="display:none">
-  <h1>MammalBase - Standard References</h1>
+  <h1>MammalBase - Master Location: {{ master_location.name }}</h1>
 </header>
 <!--End of article header -->
 <section class="w3-threequarter w3-container">
   <header class="w3-container w3-text-teal">
-    <h2>Master Location</h2>
+    <h2 style="display:none">Master Location: {{ master_location.name }}</h2>
   </header>
-
-
-  {% if master_location %}
-  {% if request.user|is_data_admin_or_contributor %}
   <br>
-  <br>
-  {% endif %}
   <div class="mb-detail w3-bar w3-right-align">
-    <a title="Press to Go Back" class="w3-button w3-medium w3-round w3-padding-small w3-teal"
-      onclick="backFunction()"><span class="fa fa-arrow-left"></span></a>
+    <a title="Press to Go Back" class="w3-button w3-medium w3-round w3-padding-small w3-teal" onclick="backFunction()"><span class="fa fa-arrow-left"></span></a>
     {% if request.user|is_data_admin_or_owner:master_location %}
-    <a title="Press to Edit" class="w3-button w3-medium w3-round w3-padding-small w3-teal"
-      href="{% url 'master_location-edit' pk=master_location.pk %}"><span class="fa fa-pencil-square-o"></span></a>
-    <a title="Press to Delete" class="w3-button w3-medium w3-round w3-padding-small w3-teal"
-      href="{% url 'master_location-delete' pk=master_location.pk %}"><span class="fa  fa-trash-o"></span></a>
+    <button title="Please login to Edit" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
+    <button title="Please login to Delete" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
     {% else %}
-    <button title="Please login to Edit" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span
-        class="fa fa-pencil-square-o"></span></button>
-    <button title="Please login to Delete"
-      class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span
-        class="fa  fa-trash-o"></span></button>
+    <button title="Please login to Edit" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
+    <button title="Please login to Delete" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
     {% endif %}
   </div>
-  <table class="mb-detail w3-table-all w3-responsive">
-    <caption class="mb-detail w3-left-align">Master Location: {{ master_location.name }}</caption>
+  <table class="mb-detail w3-table-all">
+    <caption class="w3-left-align">Master Location: {{ master_location.name }}</caption>
     <tr>
       <th class="w3-quarter">Name:</th>
       <td class="w3-threequarter">{{ master_location.name }}</td>
-    </tr>
-    <tr>
-      <th class="w3-quarter">Higher Geography ID:</th>
-      <td class="w3-threequarter">
-        {% for x in related_objects %}
-        <p><a href="/ml_detail/{{ x.id }}">{{ x.name }}</a></p>
-        {% endfor %}
-      </td>
-    </tr>
-    <tr>
-      <th class="w3-quarter">Country:</th>
-      <td class="w3-threequarter">{{ master_location.country }}</td>
     </tr>
     <tr>
       <th class="w3-quarter">Continent:</th>
       <td class="w3-threequarter">{{ master_location.continent }}</td>
     </tr>
     <tr>
-      <th class="w3-quarter">Country Code:</th>
-      <td class="w3-threequarter">{{ master_location.country }}</td>
+      <th class="w3-quarter">Country:</th>
+      <td class="w3-threequarter">({{ master_location.country_code }}) {{ master_location.country }}</td>
     </tr>
     <tr>
-      <th class="w3-quarter">County:</th>
-      <td class="w3-threequarter">{{ master_location.county }}</td>
-    </tr>
-    <tr>
-      <th class="w3-quarter">Decimal Latitude:</th>
-      <td class="w3-threequarter">{{ master_location.decimalLatitude }}</td>
-    </tr>
-    <tr>
-      <th class="w3-quarter">Decimal Longitude</th>
-      <td class="w3-threequarter">{{ master_location.decimalLongitude }}</td>
-    </tr>
-    <tr>
-      <th class="w3-quarter">Geodetic Datum</th>
-      <td class="w3-threequarter">{{ master_location.geodedicDatum }}</td>
-    </tr>
-    <tr>
-      <th class="w3-quarter">Locality</th>
-      <td class="w3-threequarter">{{ master_location.locality }}</td>
-    </tr>
-    <tr>
-      <th class="w3-quarter">Location According to</th>
-      <td class="w3-threequarter">{{ master_location.locationAccordingTo }}</td>
-    </tr>
-    <tr>
-      <th class="w3-quarter">Location ID</th>
-      <td class="w3-threequarter"><a title="Press for Details"
-        href="https://geonames.org/{{ master_location.locationID }}">{{ master_location.locationID }}<span class="fa fa-link w3-small"></span></a></td>
-    </tr>
-    <tr>
-      <th class="w3-quarter">Location Remarks</th>
-      <td class="w3-threequarter">{{ master_location.locationRermarks }}</td>
-    </tr>
-    <tr>
-      <th class="w3-quarter">Maximum Elevation in Meters</th>
-      <td class="w3-threequarter">{{ master_location.maximumElevationInMeters }}</td>
-    </tr>
-    <tr>
-      <th class="w3-quarter">Minimum Elevation in Meters</th>
-      <td class="w3-threequarter">{{ master_location.minimumElevationInMeters }}</td>
-    </tr>
-    <tr>
-      <th class="w3-quarter">Municipality</th>
-      <td class="w3-threequarter">{{ master_location.municipality }}</td>
-    </tr>
-    <tr>
-      <th class="w3-quarter">State Province</th>
-      <td class="w3-threequarter">{{ master_location.stateProvince }}</td>
-    </tr>
-    <tr>
-      <th class="w3-quarter">Reference:</th>
-      <td class="mb-private-internal w3-threequarter"><a title="Press for Details"
-          href="{% url 'master_reference-detail' pk=master_location.reference.id %}">{{ master_location.reference }}<span class="fa fa-link w3-small"></span></a></td>
-    </tr>
-  </table>
-  <br>
-
-  <table class="dataframe">
-    {%if occurrences %}
-    {% if user.is_authenticated %}
-    <table class="mb-list w3-table-all w3-small w3-responsive" id="myTable">
-      <caption class="w3-left-align">Table 1. List of Occurrences related with <b><i>{{ master_location }}</i></b>.
-      </caption>
-      
-      <thead>
-        <tr>
-          <th>Event</th>
-          <th>Master Entity</th>
-          <th>Organism Quantity</th>
-          <th>Organism Quantity Type</th>
-          <th>Sex</th>
-          <th>Life Stage</th>
-          <th>Occurrence Remarks</th>
-          <th>Reference</th>
-          <th>Associated References</th>
-        </tr>
-      </thead>
-      <tbody>  
-          {% for occurrence in occurrences %} 
-          <tr>
-            <td>{{ occurrence.etruncatecharsvent }}</td>
-            <td><a href="/me/{{ occurrence.master_entity_id }}">{{ occurrence.master_entity }}</a><span class="fa fa-link w3-small"></span></td>
-            <td>{{ occurrence.organism_quantity }}</td>
-            <td>{{ occurrence.organism_quantity_type }}</td>
-            <td>{{ occurrence.gender }}</td>
-            <td>{{ occurrence.life_stage }}</td>
-            <td>{{ occurrence.occurrence_remarks }}</td>
-            <td>{{ occurrence.reference|truncatechars:50 }}</td>
-            <td>{{ occurrence.associated_references }}</td>
+      <tr>
+        <th class="w3-quarter">County:</th>
+        <td class="w3-threequarter">{{ master_location.county }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Decimal Latitude:</th>
+        <td class="w3-threequarter">{{ master_location.decimal_latitude }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Decimal Longitude:</th>
+        <td class="w3-threequarter">{{ master_location.decimal_longitude }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Geodetic Datum:</th>
+        <td class="w3-threequarter">{{ master_location.geodetic_datum }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Locality:</th>
+        <td class="w3-threequarter">{{ master_location.locality }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Location According to</th>
+        <td class="w3-threequarter">{{ master_location.location_according_to }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Location ID</th>
+        <td class="w3-threequarter"><a title="Press for Details"
+          href="https://geonames.org/{{ master_location.location_id }}">{{ master_location.location_id }}<span class="fa fa-link w3-small"></span></a></td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Location Remarks</th>
+        <td class="w3-threequarter">{{ master_location.location_rermarks }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Maximum Elevation in Meters</th>
+        <td class="w3-threequarter">{{ master_location.maximum_elevation_in_meters }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Minimum Elevation in Meters</th>
+        <td class="w3-threequarter">{{ master_location.minimum_elevation_in_meters }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">Municipality</th>
+        <td class="w3-threequarter">{{ master_location.municipality }}</td>
+      </tr>
+      <tr>
+        <th class="w3-quarter">State Province</th>
+        <td class="w3-threequarter">{{ master_location.state_province }}</td>
+      </tr>
+      </table>
+      {% if master_location.locationrelation_set.count > 0 %}
+        <table class="mb-detail w3-table-all">
+        {% for relation in master_location.locationrelation_set.all %}
+          <caption class="w3-left-align">Location Match</caption>
+          {% if relation.relation.name == "Location Match" and relation.is_active %}
+            <tr>
+              <th class="w3-quarter w3-text-teal">Master Location:</th>
+              <td class="w3-threequarter">{{ relation.master_location.name }}</td>
+            </tr>
+            <tr>
+              <th class="w3-quarter w3-text-teal">Reference:</th>
+              <td class="w3-threequarter">{{ relation.master_location.reference }}</td>
+            </tr>
+            <tr>
+              <th class="w3-quarter w3-text-teal">Match:</th>
+              <td class="w3-threequarter">{{ relation.relation_status.name }}</td>
           </tr>
-          {% endfor %}
-      </tbody>
-    </table>
-    <div class="w3-bar w3-border">
-      <a href="#" class="w3-bar-item w3-button" id="previousPage">«</a>
-      <a href="#" class="w3-bar-item w3-button" id="nextPage">»</a>
-  </div>
-    <script>
-      document.addEventListener("DOMContentLoaded", function() {
-        const rowsPerPage = 10;
-        let currentPage = 1;
-        const table = document.getElementById('myTable');
-        const tbody = table.getElementsByTagName('tbody')[0]; // Target only the tbody for manipulation
-        let tableRows = Array.from(tbody.getElementsByTagName('tr')); // Get all rows as an array
-
-        const previousButton = document.getElementById('previousPage');
-        const nextButton = document.getElementById('nextPage');
-    
-        previousButton.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent default anchor click behavior
-            if (currentPage > 1) {
-                currentPage--;
-                displayTable();
-            }
-        });
-    
-        nextButton.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent default anchor click behavior
-            const totalRows = tableRows.length;
-            const numberOfPages = Math.ceil(totalRows / rowsPerPage);
-            if (currentPage < numberOfPages) {
-                currentPage++;
-                displayTable();
-            }
-        });
-    
-        function displayTable() {
-            const start = (currentPage - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-            const paginatedItems = tableRows.slice(start, end);
-    
-            tbody.innerHTML = ''; // Clear the current table body
-    
-            // Append cloned elements to the table body
-            paginatedItems.forEach(item => {
-                const clonedRow = item.cloneNode(true); // Deep clone the tr element
-                tbody.appendChild(clonedRow);
-            });
-        }
-    
-        // Initially display the table
-        displayTable();
-    });
-    
-    </script>
-    </tbody>
-  </table>
-
-
-  {% else %}
-  <td class="mb-private-internal"><a title="Please login for Details" style="color:IndianRed;" href=""> <span
-        class="fa fa-link w3-small"></span></a></td>
-  {% endif %}
-  {% else %}
-  <tr>
-    <td colspan="2">There are no related Occurrences available.</td>
-  </tr>
-  {% endif %}
-  </table>
-  {% if request.user|is_data_admin_or_contributor %}
-  <br>
-  <a title="Press to Add new" class="w3-button w3-tiny w3-round w3-padding-small w3-teal"
-    href="{% url 'attribute-relation-new' master_attribute.id %}"><span class="fa fa-plus"></span></a>
-  {% else %}
-  <button title="Please login to Add new" class="w3-disabled w3-button w3-tiny w3-round w3-padding-small w3-teal"><span
-      class="fa fa-plus"></span></button>
-  <br>
-  {% endif %}
-  {% else %}
-  <p>There are no Master Location available.</p>
-  {% endif %}
-
-</section>
+          <tr>
+            <th class="w3-quarter w3-text-teal">Status:</th>
+            <td class="w3-threequarter">{{ relation.data_status.name }}</td>
+          </tr>
+        {% endfor %}
+        </table>
+    {% else %}
+    {% endif %}
+    </section>
 {% endblock %}
 {% block info %}
+{% endblock %}
+{% block pagination %}
+{% endblock %}
+{% block script %}
 {% endblock %}
