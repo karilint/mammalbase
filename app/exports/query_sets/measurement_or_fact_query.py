@@ -22,7 +22,9 @@ def measurement_or_fact_query(
     MOF query is function that defines the query and the fields to be later
     processed to the the measurement_or_fact_<choice>.tsv file according to
     the ETS standard: https://ecologicaltraitdata.github.io/ETS/.
-    Utilizes the base_query. Values that are not yet in the models are set
+    Utilizes the base_query for measurement values and 
+    a query using SourceChoiceSetOptionValue object for nominal values.
+    Values that are not yet in the models are set
     to 'NA'. References are determined by whether the user is
     a data_admin/data_contributor or other user. Returned query and fields
     depends whats in measurement_choice so that caller can make a file per
