@@ -7,9 +7,11 @@ Please, do not do anything here anymore!
 
 import datetime
 import json
+from collections import defaultdict, Counter
 from django.core.exceptions import PermissionDenied
 from django.db import connection, transaction, models
-from django.db.models import Count, Max, F
+from django.db.models import Count, Max, OuterRef, Subquery, IntegerField, Value, F, DecimalField, ExpressionWrapper, FloatField
+from django.db.models.functions import Coalesce
 from django.contrib.auth.decorators import (
     login_required, permission_required)
 from django.contrib.auth.mixins import UserPassesTestMixin
@@ -80,6 +82,7 @@ from mb.forms import (
     SourceReferenceForm,
     TaxonomicUnitsForm,
     TimePeriodForm)
+
 from mb.models import (
     AttributeRelation,
     ChoiceSetOptionRelation,
@@ -755,8 +758,69 @@ def dictfetchall(cursor):
 
 def master_entity_detail(request, pk):
     master_entity = get_object_or_404(MasterEntity, pk=pk, is_active=1)
-    with connection.cursor() as cursor:
 
+    # Step 1: Get all source_entities linked to this master_entity
+    source_entities = EntityRelation.objects.filter(
+        master_entity=master_entity
+    ).values_list('source_entity_id', flat=True)
+
+    # Step 2: Fetch all choice values (including the trait name and attribute)
+    values_qs = SourceChoiceSetOptionValue.objects.filter(
+        source_entity_id__in=source_entities,
+        source_choiceset_option__choicesetoptionrelation__master_choiceset_option__name__isnull=False
+    ).annotate(
+        attr_id=F('source_choiceset_option__choicesetoptionrelation__master_choiceset_option__master_attribute'),
+        trait=F('source_choiceset_option__choicesetoptionrelation__master_choiceset_option__name')
+    ).values(
+        'source_entity_id',
+        'attr_id',
+        'trait'
+    )
+
+    # Step 3: Filter out '-Undefined' in Python to avoid join ambiguity
+    values = [v for v in values_qs if v['trait'] != '-Undefined']
+
+    # Step 4: Aggregate trait counts and source entity links per attribute
+    attr_values = defaultdict(list)
+    attr_entity_links = defaultdict(set)
+
+    for val in values:
+        attr_values[val['attr_id']].append(val['trait'])
+        attr_entity_links[val['attr_id']].add(val['source_entity_id'])
+
+    # Step 5: Build trait stats per attribute
+    trait_stats = []
+    for attr_id, traits in attr_values.items():
+        total = len(traits)
+        counts = Counter(traits)
+        most_common_trait, n_support = counts.most_common(1)[0]
+
+        # Get citations from associated source entities
+        citations = SourceReference.objects.filter(
+            sourceentity__id__in=attr_entity_links[attr_id]
+        ).values_list('master_reference__citation', flat=True).distinct()
+        citation_text = ', '.join(sorted(filter(None, citations)))
+
+        trait_stats.append({
+            'master_attribute_id': attr_id,
+            'n_value': total,
+            'n_distinct_value': len(counts),
+            'trait_selected': most_common_trait,
+            'n_supporting_value': n_support,
+            'value_percentage': round(n_support / total, 3) if total else None,
+            'trait_values': ', '.join(sorted(counts.keys())),
+            'traits_references': citation_text,
+        })
+
+    # Step 6: Add attribute names
+    attr_map = dict(MasterAttribute.objects.filter(
+        id__in=[r['master_attribute_id'] for r in trait_stats]
+    ).values_list('id', 'name'))
+
+    for r in trait_stats:
+        r['master_attribute_name'] = attr_map.get(r['master_attribute_id'])
+
+    with connection.cursor() as cursor:
 #        cursor.execute("SELECT foo FROM bar WHERE baz = %s", [master_entity.id])
         cursor.execute("""
             select me.id master_entity_id
@@ -963,6 +1027,7 @@ def master_entity_detail(request, pk):
     return render(request,
                   'mb/master_entity_detail.html',
                   {'master_entity': master_entity,
+                   'trait_stats': trait_stats,
                    'measurements': measurements,
                    'diets': diets,
                    'ternary':ternary,
