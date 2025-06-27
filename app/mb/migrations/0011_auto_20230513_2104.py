@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-import django_userforeignkey.models.fields
+#import django_userforeignkey.models.fields
 import simple_history.models
 
 
@@ -24,8 +24,8 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True, help_text='Is the record active')),
                 ('name', models.CharField(help_text='Enter the Name of the Master Attribute Group', max_length=250)),
                 ('remarks', models.TextField(blank=True, help_text='Enter remarks for the Master Attribute Group', max_length=500, null=True)),
-                ('created_by', django_userforeignkey.models.fields.UserForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='createdby_masterattributegroup', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
-                ('modified_by', django_userforeignkey.models.fields.UserForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='modifiedby_masterattributegroup', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
+                ('created_by', models.ForeignKey(blank=True, editable=False, null=True, on_delete=models.SET_NULL, related_name='createdby_masterattributegroup', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
+                ('modified_by', models.ForeignKey(blank=True, editable=False, null=True, on_delete=models.SET_NULL, related_name='modifiedby_masterattributegroup', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
             ],
             options={
                 'ordering': ['name'],
@@ -44,9 +44,9 @@ class Migration(migrations.Migration):
                 ('history_id', models.AutoField(primary_key=True, serialize=False)),
                 ('history_date', models.DateTimeField()),
                 ('history_type', models.CharField(choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')], max_length=1)),
-                ('created_by', django_userforeignkey.models.fields.UserForeignKey(blank=True, db_constraint=False, editable=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
+                ('created_by', models.ForeignKey(blank=True, db_constraint=False, editable=False, null=True, on_delete=models.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
                 ('history_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('modified_by', django_userforeignkey.models.fields.UserForeignKey(blank=True, db_constraint=False, editable=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
+                ('modified_by', models.ForeignKey(blank=True, db_constraint=False, editable=False, null=True, on_delete=models.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
             ],
             options={
                 'verbose_name': 'historical master attribute group',
@@ -68,10 +68,10 @@ class Migration(migrations.Migration):
                 ('history_date', models.DateTimeField()),
                 ('history_type', models.CharField(choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')], max_length=1)),
                 ('attribute', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='mb.masterattribute')),
-                ('created_by', django_userforeignkey.models.fields.UserForeignKey(blank=True, db_constraint=False, editable=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
+                ('created_by', models.ForeignKey(blank=True, db_constraint=False, editable=False, null=True, on_delete=models.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
                 ('group', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='mb.masterattributegroup')),
                 ('history_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('modified_by', django_userforeignkey.models.fields.UserForeignKey(blank=True, db_constraint=False, editable=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
+                ('modified_by', models.ForeignKey(blank=True, db_constraint=False, editable=False, null=True, on_delete=models.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
             ],
             options={
                 'verbose_name': 'historical attribute group relation',
@@ -89,9 +89,9 @@ class Migration(migrations.Migration):
                 ('is_active', models.BooleanField(default=True, help_text='Is the record active')),
                 ('display_order', models.PositiveIntegerField(blank=True, null=True)),
                 ('attribute', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mb.masterattribute')),
-                ('created_by', django_userforeignkey.models.fields.UserForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='createdby_attributegrouprelation', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
+                ('created_by', models.ForeignKey(blank=True, editable=False, null=True, on_delete=models.SET_NULL, related_name='createdby_attributegrouprelation', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
                 ('group', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mb.masterattributegroup')),
-                ('modified_by', django_userforeignkey.models.fields.UserForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='modifiedby_attributegrouprelation', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
+                ('modified_by', models.ForeignKey(blank=True, editable=False, null=True, on_delete=models.SET_NULL, related_name='modifiedby_attributegrouprelation', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
             ],
             options={
                 'ordering': ['group__name', 'display_order'],

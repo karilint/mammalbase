@@ -5,7 +5,7 @@ import django.core.files.storage
 from django.db import migrations, models
 import django.db.models.deletion
 import django.utils.timezone
-import django_userforeignkey.models.fields
+#import django_userforeignkey.models.fields
 import simple_history.models
 
 
@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='exportfile',
             name='created_by',
-            field=django_userforeignkey.models.fields.UserForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='createdby_exportfile', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned'),
+            field=models.ForeignKey(blank=True, editable=False, null=True, on_delete=models.SET_NULL, related_name='createdby_exportfile', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned'),
         ),
         migrations.AddField(
             model_name='exportfile',
@@ -36,7 +36,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='exportfile',
             name='modified_by',
-            field=django_userforeignkey.models.fields.UserForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='modifiedby_exportfile', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned'),
+            field=models.ForeignKey(blank=True, editable=False, null=True, on_delete=models.SET_NULL, related_name='modifiedby_exportfile', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned'),
         ),
         migrations.AddField(
             model_name='exportfile',
@@ -55,9 +55,9 @@ class Migration(migrations.Migration):
                 ('history_id', models.AutoField(primary_key=True, serialize=False)),
                 ('history_date', models.DateTimeField()),
                 ('history_type', models.CharField(choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')], max_length=1)),
-                ('created_by', django_userforeignkey.models.fields.UserForeignKey(blank=True, db_constraint=False, editable=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
+                ('created_by', models.ForeignKey(blank=True, db_constraint=False, editable=False, null=True, on_delete=models.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
                 ('history_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('modified_by', django_userforeignkey.models.fields.UserForeignKey(blank=True, db_constraint=False, editable=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
+                ('modified_by', models.ForeignKey(blank=True, db_constraint=False, editable=False, null=True, on_delete=models.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL, verbose_name='The user that is automatically assigned')),
             ],
             options={
                 'verbose_name': 'historical export file',

@@ -70,7 +70,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.staticfiles',
 
-    'django_userforeignkey',
+#    'django_userforeignkey',
     'django_select2',
 
     'django_filters',
@@ -111,8 +111,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_userforeignkey.middleware.UserForeignKeyMiddleware',
-
+#    'django_userforeignkey.middleware.UserForeignKeyMiddleware',
+    'middleware.current_user.CurrentUserMiddleware',
     # https://django-simple-history.readthedocs.io/
     'simple_history.middleware.HistoryRequestMiddleware',
 ]

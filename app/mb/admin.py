@@ -71,6 +71,12 @@ from .models import (
 #    search_fields = ['name', ]
 #    history_list_display = ['name', ]
 
+class MyModelAdmin(admin.ModelAdmin):
+    def save_model(self, request, obj, form, change):
+        if not obj.pk and not obj.created_by:
+            obj.created_by = request.user
+        obj.modified_by = request.user
+        super().save_model(request, obj, form, change)
 
 class AttributeGroupRelationInline(admin.TabularInline):
     model = AttributeGroupRelation
