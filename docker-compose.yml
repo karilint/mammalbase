@@ -1,96 +1,101 @@
 version: '3.8'
-
 services:
   web:
-    user: "${UID:-1000}"
-    build: 
+    user: ${UID:-1000}
+    build:
       context: ./app
       args:
         UID: ${UID:-1000}
-
     ports:
-      - 8000:8000
-      - 3000:3000
+    - 8000:8000
+    - 3000:3000
     volumes:
-      - ./app:/src/app
-      - static:/vol/web
+    - ./app:/src/app
+    - static:/vol/web
     env_file:
-      - ./.env
+    - ./.env
     depends_on:
-      - db
-      - redis
-    
-
+    - db
+    - redis
   db:
     image: mariadb:10.9.6
     ports:
-      - 3306
+    - 3306
     environment:
-      - MYSQL_DATABASE=${DB_NAME}
-      - MYSQL_USER=${DB_USER}
-      - MYSQL_PASSWORD=${DB_PASS}
-      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASS}
+    - MYSQL_DATABASE=${DB_NAME}
+    - MYSQL_USER=${DB_USER}
+    - MYSQL_PASSWORD=${DB_PASS}
+    - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASS}
     command:
-      - "--character-set-server=utf8mb4"
+    - --character-set-server=utf8mb4
     volumes:
-      - db:/var/lib/mysql
-
+    - db:/var/lib/mysql
   phpmyadmin:
     image: phpmyadmin
     ports:
-      - 8001:80
+    - 8001:80
     environment:
-      - PMA_HOST=${DB_HOST}
-      - PMA_USER=${DB_USER}
-      - PMA_PASSWORD=${DB_PASS}
-      - UPLOAD_LIMIT=${PMA_UPLOAD_LIMIT}
-
+    - PMA_HOST=${DB_HOST}
+    - PMA_USER=${DB_USER}
+    - PMA_PASSWORD=${DB_PASS}
+    - UPLOAD_LIMIT=${PMA_UPLOAD_LIMIT}
   celery:
-    user: "${UID:-1000}"
+    user: ${UID:-1000}
     build:
       context: ./app
       args:
         UID: ${UID:-1000}
     volumes:
-      - ./app:/src/app
+    - ./app:/src/app
     env_file:
-      - ./.env
+    - ./.env
     depends_on:
-      - db
-      - redis
+    - db
+    - redis
     container_name: mammalbase_celery
     command:
-      - watchfiles
-      - --filter
-      - python
-      - celery -A config --workdir=. worker -l INFO --concurrency=1
-  
+    - watchfiles
+    - --filter
+    - python
+    - celery -A config --workdir=. worker -l INFO --concurrency=1
   celery-beat:
-    user: "${UID:-1000}"
+    user: ${UID:-1000}
     build:
       context: ./app
       args:
         UID: ${UID:-1000}
     volumes:
-      - ./app:/src/app
+    - ./app:/src/app
     env_file:
-      - ./.env
+    - ./.env
     depends_on:
-      - db
-      - redis
+    - db
+    - redis
     container_name: mammalbase_celery_beat
     command:
-      - watchfiles
-      - --filter
-      - python
-      - celery -A config --workdir=. beat -l INFO
-
+    - watchfiles
+    - --filter
+    - python
+    - celery -A config --workdir=. beat -l INFO
   redis:
     image: redis:alpine
     expose:
-      - "6379"
+    - '6379'
     container_name: mammalbase_redis
-
+  test:
+    user: ${UID:-1000}
+    build:
+      context: ./app
+      args:
+        UID: ${UID:-1000}
+    volumes:
+    - ./app:/src/app
+    working_dir: /src/app
+    command: pytest -q
+    env_file:
+    - ./.env
+    depends_on:
+    - db
 volumes:
   db: null
   static: null
