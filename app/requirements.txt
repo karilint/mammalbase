@@ -6,7 +6,7 @@ debugpy==1.5.1
 mysqlclient==2.1.0
 gunicorn==22.0.0
 
-certifi==2023.7.22
+certifi==2024.7.4
 cffi==1.15.0
 charset-normalizer==2.0.12
 cryptography==43.0.1
