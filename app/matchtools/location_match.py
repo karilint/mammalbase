@@ -105,3 +105,23 @@ def add_locations(geo_names_location, source_location_id):
         match_locations(hierarchy_location, source_location)
 
     return added_locations
+
+
+def get_hierarchy_chain(master_location):
+    """Return list of hierarchy names from continent to the given master location."""
+
+    chain = []
+    current = master_location
+    while current is not None:
+        chain.append(current)
+        current = current.higher_geography
+
+    chain.reverse()
+
+    start_index = 0
+    for i, loc in enumerate(chain):
+        if loc.continent:
+            start_index = i
+            break
+
+    return [loc.name for loc in chain[start_index:]]
