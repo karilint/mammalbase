@@ -43,17 +43,15 @@ def create_master_location(geo_names_location: dict, hierarchy_location: MasterL
     return (master_location, created)
 
 def match_locations(master_location, source_location):
-    """Adds a master and source location to the locationRelation table"""
+    """Adds a master and source location to the LocationRelation table."""
 
     if master_location is None:
         raise ValueError("master_location cannot be None")
 
-    location_relation =  LocationRelation(
+    location_relation, _ = LocationRelation.objects.get_or_create(
         master_location=master_location,
-        source_location=source_location
+        source_location=source_location,
     )
-
-    location_relation.save()
     return location_relation
 
 def add_locations(geo_names_location, source_location_id):
@@ -94,8 +92,36 @@ def add_locations(geo_names_location, source_location_id):
         # if it was created or it was in the database already
         hierarchy_location = master_location
 
-    # If the location was succesfully added, match it with the source location
-    if added_locations and added_locations[-1] is not None:
-        match_locations(added_locations[-1], source_location)
+    # Always include the final master location so the UI can display the
+    # matched location even if it already existed in the database.
+    if hierarchy_location is not None and (
+        not added_locations or added_locations[-1] != hierarchy_location
+    ):
+        added_locations.append(hierarchy_location)
+
+    # Match the source location with the final master location regardless of
+    # whether it was newly created or already existed in the database.
+    if hierarchy_location is not None:
+        match_locations(hierarchy_location, source_location)
 
     return added_locations
+
+
+def get_hierarchy_chain(master_location):
+    """Return list of hierarchy names from continent to the given master location."""
+
+    chain = []
+    current = master_location
+    while current is not None:
+        chain.append(current)
+        current = current.higher_geography
+
+    chain.reverse()
+
+    start_index = 0
+    for i, loc in enumerate(chain):
+        if loc.continent:
+            start_index = i
+            break
+
+    return [loc.name for loc in chain[start_index:]]
