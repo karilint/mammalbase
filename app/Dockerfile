@@ -11,8 +11,9 @@ RUN apt-get update && \
 
 USER user
 
-RUN pip3 install --user --upgrade pip && \
-    pip3 install --user -r requirements.txt
+#RUN pip3 install --user --upgrade pip && \
+#    pip3 install --user -r requirements.txt
+RUN pip3 install --upgrade pip && pip3 install -r requirements.txt
 
 # ---------------------------------
 FROM python:3.9-slim AS build-image
@@ -36,6 +37,7 @@ USER user
 COPY --from=compile-image /home/user/.local /home/user/.local
 
 ENV PATH=/home/user/.local/bin:$PATH
+#ENV PATH=/root/.local/bin:$PATH
 
 COPY . .
 
