@@ -92,6 +92,13 @@ def add_locations(geo_names_location, source_location_id):
         # if it was created or it was in the database already
         hierarchy_location = master_location
 
+    # Always include the final master location so the UI can display the
+    # matched location even if it already existed in the database.
+    if hierarchy_location is not None and (
+        not added_locations or added_locations[-1] != hierarchy_location
+    ):
+        added_locations.append(hierarchy_location)
+
     # Match the source location with the final master location regardless of
     # whether it was newly created or already existed in the database.
     if hierarchy_location is not None:
