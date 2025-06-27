@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.db import connection
 import os
 import zipfile
+import logging
 
 class Command(BaseCommand):
     help = 'Seeds the database from specified SQL files'
@@ -39,12 +40,23 @@ class Command(BaseCommand):
             self.execute_individual_sql(full_path)
 
     def execute_individual_sql(self, path):
-        # Read and execute the SQL file in chunks
-        with open(path, 'r', encoding='utf-8') as file:
+        """Execute SQL statements from a file one by one."""
+        logger = logging.getLogger(__name__)
+
+        with open(path, "r", encoding="utf-8") as file:
             sql_script = file.read()
-            # Split script into separate statements on semicolon followed by a newline
-            statements = sql_script.split(';\n')
-            with connection.cursor() as cursor:
-                for statement in statements:
-                    if statement.strip():  # Ensure the statement is not empty
-                        cursor.execute(statement.strip() + ';')  # Add semicolon to complete the statement
+
+        statements = sql_script.split(";\n")
+        with connection.cursor() as cursor:
+            for statement in statements:
+                stmt = statement.strip()
+                if not stmt:
+                    continue
+                try:
+                    cursor.execute(stmt + ";")
+                except Exception as exc:
+                    logger.error(
+                        "Failed to execute SQL from %s: %s", path, stmt[:50], exc_info=exc
+                    )
+                    raise
+
