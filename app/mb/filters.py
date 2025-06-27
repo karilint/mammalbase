@@ -151,7 +151,7 @@ class ViewMasterTraitValueFilter(django_filters.FilterSet):
     model = ViewMasterTraitValue
     class Meta:
         fields = ['id',
-                  'master_id',
+                  'master_entity_id',
                   'master_entity_name',
                   'master_attribute_id',
                   'master_attribute_name',
