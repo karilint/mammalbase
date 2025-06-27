@@ -1,5 +1,5 @@
 import django_filters
-from mb.models import SourceAttribute, MasterAttribute
+from mb.models import SourceAttribute, MasterAttribute, SourceLocation
 
 
 class SourceAttributeFilter(django_filters.FilterSet):
@@ -30,5 +30,23 @@ class SourceAttributeFilter(django_filters.FilterSet):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not any(key != 'page' and value for key, value in self.data.items()):
+        if self.data.get('master_attribute'):
+            self.queryset = self.queryset.filter(
+                master_attribute__name='- Checked, Unlinked -')
+        else:
             self.queryset = self.queryset.filter(master_attribute=None)
+            
+class SourceLocationFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(lookup_expr='icontains', label='Location contains')
+    reference__citation = django_filters.CharFilter(lookup_expr='icontains', label='Reference contains')
+    match_attempts_gte = django_filters.NumberFilter(field_name='match_attempts', lookup_expr='gte', label='Match attempts')
+    match_attempts_lte = django_filters.NumberFilter(field_name='match_attempts', lookup_expr='lte', label='Match attempts to')
+
+    class Meta:
+        model = SourceLocation
+        fields = ['name', 'reference__citation', 'match_attempts_gte', 'match_attempts_lte']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.form.fields['match_attempts_gte'].initial = 0
+        self.form.fields['match_attempts_lte'].initial = 0

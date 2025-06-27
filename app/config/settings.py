@@ -73,6 +73,8 @@ INSTALLED_APPS = [
     'django_userforeignkey',
     'django_select2',
 
+    'django_filters',
+
     "django_celery_results",
     "celery_progress",
 
@@ -178,6 +180,8 @@ DATABASES = {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'charset': 'utf8mb4',
         },
+        'CONN_MAX_AGE': None,
+        'CONN_HEALTH_CHECKS': True,
     }
 }
 # sq lite for testing

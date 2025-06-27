@@ -18,6 +18,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy
 from itis.models import TaxonomicUnits
+from itis.tools import calculate_data_quality_score
 from tdwg.models import Taxon as TdwgTaxon
 from .base_model import BaseModel
 from .validators import validate_doi
@@ -919,49 +920,29 @@ class SourceMeasurementValue(BaseModel):
 
     # Used to calculate the quality of the measurement data
     def calculate_data_quality_score_for_measurement(self):
-        score = 0
-        #1 weight of taxon quality
         taxon = self.source_entity.entity.name
-        if taxon in ('Species', 'Subspecies'):
-            score += 1
-
-        #2 weight of having a reported citation of the data
         citation = self.cited_reference
-        if citation == 'Original study':
-            score += 2
-        elif citation is not None:
-            score += 1
-
-        #3 weight of source quality in the diet
+        #Try except because not all entries that need data quality score
+        #calculation have a master reference, without this workaround the program crashes sometimes
         try:
             source_type = self.source_entity.reference.master_reference.type
         except:
-            score += 0
-        else:
-            if source_type == 'journal-article':
-                score += 3
-            elif source_type == 'book':
-                score += 2
-            elif source_type == 'data set':
-                score += 1
-
-        #4 weight of having a described method in the method
-        if self.source_attribute.method:
-            score += 1
-
-        #5 weight of having individual count
-        if self.n_total != 0:
-            score += 1
-
-        #6 weight of having minimum and maximum
-        if self.minimum != 0 and self.maximum != 0:
-            score += 1
-
-        #7 weight of having Standard Deviation
-        if self.std != 0:
-            score += 1
-
-        return score
+            source_type = None
+        source_attribute = self.source_attribute.method
+        n_total = self.n_total
+        minimum = self.minimum
+        maximum = self.maximum
+        std = self.std
+        return calculate_data_quality_score(taxon,
+                                            citation,
+                                            source_type,
+                                            source_attribute,
+                                            n_total,
+                                            minimum,
+                                            maximum,
+                                            std,
+                                            None,
+                                            "")
 
 class SourceMethod(BaseModel):
     """
@@ -1352,47 +1333,28 @@ class DietSet(BaseModel):
         """
         return f"{self.taxon} - {self.reference} "
 
-    def calculate_data_quality_score(self):
-        score = 0
-
-        # 1. Taxon quality
-        entity = self.taxon.entity.name
-        if entity in ('Species', 'Subspecies'):
-            score += 1
-
-        # 2. The weight of having a reported citation of the data in the diet
-        c_reference = self.cited_reference
-        if c_reference == 'Original study':
-            score += 2
-        elif c_reference:
-            score += 1
-
-        # 3. The weight of source quality in the diet
+    def calculate_data_quality_score_for_diet(self):
+        taxon = self.taxon.entity.name
+        citation = self.cited_reference
+        #Try except because not all entries that need data quality score
+        #calculation have a master reference, without this workaround the program crashes sometimes
         try:
-            master = self.reference.master_reference.type
+            source_type = self.reference.master_reference.type
         except: # FIX: except what? ValueError?
-            score += 0
-        else:
-            if master == 'journal-article':
-                score += 3
-            elif master == 'book':
-                score += 2
-            elif master == 'dataset':
-                score += 1
-
-        # 4. The weight of having a described method in the diet
+            source_type = None
         method = self.method
-        if method:
-            score += 2
-
-        # 5. The weight of food item taxonomy
         diet_set_items = DietSetItem.objects.filter(
                 diet_set=self,
                 food_item__tsn__rank_id__gt=100)
-        if diet_set_items.count():
-            score += (2 * diet_set_items.count()) // diet_set_items.count()
-
-        return score
+        return calculate_data_quality_score(taxon,
+                                            citation,
+                                            source_type,
+                                            None,
+                                            0,
+                                            0,
+                                            0,
+                                            0,
+                                            method, diet_set_items)
 
 class DietSetItem(BaseModel):
     """

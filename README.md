@@ -9,8 +9,30 @@ Documentation has been compiled behind the documentation directory. There, the s
 
 Below are a few direct links to key instructions.
 
+## Developing Environment
+
+### Setting up
+
 [Instructions](documentation/common/instructions.md)
 - Setting up the development environment and other important aspects in development work
+
+[Master Habitats Script](documentation/scripts/master_habitat_scripts.md)
+- Retrieval of Master Habitats using a script
+
+### Testing
+[Testing Guide](documentation/common/testing.md)
+- Instructions for testing the software
+
+### Deployment
+[Deploying](documentation/common/deploy.md)
+- Instructions how put code to staging and production.
+
+### Using Celery to run tasks in the background
+[Celery instructions](documentation/common/celery.md)
+- Background tasks in the software are executed with the Celery library.
+
+
+## The Project
 
 [Architecture](documentation/mammalbase/arch/architecture.md)
 - Overview of the software architecture
@@ -18,19 +40,9 @@ Below are a few direct links to key instructions.
 [Data Architecture](documentation/mammalbase/arch/data-architecture.md)
 - Overview of data architecture
 
-[Master Habitats Script](documentation/scripts/master_habitat_scripts.md)
-- Retrieval of Master Habitats using a script
+[Models](documentation/mammalbase/models/)
+- Models used in MammalBase
 
 [Features](documentation/mammalbase/features/)
 - Current features of MammalBase (e.g. importing and exporting tsv-files)
 
-[Models](documentation/mammalbase/models/)
-- Models used in MammalBase
-
-## Testing
-[Testing Guide](documentation/common/testing.md)
-- Instructions for testing the software
-
-## Using Celery to run tasks in the background
-[Celery instructions](documentation/common/celery.md)
-- Background tasks in the software are executed with the Celery library.

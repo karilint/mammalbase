@@ -8,7 +8,7 @@ Please, do not do anything here anymore!
 import datetime
 import json
 from django.core.exceptions import PermissionDenied
-from django.db import connection, transaction
+from django.db import connection, transaction, models
 from django.db.models import Count, Max, F
 from django.contrib.auth.decorators import (
     login_required, permission_required)
@@ -28,6 +28,7 @@ from plotly.offline import plot as plotly_offline_plot
 from pandas import DataFrame as PandasDataFrame
 
 from config.settings import ITIS_CACHE
+from mb.utils.master_location_tools import get_master_habitats
 from itis.utils import generate_standard_values_pa
 from itis.models import SynonymLinks
 from itis.tools import (
@@ -43,6 +44,7 @@ from mb.filters import (
     FoodItemFilter,
     MasterAttributeFilter,
     MasterEntityFilter,
+    MasterLocationFilter,
     MasterReferenceFilter,
     ProximateAnalysisFilter,
     ProximateAnalysisItemFilter,
@@ -100,6 +102,8 @@ from mb.models import (
     SourceReference,
     TimePeriod,
     ViewProximateAnalysisTable)
+
+from mb.models.location import MasterLocation
 
 def index_diet(request):
     num_diet_taxa=DietSet.objects.is_active().values('taxon_id').distinct().count()
@@ -345,7 +349,24 @@ def diet_set_list(request):
         'mb/diet_set_list.html',
         {'page_obj': page_obj, 'filter': f,}
     )
+def diet_set_list(request):
+    f = DietSetFilter(request.GET, queryset=DietSet.objects.is_active().select_related())
 
+    paginator = Paginator(f.qs, 10)
+
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    return render(
+        request,
+        'mb/diet_set_list.html',
+        {'page_obj': page_obj, 'filter': f,}
+    )
 def diet_set_item_detail(request, pk):
     diet_set_item = get_object_or_404(DietSetItem, pk=pk, is_active=1)
 
@@ -1990,3 +2011,79 @@ def view_proximate_analysis_table_list(request):
         'mb/view_proximate_analysis_table_list.html',
         {'page_obj': page_obj, 'filter': f,}
     )
+
+def index_master_location_list(request):
+    f = MasterLocationFilter(request.GET, queryset=MasterLocation.objects.is_active().select_related())
+
+    paginator = Paginator(f.qs, 10)
+
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    return render(
+        request,
+        'mb/master_location_list.html',
+        {'page_obj': page_obj, 'filter': f,}
+    )
+
+def index_master_location_listx(request):
+    class MasterLocationView(models.Model):
+        """ Tool model to preset master locations. """
+        id = models.CharField(max_length=20)
+        name = models.CharField(max_length=500) 
+        reference = models.CharField(max_length=500) 
+        master_habitat = models.TextField()
+
+    params = request.GET.dict()
+
+    master_locations = MasterLocation.objects.filter()
+
+    mls_with_habitat = []
+
+    for x in master_locations:
+        ml_view_obj = MasterLocationView()
+        ml_view_obj.id = x.id
+        ml_view_obj.name = x.name
+#        ml_view_obj.reference = x.reference.citation
+        ml_view_obj.reference = x.reference
+        ml_view_obj.master_habitat = get_master_habitats(x)
+        mls_with_habitat.append(ml_view_obj)
+    
+    mls_with_habitat = filter(mls_with_habitat, params)
+    
+    paginator = Paginator(mls_with_habitat, 10)
+
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+    return render(
+        request,
+        'mb/master_location_list.html',
+        {'page_obj': page_obj, 'filter': filter,}
+    )
+
+def master_location_detail(request, pk):
+    master_location = get_object_or_404(MasterLocation, pk=pk, is_active=1)
+    return render(request,
+                  'mb/master_location_detail.html',
+                  {'master_location': master_location})
+
+# THIS IS NOT USED, CAN BE DELETED
+def master_location_detailx(request, pk):
+    master_location = get_object_or_404(MasterLocation, id=pk)
+    related_objects = MasterLocation.objects.filter(pk=master_location.higherGeographyID.id)
+    occurrences = get_occurrences_by_masterlocation(master_location)
+    
+    return render(
+        request, 
+        'mb/master_location_detail.html', 
+        {"master_location" : master_location, "related_objects" : related_objects, "occurrences" : occurrences, "filter" : None},)

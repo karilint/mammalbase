@@ -1,0 +1,48 @@
+{% extends "mb/base_generic.html" %}
+{% block title %}
+<title>MammalBase - Master Locations</title>
+{% endblock %}
+{% block content %} {% load custom_tags %}
+<!--Article header -->
+<header style="display:none">
+  <h1>MammalBase - Standard References</h1>
+</header>
+<!--End of article header -->
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2>Master Locations</h2>
+  </header>
+
+  {% include 'includes/find.html' %}
+  {% if page_obj %}
+  {% if request.user|is_data_admin_or_contributor %}
+      <br>
+      <br>
+    {% endif %}
+    <table class="mb-list w3-table-all w3-small w3-responsive">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Reference</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for x in page_obj %}
+        <tr>
+            <td><a href="/ml_detail/{{ x.id }}">{{ x.name }}</a></td>
+            <td>{{ x.reference }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+  {% else %}
+    <p>There are no Master Locations available.</p>
+  {% endif %}
+  </section>
+{% endblock %}
+{% block info %}
+{% endblock %}
+{% block pagination %}
+  {% include 'mb/pagination.html' %}
+{% endblock %}
+{% block script %}
+{% endblock %}

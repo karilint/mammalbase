@@ -13,6 +13,18 @@ urlpatterns = [
             views.index_mammals,
             name='index_mammals'),
     path(
+        "ml_list",
+        views.index_master_location_list,
+        name="master_location_list"),
+    path(
+        "ml_filter",
+        views.index_master_location_list,
+        name="master_location_list"),
+    path(
+        "ml_detail/<int:pk>/",
+        views.master_location_detail,
+        name="master_location_detail"),
+    path(
 	    'ipa',
 	    views.index_proximate_analysis,
 	    name='index_proximate_analysis'),
