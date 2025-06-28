@@ -8,6 +8,13 @@
   <h1>MammalBase - Master Location: {{ master_location.name }}</h1>
 </header>
 <!--End of article header -->
+
+<div class="w3-bar w3-border-bottom" style="margin-bottom:16px;">
+  <button class="w3-bar-item w3-button tablink {% if not show_source_tab %}w3-teal{% endif %}" onclick="openTab(event,'MasterTab')">Master</button>
+  <button class="w3-bar-item w3-button tablink {% if show_source_tab %}w3-teal{% endif %}" onclick="openTab(event,'SourceTab')">Source</button>
+</div>
+
+<div id="MasterTab" class="tab" style="display:{% if not show_source_tab %}block{% else %}none{% endif %}">
 <section class="w3-threequarter w3-container">
   <header class="w3-container w3-text-teal">
     <h2 style="display:none">Master Location: {{ master_location.name }}</h2>
@@ -87,38 +94,44 @@
         <th class="w3-quarter">State Province</th>
         <td class="w3-threequarter">{{ master_location.state_province }}</td>
       </tr>
-      </table>
-      {% if master_location.locationrelation_set.count > 0 %}
-        <table class="mb-detail w3-table-all">
-        {% for relation in master_location.locationrelation_set.all %}
-          <caption class="w3-left-align">Location Match</caption>
-          {% if relation.relation.name == "Location Match" and relation.is_active %}
-            <tr>
-              <th class="w3-quarter w3-text-teal">Master Location:</th>
-              <td class="w3-threequarter">{{ relation.master_location.name }}</td>
-            </tr>
-            <tr>
-              <th class="w3-quarter w3-text-teal">Reference:</th>
-              <td class="w3-threequarter">{{ relation.master_location.reference }}</td>
-            </tr>
-            <tr>
-              <th class="w3-quarter w3-text-teal">Match:</th>
-              <td class="w3-threequarter">{{ relation.relation_status.name }}</td>
-          </tr>
-          <tr>
-            <th class="w3-quarter w3-text-teal">Status:</th>
-            <td class="w3-threequarter">{{ relation.data_status.name }}</td>
-          </tr>
-          {% endif %}
-        {% endfor %}
-        </table>
-    {% else %}
-    {% endif %}
-    </section>
+  </table>
+</section>
+</div>
+
+<div id="SourceTab" class="tab" style="display:{% if show_source_tab %}block{% else %}none{% endif %}">
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2>Matched Source Locations</h2>
+  </header>
+
+  {% include 'includes/find.html' %}
+
+  {% if page_obj %}
+  <table class="mb-list w3-table-all w3-small w3-responsive">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Reference</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sl in page_obj %}
+      <tr>
+        <td>{{ sl.name }}</td>
+        <td>{{ sl.reference }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p>There are no matched source locations.</p>
+  {% endif %}
+</section>
+</div>
+
 {% endblock %}
 {% block info %}
 {% endblock %}
 {% block pagination %}
 {% endblock %}
-{% block script %}
-{% endblock %}
+{% block script %}{% endblock %}

@@ -51,6 +51,7 @@ from mb.filters import (
     ProximateAnalysisFilter,
     ProximateAnalysisItemFilter,
     SourceAttributeFilter,
+    SourceLocationFilter,
     SourceEntityFilter,
     SourceReferenceFilter,
     TaxonomicUnitsFilter,
@@ -103,6 +104,8 @@ from mb.models import (
     SourceEntity,
     SourceMeasurementValue,
     SourceReference,
+    SourceLocation,
+    LocationRelation,
     TimePeriod,
     ViewProximateAnalysisTable)
 
@@ -2138,9 +2141,36 @@ def index_master_location_listx(request):
 
 def master_location_detail(request, pk):
     master_location = get_object_or_404(MasterLocation, pk=pk, is_active=1)
-    return render(request,
-                  'mb/master_location_detail.html',
-                  {'master_location': master_location})
+
+    filter = SourceLocationFilter(
+        request.GET,
+        queryset=SourceLocation.objects.filter(
+            locationrelation__master_location=master_location,
+            locationrelation__is_active=True,
+        ).select_related('reference').distinct(),
+    )
+
+    paginator = Paginator(filter.qs, 10)
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    show_source_tab = bool(request.GET)
+
+    return render(
+        request,
+        'mb/master_location_detail.html',
+        {
+            'master_location': master_location,
+            'filter': filter,
+            'page_obj': page_obj,
+            'show_source_tab': show_source_tab,
+        },
+    )
 
 # THIS IS NOT USED, CAN BE DELETED
 def master_location_detailx(request, pk):
