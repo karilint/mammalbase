@@ -45,6 +45,4 @@ Below are a few direct links to key instructions.
 
 [Features](documentation/mammalbase/features/)
 - Current features of MammalBase (e.g. importing and exporting tsv-files)
-[Creating Tabs](documentation/mammalbase/features/creating_tabs.md)
-- How to add a new tab and related view
 
