@@ -13,16 +13,7 @@
     <h2 style="display:none">Standard Trait value: {{ master_choiceset_option.name }}</h2>
   </header>
   <br>
-  <div class="mb-detail w3-bar w3-right-align">
-    <a title="Press to Go Back" class="w3-button w3-medium w3-round w3-padding-small w3-teal" onclick="backFunction()"><span class="fa fa-arrow-left"></span></a>
-    {% if request.user|is_data_admin_or_owner:master_choiceset_option %}
-    <a title="Press to Edit" class="w3-button w3-medium w3-round w3-padding-small w3-teal" href="{% url 'master_choiceset_option-edit' pk=master_choiceset_option.pk %}"><span class="fa fa-pencil-square-o"></span></a>
-    <a title="Press to Delete" class="w3-button w3-medium w3-round w3-padding-small w3-teal" href="{% url 'master_choiceset_option-delete' pk=master_choiceset_option.pk %}"><span class="fa  fa-trash-o"></span></a>
-    {% else %}
-    <button title="Please login to Edit" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
-    <button title="Please login to Delete" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
-    {% endif %}
-  </div>
+{% include 'includes/detail_action_buttons.html' with object=master_choiceset_option edit_url='master_choiceset_option-edit' delete_url='master_choiceset_option-delete' %}
   <table class="mb-detail w3-table-all">
     <caption class="mb-detail w3-left-align">Standard Trait value: {{ master_choiceset_option.name }}</caption>
     <tr>
