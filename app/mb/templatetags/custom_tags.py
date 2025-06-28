@@ -9,7 +9,9 @@ from django.contrib.auth.models import Group
 register = template.Library()
 
 @register.filter(name='is_data_admin_or_contributor')
-def is_data_admin_or_owner(user):
+def is_data_admin_or_contributor(user):
+    """Return True if the user belongs to the data_admin or
+    data_contributor group."""
     if user.groups.filter(name='data_admin').exists():
         return True
 
