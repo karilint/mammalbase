@@ -2159,6 +2159,8 @@ def master_location_detail(request, pk):
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
 
+    show_source_tab = bool(request.GET)
+
     return render(
         request,
         'mb/master_location_detail.html',
@@ -2166,6 +2168,7 @@ def master_location_detail(request, pk):
             'master_location': master_location,
             'filter': filter,
             'page_obj': page_obj,
+            'show_source_tab': show_source_tab,
         },
     )
 

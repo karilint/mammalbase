@@ -10,11 +10,11 @@
 <!--End of article header -->
 
 <div class="w3-bar w3-border-bottom" style="margin-bottom:16px;">
-  <button class="w3-bar-item w3-button tablink w3-teal" onclick="openTab(event,'MasterTab')">Master</button>
-  <button class="w3-bar-item w3-button tablink" onclick="openTab(event,'SourceTab')">Source</button>
+  <button class="w3-bar-item w3-button tablink {% if not show_source_tab %}w3-teal{% endif %}" onclick="openTab(event,'MasterTab')">Master</button>
+  <button class="w3-bar-item w3-button tablink {% if show_source_tab %}w3-teal{% endif %}" onclick="openTab(event,'SourceTab')">Source</button>
 </div>
 
-<div id="MasterTab" class="tab" style="display:block">
+<div id="MasterTab" class="tab" style="display:{% if not show_source_tab %}block{% else %}none{% endif %}">
 <section class="w3-threequarter w3-container">
   <header class="w3-container w3-text-teal">
     <h2 style="display:none">Master Location: {{ master_location.name }}</h2>
@@ -124,7 +124,7 @@
       </section>
 </div>
 
-<div id="SourceTab" class="tab" style="display:none">
+<div id="SourceTab" class="tab" style="display:{% if show_source_tab %}block{% else %}none{% endif %}">
 <section class="w3-threequarter w3-container">
   <header class="w3-container w3-text-teal">
     <h2>Matched Source Locations</h2>
@@ -160,20 +160,4 @@
 {% endblock %}
 {% block pagination %}
 {% endblock %}
-{% block script %}
-<script>
-function openTab(evt, tabName) {
-  var i, x, tablinks;
-  x = document.getElementsByClassName('tab');
-  for (i = 0; i < x.length; i++) {
-    x[i].style.display = 'none';
-  }
-  tablinks = document.getElementsByClassName('tablink');
-  for (i = 0; i < tablinks.length; i++) {
-    tablinks[i].classList.remove('w3-teal');
-  }
-  document.getElementById(tabName).style.display = 'block';
-  evt.currentTarget.classList.add('w3-teal');
-}
-</script>
-{% endblock %}
+{% block script %}{% endblock %}
