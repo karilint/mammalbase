@@ -8,6 +8,13 @@
   <h1>MammalBase - Master Location: {{ master_location.name }}</h1>
 </header>
 <!--End of article header -->
+
+<div class="w3-bar w3-border-bottom" style="margin-bottom:16px;">
+  <button class="w3-bar-item w3-button tablink w3-teal" onclick="openTab(event,'MasterTab')">Master</button>
+  <button class="w3-bar-item w3-button tablink" onclick="openTab(event,'SourceTab')">Source</button>
+</div>
+
+<div id="MasterTab" class="tab" style="display:block">
 <section class="w3-threequarter w3-container">
   <header class="w3-container w3-text-teal">
     <h2 style="display:none">Master Location: {{ master_location.name }}</h2>
@@ -112,13 +119,61 @@
           {% endif %}
         {% endfor %}
         </table>
-    {% else %}
-    {% endif %}
-    </section>
+      {% else %}
+      {% endif %}
+      </section>
+</div>
+
+<div id="SourceTab" class="tab" style="display:none">
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2>Matched Source Locations</h2>
+  </header>
+
+  {% include 'includes/find.html' %}
+
+  {% if page_obj %}
+  <table class="mb-list w3-table-all w3-small w3-responsive">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Reference</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sl in page_obj %}
+      <tr>
+        <td>{{ sl.name }}</td>
+        <td>{{ sl.reference }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p>There are no matched source locations.</p>
+  {% endif %}
+</section>
+</div>
+
 {% endblock %}
 {% block info %}
 {% endblock %}
 {% block pagination %}
 {% endblock %}
 {% block script %}
+<script>
+function openTab(evt, tabName) {
+  var i, x, tablinks;
+  x = document.getElementsByClassName('tab');
+  for (i = 0; i < x.length; i++) {
+    x[i].style.display = 'none';
+  }
+  tablinks = document.getElementsByClassName('tablink');
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].classList.remove('w3-teal');
+  }
+  document.getElementById(tabName).style.display = 'block';
+  evt.currentTarget.classList.add('w3-teal');
+}
+</script>
 {% endblock %}
