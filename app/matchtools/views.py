@@ -14,7 +14,7 @@ from mb.views import user_is_data_admin_or_contributor
 
 from .filters import SourceAttributeFilter, SourceLocationFilter
 from .location_api import LocationAPI
-from .location_match import add_locations
+from .location_match import add_locations, get_hierarchy_chain
 
 
 @login_required
@@ -205,17 +205,14 @@ def match_location(request):
 
     # Add the master location and its hierarchy location(s) to the database
     locations = add_locations(geo_names_location, source_location_id)
-    
-    # If the matched locations was added, get the name of it
-    if locations and locations[-1] is not None:
-        matched_location = locations[-1].name
+
+    final_location = locations[-1] if locations else None
+
+    if final_location is not None:
+        matched_location = final_location.name
+        hierarchy_locations = get_hierarchy_chain(final_location)
     else:
         matched_location = None
-
-    # If any  hierarchy locations were added, get the name(s) of them
-    if locations and locations[0] is not None:
-        hierarchy_locations = [location.name for location in locations[:-1]]
-    else:
         hierarchy_locations = []
 
     return JsonResponse({
