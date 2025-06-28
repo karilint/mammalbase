@@ -20,19 +20,20 @@
       <br>
     {% endif %}
     <table class="mb-list w3-table-all w3-small w3-responsive">
-    <thead>
+      <thead>
         <tr>
-            <th>Name</th>
-            <th>Reference</th>
+          <th>Name</th>
+          <th>Reference</th>
         </tr>
-        </thead>
-        <tbody>
+      </thead>
+      <tbody>
         {% for x in page_obj %}
         <tr>
-            <td><a href="/ml_detail/{{ x.id }}">{{ x.name }}</a></td>
-            <td>{{ x.reference }}</td>
+          <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_location_detail' pk=x.id %}">{{ x.name }} <span class="fa fa-link w3-small"></span></a></td>
+          <td>{{ x.reference }}</td>
         </tr>
         {% endfor %}
+      </tbody>
     </table>
   {% else %}
     <p>There are no Master Locations available.</p>
