@@ -14,6 +14,7 @@ from .main import (
     MasterChoiceSetOptionForm,
     MasterEntityForm,
     MasterReferenceForm,
+    MasterLocationForm,
     OrderingForm,
     SourceAttributeChoicesetOptionForm,
     SourceAttributeForm,

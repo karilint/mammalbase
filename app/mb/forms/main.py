@@ -15,6 +15,7 @@ from mb.models import (
     MasterReference,
     ProximateAnalysis,
     ProximateAnalysisItem,
+    MasterLocation,
     SourceAttribute,
     SourceChoiceSetOption,
     SourceChoiceSetOptionValue,
@@ -107,6 +108,12 @@ class MasterReferenceForm(forms.ModelForm):
     class Meta:
         model = MasterReference
         fields = ('type', 'first_author', 'year', 'title', 'container_title', 'volume', 'issue', 'page', 'citation', 'doi', 'uri',)
+
+class MasterLocationForm(forms.ModelForm):
+    class Meta:
+        model = MasterLocation
+        fields = ('name', 'reference', 'continent', 'country', 'country_code', 'decimal_latitude', 'decimal_longitude', 'geodetic_datum')
+        widgets = {'reference': ReferenceWidget, }
 
 # Sortable, see. https://nemecek.be/blog/4/django-how-to-let-user-re-ordersort-table-of-content-with-drag-and-drop
 class OrderingForm(forms.Form):

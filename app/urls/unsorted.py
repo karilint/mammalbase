@@ -25,6 +25,14 @@ urlpatterns = [
         views.master_location_detail,
         name="master_location_detail"),
     path(
+        "ml/<int:pk>/delete/",
+        views.MasterLocationDelete.as_view(),
+        name="master_location-delete"),
+    path(
+        "ml/<int:pk>/edit/",
+        views.master_location_edit,
+        name="master_location-edit"),
+    path(
 	    'ipa',
 	    views.index_proximate_analysis,
 	    name='index_proximate_analysis'),
