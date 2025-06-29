@@ -11,6 +11,6 @@
     </form>
     <p><a onclick="backFunction()">Go back</a></p>
   {% else %}
-    <p><a href="{% url 'login'%}?next={{request.path}}">Please login first</a></p>
+    <p><a href="{% url 'account_login'%}?next={{request.path}}">Please login first</a></p>
   {% endif %}
 {% endblock %}

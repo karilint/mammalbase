@@ -28,7 +28,7 @@
         </div>
       </form>
     {% else %}
-      <p><a href="{% url 'login'%}?next={{request.path}}">Please login first</a></p>
+      <p><a href="{% url 'account_login'%}?next={{request.path}}">Please login first</a></p>
     {% endif %}
   </section>
 {% endblock %}
