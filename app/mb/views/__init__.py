@@ -113,4 +113,6 @@ from .unsorted import (
     tsn_search,
     view_proximate_analysis_table_list,
     index_master_location_list,
+    master_location_edit,
+    MasterLocationDelete,
     master_location_detail)

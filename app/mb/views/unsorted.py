@@ -69,6 +69,7 @@ from mb.forms import (
     MasterAttributeChoicesetOptionForm,
     MasterChoiceSetOptionForm,
     MasterReferenceForm,
+    MasterLocationForm,
     OrderingForm,
     ProximateAnalysisForm,
     ProximateAnalysisItemForm,
@@ -2182,3 +2183,27 @@ def master_location_detailx(request, pk):
         request, 
         'mb/master_location_detail.html', 
         {"master_location" : master_location, "related_objects" : related_objects, "occurrences" : occurrences, "filter" : None},)
+
+class MasterLocationDelete(UserPassesTestMixin, DeleteView):
+    def test_func(self):
+        return user_is_data_admin_or_owner(self.request.user, self.get_object())
+    model = MasterLocation
+    success_url = reverse_lazy('master_location_list')
+
+@login_required
+@permission_required('mb.edit_master_location', raise_exception=True)
+def master_location_edit(request, pk):
+    master_location = get_object_or_404(MasterLocation, pk=pk, is_active=1)
+
+    if not user_is_data_admin_or_owner(request.user, master_location):
+        raise PermissionDenied
+
+    if request.method == "POST":
+        form = MasterLocationForm(request.POST, instance=master_location)
+        if form.is_valid():
+            master_location = form.save(commit=False)
+            master_location.save()
+            return redirect('master_location_detail', pk=master_location.pk)
+    else:
+        form = MasterLocationForm(instance=master_location)
+    return render(request, 'mb/master_location_edit.html', {'form': form})
