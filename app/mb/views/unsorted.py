@@ -2170,9 +2170,8 @@ def master_location_detail(request, pk):
         entityrelation__source_entity__taxon_occurrence__source_location__locationrelation__is_active=True,
         entityrelation__source_entity__taxon_occurrence__source_location__locationrelation__master_location=master_location,
         entityrelation__source_entity__taxon_occurrence__source_reference__is_active=True,
-        entityrelation__source_entity__taxon_occurrence__source_reference__referencerelation__is_active=True,
-        entityrelation__source_entity__taxon_occurrence__source_reference__referencerelation__master_reference__is_active=True,
-    ).select_related('entity', 'taxon').order_by('name').distinct()
+        entityrelation__source_entity__taxon_occurrence__source_reference__master_reference__is_active=True,
+    ).select_related('entity', 'taxon').order_by('taxon__higher_classification').distinct()
 
     return render(
         request,
