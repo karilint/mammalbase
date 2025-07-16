@@ -158,6 +158,11 @@
 </section>
 </div>
 
+<div id="occ-detail-modal" class="w3-modal" style="display:none;">
+  <div class="w3-modal-content w3-padding" id="occ-detail-content">
+  </div>
+</div>
+
 {% endblock %}
 {% block info %}
 {% endblock %}
@@ -166,9 +171,17 @@
 {% block script %}
 <script>
   function openOccurrenceDetails(mlId, meId) {
-    var url = "{% url 'occurrence_details' 0 0 %}";
-    url = url.replace('0/0', mlId + '/' + meId);
-    window.open(url, '_blank', 'width=600,height=600');
+    var url = "{% url 'occurrence_details' 0 0 %}".replace('0/0', mlId + '/' + meId);
+    fetch(url)
+      .then(function (response) { return response.text(); })
+      .then(function (html) {
+        document.getElementById('occ-detail-content').innerHTML = html;
+        document.getElementById('occ-detail-modal').style.display = 'block';
+      });
+  }
+
+  function closeOccDetails() {
+    document.getElementById('occ-detail-modal').style.display = 'none';
   }
 </script>
 {% endblock %}

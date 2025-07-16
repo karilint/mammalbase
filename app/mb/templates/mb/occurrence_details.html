@@ -1,11 +1,7 @@
-{% extends "mb/base_generic.html" %}
-{% block title %}
-<title>Occurrence Details</title>
-{% endblock %}
-{% block content %}
-<section class="w3-container w3-margin">
+<div class="w3-container w3-margin">
   <header class="w3-container w3-text-teal">
-    <h2>Occurrence Details</h2>
+    <h3>Occurrence Details</h3>
+    <button onclick="closeOccDetails()" class="w3-button w3-right w3-margin">&times; Close</button>
   </header>
   <table class="mb-list w3-table-all w3-small">
     <caption class="w3-left-align">
@@ -14,8 +10,8 @@
     </caption>
     <tbody>
       {% for occ in occurrences %}
-        <tr class="w3-light-grey">
-          <th colspan="2">Occurrence {{ forloop.counter }}</th>
+        <tr class="w3-dark-grey">
+          <th colspan="2" class="w3-center">Occurrence {{ forloop.counter }}</th>
         </tr>
         <tr>
           <th class="w3-quarter">Source Entity</th>
@@ -58,8 +54,4 @@
   {% if not occurrences %}
     <p>No occurrence details available.</p>
   {% endif %}
-</section>
-{% endblock %}
-{% block info %}{% endblock %}
-{% block pagination %}{% endblock %}
-{% block script %}{% endblock %}
+</div>
