@@ -2162,6 +2162,17 @@ def master_location_detail(request, pk):
 
     show_source_tab = bool(request.GET)
 
+    occurrences = MasterEntity.objects.is_active().filter(
+        entityrelation__is_active=True,
+        entityrelation__source_entity__is_active=True,
+        entityrelation__source_entity__taxon_occurrence__is_active=True,
+        entityrelation__source_entity__taxon_occurrence__source_location__is_active=True,
+        entityrelation__source_entity__taxon_occurrence__source_location__locationrelation__is_active=True,
+        entityrelation__source_entity__taxon_occurrence__source_location__locationrelation__master_location=master_location,
+        entityrelation__source_entity__taxon_occurrence__source_reference__is_active=True,
+        entityrelation__source_entity__taxon_occurrence__source_reference__master_reference__is_active=True,
+    ).select_related('entity', 'taxon').order_by('taxon__higher_classification').distinct()
+
     return render(
         request,
         'mb/master_location_detail.html',
@@ -2170,6 +2181,7 @@ def master_location_detail(request, pk):
             'filter': filter,
             'page_obj': page_obj,
             'show_source_tab': show_source_tab,
+            'occurrences': occurrences,
         },
     )
 
