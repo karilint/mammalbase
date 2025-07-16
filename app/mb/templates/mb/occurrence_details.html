@@ -1,0 +1,65 @@
+{% extends "mb/base_generic.html" %}
+{% block title %}
+<title>Occurrence Details</title>
+{% endblock %}
+{% block content %}
+<section class="w3-container w3-margin">
+  <header class="w3-container w3-text-teal">
+    <h2>Occurrence Details</h2>
+  </header>
+  <table class="mb-list w3-table-all w3-small">
+    <caption class="w3-left-align">
+      Master Location: {{ master_location.name }}<br>
+      Master Entity: {{ master_entity.name }}
+    </caption>
+    <tbody>
+      {% for occ in occurrences %}
+        <tr class="w3-light-grey">
+          <th colspan="2">Occurrence {{ forloop.counter }}</th>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Source Entity</th>
+          <td class="w3-threequarter">{{ occ.source_entity.name }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Source Location</th>
+          <td class="w3-threequarter">{{ occ.source_location.name }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Reference</th>
+          <td class="w3-threequarter">{{ occ.source_reference.citation }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Event Date</th>
+          <td class="w3-threequarter">{% if occ.event %}{{ occ.event.verbatim_event_date }}{% else %}-{% endif %}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Gender</th>
+          <td class="w3-threequarter">{{ occ.gender.caption|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Life Stage</th>
+          <td class="w3-threequarter">{{ occ.life_stage.caption|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Organism Quantity</th>
+          <td class="w3-threequarter">
+            {% if occ.organism_quantity %}{{ occ.organism_quantity }}{% else %}-{% endif %}
+            {% if occ.organism_quantity_type %} {{ occ.organism_quantity_type }}{% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Remarks</th>
+          <td class="w3-threequarter">{{ occ.occurrence_remarks|default_if_none:"-" }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if not occurrences %}
+    <p>No occurrence details available.</p>
+  {% endif %}
+</section>
+{% endblock %}
+{% block info %}{% endblock %}
+{% block pagination %}{% endblock %}
+{% block script %}{% endblock %}

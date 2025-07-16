@@ -25,6 +25,10 @@ urlpatterns = [
         views.master_location_detail,
         name="master_location_detail"),
     path(
+        "occurrence_details/<int:ml_pk>/<int:me_pk>/",
+        views.occurrence_details,
+        name="occurrence_details"),
+    path(
         "ml/<int:pk>/delete/",
         views.MasterLocationDelete.as_view(),
         name="master_location-delete"),

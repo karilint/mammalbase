@@ -115,4 +115,5 @@ from .unsorted import (
     index_master_location_list,
     master_location_edit,
     MasterLocationDelete,
-    master_location_detail)
+    master_location_detail,
+    occurrence_details)
