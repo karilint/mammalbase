@@ -2242,6 +2242,8 @@ def occurrence_details(request, ml_pk, me_pk):
         'source_location',
         'source_entity',
         'event',
+        'event__source_method',
+        'event__source_habitat',
         'gender',
         'life_stage',
     ).distinct()

@@ -26,8 +26,20 @@
           <td class="w3-threequarter">{{ occ.source_reference.citation }}</td>
         </tr>
         <tr>
-          <th class="w3-quarter">Event Date</th>
+          <th class="w3-quarter">Verbatim Event Date</th>
           <td class="w3-threequarter">{% if occ.event %}{{ occ.event.verbatim_event_date }}{% else %}-{% endif %}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Source Method</th>
+          <td class="w3-threequarter">{% if occ.event and occ.event.source_method %}{{ occ.event.source_method.name }}{% else %}-{% endif %}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Habitat Type</th>
+          <td class="w3-threequarter">{% if occ.event and occ.event.source_habitat %}{{ occ.event.source_habitat.habitat_type|default_if_none:"-" }}{% else %}-{% endif %}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Habitat Percentage</th>
+          <td class="w3-threequarter">{% if occ.event and occ.event.source_habitat %}{{ occ.event.source_habitat.habitat_percentage|default_if_none:"-" }}{% else %}-{% endif %}</td>
         </tr>
         <tr>
           <th class="w3-quarter">Gender</th>
@@ -41,8 +53,15 @@
           <th class="w3-quarter">Organism Quantity</th>
           <td class="w3-threequarter">
             {% if occ.organism_quantity %}{{ occ.organism_quantity }}{% else %}-{% endif %}
-            {% if occ.organism_quantity_type %} {{ occ.organism_quantity_type }}{% endif %}
           </td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Organism Quantity Type</th>
+          <td class="w3-threequarter">{{ occ.organism_quantity_type|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Associated References</th>
+          <td class="w3-threequarter">{{ occ.associated_references|default_if_none:"-" }}</td>
         </tr>
         <tr>
           <th class="w3-quarter">Remarks</th>
@@ -54,4 +73,7 @@
   {% if not occurrences %}
     <p>No occurrence details available.</p>
   {% endif %}
+  <div class="w3-center">
+    <button onclick="closeOccDetails()" class="w3-button w3-margin">&times; Close</button>
+  </div>
 </div>
