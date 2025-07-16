@@ -1,3 +1,4 @@
+{% load custom_tags %}
 <div class="w3-container w3-margin">
   <header class="w3-container w3-text-teal">
     <h3>Occurrence Details</h3>
@@ -22,8 +23,32 @@
           <td class="w3-threequarter">{{ occ.source_location.name }}</td>
         </tr>
         <tr>
-          <th class="w3-quarter">Reference</th>
-          <td class="w3-threequarter">{{ occ.source_reference.citation }}</td>
+          <th class="w3-quarter">Verbatim Elevation</th>
+          <td class="w3-threequarter">{{ occ.source_location.verbatim_elevation|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Verbatim Depth</th>
+          <td class="w3-threequarter">{{ occ.source_location.verbatim_depth|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Verbatim Coordinates</th>
+          <td class="w3-threequarter">{{ occ.source_location.verbatim_coordinates|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Verbatim Latitude</th>
+          <td class="w3-threequarter">{{ occ.source_location.verbatim_latitude|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Verbatim Longitude</th>
+          <td class="w3-threequarter">{{ occ.source_location.verbatim_longitude|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Verbatim Coordinate System</th>
+          <td class="w3-threequarter">{{ occ.source_location.verbatim_coordinate_system|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Verbatim SRS</th>
+          <td class="w3-threequarter">{{ occ.source_location.verbatim_srs|default_if_none:"-" }}</td>
         </tr>
         <tr>
           <th class="w3-quarter">Verbatim Event Date</th>
@@ -51,9 +76,7 @@
         </tr>
         <tr>
           <th class="w3-quarter">Organism Quantity</th>
-          <td class="w3-threequarter">
-            {% if occ.organism_quantity %}{{ occ.organism_quantity }}{% else %}-{% endif %}
-          </td>
+          <td class="w3-threequarter">{{ occ.organism_quantity|int_or_dash }}</td>
         </tr>
         <tr>
           <th class="w3-quarter">Organism Quantity Type</th>
@@ -67,13 +90,17 @@
           <th class="w3-quarter">Remarks</th>
           <td class="w3-threequarter">{{ occ.occurrence_remarks|default_if_none:"-" }}</td>
         </tr>
+        <tr>
+          <th class="w3-quarter">Reference</th>
+          <td class="w3-threequarter">{{ occ.source_reference.citation }}</td>
+        </tr>
       {% endfor %}
     </tbody>
   </table>
   {% if not occurrences %}
     <p>No occurrence details available.</p>
   {% endif %}
-  <div class="w3-center">
-    <button onclick="closeOccDetails()" class="w3-button w3-margin">&times; Close</button>
+  <div class="w3-container">
+    <button onclick="closeOccDetails()" class="w3-button w3-right w3-margin">&times; Close</button>
   </div>
 </div>

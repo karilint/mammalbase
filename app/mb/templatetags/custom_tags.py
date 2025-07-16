@@ -5,6 +5,7 @@
 
 from django import template
 from django.contrib.auth.models import Group
+import math
 
 register = template.Library()
 
@@ -42,3 +43,16 @@ def trim_gender(value):
 @register.filter(name="trim_lifestage")
 def trim_lifestage(value):
     return value.replace("LifeStage -", "")
+
+@register.filter(name="int_or_dash")
+def int_or_dash(value):
+    """Return integer representation of value or '-' for invalid values."""
+    if value in (None, "", "nan", "NaN"):
+        return "-"
+    try:
+        number = float(value)
+    except (ValueError, TypeError):
+        return "-"
+    if math.isnan(number):
+        return "-"
+    return str(int(number))
