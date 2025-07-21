@@ -1,0 +1,106 @@
+{% load custom_tags %}
+<div class="w3-container w3-margin">
+  <header class="w3-container w3-text-teal">
+    <h3>Occurrence Details</h3>
+    <button onclick="closeOccDetails()" class="w3-button w3-right w3-margin">&times; Close</button>
+  </header>
+  <table class="mb-list w3-table-all w3-small">
+    <caption class="w3-left-align">
+      Master Location: {{ master_location.name }}<br>
+      Master Entity: {{ master_entity.name }}
+    </caption>
+    <tbody>
+      {% for occ in occurrences %}
+        <tr class="w3-dark-grey">
+          <th colspan="2" class="w3-center">Occurrence {{ forloop.counter }}</th>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Source Entity</th>
+          <td class="w3-threequarter">{{ occ.source_entity.name }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Source Location</th>
+          <td class="w3-threequarter">{{ occ.source_location.name }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Verbatim Elevation</th>
+          <td class="w3-threequarter">{{ occ.source_location.verbatim_elevation|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Verbatim Depth</th>
+          <td class="w3-threequarter">{{ occ.source_location.verbatim_depth|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Verbatim Coordinates</th>
+          <td class="w3-threequarter">{{ occ.source_location.verbatim_coordinates|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Verbatim Latitude</th>
+          <td class="w3-threequarter">{{ occ.source_location.verbatim_latitude|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Verbatim Longitude</th>
+          <td class="w3-threequarter">{{ occ.source_location.verbatim_longitude|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Verbatim Coordinate System</th>
+          <td class="w3-threequarter">{{ occ.source_location.verbatim_coordinate_system|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Verbatim SRS</th>
+          <td class="w3-threequarter">{{ occ.source_location.verbatim_srs|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Verbatim Event Date</th>
+          <td class="w3-threequarter">{% if occ.event %}{{ occ.event.verbatim_event_date }}{% else %}-{% endif %}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Source Method</th>
+          <td class="w3-threequarter">{% if occ.event and occ.event.source_method %}{{ occ.event.source_method.name }}{% else %}-{% endif %}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Habitat Type</th>
+          <td class="w3-threequarter">{% if occ.event and occ.event.source_habitat %}{{ occ.event.source_habitat.habitat_type|default_if_none:"-" }}{% else %}-{% endif %}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Habitat Percentage</th>
+          <td class="w3-threequarter">{% if occ.event and occ.event.source_habitat %}{{ occ.event.source_habitat.habitat_percentage|default_if_none:"-" }}{% else %}-{% endif %}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Gender</th>
+          <td class="w3-threequarter">{{ occ.gender.caption|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Life Stage</th>
+          <td class="w3-threequarter">{{ occ.life_stage.caption|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Organism Quantity</th>
+          <td class="w3-threequarter">{{ occ.organism_quantity|int_or_dash }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Organism Quantity Type</th>
+          <td class="w3-threequarter">{{ occ.organism_quantity_type|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Associated References</th>
+          <td class="w3-threequarter">{{ occ.associated_references|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Remarks</th>
+          <td class="w3-threequarter">{{ occ.occurrence_remarks|default_if_none:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="w3-quarter">Reference</th>
+          <td class="w3-threequarter">{{ occ.source_reference.citation }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if not occurrences %}
+    <p>No occurrence details available.</p>
+  {% endif %}
+  <div class="w3-container">
+    <button onclick="closeOccDetails()" class="w3-button w3-right w3-margin">&times; Close</button>
+  </div>
+</div>

@@ -108,6 +108,8 @@ from mb.models import (
     SourceLocation,
     LocationRelation,
     TimePeriod,
+    Occurrence,
+    Event,
     ViewProximateAnalysisTable)
 
 from mb.models.location import MasterLocation
@@ -2219,3 +2221,39 @@ def master_location_edit(request, pk):
     else:
         form = MasterLocationForm(instance=master_location)
     return render(request, 'mb/master_location_edit.html', {'form': form})
+
+
+def occurrence_details(request, ml_pk, me_pk):
+    """Return occurrence details for a master location and master entity."""
+    master_location = get_object_or_404(MasterLocation, pk=ml_pk, is_active=True)
+    master_entity = get_object_or_404(MasterEntity, pk=me_pk, is_active=True)
+
+    occurrences = Occurrence.objects.is_active().filter(
+        source_location__is_active=True,
+        source_location__locationrelation__is_active=True,
+        source_location__locationrelation__master_location=master_location,
+        source_entity__is_active=True,
+        source_entity__entityrelation__is_active=True,
+        source_entity__entityrelation__master_entity=master_entity,
+        source_reference__is_active=True,
+        source_reference__master_reference__is_active=True,
+    ).select_related(
+        'source_reference',
+        'source_location',
+        'source_entity',
+        'event',
+        'event__source_method',
+        'event__source_habitat',
+        'gender',
+        'life_stage',
+    ).distinct()
+
+    return render(
+        request,
+        'mb/occurrence_details.html',
+        {
+            'master_location': master_location,
+            'master_entity': master_entity,
+            'occurrences': occurrences,
+        },
+    )

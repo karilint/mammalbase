@@ -134,6 +134,7 @@
         <th>Taxon</th>
         <th>Rank</th>
         <th>Higher Classification</th>
+        <th>Details</th>
       </tr>
     </thead>
     <tbody>
@@ -142,6 +143,11 @@
         <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_entity-detail' pk=me.pk %}">{{ me.name }} <span class="fa fa-link w3-small"></span></a></td>
         <td>{{ me.entity }}</td>
         <td>{{ me.taxon.higher_classification }}</td>
+        <td class="w3-center">
+          <button class="w3-button w3-small" title="Show Details" onclick="openOccurrenceDetails({{ master_location.id }}, {{ me.id }})">
+            <span class="fa fa-search"></span>
+          </button>
+        </td>
       </tr>
       {% endfor %}
     </tbody>
@@ -152,9 +158,30 @@
 </section>
 </div>
 
+<div id="occ-detail-modal" class="w3-modal" style="display:none;">
+  <div class="w3-modal-content w3-padding" id="occ-detail-content">
+  </div>
+</div>
+
 {% endblock %}
 {% block info %}
 {% endblock %}
 {% block pagination %}
 {% endblock %}
-{% block script %}{% endblock %}
+{% block script %}
+<script>
+  function openOccurrenceDetails(mlId, meId) {
+    var url = "{% url 'occurrence_details' 0 0 %}".replace('0/0', mlId + '/' + meId);
+    fetch(url)
+      .then(function (response) { return response.text(); })
+      .then(function (html) {
+        document.getElementById('occ-detail-content').innerHTML = html;
+        document.getElementById('occ-detail-modal').style.display = 'block';
+      });
+  }
+
+  function closeOccDetails() {
+    document.getElementById('occ-detail-modal').style.display = 'none';
+  }
+</script>
+{% endblock %}
