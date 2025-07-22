@@ -2090,7 +2090,7 @@ def index_master_location_list(request):
         locationrelation__source_location__reference__is_active=True,
         locationrelation__source_location__reference__master_reference__is_active=True,
         locationrelation__source_location__reference__status=2,
-        locationrelation__source_location__taxon_occurrence__is_active=True,
+        locationrelation__source_location__occurrence__is_active=True,
     ).select_related().distinct()
     f = MasterLocationFilter(request.GET, queryset=base_qs)
 
