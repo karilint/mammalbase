@@ -23,14 +23,16 @@
       <thead>
         <tr>
           <th>Name</th>
-          <th>Reference</th>
+          <th>Country</th>
+          <th>Continent</th>
         </tr>
       </thead>
       <tbody>
         {% for x in page_obj %}
         <tr>
           <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_location_detail' pk=x.id %}">{{ x.name }} <span class="fa fa-link w3-small"></span></a></td>
-          <td>{{ x.reference }}</td>
+          <td>{{ x.country }}</td>
+          <td>{{ x.continent }}</td>
         </tr>
         {% endfor %}
       </tbody>
