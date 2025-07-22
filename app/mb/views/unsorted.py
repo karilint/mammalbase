@@ -2084,7 +2084,15 @@ def view_proximate_analysis_table_list(request):
     )
 
 def index_master_location_list(request):
-    f = MasterLocationFilter(request.GET, queryset=MasterLocation.objects.is_active().select_related())
+    base_qs = MasterLocation.objects.is_active().filter(
+        locationrelation__is_active=True,
+        locationrelation__source_location__is_active=True,
+        locationrelation__source_location__reference__is_active=True,
+        locationrelation__source_location__reference__master_reference__is_active=True,
+        locationrelation__source_location__reference__status=2,
+        locationrelation__source_location__occurrence__is_active=True,
+    ).select_related().distinct()
+    f = MasterLocationFilter(request.GET, queryset=base_qs)
 
     paginator = Paginator(f.qs, 10)
 
@@ -2150,6 +2158,9 @@ def master_location_detail(request, pk):
         queryset=SourceLocation.objects.filter(
             locationrelation__master_location=master_location,
             locationrelation__is_active=True,
+            reference__is_active=True,
+            reference__master_reference__is_active=True,
+            reference__status=2,
         ).select_related('reference').distinct(),
     )
 
@@ -2173,6 +2184,7 @@ def master_location_detail(request, pk):
         entityrelation__source_entity__taxon_occurrence__source_location__locationrelation__master_location=master_location,
         entityrelation__source_entity__taxon_occurrence__source_reference__is_active=True,
         entityrelation__source_entity__taxon_occurrence__source_reference__master_reference__is_active=True,
+        entityrelation__source_entity__taxon_occurrence__source_reference__status=2,
     ).select_related('entity', 'taxon').order_by('taxon__higher_classification').distinct()
 
     return render(
@@ -2237,6 +2249,7 @@ def occurrence_details(request, ml_pk, me_pk):
         source_entity__entityrelation__master_entity=master_entity,
         source_reference__is_active=True,
         source_reference__master_reference__is_active=True,
+        source_reference__status=2,
     ).select_related(
         'source_reference',
         'source_location',
