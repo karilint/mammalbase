@@ -43,6 +43,24 @@ class OccurrencesImporter(BaseImporter):
             getattr(row, 'verbatimLocality'),
             reference, author
         )
+        if new_source_location:
+            updated = False
+            sl_fields = {
+                'verbatim_elevation': getattr(row, 'verbatimElevation', None),
+                'verbatim_depth': getattr(row, 'verbatimDepth', None),
+                'verbatim_coordinates': getattr(row, 'verbatimCoordinates', None),
+                'verbatim_latitude': getattr(row, 'verbatimLatitude', None),
+                'verbatim_longitude': getattr(row, 'verbatimLongitude', None),
+                'verbatim_coordinate_system': getattr(row, 'verbatimCoordinateSystem', None),
+                'verbatim_srs': getattr(row, 'verbatimSRS', None),
+            }
+            for field, value in sl_fields.items():
+                cleaned_value = self.possible_nan_to_none(value)
+                if cleaned_value is not None and getattr(new_source_location, field) != cleaned_value:
+                    setattr(new_source_location, field, cleaned_value)
+                    updated = True
+            if updated:
+                new_source_location.save()
         new_event, created = Event.objects.get_or_create(
             verbatim_event_date=self.possible_nan_to_none(getattr(row, 'verbatimEventDate')),
             source_habitat=habitat

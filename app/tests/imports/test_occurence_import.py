@@ -3,7 +3,7 @@ from allauth.socialaccount.models import SocialAccount
 from django.test import Client, TestCase
 from django.contrib.messages import get_messages
 from django.contrib.auth.models import User
-from mb.models import ChoiceValue
+from mb.models import ChoiceValue, SourceLocation
 from .utils.mock_api import generate_mock_api
 
 class OccurenceImporterTest(TestCase):
@@ -27,6 +27,15 @@ class OccurenceImporterTest(TestCase):
         self.assertEqual(len(messages), 2)
         self.assertEqual(str(messages[0]), 'File imported successfully. 6 rows of data were imported. (0 rows were skipped.)')
         self.assertEqual(response.status_code, 302)
+
+    def test_coordinates_populated(self):
+        with open('tests/imports/assets/occurence/valid_occurences_file.tsv', 'r') as fp:
+            self.client.post('/import/occurrences', {'name': 'fred', 'csv_file': fp})
+
+        loc = SourceLocation.objects.get(name='Aberdare National Park, Kenya')
+        self.assertEqual(loc.verbatim_latitude, '12.3456')
+        self.assertEqual(loc.verbatim_longitude, '-78.9012')
+        self.assertEqual(loc.verbatim_coordinate_system, 'decimal degrees')
 
     def test_import_invalid_occurences(self):
         with open('tests/imports/assets/occurence/invalid_occurences_file.tsv', 'r') as fp:
