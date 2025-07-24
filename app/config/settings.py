@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     'itis',
     'exports',
     'matchtools',
+    'tgn',
 
     'allauth',
     'allauth.account',

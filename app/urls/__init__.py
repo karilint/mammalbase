@@ -31,7 +31,8 @@ urlpatterns = [
     path('import/', include('urls.imports')),
     path('exports/', include('urls.exports')),
     path('matchtools/', include('urls.matchtools')),
-    
+    path('tgn/', include('tgn.urls')),
+
     path('admin/', admin.site.urls),
     path('select2/', include('django_select2.urls')),
     path('accounts/', include('allauth.urls')),
