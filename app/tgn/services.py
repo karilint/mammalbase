@@ -1,9 +1,15 @@
+import logging
+from typing import List, Dict
+
 import requests
 
 BASE_TGN_URL = "https://vocab.getty.edu/sparql.json"
 
 
-def search_tgn(name: str, place_type: str = None):
+LOG = logging.getLogger(__name__)
+
+
+def search_tgn(name: str, place_type: str = None) -> List[Dict[str, str]]:
     """Query Getty TGN via SPARQL by place name and optional place type."""
     query = f"""
     SELECT ?place ?placeLabel ?coords ?placetypeLabel ?countryLabel ?continentLabel
@@ -29,9 +35,13 @@ def search_tgn(name: str, place_type: str = None):
             """,
         )
 
-    response = requests.get(BASE_TGN_URL, params={"query": query})
-    response.raise_for_status()
-    data = response.json()
+    try:
+        response = requests.get(BASE_TGN_URL, params={"query": query}, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+    except (requests.RequestException, ValueError) as exc:
+        LOG.warning("TGN request failed: %s", exc)
+        raise RuntimeError("Failed to query Getty TGN") from exc
 
     results = []
     for b in data.get("results", {}).get("bindings", []):

@@ -16,6 +16,10 @@ def search_place(request):
     if cached:
         return JsonResponse({"results": cached})
 
-    results = search_tgn(name, place_type if place_type else None)
+    try:
+        results = search_tgn(name, place_type if place_type else None)
+    except RuntimeError as exc:
+        return JsonResponse({"error": str(exc)}, status=502)
+
     cache.set(cache_key, results, timeout=86400)
     return JsonResponse({"results": results})
