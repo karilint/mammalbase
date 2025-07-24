@@ -122,10 +122,11 @@ class SourceEntityFilter(django_filters.FilterSet):
 
 class SourceReferenceFilter(django_filters.FilterSet):
     citation = django_filters.CharFilter(lookup_expr='icontains', label='Reference contains')
+    status = django_filters.ChoiceFilter(choices=SourceReference.STATUS, label='Status')
 
     class Meta:
         model = SourceReference
-        fields = ['citation',]
+        fields = ['citation', 'status']
 
 class TaxonomicUnitsFilter(django_filters.FilterSet):
     tsn = django_filters.NumberFilter(label='Taxonomic Serial Number (TSN)')
