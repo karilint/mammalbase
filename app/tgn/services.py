@@ -1,56 +1,125 @@
 import logging
-from typing import List, Dict
-
 import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+import re
 
-BASE_TGN_URL = "https://vocab.getty.edu/sparql.json"
+logger = logging.getLogger(__name__)
 
 
-LOG = logging.getLogger(__name__)
+def search_tgn(name):
+    logger.debug(f"Starting TGN search for name: {name}")
 
-
-def search_tgn(name: str, place_type: str = None) -> List[Dict[str, str]]:
-    """Query Getty TGN via SPARQL by place name and optional place type."""
-    query = f"""
-    SELECT ?place ?placeLabel ?coords ?placetypeLabel ?countryLabel ?continentLabel
-    WHERE {{
-      ?place rdfs:label ?placeLabel .
-      FILTER(CONTAINS(LCASE(?placeLabel), LCASE(\"{name}\"))) .
-      OPTIONAL {{ ?place gvp:placeTypePreferred ?placetype . ?placetype rdfs:label ?placetypeLabel. }}
-      OPTIONAL {{ ?place gvp:broaderPreferred* ?country . ?country gvp:placeTypePreferred gvp:country . ?country rdfs:label ?countryLabel. }}
-      OPTIONAL {{ ?place gvp:broaderPreferred* ?continent . ?continent gvp:placeTypePreferred gvp:continent . ?continent rdfs:label ?continentLabel. }}
-      OPTIONAL {{ ?place wgs:lat ?lat ; wgs:long ?lon . BIND(CONCAT(STR(?lat), ",", STR(?lon)) AS ?coords) }}
-    }}
-    LIMIT 20
-    """
-
-    if place_type:
-        query = query.replace(
-            "WHERE {",
-            f"""
-            WHERE {{
-              ?place gvp:placeTypePreferred ?ptype .
-              ?ptype rdfs:label ?ptypeLabel .
-              FILTER(CONTAINS(LCASE(?ptypeLabel), LCASE(\"{place_type}\"))) .
-            """,
-        )
+    base_url = "https://www.getty.edu/vow/TGNServlet"
+    search_params = {
+        "find": name,
+        "place": "",
+        "nation": "",
+        "english": "Y",
+        "page": "1",
+    }
 
     try:
-        response = requests.get(BASE_TGN_URL, params={"query": query}, timeout=10)
-        response.raise_for_status()
-        data = response.json()
-    except (requests.RequestException, ValueError) as exc:
-        LOG.warning("TGN request failed: %s", exc)
-        raise RuntimeError("Failed to query Getty TGN") from exc
+        search_response = requests.get(base_url, params=search_params, timeout=10)
+        logger.debug(f"Constructed search URL: {search_response.url}")
+        logger.debug(f"Search page HTML (first 500 chars): {search_response.text[:500]}")
+        search_response.raise_for_status()
+    except requests.RequestException as e:
+        logger.warning(f"TGN search request failed: {e}")
+        return []
+
+    soup = BeautifulSoup(search_response.text, 'html.parser')
+    links = soup.select("a[href*='TGNFullDisplay?']")
+    logger.debug(f"Found {len(links)} TGN display links.")
 
     results = []
-    for b in data.get("results", {}).get("bindings", []):
-        results.append({
-            "uri": b.get("place", {}).get("value"),
-            "name": b.get("placeLabel", {}).get("value"),
-            "coordinates": b.get("coords", {}).get("value") if "coords" in b else None,
-            "place_type": b.get("placetypeLabel", {}).get("value") if "placetypeLabel" in b else None,
-            "country": b.get("countryLabel", {}).get("value") if "countryLabel" in b else None,
-            "continent": b.get("continentLabel", {}).get("value") if "continentLabel" in b else None,
-        })
+
+    for link in links:
+        href = link.get("href")
+        full_url = urljoin("https://www.getty.edu/vow/", href)
+        logger.debug(f"Fetching display page: {full_url}")
+
+        try:
+            detail_response = requests.get(full_url, timeout=10)
+            detail_response.raise_for_status()
+        except requests.RequestException as e:
+            logger.warning(f"Failed to fetch {full_url}: {e}")
+            continue
+
+        detail_soup = BeautifulSoup(detail_response.text, 'html.parser')
+
+        tgn_id = href.split("subjectid=")[-1] if "subjectid=" in href else "NA"
+
+        # Preferred name extraction
+        preferred_name_tag = detail_soup.find("a", onmouseover=lambda x: x and "Preferred Name" in x)
+        preferred_name = "NA"
+        if preferred_name_tag:
+            bold_parent = preferred_name_tag.find_parent("nobr")
+            if bold_parent:
+                bold_text = bold_parent.find("b")
+                if bold_text:
+                    preferred_name = bold_text.get_text(strip=True)
+
+        # Place type extraction
+        place_type = "NA"
+        for td in detail_soup.select("td[colspan='4'][valign='BOTTOM'] span.page b"):
+            text = td.get_text(strip=True)
+            if '(' in text and ')' in text:
+                place_type = text.split('(')[-1].rstrip(')')
+                break
+
+        # Coordinates (decimal degrees)
+        latitude = "NA"
+        longitude = "NA"
+        for span in detail_soup.find_all("span", class_="page"):
+            full_text = span.get_text(separator=" ", strip=True).replace("\xa0", " ")
+            logger.debug(f"Coordinate candidate text: {full_text}")
+            if "Lat:" in full_text and "decimal degrees" in full_text:
+                try:
+                    latitude = full_text.split("Lat:")[1].split("decimal degrees")[0].strip()
+                except Exception as e:
+                    logger.warning(f"Error parsing latitude: {e}")
+            if "Long:" in full_text and "decimal degrees" in full_text:
+                try:
+                    longitude = full_text.split("Long:")[1].split("decimal degrees")[0].strip()
+                except Exception as e:
+                    logger.warning(f"Error parsing longitude: {e}")
+
+        # Hierarchy extraction
+        hierarchy = {
+            "Continent": "",
+            "Country": "",
+            "State or Province": "NA",
+            "County": "NA",
+            "Municipality": "NA"
+        }
+        table_tags = detail_soup.select("td span.page")
+        for tag in table_tags:
+            txt = tag.get_text()
+            if "(continent)" in txt:
+                hierarchy["Continent"] = txt.split("(")[0].strip()
+            elif "(nation)" in txt:
+                hierarchy["Country"] = txt.split("(")[0].strip()
+            elif "(state)" in txt:
+                hierarchy["State or Province"] = txt.split("(")[0].strip()
+            elif "(province)" in txt:
+                hierarchy["State or Province"] = txt.split("(")[0].strip()
+            elif "(county)" in txt:
+                hierarchy["County"] = txt.split("(")[0].strip()
+            elif "(municipality)" in txt:
+                hierarchy["Municipality"] = txt.split("(")[0].strip()
+
+        result = {
+            "tgn_id": tgn_id,
+            "preferred_name": preferred_name,
+            "place_type": place_type,
+            "latitude": latitude,
+            "longitude": longitude,
+            **hierarchy
+        }
+
+        logger.debug(f"Parsed TGN display result: {result}")
+        results.append(result)
+
+    logger.info(f"TGN search completed: {len(results)} result(s) found for '{name}'")
     return results

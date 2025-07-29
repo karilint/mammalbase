@@ -17,7 +17,8 @@ def search_place(request):
         return JsonResponse({"results": cached})
 
     try:
-        results = search_tgn(name, place_type if place_type else None)
+#        results = search_tgn(name, place_type if place_type else None)
+        results = search_tgn(name)
     except RuntimeError as exc:
         return JsonResponse({"error": str(exc)}, status=502)
 
