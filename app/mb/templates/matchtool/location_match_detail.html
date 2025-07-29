@@ -70,7 +70,7 @@
               <td>{{ location.Country|default:'-' }}</td>
               <td>
                 {% if location.tgn_id %}
-                  <a href="https://www.getty.edu/vow/TGNFullDisplay?subjectid={{ location.tgn_id }}" target="_blank" rel="noopener noreferrer">{{ location.tgn_id }}</a>
+                  <a href="https://www.getty.edu/vow/TGNFullDisplay?find={{ location.preferred_name|urlencode }}&place=&nation=&prev_page=1&english=Y&subjectid={{ location.tgn_id }}" target="_blank" rel="noopener noreferrer">{{ location.tgn_id }}</a>
                 {% else %}-{% endif %}
               </td>
               <td style="text-align:right"><button onclick="handleMatchButtonClick('{{ location|escapejs }}', '{{ sourceLocation.id|escapejs }}', '{{ selected_provider }}')" class="w3-button w3-medium w3-round w3-padding-small w3-teal">Match&nbsp;<i class="fa fa-angle-right"></i></button></td>

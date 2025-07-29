@@ -73,7 +73,7 @@
           {% if master_location.location_id %}
             {% with provider=master_location.location_according_to|default:"GeoNames" %}
               {% if provider == "Getty TGN" %}
-                <a title="Press for Details" target="_blank" href="https://www.getty.edu/vow/TGNFullDisplay?subjectid={{ master_location.location_id }}">{{ master_location.location_id }}<span class="fa fa-link w3-small"></span></a>
+                <a title="Press for Details" target="_blank" href="https://www.getty.edu/vow/TGNFullDisplay?find={{ master_location.name|urlencode }}&place=&nation=&prev_page=1&english=Y&subjectid={{ master_location.location_id }}">{{ master_location.location_id }}<span class="fa fa-link w3-small"></span></a>
               {% else %}
                 <a title="Press for Details" target="_blank" href="https://geonames.org/{{ master_location.location_id }}">{{ master_location.location_id }}<span class="fa fa-link w3-small"></span></a>
               {% endif %}

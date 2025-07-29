@@ -221,9 +221,9 @@ def match_location(request):
     location_data = json.loads(location_data)
 
     if provider == 'tgn':
-        locations = add_tgn_location(location_data, source_location_id)
+        locations = add_tgn_location(location_data, source_location_id, user=request.user)
     else:
-        locations = add_locations(location_data, source_location_id)
+        locations = add_locations(location_data, source_location_id, user=request.user)
 
     final_location = locations[-1] if locations else None
 
