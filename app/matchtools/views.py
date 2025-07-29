@@ -15,6 +15,7 @@ from mb.views import user_is_data_admin_or_contributor
 from .filters import SourceAttributeFilter, SourceLocationFilter
 from .location_api import LocationAPI
 from .location_match import add_locations, add_tgn_location, get_hierarchy_chain
+from tgn.services import search_tgn
 
 
 @login_required
@@ -150,7 +151,11 @@ def location_match_detail(request, id):
     # Increment the match_attempts field of the source location
     SourceLocation.objects.filter(id=id).update(match_attempts=F('match_attempts') + 1)
 
-    result = api.get_nature_reserves(source_location)
+    reserves = api.get_nature_reserves(source_location)
+    result = {
+        "geonames": reserves,
+        "totalResultsCount": len(reserves),
+    }
 
     # Set the initial query, provider and selected_option
     query = source_location
