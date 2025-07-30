@@ -4,13 +4,23 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import re
 
+# Base URL for Getty TGN search queries.  This is imported in the tests so
+# keep the name stable.
+BASE_TGN_URL = "https://www.getty.edu/vow/TGNServlet"
+
 logger = logging.getLogger(__name__)
 
 
-def search_tgn(name):
-    logger.debug(f"Starting TGN search for name: {name}")
+def search_tgn(name, nature_reserve=False):
+    """Query the Getty TGN for ``name``.
 
-    base_url = "https://www.getty.edu/vow/TGNServlet"
+    If ``nature_reserve`` is truthy, the search is limited to place types that
+    represent nature reserves.
+    """
+
+    logger.debug(f"Starting TGN search for name: {name}; nature_reserve={nature_reserve}")
+
+    base_url = BASE_TGN_URL
     search_params = {
         "find": name,
         "place": "",
@@ -19,14 +29,22 @@ def search_tgn(name):
         "page": "1",
     }
 
+    if nature_reserve:
+        search_params["place"] = (
+            "forest reserve, nature reserve, national park, "
+            "national forest, wildlife refuge, preserve, protected area"
+        )
+
     try:
         search_response = requests.get(base_url, params=search_params, timeout=10)
         logger.debug(f"Constructed search URL: {search_response.url}")
-        logger.debug(f"Search page HTML (first 500 chars): {search_response.text[:500]}")
+        logger.debug(
+            f"Search page HTML (first 500 chars): {search_response.text[:500]}"
+        )
         search_response.raise_for_status()
     except requests.RequestException as e:
         logger.warning(f"TGN search request failed: {e}")
-        return []
+        raise RuntimeError(f"Failed to query Getty TGN: {e}")
 
     soup = BeautifulSoup(search_response.text, 'html.parser')
     links = soup.select("a[href*='TGNFullDisplay?']")

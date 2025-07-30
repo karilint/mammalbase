@@ -1,7 +1,11 @@
 from mb.models import SourceLocation, MasterLocation, LocationRelation
 from matchtools.location_api import LocationAPI
 
-def create_master_location(geo_names_location: dict, hierarchy_location: MasterLocation = None):
+def create_master_location(
+    geo_names_location: dict,
+    hierarchy_location: MasterLocation = None,
+    user=None,
+):
     """
     Creates a master location from a GeoNames location.
     If the location is new, it is saved to the database.
@@ -23,7 +27,12 @@ def create_master_location(geo_names_location: dict, hierarchy_location: MasterL
         decimal_latitude=latitude,
         decimal_longitude=longitude,
         location_id=location_id,
-        is_reserve=is_reserve
+        is_reserve=is_reserve,
+        defaults={
+            "location_according_to": "GeoNames",
+            "created_by": user,
+            "modified_by": user,
+        },
     )
 
     # If the location is new, update its fields and save it
@@ -39,10 +48,13 @@ def create_master_location(geo_names_location: dict, hierarchy_location: MasterL
             master_location.higher_geography = hierarchy_location
 
         master_location.save()
+    elif master_location.location_id and not master_location.location_according_to:
+        master_location.location_according_to = "GeoNames"
+        master_location.save()
 
     return (master_location, created)
 
-def match_locations(master_location, source_location):
+def match_locations(master_location, source_location, user=None):
     """Adds a master and source location to the LocationRelation table."""
 
     if master_location is None:
@@ -51,10 +63,49 @@ def match_locations(master_location, source_location):
     location_relation, _ = LocationRelation.objects.get_or_create(
         master_location=master_location,
         source_location=source_location,
+        defaults={"created_by": user, "modified_by": user},
     )
     return location_relation
 
-def add_locations(geo_names_location, source_location_id):
+def add_tgn_location(tgn_location, source_location_id, user=None):
+    """Create a MasterLocation from a Getty TGN result and match it."""
+
+    source_location = SourceLocation.objects.get(id=source_location_id)
+
+    place_type = tgn_location.get("place_type", "")
+    reserve_keywords = {
+        "forest reserve",
+        "nature reserve",
+        "national park",
+        "national forest",
+        "wildlife refuge",
+        "preserve",
+        "protected area",
+    }
+    is_reserve = any(k in place_type.lower() for k in reserve_keywords)
+
+    master_location, _ = MasterLocation.objects.get_or_create(
+        name=tgn_location.get("preferred_name"),
+        location_id=tgn_location.get("tgn_id"),
+        defaults={
+            "decimal_latitude": tgn_location.get("latitude"),
+            "decimal_longitude": tgn_location.get("longitude"),
+            "continent": tgn_location.get("Continent"),
+            "country": tgn_location.get("Country"),
+            "state_province": tgn_location.get("State or Province"),
+            "county": tgn_location.get("County"),
+            "municipality": tgn_location.get("Municipality"),
+            "location_according_to": "Getty TGN",
+            "is_reserve": is_reserve,
+            "created_by": user,
+            "modified_by": user,
+        },
+    )
+
+    match_locations(master_location, source_location, user=user)
+    return [master_location]
+
+def add_locations(geo_names_location, source_location_id, user=None):
     """adds a master location and it's hierarchy location(s) to the database"""
 
     source_location = SourceLocation.objects.get(id=source_location_id)
@@ -82,7 +133,9 @@ def add_locations(geo_names_location, source_location_id):
 
     # Loop over the locations and add them to the database
     for location in locations:
-        master_location, created = create_master_location(location, hierarchy_location)
+        master_location, created = create_master_location(
+            location, hierarchy_location, user=user
+        )
 
         # Adds the location to the added_locations list if it was a new location
         if created:
@@ -102,7 +155,7 @@ def add_locations(geo_names_location, source_location_id):
     # Match the source location with the final master location regardless of
     # whether it was newly created or already existed in the database.
     if hierarchy_location is not None:
-        match_locations(hierarchy_location, source_location)
+        match_locations(hierarchy_location, source_location, user=user)
 
     return added_locations
 

@@ -14,7 +14,8 @@ from mb.views import user_is_data_admin_or_contributor
 
 from .filters import SourceAttributeFilter, SourceLocationFilter
 from .location_api import LocationAPI
-from .location_match import add_locations, get_hierarchy_chain
+from .location_match import add_locations, add_tgn_location, get_hierarchy_chain
+from tgn.services import search_tgn
 
 
 @login_required
@@ -150,27 +151,42 @@ def location_match_detail(request, id):
     # Increment the match_attempts field of the source location
     SourceLocation.objects.filter(id=id).update(match_attempts=F('match_attempts') + 1)
 
-    result = api.get_locations(source_location)
+    reserves = api.get_nature_reserves(source_location)
+    result = {
+        "geonames": reserves,
+        "totalResultsCount": len(reserves),
+    }
 
-    # Set the initial query and selected_option
+    # Set the initial query, provider and selected_option
     query = source_location
-    selected_option = 'all'
+    selected_option = 'reserves'
+    selected_provider = 'geonames'
 
     # If the request method is POST, update the query and selected_option
     # and get the locations or nature reserves from the GeoNames API
     if request.method == 'POST':
         selected_option = request.POST.get('limit_search')
+        selected_provider = request.POST.get('provider', 'geonames')
         query = request.POST.get('query')
-        if selected_option == 'all':
-            result = api.get_locations(query)
-        elif selected_option == 'reserves':
-            reserves = api.get_nature_reserves(query)
+        nature_only = selected_option == 'reserves'
+        if selected_provider == 'tgn':
             result = {
-                "geonames": reserves,
-                "totalResultsCount": len(reserves)
+                "tgn": search_tgn(query, nature_only)
             }
+        else:
+            if nature_only:
+                reserves = api.get_nature_reserves(query)
+                result = {
+                    "geonames": reserves,
+                    "totalResultsCount": len(reserves)
+                }
+            else:
+                result = api.get_locations(query)
 
-    result_locations = result["geonames"][:10]
+    if selected_provider == 'tgn':
+        result_locations = result["tgn"][:10]
+    else:
+        result_locations = result["geonames"][:10]
     id_list = request.session.get('id_list')
 
     # Get the current, previous and next ids of the locations to be matched
@@ -191,20 +207,23 @@ def location_match_detail(request, id):
         'id_count': len(id_list), 
         'previous_id': previous_id,
         'selected_option': selected_option,
+        'selected_provider': selected_provider,
         'matched': matched,
     })
 
 def match_location(request):
-    """Creates a master location and matches it to a source location"""
-    geo_names_location = request.POST.get('geoNamesLocation')
+    """Create a master location from a provider result and match it."""
+    location_data = request.POST.get('locationData')
     source_location_id = request.POST.get('sourceLocation')
+    provider = request.POST.get('provider', 'geonames')
 
-    # Format and parse the GeoNames location as JSON
-    geo_names_location = geo_names_location.replace("'", '"')
-    geo_names_location = json.loads(geo_names_location)
+    location_data = location_data.replace("'", '"')
+    location_data = json.loads(location_data)
 
-    # Add the master location and its hierarchy location(s) to the database
-    locations = add_locations(geo_names_location, source_location_id)
+    if provider == 'tgn':
+        locations = add_tgn_location(location_data, source_location_id, user=request.user)
+    else:
+        locations = add_locations(location_data, source_location_id, user=request.user)
 
     final_location = locations[-1] if locations else None
 

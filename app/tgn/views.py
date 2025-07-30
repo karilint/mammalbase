@@ -6,19 +6,19 @@ from .services import search_tgn
 
 def search_place(request):
     name = request.GET.get("name", "")
-    place_type = request.GET.get("place_type", "")
+    nature_reserve_param = request.GET.get("nature_reserve", "").lower()
+    nature_reserve = nature_reserve_param in {"yes", "true", "1"}
 
     if not name:
         return JsonResponse({"error": "Missing 'name' parameter"}, status=400)
 
-    cache_key = f"tgn_{name}_{place_type}"
+    cache_key = f"tgn_{name}_{nature_reserve}"
     cached = cache.get(cache_key)
     if cached:
         return JsonResponse({"results": cached})
 
     try:
-#        results = search_tgn(name, place_type if place_type else None)
-        results = search_tgn(name)
+        results = search_tgn(name, nature_reserve)
     except RuntimeError as exc:
         return JsonResponse({"error": str(exc)}, status=502)
 

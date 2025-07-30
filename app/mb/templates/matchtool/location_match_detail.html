@@ -30,6 +30,13 @@
           <input type="radio" id="reserves" name="limit_search" value="reserves" style="display: inline-block; width: 13px; height: 13px; margin-left: 20px;" {% if selected_option == 'reserves' %}checked{% endif %} />
           <label for="reserves" style="margin-left: 5px;">Nature reserves</label>
         </div>
+        <div style="margin-bottom:10px;">
+          <label for="provider">Location According to:</label>
+          <select name="provider" id="provider">
+            <option value="geonames" {% if selected_provider == 'geonames' %}selected{% endif %}>GeoNames</option>
+            <option value="tgn" {% if selected_provider == 'tgn' %}selected{% endif %}>Getty TGN</option>
+          </select>
+        </div>
 
         <input type="submit" value="Submit" class="w3-button w3-medium w3-round w3-padding-small w3-teal" style="width: 80px;">
       </form>
@@ -49,7 +56,7 @@
             <th>Name</th>
             <th>Type</th>
             <th>Country</th>
-            <th>ID <a class="fa fa-info-circle w3-medium" title="Click ID to go to Geonames location page"></a></th>
+            <th>ID <a class="fa fa-info-circle w3-medium" title="Click ID to go to location page"></a></th>
           </tr>
         </thead>
       
@@ -57,28 +64,31 @@
         <tbody>
           {% for location in result_locations %}
           <tr>
-            {% if location.name %}
-              <td>{{ location.name }}</td>
+            {% if selected_provider == 'tgn' %}
+              <td>{{ location.preferred_name }}</td>
+              <td>{{ location.place_type }}</td>
+              <td>{{ location.Country|default:'-' }}</td>
+              <td>
+                {% if location.tgn_id %}
+                  <a href="https://www.getty.edu/vow/TGNFullDisplay?find={{ location.preferred_name|urlencode }}&place=&nation=&prev_page=1&english=Y&subjectid={{ location.tgn_id }}" target="_blank" rel="noopener noreferrer">{{ location.tgn_id }}</a>
+                {% else %}-{% endif %}
+              </td>
+              <td style="text-align:right"><button onclick="handleMatchButtonClick('{{ location|escapejs }}', '{{ sourceLocation.id|escapejs }}', '{{ selected_provider }}')" class="w3-button w3-medium w3-round w3-padding-small w3-teal">Match&nbsp;<i class="fa fa-angle-right"></i></button></td>
             {% else %}
-              <td style="text-align:center">-</td>
+              {% if location.name %}
+                <td>{{ location.name }}</td>
+              {% else %}<td style="text-align:center">-</td>{% endif %}
+              {% if location.fcodeName %}
+                <td>{{ location.fcodeName }}</td>
+              {% else %}<td style="text-align:center">-</td>{% endif %}
+              {% if location.countryName %}
+                <td>{{ location.countryName }}</td>
+              {% else %}<td style="text-align:center">-</td>{% endif %}
+              {% if location.geonameId %}
+                <td><a href="https://www.geonames.org/{{ location.geonameId }}" target="_blank" rel="noopener noreferrer">{{ location.geonameId }}</a></td>
+              {% else %}<td style="text-align:center">-</td>{% endif %}
+              <td style="text-align:right"><button onclick="handleMatchButtonClick('{{ location|escapejs }}', '{{ sourceLocation.id|escapejs }}', '{{ selected_provider }}')" class="w3-button w3-medium w3-round w3-padding-small w3-teal">Match&nbsp;<i class="fa fa-angle-right"></i></button></td>
             {% endif %}
-            {% if location.fcodeName %}
-              <td>{{ location.fcodeName }}</td>
-            {% else %}
-              <td style="text-align:center">-</td>
-            {% endif %}
-            {% if location.countryName %}
-              <td>{{ location.countryName }}</td>
-            {% else %}
-              <td style="text-align:center">-</td>
-            {% endif %}
-            {% if location.geonameId %}
-              <td><a href="https://www.geonames.org/{{ location.geonameId }}" target="_blank" rel="noopener noreferrer">{{ location.geonameId }}</a></td>
-            {% else %}
-              <td style="text-align:center">-</td>
-            {% endif %}
-              <td style="text-align:right"><button onclick="handleMatchButtonClick('{{ location|escapejs }}', '{{ sourceLocation.id|escapejs }}')" class="w3-button w3-medium w3-round w3-padding-small w3-teal">
-                Match&nbsp;<i class="fa fa-angle-right"></i></button></td>
           </tr>
           {% endfor %}
         </tbody>
@@ -135,11 +145,12 @@
 
 <!--Script for handling match button click-->
 <script>
-  function handleMatchButtonClick(geoNamesLocation, sourceLocation) {
+  function handleMatchButtonClick(locationData, sourceLocation, provider) {
     // Create a FormData object to send data with POST request
     var formData = new FormData();
-    formData.append('geoNamesLocation', geoNamesLocation);
+    formData.append('locationData', locationData);
     formData.append('sourceLocation', sourceLocation);
+    formData.append('provider', provider);
 
     // Send a POST request to the server
     fetch("{% url 'match_location' %}", {
