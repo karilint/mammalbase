@@ -14,8 +14,14 @@ from mb.views import user_is_data_admin_or_contributor
 
 from .filters import SourceAttributeFilter, SourceLocationFilter
 from .location_api import LocationAPI
-from .location_match import add_locations, add_tgn_location, get_hierarchy_chain
+from .location_match import (
+    add_locations,
+    add_tgn_location,
+    add_wdpa_location,
+    get_hierarchy_chain,
+)
 from tgn.services import search_tgn
+from wdpa.services import search_wdpa
 
 
 @login_required
@@ -173,6 +179,12 @@ def location_match_detail(request, id):
             result = {
                 "tgn": search_tgn(query, nature_only)
             }
+        elif selected_provider == 'wdpa':
+            reserves = search_wdpa(query)
+            result = {
+                "wdpa": reserves,
+                "totalResultsCount": len(reserves),
+            }
         else:
             if nature_only:
                 reserves = api.get_nature_reserves(query)
@@ -185,6 +197,8 @@ def location_match_detail(request, id):
 
     if selected_provider == 'tgn':
         result_locations = result["tgn"][:10]
+    elif selected_provider == 'wdpa':
+        result_locations = result["wdpa"][:10]
     else:
         result_locations = result["geonames"][:10]
     id_list = request.session.get('id_list')
@@ -222,6 +236,8 @@ def match_location(request):
 
     if provider == 'tgn':
         locations = add_tgn_location(location_data, source_location_id, user=request.user)
+    elif provider == 'wdpa':
+        locations = add_wdpa_location(location_data, source_location_id, user=request.user)
     else:
         locations = add_locations(location_data, source_location_id, user=request.user)
 
