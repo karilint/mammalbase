@@ -199,10 +199,14 @@ class MasterLocationFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains', label='Name contains')
     country = django_filters.CharFilter(lookup_expr='icontains', label='Country contains')
     continent = django_filters.CharFilter(lookup_expr='icontains', label='Continent contains')
+    is_reserve = django_filters.BooleanFilter(
+        field_name='is_reserve',
+        widget=forms.NullBooleanSelect,
+        label='Reserve')
 
     class Meta:
         model = MasterLocation
-        fields = ['name', 'country', 'continent']
+        fields = ['name', 'country', 'continent', 'is_reserve']
 
 
 
