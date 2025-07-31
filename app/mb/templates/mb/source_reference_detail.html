@@ -33,8 +33,7 @@
     <tr>
       <th class="w3-quarter">DOI:</th>
       {% if source_reference.doi %}
-        <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="http://dx.doi.org/{{ source_reference.doi }}" target="_blank">
-          {{ source_reference.doi }} <span class="fa fa-external-link"></span></a></td>
+        <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="http://dx.doi.org/{{ source_reference.doi }}" target="_blank">{{ source_reference.doi }} <span class="fa fa-external-link"></span></a></td>
       {% else %}
         <td class="w3-threequarter"></td>
       {% endif %}

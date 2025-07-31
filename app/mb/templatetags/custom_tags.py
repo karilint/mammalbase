@@ -42,3 +42,21 @@ def trim_gender(value):
 @register.filter(name="trim_lifestage")
 def trim_lifestage(value):
     return value.replace("LifeStage -", "")
+
+
+@register.simple_tag
+def location_id_url(location):
+    """Return external URL for a master location ID based on provider."""
+    if not location or not location.location_id:
+        return ""
+
+    provider = (location.location_according_to or "").lower()
+    if provider.startswith("geonames"):
+        return f"https://www.geonames.org/{location.location_id}"
+    if provider.startswith("tgn"):
+        return f"http://vocab.getty.edu/tgn/{location.location_id}"
+
+    if location.location_id.startswith("http"):
+        return location.location_id
+
+    return location.location_id

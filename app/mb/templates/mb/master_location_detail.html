@@ -12,6 +12,7 @@
 <div class="w3-bar w3-border-bottom" style="margin-bottom:16px;">
   <button class="w3-bar-item w3-button tablink {% if not show_source_tab %}w3-teal{% endif %}" onclick="openTab(event,'MasterTab')">Master</button>
   <button class="w3-bar-item w3-button tablink {% if show_source_tab %}w3-teal{% endif %}" onclick="openTab(event,'SourceTab')">Source</button>
+  <button class="w3-bar-item w3-button tablink" onclick="openTab(event,'OccurrenceTab')">Occurrences</button>
 </div>
 
 <div id="MasterTab" class="tab" style="display:{% if not show_source_tab %}block{% else %}none{% endif %}">
@@ -60,10 +61,16 @@
         <th class="w3-quarter">Location According to</th>
         <td class="w3-threequarter">{{ master_location.location_according_to }}</td>
       </tr>
+      {% location_id_url master_location as loc_url %}
       <tr>
         <th class="w3-quarter">Location ID</th>
-        <td class="w3-threequarter"><a title="Press for Details" target="_blank"
-          href="https://geonames.org/{{ master_location.location_id }}">{{ master_location.location_id }}<span class="fa fa-link w3-small"></span></a></td>
+        <td class="w3-threequarter">
+          {% if loc_url %}
+            <a title="Press for Details" target="_blank" href="{{ loc_url }}">{{ master_location.location_id }} <span class="fa fa-external-link w3-small"></span></a>
+          {% else %}
+            {{ master_location.location_id }}
+          {% endif %}
+        </td>
       </tr>
       <tr>
         <th class="w3-quarter">Location Remarks</th>
@@ -116,6 +123,37 @@
   </table>
   {% else %}
     <p>There are no matched source locations.</p>
+  {% endif %}
+</section>
+</div>
+
+<div id="OccurrenceTab" class="tab" style="display:none;">
+<section class="w3-threequarter w3-container">
+  <header class="w3-container w3-text-teal">
+    <h2>Occurrences</h2>
+  </header>
+
+  {% if occurrences %}
+  <table class="mb-list w3-table-all w3-small w3-responsive">
+    <thead>
+      <tr>
+        <th>Taxon</th>
+        <th>Rank</th>
+        <th>Higher Classification</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for me in occurrences %}
+      <tr>
+        <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_entity-detail' pk=me.pk %}">{{ me.name }} <span class="fa fa-link w3-small"></span></a></td>
+        <td>{{ me.entity }}</td>
+        <td>{{ me.taxon.higher_classification }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p>There are no occurrences.</p>
   {% endif %}
 </section>
 </div>
