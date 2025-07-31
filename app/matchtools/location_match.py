@@ -75,12 +75,14 @@ def add_tgn_location(tgn_location, source_location_id, user=None):
     place_type = tgn_location.get("place_type", "")
     reserve_keywords = {
         "forest reserve",
-        "nature reserve",
-        "national park",
         "national forest",
-        "wildlife refuge",
+        "national park",
+        "nature reserve",
+        "park",
         "preserve",
         "protected area",
+        "reserve",
+        "wildlife refuge",
     }
     is_reserve = any(k in place_type.lower() for k in reserve_keywords)
 

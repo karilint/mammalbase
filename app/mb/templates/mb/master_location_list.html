@@ -25,6 +25,7 @@
           <th>Name</th>
           <th>Country</th>
           <th>Continent</th>
+          <th>Reserve</th>
         </tr>
       </thead>
       <tbody>
@@ -33,6 +34,7 @@
           <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_location_detail' pk=x.id %}">{{ x.name }} <span class="fa fa-link w3-small"></span></a></td>
           <td>{{ x.country }}</td>
           <td>{{ x.continent }}</td>
+          <td>{% if x.is_reserve %}Yes{% else %}No{% endif %}</td>
         </tr>
         {% endfor %}
       </tbody>
