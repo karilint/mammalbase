@@ -105,6 +105,30 @@ def add_tgn_location(tgn_location, source_location_id, user=None):
     match_locations(master_location, source_location, user=user)
     return [master_location]
 
+def add_wdpa_location(wdpa_location, source_location_id, user=None):
+    """Create a MasterLocation from a Protected Planet result and match it."""
+
+    source_location = SourceLocation.objects.get(id=source_location_id)
+
+    master_location, _ = MasterLocation.objects.get_or_create(
+        name=wdpa_location.get("original_name"),
+        location_id=wdpa_location.get("wdpa_id"),
+        defaults={
+            "country": wdpa_location.get("country"),
+            "location_according_to": "Protected Planet",
+            "is_reserve": True,
+            "created_by": user,
+            "modified_by": user,
+        },
+    )
+
+    if master_location.location_according_to in [None, ""]:
+        master_location.location_according_to = "Protected Planet"
+        master_location.save()
+
+    match_locations(master_location, source_location, user=user)
+    return [master_location]
+
 def add_locations(geo_names_location, source_location_id, user=None):
     """adds a master location and it's hierarchy location(s) to the database"""
 

@@ -35,6 +35,7 @@
           <select name="provider" id="provider">
             <option value="geonames" {% if selected_provider == 'geonames' %}selected{% endif %}>GeoNames</option>
             <option value="tgn" {% if selected_provider == 'tgn' %}selected{% endif %}>Getty TGN</option>
+            <option value="wdpa" {% if selected_provider == 'wdpa' %}selected{% endif %}>Protected Planet</option>
           </select>
         </div>
 
@@ -71,6 +72,16 @@
               <td>
                 {% if location.tgn_id %}
                   <a href="https://www.getty.edu/vow/TGNFullDisplay?find={{ location.preferred_name|urlencode }}&place=&nation=&prev_page=1&english=Y&subjectid={{ location.tgn_id }}" target="_blank" rel="noopener noreferrer">{{ location.tgn_id }}</a>
+                {% else %}-{% endif %}
+              </td>
+              <td style="text-align:right"><button onclick="handleMatchButtonClick('{{ location|escapejs }}', '{{ sourceLocation.id|escapejs }}', '{{ selected_provider }}')" class="w3-button w3-medium w3-round w3-padding-small w3-teal">Match&nbsp;<i class="fa fa-angle-right"></i></button></td>
+            {% elif selected_provider == 'wdpa' %}
+              <td>{{ location.original_name }}</td>
+              <td>protected area</td>
+              <td>{{ location.country|default:'-' }}</td>
+              <td>
+                {% if location.wdpa_id %}
+                  <a href="https://www.protectedplanet.net/{{ location.wdpa_id }}" target="_blank" rel="noopener noreferrer">{{ location.wdpa_id }}</a>
                 {% else %}-{% endif %}
               </td>
               <td style="text-align:right"><button onclick="handleMatchButtonClick('{{ location|escapejs }}', '{{ sourceLocation.id|escapejs }}', '{{ selected_provider }}')" class="w3-button w3-medium w3-round w3-padding-small w3-teal">Match&nbsp;<i class="fa fa-angle-right"></i></button></td>

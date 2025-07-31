@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'exports',
     'matchtools',
     'tgn',
+    'wdpa',
 
     'allauth',
     'allauth.account',
