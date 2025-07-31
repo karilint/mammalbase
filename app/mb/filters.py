@@ -203,10 +203,18 @@ class MasterLocationFilter(django_filters.FilterSet):
         field_name='is_reserve',
         widget=forms.NullBooleanSelect,
         label='Reserve')
+    taxon = django_filters.CharFilter(
+        field_name='locationrelation__source_location__occurrence__source_entity__entityrelation__master_entity__name',
+        lookup_expr='icontains',
+        label='Taxon contains')
+    higher_classification = django_filters.CharFilter(
+        field_name='locationrelation__source_location__occurrence__source_entity__entityrelation__master_entity__taxon__higher_classification',
+        lookup_expr='icontains',
+        label='Higher Classification contains')
 
     class Meta:
         model = MasterLocation
-        fields = ['name', 'country', 'continent', 'is_reserve']
+        fields = ['name', 'country', 'continent', 'is_reserve', 'taxon', 'higher_classification']
 
 
 
