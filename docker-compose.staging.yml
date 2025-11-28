@@ -64,7 +64,6 @@ services:
   celery:
     image: palaeontologyhelsinki/mammalbase_staging
     restart: unless-stopped
-    build: ./app
     volumes:
       - static:/vol/web
       - ./app/logs:/src/app/logs
@@ -79,7 +78,6 @@ services:
     image: palaeontologyhelsinki/mammalbase_staging
     user: "1000:1000"
     restart: unless-stopped
-    build: ./app
     volumes:
       - static:/vol/web
       - ./app/logs:/src/app/logs
