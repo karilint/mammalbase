@@ -267,12 +267,12 @@ CELERY_BEAT_SCHEDULE = {
 
 
 # Email configuration
-EMAIL_HOST_PASSWORD = environ.get('SENDGRID_API_KEY')
+EMAIL_HOST_PASSWORD = environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_BACKEND = environ.get(
     'EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend'
 )
-EMAIL_HOST = 'smtp.sendgrid.net'
-EMAIL_HOST_USER = 'apikey' # this is exactly the value 'apikey'
+EMAIL_HOST = environ.get('EMAIL_HOST')
+EMAIL_HOST_USER = environ.get('EMAIL_HOST_USER')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = environ.get('DEFAULT_FROM_EMAIL')
