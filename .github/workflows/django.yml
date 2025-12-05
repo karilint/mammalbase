@@ -13,7 +13,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: ['3.9', '3.10']
     
     services:
       mysql:
@@ -56,4 +56,5 @@ jobs:
         ITIS_CACHE: ./itis_cache
       working-directory: ./app
       run: |
-        python manage.py test
+        python manage.py makemigrations --noinput
+        python manage.py test -v 3

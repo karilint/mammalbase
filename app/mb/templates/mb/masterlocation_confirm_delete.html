@@ -1,0 +1,16 @@
+{% extends 'mb/base_generic.html' %}
+{% block content %} {% load custom_tags %}
+  {% if request.user|is_data_admin_or_owner:masterlocation %}
+    <h1>Delete Master Location</h1>
+
+    <p>Are you sure you want to delete the Master Location: <b><i>{{ masterlocation }}</i></b>?</p>
+
+    <form action="" method="POST">
+        {% csrf_token %}
+        <input type="submit" action="" value="Yes, delete." />
+    </form>
+    <p><a onclick="backFunction()">Go back</a></p>
+  {% else %}
+    <p><a href="{% url 'account_login'%}?next={{request.path}}">Please login first</a></p>
+  {% endif %}
+{% endblock %}

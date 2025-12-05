@@ -38,6 +38,40 @@
         color: red;
         padding-left:0%;
       }
+      .w3-dropdown-hover > .w3-button::after {
+        content: "";
+        border: solid transparent;
+        border-width: 6px;
+        border-top-color: #030101;
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .success-message {
+        background-color: green;
+        color: white;
+        font-size: 15px;
+        padding: 10px;
+      }
+      .error-message {
+        background-color: red;
+        color: white;
+        font-size: 15px;
+        padding: 10px;
+      }
+      .success-message {
+        background-color: green;
+        color: white;
+        font-size: 15px;
+        padding: 10px;
+      }
+      .error-message {
+        background-color: red;
+        color: white;
+        font-size: 15px;
+        padding: 10px;
+      }
       {% block style %}
       {% endblock %}
     </style>
@@ -66,6 +100,7 @@
         <a class="w3-bar-item w3-button w3-hover-white" href="{% url 'index_mammals' %}">Mammals</a>
         <a class="w3-bar-item w3-button w3-hover-white" href="{% url 'index_diet' %}">Diets</a>
         <a class="w3-bar-item w3-button w3-hover-white" href="{% url 'index_proximate_analysis' %}">Proximate Analysis</a>
+        <a class="w3-bar-item w3-button w3-hover-white" href="{% url 'master_location_list' %}">Occurrences</a>
         <a class="w3-bar-item w3-button w3-hover-white" href="{% url 'index_news' %}">News</a>
         <a class="w3-bar-item w3-button w3-hover-white" href="{% url 'index_about' %}">About</a>
         <div class="w3-dropdown-hover">
@@ -73,6 +108,7 @@
           <div class="w3-dropdown-content w3-bar-block w3-border">
             <a href="{% url 'import_diet_set' %}" class="w3-bar-item w3-button">Diet Set</a>
             <a href="{% url 'import_ets' %}" class="w3-bar-item w3-button">ETS</a>
+            <a href="{% url 'import_occurrences' %}" class="w3-bar-item w3-button">Occurrences</a>
             <a href="{% url 'import_proximate_analysis'%}" class="w3-bar-item w3-button">Proximate Analysis</a>
           </div>
         </div>
@@ -92,6 +128,7 @@
         <a class="w3-bar-item w3-button w3-hover-white" >Mammals</a>
         <a class="w3-bar-item w3-button w3-hover-white" >Diets</a>
         <a class="w3-bar-item w3-button w3-hover-white" >Proximate Analysis</a>
+        <a class="w3-bar-item w3-button w3-hover-white" >Master Locations</a>
         <a class="w3-bar-item w3-button w3-hover-white" >News</a>
         <a class="w3-bar-item w3-button w3-hover-white" >About</a>
         <a class="w3-bar-item w3-button w3-hover-white" >Import</a>
@@ -118,6 +155,15 @@
           <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'source_reference-list'%}">Data Sources</a>
           <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'source_attribute-list'%}">Source Traits</a>
           <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'data_check-detail'%}">Data Inconsistencies</a>
+          
+          <div class="w3-dropdown-hover">
+            <button class="w3-button">Match Tools</button>
+            <div class="w3-dropdown-content w3-bar-block w3-border">
+              <a href="{% url 'trait_match_list'%}" class="w3-bar-item w3-button">Trait Match</a>
+              <a href="{% url 'location-match'%}" class="w3-bar-item w3-button">Location Match</a>
+              <a href="#" class="w3-bar-item w3-button">Habitat Match</a>
+            </div>
+          </div>
         {% endif %}
         <h4 class="w3-bar-item"><strong>User: {{ user.get_username }}</strong></h4>
         <a class="w3-bar-item w3-button w3-hover-black" href="{% url 'account_logout' %}?next={% url 'index' %}">Logout</a>
@@ -194,7 +240,8 @@
 
     </script>
       <noscript>Sorry, your browser does not support JavaScript!</noscript>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+      <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
+      <script src="{% static 'js/tabs.js' %}"></script>
       <script defer src="{% static 'js/cookieconsent-init.js' %}"></script>
     {% block script %}
     {% endblock %}

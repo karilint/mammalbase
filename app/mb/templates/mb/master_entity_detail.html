@@ -17,16 +17,7 @@
     <h2 style="display:none">Accepted taxon: {{ master_entity.name }}</h2>
   </header>
   <br>
-  <div class="mb-detail w3-bar w3-right-align">
-    <a title="Press to Go Back" class="w3-button w3-medium w3-round w3-padding-small w3-teal" onclick="backFunction()"><span class="fa fa-arrow-left"></span></a>
-    {% if request.user|is_data_admin_or_owner:master_entity %}
-    <a title="Press to Edit" class="w3-button w3-medium w3-round w3-padding-small w3-teal" href="{% url 'master_entity-edit' pk=master_entity.pk %}"><span class="fa fa-pencil-square-o"></span></a>
-    <a title="Press to Delete" class="w3-button w3-medium w3-round w3-padding-small w3-teal" href="{% url 'master_entity-delete' pk=master_entity.pk %}"><span class="fa fa-trash-o"></span></a>
-    {% else %}
-    <button title="Please login to Edit" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
-    <button title="Please login to Delete" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
-    {% endif %}
-  </div>
+{% include 'includes/detail_action_buttons.html' with object=master_entity edit_url='master_entity-edit' delete_url='master_entity-delete' %}
 
   <table class="mb-detail w3-table-all">
     <caption class="mb-detail w3-left-align">Accepted taxon: {{ master_entity.name }}</caption>
@@ -128,14 +119,28 @@
       </tr>
     </thead>
     <tbody>
-      {% for trait in master_entity.viewmastertraitvalue_set.all %}
+    {% for trait in trait_stats %}
       <tr>
-        <td class="mb-public-internal"><a title="Press for Details" href="{% url 'master_attribute-detail' pk=trait.master_attribute_id.id %}">{{ trait.master_attribute_name }} <span class="fa fa-link w3-small"></span></a></td>
-        <td style="text-align:left" title="{{ trait.n_supporting_value }} out of {{ trait.n_value }} referenses have classified {{ master_entity.name }} as a {{ trait.trait_selected }}.">{{ trait.trait_selected }}</td>
-        <td style="text-align:left" title="{{ trait.trait_values }}">{{ trait.trait_values }}</td>
-        <td style="text-align:left" title="{{ trait.traits_references|safe }}">{{ trait.traits_references|truncatechars:10|safe }}</td>
+        <td class="mb-public-internal">
+          <a title="Press for Details" href="{% url 'master_attribute-detail' pk=trait.master_attribute_id %}">
+            {{ trait.master_attribute_name }} <span class="fa fa-link w3-small"></span>
+          </a>
+        </td>
+        <td style="text-align:left" title="{{ trait.n_supporting_value }} out of {{ trait.n_value }} references have classified {{ master_entity.name }} as a {{ trait.trait_selected }}.">
+          {{ trait.trait_selected }}
+        </td>
+        <td style="text-align:left" title="{{ trait.trait_values }}">
+          {{ trait.trait_values }}
+        </td>
+        <td style="text-align:left">
+          <span class="w3-text-grey">–</span>  {{ trait.traits_references|safe }}
+        </td>
       </tr>
-      {% endfor %}
+    {% empty %}
+      <tr>
+        <td colspan="4">No trait values available.</td>
+      </tr>
+    {% endfor %}
     </tbody>
   </table>
   {% if user.is_authenticated %}

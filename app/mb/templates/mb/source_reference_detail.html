@@ -13,16 +13,7 @@
     <h2 style="display:none">Reference: {{ source_reference }}</h2>
   </header>
   <br>
-  <div class="mb-detail w3-bar w3-right-align">
-    <a title="Press to Go Back" class="w3-button w3-medium w3-round w3-padding-small w3-teal" onclick="backFunction()"><span class="fa fa-arrow-left"></span></a>
-    {% if request.user|is_data_admin_or_owner:source_reference %}
-      <a title="Press to Edit" class="w3-button w3-medium w3-round w3-padding-small w3-teal" href="{% url 'source_reference-edit' pk=source_reference.pk %}"><span class="fa fa-pencil-square-o"></span></a>
-      <a title="Press to Delete" class="w3-button w3-medium w3-round w3-padding-small w3-teal" href="{% url 'source_reference-delete' pk=source_reference.pk %}"><span class="fa fa-trash-o"></span></a>
-    {% else %}
-      <button title="Please login to Edit" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span class="fa fa-pencil-square-o"></span></button>
-      <button title="Please login to Delete" class="w3-disabled w3-button w3-medium w3-round w3-padding-small w3-teal"><span class="fa  fa-trash-o"></span></button>
-    {% endif %}
-  </div>
+{% include 'includes/detail_action_buttons.html' with object=source_reference edit_url='source_reference-edit' delete_url='source_reference-delete' %}
   <table class="mb-detail w3-table-all">
     {% if source_entity.name|length > 100 %}
     <caption class="w3-left-align w3-small">
@@ -42,15 +33,26 @@
     <tr>
       <th class="w3-quarter">DOI:</th>
       {% if source_reference.doi %}
-        <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="http://dx.doi.org/{{ source_reference.doi }}" target="_blank">{{ source_reference.doi }} <span class="fa fa-external-link"></span></a></td>
+        <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="http://dx.doi.org/{{ source_reference.doi }}" target="_blank">
+          {{ source_reference.doi }} <span class="fa fa-external-link"></span></a></td>
       {% else %}
         <td class="w3-threequarter"></td>
       {% endif %}
     </tr>
     <tr>
       <th class="w3-quarter">Standard Reference:</th>
-      <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="{% url 'master_reference-detail' pk=source_reference.master_reference_id|default:0 %}">{{ source_reference.master_reference.citation|safe }} <span class="fa fa-link"></span></a></td>
+      <td class="mb-private-internal w3-threequarter"><a title="Press for Details" href="{% url 'master_reference-detail' pk=source_reference.master_reference_id|default:0 %}">
+        {{ source_reference.master_reference.citation|safe }} <span class="fa fa-link"></span></a></td>
     </tr>
+    {% if request.user|is_data_admin_or_contributor %}
+    <tr>
+      {% if source_reference.sourceattribute_set.exists %}
+        <th class="w3-quarter">Trait match:</th>
+        <td class="mb-private-internal w3-threequarter"><a href="{% url 'trait_match_list' %}?reference_citation={{ source_reference.citation }}">
+          Match unmatched source traits linked to this reference <span class="fa fa-link"></span></a></td>
+      {% endif %}
+    </tr>
+    {% endif %}
   </table>
 
   {% if request.user|is_data_admin_or_owner:source_reference %}

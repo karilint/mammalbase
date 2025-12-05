@@ -3,17 +3,17 @@ import time
 from django.db import connection
 from django.db.utils import OperationalError
 
-db_conn = None
+DB_CONN = None
 for i in range(30):
     try:
         connection.ensure_connection()
-        db_conn = True
+        DB_CONN = True
         break
     except OperationalError:
         print(f"WAITING FOR DATABASE... ({i}s)")
         time.sleep(1)
 
-if db_conn:
+if DB_CONN:
     print("CONNECTED TO DATABASE!")
 else:
     print("DATABASE UNAVAILABLE FOR 30 SECONDS... "

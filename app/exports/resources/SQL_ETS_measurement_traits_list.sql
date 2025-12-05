@@ -12,7 +12,7 @@ SELECT
 -- , concat('https://www.mammalbase.net/me/', `me`.`id`,'/') AS `taxonID`
 , concat('https://www.mammalbase.net/smv/',smv.id,'/') AS measurementID
 , 'NA' occurrenceID
-, case when ec.name not like '%species' then concat(ec.name, ' level data') else 'NA' end `warnings`
+, case when ec.name not like '%species' then concat(ec.name, ' level data') else 'NA' end AS `warnings`
 , ec.name AS `taxonRank`
 , 'Animalia' AS kingdom
 , 'Chordata' AS phylum
@@ -23,7 +23,7 @@ SELECT
 , 'literatureData' basisOfRecord
 , mr.`type` AS `basisOfRecordDescription`
 , replace(replace(mr.`citation`,'<i>',''),'</i>','') AS `references`
-, case when ec.name not like '%species' then concat(ec.name, ' level data') else 'NA' end `measurementResolution`
+, case when ec.name not like '%species' then concat(ec.name, ' level data') else 'NA' end AS `measurementResolution`
 , 'NA' measurementMethod
 , smv.measured_by AS measurementDeterminedBy
 , 'NA' measurementDeterminedDate

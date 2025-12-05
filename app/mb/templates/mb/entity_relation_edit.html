@@ -8,6 +8,7 @@
 {% block title %}
   <title>MammalBase - Add/Edit Taxon Relation</title>
 {% endblock %}
+
 {% block content %} {% load custom_tags %}
   <!--Article header -->
   <header style="display:none">
@@ -18,9 +19,25 @@
     <header class="w3-container w3-text-teal">
       <h2>Add/Edit Taxon Relation</h2>
     </header>
-	{% if request.user|is_data_admin_or_contributor %}
+    {% if request.user|is_data_admin_or_contributor %}
       <form method="POST" novalidate>
         {% csrf_token %}
+          <table class="mb-list w3-table-all">
+            <tbody>
+              <tr>
+                <td style="font-weight: bold; width: 25%;">Source Entity:</td>
+                <td style="width: 75%;">{{ form.instance.source_entity.name }}</td>
+              </tr>
+              <tr>
+                <td style="font-weight: bold;">Master Entity:</td>
+                <td>{{ form.instance.master_entity.name }}</td>
+              </tr>
+              <tr>
+                <td style="font-weight: bold;">Relation:</td>
+                <td>{{ form.instance.relation.name }}</td>
+              </tr>
+            </tbody>
+          </table><p>
         {% include 'includes/w3c-form.html' with form=form %}
         <div class="mb-detail w3-bar w3-right-align">
           <a title="Press to Go Back" class="w3-button w3-medium w3-round w3-padding-small w3-teal" onclick="backFunction()"><span class="fa fa-arrow-left"></span></a>
