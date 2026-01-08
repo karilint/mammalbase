@@ -15,6 +15,11 @@ This update removes deprecated settings and verifies the project aligns with Dja
 - `django-allauth` and `django-simple-history` are updated to versions compatible with Django 5.2.
 - Review third-party release notes before any further upgrades.
 
+## Review findings
+- Settings and middleware references align with Django 5.2 defaults; documentation links updated to the 5.2 docs.
+- URL routing remains on modern `path`/`re_path` usage; no deprecated routing APIs found.
+- No deprecated ORM or template tags were detected in the current scan.
+
 ## Localization behavior
 Django 5.2 no longer supports the `USE_L10N` setting. Localization is always enabled, so date/number formatting will follow active locale settings by default.
 
@@ -24,3 +29,4 @@ Django 5.2 no longer supports the `USE_L10N` setting. Localization is always ena
 - Run a migrations consistency check before release.
 - Run documentation lint/build steps expected by CI.
 - Confirm admin and authentication workflows continue to behave as expected.
+- Pay extra attention to timezone formatting and admin UI tests that depend on localization.
