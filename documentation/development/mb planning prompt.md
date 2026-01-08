@@ -11,7 +11,7 @@ Use this dependency overview (generated from `app/requirements.txt`) to ground a
 ### Core Framework & Runtime
 - asgiref>=3.8.1
 - debugpy==1.5.1
-- Django==4.2.22
+- Django==5.2.2
 - gunicorn==23.0.0
 - importlib-metadata<5.0
 - pytz>=2021.3
