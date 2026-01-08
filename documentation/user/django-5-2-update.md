@@ -5,3 +5,6 @@ Formatting for dates and numbers follows the selected locale automatically in Dj
 
 ## What to expect
 There are no user-facing workflow changes planned as part of this update.
+
+## Testing status
+This release is validated through automated test coverage and documentation checks in CI.

@@ -8,5 +8,7 @@ Django 5.2 no longer supports the `USE_L10N` setting. Localization is always ena
 
 ## Validation checklist
 - Run system checks to confirm settings are valid.
-- Execute the test suite with coverage requirements.
+- Execute the test suite with coverage requirements (pytest with coverage enabled).
+- Run a migrations consistency check before release.
+- Run documentation lint/build steps expected by CI.
 - Confirm admin and authentication workflows continue to behave as expected.
