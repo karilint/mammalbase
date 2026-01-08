@@ -4,63 +4,81 @@
 You are a **senior Django engineer**. Implement **exactly one task** from an approved feature plan. Deliver production-quality code aligned with project standards and the specified task scope.
 
 ## 2. Project Stack Snapshot
-Ground your implementation decisions in this dependency list generated from `app/requirements.txt`. After editing requirements, run `python docs/scripts/update_prompts.py` (documented in `docs/development/automation.md`) to regenerate the snapshot below.
+Ground your implementation decisions in this dependency list generated from `app/requirements.txt`. If requirements change, update the snapshot below to stay in sync.
 
 <!-- DEPENDENCY_SNAPSHOT:START -->
 
 ### Core Framework & Runtime
-- asgiref >= 3.8.1
-- debugpy == 1.5.1
-- Django == 5.2.9
-- gunicorn == 23.0.0
-- sqlparse == 0.5.1
-- watchdog >= 4.0.0
+- asgiref>=3.8.1
+- debugpy==1.5.1
+- Django==4.2.22
+- gunicorn==23.0.0
+- importlib-metadata<5.0
+- pytz>=2021.3
+- sqlparse==0.5.0
+- watchfiles==0.16.1
 
 ### Database, Caching & State
-- django-redis >= 5.4.0
-- django-userforeignkey ~= 0.5.0
-- mysqlclient == 2.1.0
+- django-redis==5.2.0
+- mysqlclient==2.1.0
 
 ### Auth, Security & Identity
-- django-allauth >= 0.63.3
-- oauthlib == 3.2.2
-- PyJWT == 2.4.0
-- python3-openid == 3.2.0
-- requests-oauthlib == 1.3.1
+- cryptography==44.0.1
+- defusedxml==0.7.1
+- django-allauth==0.51.0
+- oauthlib==3.2.2
+- PyJWT==2.4.0
+- python3-openid==3.2.0
+- requests-oauthlib==1.3.1
 
 ### Data Integrity, Import & Auditing
-- django-crum >= 0.7
-- django-import-export >= 3.3.7
-- django-simple-history >= 3.7.0
+- django-simple-history~=3.0.0
 
 ### Forms, UI & Filtering
-- django-autocomplete-light >= 3.9.2
-- django-filter >= 25.1
-- django-formtools >= 2.5.1
-- django-select2 >= 8.3.0
-- pillow >= 10.4.0
+- django-crispy-forms==1.9.2
+- django-filter>=2.4.0
+- django-select2>=7.10.0
+- Markdown~=3.6
+
+### APIs & REST
+- djangorestframework>=3.15.2
 
 ### APIs, Networking & Utilities
-- idna == 3.7
-- python-dotenv >= 1.0.1
-- requests == 2.32.4
-- urllib3 == 2.6.0
+- certifi==2024.7.4
+- charset-normalizer==2.0.12
+- idna==3.7
+- requests==2.32.4
+- requests-cache==1.0.1
+- requests-mock==1.11.0
+- urllib3==2.6.3
 
 ### Analytics, AI & Matching
-- matplotlib (unpinned)
-- numpy (unpinned)
-- openai >= 1.40.0
-- pandas (unpinned)
-- plotly (unpinned)
-- python-Levenshtein >= 0.25.0
-- rapidfuzz >= 3.4.0
-- seaborn (unpinned)
+- fuzzywuzzy==0.18.0
+- numpy>=1.15.4
+- pandas>=1.3.0
+- plotly>=4.12.0
+- python-Levenshtein==0.25.0
 
-### Additional Dependencies
-- django-qr-code == 4.2.0
-- pycparser == 2.21
+### Background Jobs
+- celery==5.2.7
+- celery-progress==0.1.2
+- django-celery-results==2.4.0
 
-> ℹ️ **Automation note:** Run `python docs/scripts/update_prompts.py` after editing `app/requirements.txt` to regenerate this dependency snapshot.
+### Dev & Debugging
+- django-debug-toolbar>=3.2.4
+- django-extensions>=3.0.9
+
+### Testing
+- pytest==6.2.5
+- pytest-django==4.5.2
+
+### Additional Utilities
+- beautifulsoup4>=4.11.1
+- cffi==1.15.0
+- packaging>=20.4
+- pycparser==2.21
+
+> ℹ️ **Automation note:** Keep this snapshot aligned with `app/requirements.txt` whenever dependencies change.
 
 <!-- DEPENDENCY_SNAPSHOT:END -->
 
@@ -96,7 +114,7 @@ Paste the **exact** task object (T1/T2/…) from the approved plan into the JSON
 4. **Ensure UX compliance**: templates extend `base_generic.html`, use semantic HTML5 (`<header>`, `<main>`, `<section>`, `<article>`, `<aside>`, `<footer>`), W3.CSS classes, Font Awesome icons as required, ARIA/labels for accessibility.
 5. **Handle i18n and security**: wrap user-facing strings with gettext, respect permission checks, validate input, and honor configuration patterns (12-factor, env vars).
 6. **Update docs/tests** when included in `files_touched` or `test_plan` directives; keep user-facing docs free of internal code citations (no file/line references) and use external-friendly links or prose instead.
-7. **Testing & CI**: run pytest/pytest-django with coverage ≥ 90%, enforce migrations checks, and execute docs lint/build steps expected by CI for Django 5.2/MySQL support.
+7. **Testing & CI**: run pytest/pytest-django with coverage ≥ 90%, enforce migrations checks, and execute docs lint/build steps expected by CI for Django 4.2/MySQL support.
 
 ## 5. Output Requirements
 Return only the modified files using this format:
