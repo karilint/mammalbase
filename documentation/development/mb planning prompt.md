@@ -9,74 +9,74 @@ Use this dependency overview (generated from `app/requirements.txt`) to ground a
 <!-- DEPENDENCY_SNAPSHOT:START -->
 
 ### Core Framework & Runtime
-- asgiref >= 3.8.1
-- debugpy == 1.5.1
-- Django == 4.2.22
-- gunicorn == 23.0.0
-- importlib-metadata < 5.0
-- pytz >= 2021.3
-- sqlparse == 0.5.0
-- watchfiles == 0.16.1
+- asgiref>=3.8.1
+- debugpy==1.5.1
+- Django==4.2.22
+- gunicorn==23.0.0
+- importlib-metadata<5.0
+- pytz>=2021.3
+- sqlparse==0.5.0
+- watchfiles==0.16.1
 
 ### Database, Caching & State
-- django-redis == 5.2.0
-- mysqlclient == 2.1.0
+- django-redis==5.2.0
+- mysqlclient==2.1.0
 
 ### Auth, Security & Identity
-- cryptography == 44.0.1
-- defusedxml == 0.7.1
-- django-allauth == 0.51.0
-- oauthlib == 3.2.2
-- PyJWT == 2.4.0
-- python3-openid == 3.2.0
-- requests-oauthlib == 1.3.1
+- cryptography==44.0.1
+- defusedxml==0.7.1
+- django-allauth==0.51.0
+- oauthlib==3.2.2
+- PyJWT==2.4.0
+- python3-openid==3.2.0
+- requests-oauthlib==1.3.1
 
 ### Data Integrity, Import & Auditing
-- django-simple-history ~= 3.0.0
+- django-simple-history~=3.0.0
 
 ### Forms, UI & Filtering
-- django-crispy-forms == 1.9.2
-- django-filter >= 2.4.0
-- django-select2 >= 7.10.0
-- Markdown ~= 3.6
+- django-crispy-forms==1.9.2
+- django-filter>=2.4.0
+- django-select2>=7.10.0
+- Markdown~=3.6
 
 ### APIs & REST
-- djangorestframework >= 3.15.2
+- djangorestframework>=3.15.2
 
 ### APIs, Networking & Utilities
-- certifi == 2024.7.4
-- charset-normalizer == 2.0.12
-- idna == 3.7
-- requests == 2.32.4
-- requests-cache == 1.0.1
-- requests-mock == 1.11.0
-- urllib3 == 2.6.3
+- certifi==2024.7.4
+- charset-normalizer==2.0.12
+- idna==3.7
+- requests==2.32.4
+- requests-cache==1.0.1
+- requests-mock==1.11.0
+- urllib3==2.6.3
 
 ### Analytics, AI & Matching
-- fuzzywuzzy == 0.18.0
-- numpy >= 1.15.4
-- pandas >= 1.3.0
-- plotly >= 4.12.0
-- python-Levenshtein == 0.25.0
+- fuzzywuzzy==0.18.0
+- numpy>=1.15.4
+- pandas>=1.3.0
+- plotly>=4.12.0
+- python-Levenshtein==0.25.0
 
 ### Background Jobs
-- celery == 5.2.7
-- celery-progress == 0.1.2
-- django-celery-results == 2.4.0
+- celery==5.2.7
+- celery-progress==0.1.2
+- django-celery-results==2.4.0
 
 ### Dev & Debugging
-- django-debug-toolbar >= 3.2.4
-- django-extensions >= 3.0.9
+- django-debug-toolbar>=3.2.4
+- django-extensions>=3.0.9
 
 ### Testing
-- pytest == 6.2.5
-- pytest-django == 4.5.2
+- pytest==6.2.5
+- pytest-django==4.5.2
 
 ### Additional Utilities
-- beautifulsoup4 >= 4.11.1
-- cffi == 1.15.0
-- packaging >= 20.4
-- pycparser == 2.21
+- beautifulsoup4>=4.11.1
+- cffi==1.15.0
+- packaging>=20.4
+- pycparser==2.21
 
 > ℹ️ **Automation note:** Keep this snapshot aligned with `app/requirements.txt` whenever dependencies change.
 
