@@ -19,6 +19,9 @@ This update removes deprecated settings and verifies the project aligns with Dja
 - Settings and middleware references align with Django 5.2 defaults; documentation links updated to the 5.2 docs.
 - URL routing remains on modern `path`/`re_path` usage; no deprecated routing APIs found.
 - No deprecated ORM or template tags were detected in the current scan.
+- Templates continue to extend `mb/base_generic.html`, which includes semantic landmarks (`main`, `article`, `aside`, `footer`).
+- W3.CSS and Font Awesome assets remain referenced in the base template for consistent styling and iconography.
+- No template content was changed in this pass, so existing i18n wrapping remains unchanged.
 
 ## Localization behavior
 Django 5.2 no longer supports the `USE_L10N` setting. Localization is always enabled, so date/number formatting will follow active locale settings by default.
