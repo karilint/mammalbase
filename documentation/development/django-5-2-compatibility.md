@@ -11,6 +11,10 @@ This update removes deprecated settings and verifies the project aligns with Dja
 - Container images use Python 3.11; no docker-compose files require version changes.
 - Rollback: revert the Dockerfile base images and Django version pin, then rebuild images and redeploy.
 
+## Dependency notes
+- `django-allauth` and `django-simple-history` are updated to versions compatible with Django 5.2.
+- Review third-party release notes before any further upgrades.
+
 ## Localization behavior
 Django 5.2 no longer supports the `USE_L10N` setting. Localization is always enabled, so date/number formatting will follow active locale settings by default.
 
