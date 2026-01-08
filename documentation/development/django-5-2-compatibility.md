@@ -22,6 +22,9 @@ This update removes deprecated settings and verifies the project aligns with Dja
 - Templates continue to extend `mb/base_generic.html`, which includes semantic landmarks (`main`, `article`, `aside`, `footer`).
 - W3.CSS and Font Awesome assets remain referenced in the base template for consistent styling and iconography.
 - No template content was changed in this pass, so existing i18n wrapping remains unchanged.
+- django-filter usage remains in dedicated FilterSet modules with no Django 5.2-specific deprecations observed.
+- No Django REST Framework serializers or viewsets were found in the current codebase (DRF remains disabled in settings).
+- Pagination templates continue to include the shared `mb/pagination.html` partial from list views.
 
 ## Localization behavior
 Django 5.2 no longer supports the `USE_L10N` setting. Localization is always enabled, so date/number formatting will follow active locale settings by default.

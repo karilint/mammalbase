@@ -8,3 +8,4 @@
 - Update django-allauth and django-simple-history for Django 5.2 compatibility.
 - Record template and i18n review notes for the Django 5.2 sweep.
 - Add verification checklist items for auth flows, admin permissions, and history tracking.
+- Document django-filter/pagination review and DRF status notes.
