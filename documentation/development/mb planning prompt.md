@@ -11,7 +11,7 @@ Use this dependency overview (generated from `app/requirements.txt`) to ground a
 ### Core Framework & Runtime
 - asgiref>=3.8.1
 - debugpy==1.5.1
-- Django==4.2.22
+- Django==5.2.2
 - gunicorn==23.0.0
 - importlib-metadata<5.0
 - pytz>=2021.3
@@ -25,14 +25,14 @@ Use this dependency overview (generated from `app/requirements.txt`) to ground a
 ### Auth, Security & Identity
 - cryptography==44.0.1
 - defusedxml==0.7.1
-- django-allauth==0.51.0
+- django-allauth==0.63.6
 - oauthlib==3.2.2
 - PyJWT==2.4.0
 - python3-openid==3.2.0
 - requests-oauthlib==1.3.1
 
 ### Data Integrity, Import & Auditing
-- django-simple-history~=3.0.0
+- django-simple-history~=3.7.0
 
 ### Forms, UI & Filtering
 - django-crispy-forms==1.9.2
@@ -135,3 +135,4 @@ Checklist must include: acceptance criteria satisfied, tests (unit/integration) 
 - Captures the end-to-end planning expectations, including dependency awareness, accessibility, rollout, and DRY guidance.
 - Tasks JSON schema is clearly specified for downstream implementation prompts.
 - Gaps addressed: reinforce documentation hygiene (no internal code citations), evolving PR messaging guidance, and explicit testing/CI expectations for Django 4.2.
+- Runtime note: plan for Python 3.11+ in Docker images when targeting Django 5.2 LTS.
