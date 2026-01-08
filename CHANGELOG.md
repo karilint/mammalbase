@@ -9,3 +9,6 @@
 - Record template and i18n review notes for the Django 5.2 sweep.
 - Add verification checklist items for auth flows, admin permissions, and history tracking.
 - Document django-filter/pagination review and DRF status notes.
+- Clarify migration checks for MySQL and SQLite in upgrade notes.
+- Add allauth AccountMiddleware required for the upgrade.
+- Add a SQLite test settings module for migration checks.

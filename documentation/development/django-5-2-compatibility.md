@@ -17,6 +17,7 @@ This update removes deprecated settings and verifies the project aligns with Dja
 
 ## Review findings
 - Settings and middleware references align with Django 5.2 defaults; documentation links updated to the 5.2 docs.
+- Added `allauth.account.middleware.AccountMiddleware` to satisfy django-allauth 0.63+ requirements.
 - URL routing remains on modern `path`/`re_path` usage; no deprecated routing APIs found.
 - No deprecated ORM or template tags were detected in the current scan.
 - Templates continue to extend `mb/base_generic.html`, which includes semantic landmarks (`main`, `article`, `aside`, `footer`).
@@ -32,7 +33,8 @@ Django 5.2 no longer supports the `USE_L10N` setting. Localization is always ena
 ## Validation checklist
 - Run system checks to confirm settings are valid.
 - Execute the test suite with coverage requirements (pytest with coverage enabled).
-- Run a migrations consistency check before release.
+- Run a migrations consistency check before release (MySQL in CI, SQLite in test settings).
+- Use the SQLite test settings module when running local migration checks without MySQL.
 - Run documentation lint/build steps expected by CI.
 - Confirm admin and authentication workflows continue to behave as expected.
 - Re-verify django-allauth login redirects and OAuth provider flows (ORCID) after upgrade.
