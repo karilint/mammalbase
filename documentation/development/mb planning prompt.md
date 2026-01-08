@@ -135,3 +135,4 @@ Checklist must include: acceptance criteria satisfied, tests (unit/integration) 
 - Captures the end-to-end planning expectations, including dependency awareness, accessibility, rollout, and DRY guidance.
 - Tasks JSON schema is clearly specified for downstream implementation prompts.
 - Gaps addressed: reinforce documentation hygiene (no internal code citations), evolving PR messaging guidance, and explicit testing/CI expectations for Django 4.2.
+- Runtime note: plan for Python 3.11+ in Docker images when targeting Django 5.2 LTS.

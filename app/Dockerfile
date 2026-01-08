@@ -1,4 +1,4 @@
-FROM python:3.9-slim AS compile-image
+FROM python:3.11-slim AS compile-image
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -16,7 +16,7 @@ USER user
 RUN pip3 install --upgrade pip && pip3 install -r requirements.txt
 
 # ---------------------------------
-FROM python:3.9-slim AS build-image
+FROM python:3.11-slim AS build-image
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
