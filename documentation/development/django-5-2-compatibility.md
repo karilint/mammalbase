@@ -32,4 +32,7 @@ Django 5.2 no longer supports the `USE_L10N` setting. Localization is always ena
 - Run a migrations consistency check before release.
 - Run documentation lint/build steps expected by CI.
 - Confirm admin and authentication workflows continue to behave as expected.
+- Re-verify django-allauth login redirects and OAuth provider flows (ORCID) after upgrade.
+- Validate admin registrations, permissions, and list views for core models.
+- Confirm django-simple-history middleware loads and audit history tracking remains intact.
 - Pay extra attention to timezone formatting and admin UI tests that depend on localization.
