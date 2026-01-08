@@ -8,3 +8,6 @@ There are no user-facing workflow changes planned as part of this update.
 
 ## Testing status
 This release is validated through automated test coverage and documentation checks in CI.
+
+## Rollback plan
+If issues are detected, the release can be rolled back to the previous version and users will see no functional change.

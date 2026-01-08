@@ -10,10 +10,15 @@ This update removes deprecated settings and verifies the project aligns with Dja
 ## Environment changes and rollback
 - Container images use Python 3.11; no docker-compose files require version changes.
 - Rollback: revert the Dockerfile base images and Django version pin, then rebuild images and redeploy.
+- If the upgrade is gated, disable the flag and redeploy previous images while verifying migrations remain compatible.
 
 ## Dependency notes
 - `django-allauth` and `django-simple-history` are updated to versions compatible with Django 5.2.
 - Review third-party release notes before any further upgrades.
+
+## Release gating
+- Use a deployment toggle to pause rollout (for example, a release flag in the deployment pipeline).
+- Hold the upgrade in staging until auth, admin, and history verification steps pass.
 
 ## Review findings
 - Settings and middleware references align with Django 5.2 defaults; documentation links updated to the 5.2 docs.
