@@ -52,6 +52,7 @@ def remove_provider_id(apps, schema_editor):
 
 class Migration(migrations.Migration):
     initial = True
+    atomic = False
 
     dependencies = [
         ("socialaccount", "0003_extra_data_default_dict"),
