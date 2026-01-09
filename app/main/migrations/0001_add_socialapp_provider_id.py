@@ -86,7 +86,7 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ("socialaccount", "0004_app_provider_id_settings"),
+        ("socialaccount", "0003_extra_data_default_dict"),
     ]
 
     operations = [
