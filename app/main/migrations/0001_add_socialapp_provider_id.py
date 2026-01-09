@@ -21,19 +21,88 @@ def _table_exists(connection, table_name):
     return table_name in connection.introspection.table_names()
 
 
+def _migration_applied(connection, app_label, migration_name):
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT 1
+            FROM django_migrations
+            WHERE app = %s
+              AND name = %s
+            LIMIT 1
+            """,
+            [app_label, migration_name],
+        )
+        return cursor.fetchone() is not None
+
+
+def _mark_migration_applied(connection, app_label, migration_name):
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            INSERT INTO django_migrations (app, name, applied)
+            SELECT %s, %s, NOW()
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM django_migrations
+                WHERE app = %s AND name = %s
+            )
+            """,
+            [app_label, migration_name, app_label, migration_name],
+        )
+
+
 def add_provider_id(apps, schema_editor):
     if schema_editor.connection.vendor != "mysql":
         return
+    if _migration_applied(
+        schema_editor.connection, "socialaccount", "0004_app_provider_id_settings"
+    ):
+        return
     table_name = "socialaccount_socialapp"
+    account_table = "socialaccount_socialaccount"
     if not _table_exists(schema_editor.connection, table_name):
         return
     if _column_exists(schema_editor.connection, table_name, "provider_id"):
-        return
-    schema_editor.execute(
-        (
-            "ALTER TABLE `{table}` "
-            "ADD COLUMN `provider_id` varchar(200) NOT NULL DEFAULT ''"
-        ).format(table=table_name)
+        provider_id_exists = True
+    else:
+        provider_id_exists = False
+    if not provider_id_exists:
+        schema_editor.execute(
+            (
+                "ALTER TABLE `{table}` "
+                "ADD COLUMN `provider_id` varchar(200) NOT NULL DEFAULT ''"
+            ).format(table=table_name)
+        )
+    if not _column_exists(schema_editor.connection, table_name, "settings"):
+        schema_editor.execute(
+            (
+                "ALTER TABLE `{table}` "
+                "ADD COLUMN `settings` json NULL"
+            ).format(table=table_name)
+        )
+        schema_editor.execute(
+            (
+                "UPDATE `{table}` SET `settings` = '{{}}' "
+                "WHERE `settings` IS NULL"
+            ).format(table=table_name)
+        )
+        schema_editor.execute(
+            (
+                "ALTER TABLE `{table}` "
+                "MODIFY COLUMN `settings` json NOT NULL"
+            ).format(table=table_name)
+        )
+    if _table_exists(schema_editor.connection, account_table):
+        if _column_exists(schema_editor.connection, account_table, "provider"):
+            schema_editor.execute(
+                (
+                    "ALTER TABLE `{table}` "
+                    "MODIFY COLUMN `provider` varchar(200) NOT NULL"
+                ).format(table=account_table)
+            )
+    _mark_migration_applied(
+        schema_editor.connection, "socialaccount", "0004_app_provider_id_settings"
     )
 
 
@@ -53,6 +122,9 @@ def remove_provider_id(apps, schema_editor):
 class Migration(migrations.Migration):
     initial = True
     atomic = False
+    run_before = [
+        ("socialaccount", "0004_app_provider_id_settings"),
+    ]
 
     dependencies = [
         ("socialaccount", "0003_extra_data_default_dict"),
