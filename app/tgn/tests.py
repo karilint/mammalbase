@@ -12,5 +12,4 @@ class TgnSearchTests(TestCase):
         url = reverse('tgn_search')
         response = self.client.get(url, {'name': 'Amboseli'})
         self.assertEqual(response.status_code, 502)
-        self.assertIn('Failed to query Getty TGN', response.json()['error'])
-
+        self.assertIn('Upstream service error', response.json()['error'])
