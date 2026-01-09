@@ -3,6 +3,10 @@ from django.core.cache import cache
 
 from .services import search_wdpa
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def search_place(request):
     name = request.GET.get("name", "")
@@ -17,7 +21,8 @@ def search_place(request):
     try:
         results = search_wdpa(name)
     except RuntimeError as exc:
-        return JsonResponse({"error": str(exc)}, status=502)
+        logger.exception("WDPA search failed for name %r", name)
+        return JsonResponse({"error": "Failed to fetch WDPA data"}, status=502)
 
     cache.set(cache_key, results, timeout=86400)
     return JsonResponse({"results": results})
