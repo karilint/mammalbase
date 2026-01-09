@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("mb", "0022_alter_historicalattributegrouprelation_options_and_more"),
+        ("mb", "0021_auto_20240504_1716"),
     ]
 
     operations = [
