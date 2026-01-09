@@ -21,8 +21,43 @@ def _table_exists(connection, table_name):
     return table_name in connection.introspection.table_names()
 
 
+def _migration_applied(connection, app_label, migration_name):
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT 1
+            FROM django_migrations
+            WHERE app = %s
+              AND name = %s
+            LIMIT 1
+            """,
+            [app_label, migration_name],
+        )
+        return cursor.fetchone() is not None
+
+
+def _mark_migration_applied(connection, app_label, migration_name):
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            INSERT INTO django_migrations (app, name, applied)
+            SELECT %s, %s, NOW()
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM django_migrations
+                WHERE app = %s AND name = %s
+            )
+            """,
+            [app_label, migration_name, app_label, migration_name],
+        )
+
+
 def add_provider_id(apps, schema_editor):
     if schema_editor.connection.vendor != "mysql":
+        return
+    if _migration_applied(
+        schema_editor.connection, "socialaccount", "0004_app_provider_id_settings"
+    ):
         return
     table_name = "socialaccount_socialapp"
     account_table = "socialaccount_socialaccount"
@@ -66,6 +101,9 @@ def add_provider_id(apps, schema_editor):
                     "MODIFY COLUMN `provider` varchar(200) NOT NULL"
                 ).format(table=account_table)
             )
+    _mark_migration_applied(
+        schema_editor.connection, "socialaccount", "0004_app_provider_id_settings"
+    )
 
 
 def remove_provider_id(apps, schema_editor):
@@ -84,6 +122,9 @@ def remove_provider_id(apps, schema_editor):
 class Migration(migrations.Migration):
     initial = True
     atomic = False
+    run_before = [
+        ("socialaccount", "0004_app_provider_id_settings"),
+    ]
 
     dependencies = [
         ("socialaccount", "0003_extra_data_default_dict"),
