@@ -136,7 +136,7 @@ def search_tgn(name, nature_reserve=False):
             **hierarchy
         }
 
-        logger.debug(f"Parsed TGN display result: {result}")
+        logger.debug(f"Parsed TGN display result for ID: {tgn_id}")
         results.append(result)
 
     logger.info(f"TGN search completed: {len(results)} result(s) found for '{name}'")
