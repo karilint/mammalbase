@@ -48,7 +48,7 @@ jobs:
         mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'test_user'@'%';" -u${{ env.DB_USER }} -p${{ env.DB_PASS }} -h 127.0.0.1 -P 3306
     - name: Drop duplicate column
       env:
-        DB_USER: root
+        DB_USER: test_user
         DB_PASS: password
         DB_NAME: test_db
       run: |
