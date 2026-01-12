@@ -21,6 +21,8 @@ def export_to_tsv(request):
         if form.is_valid():
             user_email = request.POST['user_email']
             checkboxes = request.POST.getlist('export_choices')
+            # ExportFile should be created in request context so audit fields
+            # can be set from request.user before Celery tasks run.
             export_file = ExportFile(file=None)
             export_file.save()
             export_file_id = export_file.pk

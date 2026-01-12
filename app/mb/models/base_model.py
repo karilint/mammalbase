@@ -28,6 +28,12 @@ class ActiveManager(models.Manager):
         return CustomQuerySet(self.model, using=self._db)
 
 class BaseModel(models.Model):
+    """Abstract base model with audit fields.
+
+    created_by/modified_by must be set by request-bound code (views, forms,
+    serializers). Background tasks (e.g., Celery) do not have request user
+    context, so audited instances should be created before task execution.
+    """
     created_on = models.DateTimeField(auto_now_add=True)
     modified_on = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
