@@ -9,6 +9,7 @@ from django.http import HttpResponseNotFound, FileResponse
 
 from mb.views import user_is_data_admin_or_contributor
 from .models import ExportFile
+from .services import create_export_file_for_user
 from .tasks import ets_export_query_set
 from .forms import ETSForm
 
@@ -21,10 +22,10 @@ def export_to_tsv(request):
         if form.is_valid():
             user_email = request.POST['user_email']
             checkboxes = request.POST.getlist('export_choices')
-            # ExportFile should be created in request context so audit fields
-            # can be set from request.user before Celery tasks run.
-            export_file = ExportFile(file=None)
-            export_file.save()
+            export_file = create_export_file_for_user(
+                user=request.user,
+                file=None,
+            )
             export_file_id = export_file.pk
             is_admin_or_contributor = user_is_data_admin_or_contributor(
                     request.user)
