@@ -13,3 +13,4 @@
 - Add allauth AccountMiddleware required for the upgrade.
 - Add a SQLite test settings module for migration checks.
 - Add release gating and rollback guidance for the Django 5.2 upgrade.
+- Document export auditing expectations for users and administrators.

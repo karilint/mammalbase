@@ -30,6 +30,9 @@ def export_zip_file(
     Exports a zip file containing tsv files resulting from given queries,
     saves it to the db and sends the download link as an email.
 
+    Note: This task does not have request context, so audit fields should be
+    set when the ExportFile instance is created in the calling view.
+
     Arguments:
     email_recipient -- Email receiver address
     export_list -- List of dicts containing information for creating files
