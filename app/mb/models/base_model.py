@@ -36,21 +36,13 @@ class BaseModel(models.Model):
     """
     created_on = models.DateTimeField(auto_now_add=True)
     modified_on = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+    created_by = AutoUserForeignKey(
+        auto_user_add=True,
         related_name="createdby_%(class)s",
-        editable=False,
     )
-    modified_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
+    modified_by = AutoUserForeignKey(
+        auto_user=True,
         related_name="modifiedby_%(class)s",
-        editable=False,
     )
     history = HistoricalRecords(
         history_change_reason_field=models.TextField(null=True),
