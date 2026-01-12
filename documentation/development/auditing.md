@@ -20,3 +20,9 @@ when a request is handled by Django and `request.user` is available.
   ID to the task for processing.
 - Avoid duplicating audit logic in each app; prefer the shared base model
   behavior so all audited models are consistent.
+
+## Export workflow note
+
+Exports should create the database record in the request cycle before
+enqueueing background work. This guarantees the audit fields are populated
+consistently even when the export is processed asynchronously.
