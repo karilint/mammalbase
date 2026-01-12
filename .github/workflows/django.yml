@@ -50,8 +50,9 @@ jobs:
       env:
         DB_USER: root
         DB_PASS: password
+        DB_NAME: test_db
       run: |
-        mysql -e "ALTER TABLE test_db.socialaccount_socialapp DROP COLUMN IF EXISTS provider_id;" -u${{ env.DB_USER }} -p${{ env.DB_PASS }} -h 127.0.0.1 -P 3306 || true
+        mysql -e "ALTER TABLE ${{ env.DB_NAME }}.socialaccount_socialapp DROP COLUMN IF EXISTS provider_id;" -u${{ env.DB_USER }} -p${{ env.DB_PASS }} -h 127.0.0.1 -P 3306 || true
     - name: Run Tests
       env:
         DB_HOST: 127.0.0.1
