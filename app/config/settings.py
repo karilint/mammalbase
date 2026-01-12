@@ -145,6 +145,8 @@ TEMPLATES = [
 
 
 # ORCID Allauth Settings
+# Operational note: ensure allauth socialaccount migrations are applied in MySQL.
+# Missing columns (e.g., socialaccount_socialapp.provider_id) indicate skipped migrations.
 # https://django-allauth.readthedocs.io/en/latest/installation.html
 
 AUTHENTICATION_BACKENDS = [
