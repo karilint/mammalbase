@@ -30,7 +30,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: '3.x'  # Use the Python version your project uses
+          python-version: '3.11'
 
       - name: Install dependencies
         working-directory: ./app
