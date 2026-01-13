@@ -4,7 +4,8 @@
 Formatting for dates and numbers follows the selected locale automatically in Django 5.2.
 
 ## What to expect
-There are no user-facing workflow changes planned as part of this update.
+There are no user-facing workflow changes planned as part of this update. Export requests continue to record the
+requesting user for audit purposes.
 
 ## Testing status
 This release is validated through automated test coverage and documentation checks in CI.

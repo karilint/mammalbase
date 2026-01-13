@@ -1,7 +1,10 @@
 import os
+from unittest.mock import patch
 
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.db import models, connection
+from django.urls import reverse
 
 from mb.models import EntityClass, MasterEntity
 from exports.tasks import export_zip_file
@@ -179,3 +182,28 @@ class ExportZipFileTestCase(TestCase):
                 sorted(self.test_writer.files[0][1]),
                 sorted(excepted_output)):
             self.assertEqual(row, expected_row)
+
+
+class ExportAuditFieldsTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="exporter",
+            email="exporter@example.com",
+            password="password123"
+        )
+        self.client.force_login(self.user)
+
+    @patch("exports.views.ets_export_query_set.delay")
+    def test_export_file_created_by_set(self, mock_delay):
+        response = self.client.post(
+            reverse("ets"),
+            {
+                "user_email": "exporter@example.com",
+                "export_choices": ["External measurements"],
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        export_file = ExportFile.objects.latest("id")
+        self.assertEqual(export_file.created_by, self.user)
+        self.assertEqual(export_file.modified_by, self.user)
+        mock_delay.assert_called_once()

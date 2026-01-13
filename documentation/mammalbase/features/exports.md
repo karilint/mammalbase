@@ -37,7 +37,8 @@ basemodel defined in the `mb/models.py` module. This basemodel makes the recordi
 admin system with the `django-simple-history` package without any custom configuration. Note that when executing data
 creation tasks in Celery, it is not possible to record user data for the history in the Celery task. Thus, the initial
 creation of the model instance must be done in the view function calling the export task, where the information of the 
-user can be extracted from the `request` argument. 
+user can be extracted from the `request` argument. Export requests also set the created and modified audit fields from
+the authenticated user before the background task runs.
 
 
 ## Tasks

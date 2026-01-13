@@ -13,3 +13,5 @@
 - Add allauth AccountMiddleware required for the upgrade.
 - Add a SQLite test settings module for migration checks.
 - Add release gating and rollback guidance for the Django 5.2 upgrade.
+- Align BaseModel audit fields with AutoUserForeignKey for automatic user attribution.
+- Ensure export requests populate audit user fields on creation.
