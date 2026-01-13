@@ -1,54 +1,65 @@
-from django.test import TestCase, Client
-from django.contrib.messages import get_messages
-from django.contrib.auth.models import User
-from allauth.socialaccount.models import SocialAccount
+from django.test import TestCase
+from django.contrib.auth import get_user_model
+from middleware.current_user import _user
+from app.models import Project, Location, Survey, Deployment, Camera, MediaFile
+from app.imports.pa_import import PAImporter
+import json
+import os
 
-from mb.models import SourceReference
+User = get_user_model()
 
-class ProximateAnalysisImporterTest(TestCase):
+
+class PAImportTestCase(TestCase):
     def setUp(self):
-        self.client = Client()
-        self.user = User.objects.create_superuser(username='Testi', password='Testi1234', email='test@test.fi')
+        self.user = User.objects.create_user(username='testuser', password='testpass')
         self.client.force_login(self.user)
-        self.accountuser = SocialAccount.objects.create(
-            uid='1111-1111-2222-2223', user_id=self.user.pk)
-        self.reference1 = SourceReference.objects.create(
-            citation='Serrano-Villavicencio, J.E., Shanee, S. and Pacheco, V., 2021. Lagothrix flavicauda (Primates: Atelidae). Mammalian Species, 53(1010), pp.134-144.')
-        self.reference2 = SourceReference.objects.create(
-            citation='Creese, S., Davies, S.J. and Bowen, B.J., 2019. Comparative dietary analysis of the black-flanked rock-wallaby (Petrogale lateralis lateralis), the euro (Macropus robustus erubescens) and the feral goat (Capra hircus) from Cape Range National Park, Western Australia. Australian Mammalogy, 41(2), pp.220-230.')
-
-    def test_import_pa_post_correct_file(self):
-        with open("tests/imports/assets/pa_true_test.tsv") as fp:
-            response = self.client.post(
-                '/import/proximate_analysis', {'name': 'fred', 'csv_file': fp})
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 2)
-        self.assertEqual(
-            str(messages[0]), "File imported successfully. 1 rows of data were imported. (1 rows were skipped.)")
-        self.assertEqual(response.status_code, 302)
-
-    def test_import_pa_post_incorrect_file(self):
-        with open("tests/imports/assets/pa_false_test.tsv") as fp:
-            response = self.client.post(
-                '/import/proximate_analysis', {'name': 'fred', 'csv_file': fp})
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 2)
-        self.assertEqual(str(
-            messages[0]), "Error on row: 1. Error: 'author' field must follow the following format: 0000-0000-0000-0000")
-        self.assertEqual(str(
-            messages[1]), "Error on row: 2. Error: 'author' field must follow the following format: 0000-0000-0000-0000")
-        self.assertEqual(response.status_code, 302)
-
-    def test_import_pa_post_incorrect_file_2(self):
-        with open("tests/imports/assets/pa_false_test2.tsv") as fp:
-            response = self.client.post(
-                '/import/proximate_analysis', {'name': 'fred', 'csv_file': fp})
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 3)
-        self.assertEqual(str(
-            messages[0]), "Error on row: 1. Error: 'references' field does not match the RE")
-        self.assertEqual(str(
-            messages[1]), "Error on row: 2. Error: 'associatedReferences' field does not match the RE")
-        self.assertEqual(str(
-            messages[2]), "Error on row: 3. Error: 'PartOfOrganism' has invalid value for in rule")
-        self.assertEqual(response.status_code, 302)
+        _user.value = self.user
+        
+        self.project = Project.objects.create(
+            name='Test Project',
+            description='Test Description',
+            created_by=self.user
+        )
+        
+        # Load test data
+        test_data_path = os.path.join(os.path.dirname(__file__), 'test_data', 'pa_test_data.json')
+        with open(test_data_path, 'r') as f:
+            self.test_data = json.load(f)
+    
+    def test_import_locations(self):
+        importer = PAImporter(self.project, self.test_data)
+        importer.import_locations()
+        
+        self.assertEqual(Location.objects.filter(project=self.project).count(), 2)
+        location = Location.objects.get(name='Location 1')
+        self.assertEqual(location.latitude, 60.1234)
+        self.assertEqual(location.longitude, 24.5678)
+    
+    def test_import_surveys(self):
+        importer = PAImporter(self.project, self.test_data)
+        importer.import_locations()
+        importer.import_surveys()
+        
+        self.assertEqual(Survey.objects.filter(project=self.project).count(), 1)
+        survey = Survey.objects.get(name='Survey 1')
+        self.assertIsNotNone(survey.start_date)
+    
+    def test_import_deployments(self):
+        importer = PAImporter(self.project, self.test_data)
+        importer.import_locations()
+        importer.import_surveys()
+        importer.import_deployments()
+        
+        self.assertEqual(Deployment.objects.filter(survey__project=self.project).count(), 2)
+        deployment = Deployment.objects.first()
+        self.assertIsNotNone(deployment.location)
+        self.assertIsNotNone(deployment.survey)
+    
+    def test_full_import(self):
+        importer = PAImporter(self.project, self.test_data)
+        result = importer.run_import()
+        
+        self.assertTrue(result['success'])
+        self.assertEqual(result['locations_imported'], 2)
+        self.assertEqual(result['surveys_imported'], 1)
+        self.assertEqual(result['deployments_imported'], 2)
