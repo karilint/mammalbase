@@ -31,6 +31,7 @@ This update removes deprecated settings and verifies the project aligns with Dja
 - django-filter usage remains in dedicated FilterSet modules with no Django 5.2-specific deprecations observed.
 - No Django REST Framework serializers or viewsets were found in the current codebase (DRF remains disabled in settings).
 - Pagination templates continue to include the shared `mb/pagination.html` partial from list views.
+- Audit fields now rely on the AutoUserForeignKey helper with CurrentUserMiddleware to capture the authenticated user on create/update.
 
 ## Localization behavior
 Django 5.2 no longer supports the `USE_L10N` setting. Localization is always enabled, so date/number formatting will follow active locale settings by default.
