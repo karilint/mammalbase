@@ -38,10 +38,10 @@ Django 5.2 no longer supports the `USE_L10N` setting. Localization is always ena
 
 ## Validation checklist
 - Run system checks to confirm settings are valid.
-- Execute the test suite with coverage requirements (pytest with coverage enabled).
-- Run a migrations consistency check before release (MySQL in CI, SQLite in test settings).
+- Execute the test suite with coverage requirements (pytest with coverage enabled and coverage threshold enforced in CI).
+- Run a migrations consistency check before release (MySQL in CI, SQLite in test settings) with the standard makemigrations check.
 - Use the SQLite test settings module when running local migration checks without MySQL.
-- Run documentation lint/build steps expected by CI.
+- Run documentation lint/build steps expected by CI (documentation build and lint tooling).
 - Confirm admin and authentication workflows continue to behave as expected.
 - Re-verify django-allauth login redirects and OAuth provider flows (ORCID) after upgrade.
 - Validate admin registrations, permissions, and list views for core models.

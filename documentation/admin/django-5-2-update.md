@@ -8,7 +8,7 @@ After deployment, verify admin login and standard CRUD workflows operate normall
 records.
 
 ## Testing status
-Admin workflows are covered by automated tests and CI checks for the upgrade.
+Admin workflows are covered by automated tests and CI checks for the upgrade, including audit field verification.
 
 ## Rollback plan
 If issues are detected, revert to the previous deployment image and re-verify admin workflows.

@@ -1,7 +1,7 @@
 import os
 from unittest.mock import patch
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.test import TestCase
 from django.db import models, connection
 from django.urls import reverse
@@ -9,6 +9,7 @@ from django.urls import reverse
 from mb.models import EntityClass, MasterEntity
 from exports.tasks import export_zip_file
 from exports.models import ExportFile
+from exports.views import user_has_rights_to_export_file
 from .utils.test_export_file_writer import TestExportFileWriter
 
 class ExportZipFileTestCase(TestCase):
@@ -207,3 +208,22 @@ class ExportAuditFieldsTestCase(TestCase):
         self.assertEqual(export_file.created_by, self.user)
         self.assertEqual(export_file.modified_by, self.user)
         mock_delay.assert_called_once()
+
+    def test_user_has_rights_for_creator(self):
+        export_file = ExportFile.objects.create(
+            file=None,
+            created_by=self.user,
+            modified_by=self.user,
+        )
+        self.assertTrue(user_has_rights_to_export_file(self.user, export_file))
+
+    def test_user_has_rights_for_admin_group(self):
+        admin_group = Group.objects.create(name="data_admin")
+        admin_user = User.objects.create_user(
+            username="admin",
+            email="admin@example.com",
+            password="password123"
+        )
+        admin_user.groups.add(admin_group)
+        export_file = ExportFile.objects.create(file=None)
+        self.assertTrue(user_has_rights_to_export_file(admin_user, export_file))

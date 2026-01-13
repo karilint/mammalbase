@@ -8,7 +8,7 @@ There are no user-facing workflow changes planned as part of this update. Export
 requesting user for audit purposes.
 
 ## Testing status
-This release is validated through automated test coverage and documentation checks in CI.
+This release is validated through automated test coverage and documentation checks in CI, including export audit tracking.
 
 ## Rollback plan
 If issues are detected, the release can be rolled back to the previous version and users will see no functional change.
