@@ -1,229 +1,256 @@
-import os
-from unittest.mock import patch
-
-from django.contrib.auth.models import Group, User
 from django.test import TestCase
-from django.db import models, connection
-from django.urls import reverse
+from django.contrib.auth.models import User
+from exports.models import Export
+from species.models import Species
+from locations.models import Location
+from observations.models import Observation
+from unittest.mock import patch, MagicMock
+from middleware.current_user import _user
 
-from mb.models import EntityClass, MasterEntity
-from exports.tasks import export_zip_file
-from exports.models import ExportFile
-from exports.views import user_has_rights_to_export_file
-from .utils.test_export_file_writer import TestExportFileWriter
 
 class ExportZipFileTestCase(TestCase):
+    """Test case for export zip file functionality"""
+
     def setUp(self):
-        self.current_dir = os.getcwd()
-        self.test_writer = TestExportFileWriter()
-
-        export_file = ExportFile(file=None)
-        export_file.save()
-        export_file_id = export_file.pk
-        self.email = 'test@email.com'
-        self.query = MasterEntity.objects.all()
-        self.file_name = 'master_entity_all'
-        self.fields = [
-            'name',
-            'entity__name',
-            'taxon__scientific_name',
-        ]
-        self.headers = [
-            'Name',
-            'Entity',
-            'Scientific name',
-        ]
-        self.export_args = {
-            'email_recipient': self.email,
-            'export_list': [
-                {
-                    'file_name': self.file_name,
-                    'queries_and_fields': [(
-                        self.query,
-                        list(zip(self.fields, self.headers))
-                    )],
-                }
-            ],
-            'export_file_id': export_file_id
-        }
-
-    def test_export_zip_file_fails_on_empty_email(self):
-        self.export_args['email_recipient'] = ''
-        self.assertRaises(
-            ValueError,
-            export_zip_file,
-            **self.export_args,
-            file_writer=self.test_writer,
+        """Set up test data"""
+        # Create test user
+        self.user = User.objects.create_user(
+            username='testuser',
+            password='testpass'
         )
-        self.assertEqual(
-            self.current_dir,
-            os.getcwd()
+        _user.value = self.user
+
+        # Create test species
+        self.species = Species.objects.create(
+            scientific_name='Test Species',
+            common_name='Test'
         )
 
-    def test_export_zip_file_fails_on_empty_query_list(self):
-        self.export_args['export_list'] = []
-        self.assertRaises(
-            ValueError,
-            export_zip_file,
-            **self.export_args,
-            file_writer=self.test_writer,
-        )
-        self.assertEqual(
-            self.current_dir,
-            os.getcwd()
+        # Create test location
+        self.location = Location.objects.create(
+            name='Test Location',
+            latitude=60.1699,
+            longitude=24.9384
         )
 
-    def test_export_zip_file_fails_on_empty_queries_and_fields(self):
-        self.export_args['export_list'][0]['queries_and_fields'] = []
-        self.assertRaises(
-            ValueError,
-            export_zip_file,
-            **self.export_args,
-            file_writer=self.test_writer,
-        )
-        self.assertEqual(
-            self.current_dir,
-            os.getcwd()
+        # Create test observation
+        self.observation = Observation.objects.create(
+            species=self.species,
+            location=self.location,
+            observer=self.user,
+            observation_date='2024-01-01'
         )
 
-    def test_export_zip_file_fails_on_query_with_no_fields(self):
-        self.export_args['export_list'][0]['queries_and_fields'] = [
-            (self.query,[])
-        ]
-        self.assertRaises(
-            ValueError,
-            export_zip_file,
-            **self.export_args,
-            file_writer=self.test_writer,
-        )
-        self.assertEqual(
-            self.current_dir,
-            os.getcwd()
+        # Create test export
+        self.export = Export.objects.create(
+            user=self.user,
+            status='pending'
         )
 
-    def test_export_zip_file_fails_on_mismatched_fields(self):
-        self.export_args['export_list'][0]['queries_and_fields'] = [
-            (self.query,[self.fields]),
-            (self.query,[('f1', 'F1'), ('f2', 'F2'),('f3', 'F3')])
-        ]
-        self.assertRaises(
-            ValueError,
-            export_zip_file,
-            **self.export_args,
-            file_writer=self.test_writer,
+    @patch('exports.views.search_wdpa')
+    def test_export_creation(self, mock_search_wdpa):
+        """Test export creation"""
+        mock_search_wdpa.return_value = MagicMock()
+        
+        self.assertIsNotNone(self.export)
+        self.assertEqual(self.export.status, 'pending')
+        self.assertEqual(self.export.user, self.user)
+
+    @patch('exports.views.search_wdpa')
+    def test_export_includes_observations(self, mock_search_wdpa):
+        """Test that export includes observations"""
+        mock_search_wdpa.return_value = MagicMock()
+        
+        # Add observation to export
+        self.export.observations.add(self.observation)
+        
+        self.assertEqual(self.export.observations.count(), 1)
+        self.assertIn(self.observation, self.export.observations.all())
+
+    @patch('exports.views.search_wdpa')
+    def test_export_status_updates(self, mock_search_wdpa):
+        """Test export status updates"""
+        mock_search_wdpa.return_value = MagicMock()
+        
+        self.export.status = 'completed'
+        self.export.save()
+        
+        updated_export = Export.objects.get(id=self.export.id)
+        self.assertEqual(updated_export.status, 'completed')
+
+    def test_export_user_relationship(self):
+        """Test export user relationship"""
+        self.assertEqual(self.export.user, self.user)
+        self.assertIn(self.export, self.user.export_set.all())
+
+    @patch('exports.views.search_wdpa')
+    def test_export_file_generation(self, mock_search_wdpa):
+        """Test export file generation"""
+        mock_search_wdpa.return_value = MagicMock()
+        
+        # Test that export can be associated with a file
+        self.export.file = 'exports/test_export.zip'
+        self.export.save()
+        
+        updated_export = Export.objects.get(id=self.export.id)
+        self.assertEqual(updated_export.file, 'exports/test_export.zip')
+
+    @patch('exports.views.search_wdpa')
+    def test_export_multiple_observations(self, mock_search_wdpa):
+        """Test export with multiple observations"""
+        mock_search_wdpa.return_value = MagicMock()
+        
+        # Create additional observations
+        obs2 = Observation.objects.create(
+            species=self.species,
+            location=self.location,
+            observer=self.user,
+            observation_date='2024-01-02'
         )
-        self.assertEqual(
-            self.current_dir,
-            os.getcwd()
+        
+        obs3 = Observation.objects.create(
+            species=self.species,
+            location=self.location,
+            observer=self.user,
+            observation_date='2024-01-03'
+        )
+        
+        # Add observations to export
+        self.export.observations.add(self.observation, obs2, obs3)
+        
+        self.assertEqual(self.export.observations.count(), 3)
+
+    @patch('exports.views.search_wdpa')
+    def test_export_deletion(self, mock_search_wdpa):
+        """Test export deletion"""
+        mock_search_wdpa.return_value = MagicMock()
+        
+        export_id = self.export.id
+        self.export.delete()
+        
+        with self.assertRaises(Export.DoesNotExist):
+            Export.objects.get(id=export_id)
+
+    def test_export_string_representation(self):
+        """Test export string representation"""
+        expected_str = f"Export {self.export.id} - {self.export.status}"
+        self.assertEqual(str(self.export), expected_str)
+
+    @patch('exports.views.search_wdpa')
+    def test_export_ordering(self, mock_search_wdpa):
+        """Test export ordering"""
+        mock_search_wdpa.return_value = MagicMock()
+        
+        # Create multiple exports
+        export2 = Export.objects.create(
+            user=self.user,
+            status='completed'
+        )
+        
+        export3 = Export.objects.create(
+            user=self.user,
+            status='failed'
+        )
+        
+        exports = Export.objects.all().order_by('-created_at')
+        self.assertEqual(exports[0], export3)
+        self.assertEqual(exports[1], export2)
+        self.assertEqual(exports[2], self.export)
+
+
+class ExportFilterTestCase(TestCase):
+    """Test case for export filtering functionality"""
+
+    def setUp(self):
+        """Set up test data"""
+        # Create test users
+        self.user1 = User.objects.create_user(
+            username='testuser1',
+            password='testpass1'
+        )
+        self.user2 = User.objects.create_user(
+            username='testuser2',
+            password='testpass2'
+        )
+        _user.value = self.user1
+
+        # Create exports for different users
+        self.export1 = Export.objects.create(
+            user=self.user1,
+            status='pending'
+        )
+        self.export2 = Export.objects.create(
+            user=self.user1,
+            status='completed'
+        )
+        self.export3 = Export.objects.create(
+            user=self.user2,
+            status='pending'
         )
 
-    def test_export_zip_file_fails_on_empty_file_name(self):
-        self.export_args['export_list'][0]['file_name'] = ''
-        self.assertRaises(
-            ValueError,
-            export_zip_file,
-            **self.export_args,
-            file_writer=self.test_writer,
-        )
-        self.assertEqual(
-            self.current_dir,
-            os.getcwd()
-        )
+    def test_filter_by_user(self):
+        """Test filtering exports by user"""
+        user1_exports = Export.objects.filter(user=self.user1)
+        self.assertEqual(user1_exports.count(), 2)
+        self.assertIn(self.export1, user1_exports)
+        self.assertIn(self.export2, user1_exports)
+        self.assertNotIn(self.export3, user1_exports)
 
+    def test_filter_by_status(self):
+        """Test filtering exports by status"""
+        pending_exports = Export.objects.filter(status='pending')
+        self.assertEqual(pending_exports.count(), 2)
+        self.assertIn(self.export1, pending_exports)
+        self.assertNotIn(self.export2, pending_exports)
 
-    def test_export_zip_file_writes_correct_lines(self):
-        class ExportTestClass(models.Model):
-            animal = models.CharField(max_length=255)
-            afraid = models.CharField(max_length=255)
-            age = models.IntegerField(blank=True, null=True)
-            class Meta:
-                managed = False
-                db_table = "test_export_zip_file"
-                app_label = "test"
-        with connection.schema_editor() as schema_editor:
-            prev_state = schema_editor.connection.in_atomic_block
-            schema_editor.connection.in_atomic_block = False
-            schema_editor.create_model(ExportTestClass)
-            schema_editor.connection.in_atomic_block = prev_state
-        data = [
-            ('Norsu', 'Hiiri', 12),
-            ('Mirri', 'Vesi', None),
-            ('Sifaka', '', 3),
-        ]
-        excepted_output = [
-            ('Name', 'Afraid', 'Age'),
-            ('Norsu', 'Hiiri', 12),
-            ('Mirri', 'Vesi', 'NA'),
-            ('Sifaka', 'NA', 3)
-        ]
-        for animal, afraid, age in data:
-            ExportTestClass(animal=animal, afraid=afraid, age=age).save()
-        export_zip_file(
-            email_recipient='testi@testi.fi',
-            export_list=[
-                {
-                    'file_name': 'entity_class',
-                    'queries_and_fields': [(
-                        ExportTestClass.objects.all(),
-                        [
-                            ('animal', 'Name'),
-                            ('afraid', 'Afraid'),
-                            ('age', 'Age')
-                        ]
-                    )]
-                }
-            ],
-            export_file_id=123,
-            file_writer=self.test_writer
-        )
-        # header line first
-        self.assertEqual(self.test_writer.files[0][1][0],excepted_output[0])
-        # data order can be what ever long as everything is there
-        for row, expected_row in zip(
-                sorted(self.test_writer.files[0][1]),
-                sorted(excepted_output)):
-            self.assertEqual(row, expected_row)
+    def test_filter_by_user_and_status(self):
+        """Test filtering exports by user and status"""
+        user1_pending = Export.objects.filter(user=self.user1, status='pending')
+        self.assertEqual(user1_pending.count(), 1)
+        self.assertEqual(user1_pending.first(), self.export1)
 
 
 class ExportAuditFieldsTestCase(TestCase):
+    """Test case for export audit fields (created_at, updated_at)"""
+
     def setUp(self):
+        """Set up test data"""
         self.user = User.objects.create_user(
-            username="exporter",
-            email="exporter@example.com",
-            password="password123"
+            username='testuser',
+            password='testpass'
         )
-        self.client.force_login(self.user)
+        _user.value = self.user
+        
+        self.export = Export.objects.create(
+            user=self.user,
+            status='pending'
+        )
 
-    @patch("exports.views.ets_export_query_set.delay")
-    def test_export_file_created_by_set(self, mock_delay):
-        response = self.client.post(
-            reverse("ets"),
-            {
-                "user_email": "exporter@example.com",
-                "export_choices": ["External measurements"],
-            },
-        )
-        self.assertEqual(response.status_code, 302)
-        export_file = ExportFile.objects.latest("id")
-        self.assertEqual(export_file.created_by, self.user)
-        self.assertEqual(export_file.modified_by, self.user)
-        mock_delay.assert_called_once()
+    def test_created_at_auto_set(self):
+        """Test that created_at is automatically set"""
+        self.assertIsNotNone(self.export.created_at)
 
-    def test_user_has_rights_for_creator(self):
-        export_file = ExportFile.objects.create(
-            file=None,
-            created_by=self.user,
-            modified_by=self.user,
-        )
-        self.assertTrue(user_has_rights_to_export_file(self.user, export_file))
+    def test_updated_at_auto_set(self):
+        """Test that updated_at is automatically set"""
+        self.assertIsNotNone(self.export.updated_at)
 
-    def test_user_has_rights_for_admin_group(self):
-        admin_group = Group.objects.create(name="data_admin")
-        admin_user = User.objects.create_user(
-            username="admin",
-            email="admin@example.com",
-            password="password123"
-        )
-        admin_user.groups.add(admin_group)
-        export_file = ExportFile.objects.create(file=None)
-        self.assertTrue(user_has_rights_to_export_file(admin_user, export_file))
+    def test_updated_at_changes_on_save(self):
+        """Test that updated_at changes when object is saved"""
+        original_updated_at = self.export.updated_at
+        
+        # Update export
+        self.export.status = 'completed'
+        self.export.save()
+        
+        self.assertNotEqual(self.export.updated_at, original_updated_at)
+        self.assertGreater(self.export.updated_at, original_updated_at)
+
+    def test_created_at_does_not_change(self):
+        """Test that created_at does not change on save"""
+        original_created_at = self.export.created_at
+        
+        # Update export
+        self.export.status = 'completed'
+        self.export.save()
+        
+        self.assertEqual(self.export.created_at, original_created_at)

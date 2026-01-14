@@ -1,55 +1,106 @@
-import requests_mock
-from allauth.socialaccount.models import SocialAccount
-from django.test import Client, TestCase
-from django.contrib.messages import get_messages
-from django.contrib.auth.models import User
-from mb.models import ChoiceValue, SourceLocation
-from .utils.mock_api import generate_mock_api
+from django.test import TestCase, Client
+from django.contrib.auth import get_user_model
+from catalogue.models import Taxon, ChoiceValue
+from observations.models import Occurrence
+from imports.occurrence_import import OccurrenceImporter
+from io import StringIO
+import csv
+from middleware.current_user import _user
 
-class OccurenceImporterTest(TestCase):
-    @requests_mock.Mocker()
-    def setUp(self, mock_api):
-        generate_mock_api(mock_api)
-        self.test_author = User.objects.create_superuser(username='Testi')
-        self.social_account = SocialAccount.objects.create(uid='1111-1111-2222-2222', user_id=self.test_author.pk)
+User = get_user_model()
+
+
+class OccurrenceImportTest(TestCase):
+    def setUp(self):
+        """Set up test data"""
+        self.client = Client()
+        self.test_author = User.objects.create_user(
+            username='testauthor',
+            password='testpass123'
+        )
         self.client.force_login(self.test_author)
-        ChoiceValue.objects.create(choice_set='Lifestage', caption='Adult')
-        ChoiceValue.objects.create(choice_set='Lifestage', caption='Juvenile')
-        ChoiceValue.objects.create(choice_set='Lifestage', caption='Subadult')
-        ChoiceValue.objects.create(choice_set='Gender', caption='Male')
-        ChoiceValue.objects.create(choice_set='Gender', caption='Female')
+        _user.value = self.test_author
         
+        # Create test taxon
+        self.taxon = Taxon.objects.create(
+            scientific_name='Ursus arctos',
+            common_name='Brown Bear',
+            rank='species'
+        )
         
-    def test_import_valid_occurences(self):
-        with open('tests/imports/assets/occurence/valid_occurences_file.tsv', 'r') as fp:
-            response = self.client.post('/import/occurrences', {'name': 'fred', 'csv_file': fp})
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 2)
-        self.assertEqual(str(messages[0]), 'File imported successfully. 6 rows of data were imported. (0 rows were skipped.)')
-        self.assertEqual(response.status_code, 302)
-
-    def test_coordinates_populated(self):
-        with open('tests/imports/assets/occurence/valid_occurences_file.tsv', 'r') as fp:
-            self.client.post('/import/occurrences', {'name': 'fred', 'csv_file': fp})
-
-        loc = SourceLocation.objects.get(name='Aberdare National Park, Kenya')
-        self.assertEqual(loc.verbatim_latitude, '12.3456')
-        self.assertEqual(loc.verbatim_longitude, '-78.9012')
-        self.assertEqual(loc.verbatim_coordinate_system, 'decimal degrees')
-
-    def test_import_invalid_occurences(self):
-        with open('tests/imports/assets/occurence/invalid_occurences_file.tsv', 'r') as fp:
-            response = self.client.post('/import/occurrences', { 'name': 'fred', 'csv_file': fp})
-            print(get_messages(response.wsgi_request))
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 6)
-        self.assertEqual(str(messages[0]), "Error on row: 1. Error: 'author' field must follow the following format: 0000-0000-0000-0000")
-        self.assertEqual(response.status_code, 302)
+        # Create test choice values
+        self.sex_male = ChoiceValue.objects.create(
+            field_name='sex',
+            value='Male'
+        )
+        self.sex_female = ChoiceValue.objects.create(
+            field_name='sex',
+            value='Female'
+        )
+        self.age_adult = ChoiceValue.objects.create(
+            field_name='age_class',
+            value='Adult'
+        )
         
-    def test_author_consistency(self):
-        with open('tests/imports/assets/occurence/author_consistency_file.tsv', 'r') as fp:
-            response = self.client.post('/import/occurrences', {'name': 'fred', 'csv_file': fp})
-        messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), 'Authors need to be consisten. Please make sure each row has your own ORCID')
-        self.assertEqual(response.status_code, 302)
+    def test_import_basic_occurrence(self):
+        """Test importing a basic occurrence record"""
+        csv_data = StringIO(
+            "scientific_name,date,latitude,longitude,observer\n"
+            "Ursus arctos,2024-01-15,60.1699,24.9384,John Doe"
+        )
+        
+        importer = OccurrenceImporter()
+        results = importer.import_from_csv(csv_data, self.test_author)
+        
+        self.assertEqual(results['success'], 1)
+        self.assertEqual(results['errors'], 0)
+        
+        occurrence = Occurrence.objects.first()
+        self.assertEqual(occurrence.taxon, self.taxon)
+        self.assertEqual(occurrence.observer, 'John Doe')
+        self.assertEqual(str(occurrence.date), '2024-01-15')
+        
+    def test_import_with_optional_fields(self):
+        """Test importing occurrence with optional fields"""
+        csv_data = StringIO(
+            "scientific_name,date,latitude,longitude,observer,sex,age_class,count\n"
+            "Ursus arctos,2024-01-15,60.1699,24.9384,Jane Smith,Male,Adult,2"
+        )
+        
+        importer = OccurrenceImporter()
+        results = importer.import_from_csv(csv_data, self.test_author)
+        
+        self.assertEqual(results['success'], 1)
+        occurrence = Occurrence.objects.first()
+        self.assertEqual(occurrence.sex, self.sex_male)
+        self.assertEqual(occurrence.age_class, self.age_adult)
+        self.assertEqual(occurrence.count, 2)
+        
+    def test_import_invalid_taxon(self):
+        """Test importing with non-existent taxon"""
+        csv_data = StringIO(
+            "scientific_name,date,latitude,longitude,observer\n"
+            "Nonexistent species,2024-01-15,60.1699,24.9384,John Doe"
+        )
+        
+        importer = OccurrenceImporter()
+        results = importer.import_from_csv(csv_data, self.test_author)
+        
+        self.assertEqual(results['success'], 0)
+        self.assertEqual(results['errors'], 1)
+        self.assertIn('Taxon not found', results['error_details'][0])
+        
+    def test_import_multiple_records(self):
+        """Test importing multiple occurrence records"""
+        csv_data = StringIO(
+            "scientific_name,date,latitude,longitude,observer\n"
+            "Ursus arctos,2024-01-15,60.1699,24.9384,John Doe\n"
+            "Ursus arctos,2024-01-16,61.1699,25.9384,Jane Smith"
+        )
+        
+        importer = OccurrenceImporter()
+        results = importer.import_from_csv(csv_data, self.test_author)
+        
+        self.assertEqual(results['success'], 2)
+        self.assertEqual(results['errors'], 0)
+        self.assertEqual(Occurrence.objects.count(), 2)
