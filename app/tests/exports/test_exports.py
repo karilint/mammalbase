@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from app.exports.models import ExportFile
+from exports.models import ExportFile
 from species.models import Species
 from locations.models import Location
 from observations.models import Observation

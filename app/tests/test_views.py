@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
-from app.mb.models import Observation, Location, Species
+from mb.models import Observation, Location, Species
 from datetime import datetime, timezone
 from unittest.mock import patch, MagicMock
 import json
