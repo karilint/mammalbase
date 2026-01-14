@@ -1,7 +1,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 from app.imports.validation import ImportValidator
-from app.models import Collection, CollectionAttribute, ChoiceValue
+from app.mb.models import Collection, CollectionAttribute, ChoiceValue
 
 User = get_user_model()
 

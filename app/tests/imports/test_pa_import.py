@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from middleware.current_user import _user
-from app.models import Project, Location, Survey, Deployment, Camera, MediaFile
+from app.mb.models import Project, Location, Survey, Deployment, Camera, MediaFile
 from app.imports.pa_import import PAImporter
 import json
 import os
