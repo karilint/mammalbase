@@ -1,6 +1,7 @@
 # Test import corrections
 
 This inventory lists outdated imports in `app/tests/` and their corrected targets.
+Legacy observation view tests were removed after the observation UI was retired.
 
 ## Model imports
 
