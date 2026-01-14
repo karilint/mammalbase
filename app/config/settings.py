@@ -85,9 +85,9 @@ INSTALLED_APPS = [
     'mb.apps.MbConfig',
     'tdwg.apps.TdwgConfig',
 
-    'imports',
+    'imports.apps.ImportsConfig',
     'itis',
-    'exports',
+    'exports.apps.ExportsConfig',
     'matchtools',
     'tgn',
     'wdpa',
