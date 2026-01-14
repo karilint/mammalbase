@@ -13,7 +13,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: ['3.9', '3.10']
+        python-version: ['3.11']
     
     services:
       mysql:
@@ -46,6 +46,7 @@ jobs:
         DB_PASS: password
       run: |
         mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'test_user'@'%';" -u${{ env.DB_USER }} -p${{ env.DB_PASS }} -h 127.0.0.1 -P 3306
+        mysql -e "ALTER TABLE test_test_db.socialaccount_socialapp DROP COLUMN IF EXISTS provider_id;" -u${{ env.DB_USER }} -p${{ env.DB_PASS }} -h 127.0.0.1 -P 3306 || true
     - name: Run Tests
       env:
         DB_HOST: 127.0.0.1

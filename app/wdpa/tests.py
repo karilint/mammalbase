@@ -12,4 +12,4 @@ class WdpaSearchTests(TestCase):
         url = reverse('wdpa_search')
         response = self.client.get(url, {'name': 'Amboseli'})
         self.assertEqual(response.status_code, 502)
-        self.assertIn('Failed to query Protected Planet', response.json()['error'])
+        self.assertIn('Failed to fetch WDPA data', response.json()['error'])

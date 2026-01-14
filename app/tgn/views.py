@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.core.cache import cache
+import logging
 
 from .services import search_tgn
 
@@ -20,7 +21,8 @@ def search_place(request):
     try:
         results = search_tgn(name, nature_reserve)
     except RuntimeError as exc:
-        return JsonResponse({"error": str(exc)}, status=502)
+        logging.exception("TGN search failed for name=%r, nature_reserve=%r", name, nature_reserve)
+        return JsonResponse({"error": "Upstream service error"}, status=502)
 
     cache.set(cache_key, results, timeout=86400)
     return JsonResponse({"results": results})
