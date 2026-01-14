@@ -22,6 +22,9 @@ def export_to_tsv(request):
             user_email = request.POST['user_email']
             checkboxes = request.POST.getlist('export_choices')
             export_file = ExportFile(file=None)
+            if request.user.is_authenticated:
+                export_file.created_by = request.user
+                export_file.modified_by = request.user
             export_file.save()
             export_file_id = export_file.pk
             is_admin_or_contributor = user_is_data_admin_or_contributor(

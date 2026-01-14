@@ -31,16 +31,17 @@ This update removes deprecated settings and verifies the project aligns with Dja
 - django-filter usage remains in dedicated FilterSet modules with no Django 5.2-specific deprecations observed.
 - No Django REST Framework serializers or viewsets were found in the current codebase (DRF remains disabled in settings).
 - Pagination templates continue to include the shared `mb/pagination.html` partial from list views.
+- Audit fields now rely on the AutoUserForeignKey helper with CurrentUserMiddleware to capture the authenticated user on create/update.
 
 ## Localization behavior
 Django 5.2 no longer supports the `USE_L10N` setting. Localization is always enabled, so date/number formatting will follow active locale settings by default.
 
 ## Validation checklist
 - Run system checks to confirm settings are valid.
-- Execute the test suite with coverage requirements (pytest with coverage enabled).
-- Run a migrations consistency check before release (MySQL in CI, SQLite in test settings).
+- Execute the test suite with coverage requirements (pytest with coverage enabled and coverage threshold enforced in CI).
+- Run a migrations consistency check before release (MySQL in CI, SQLite in test settings) with the standard makemigrations check.
 - Use the SQLite test settings module when running local migration checks without MySQL.
-- Run documentation lint/build steps expected by CI.
+- Run documentation lint/build steps expected by CI (documentation build and lint tooling).
 - Confirm admin and authentication workflows continue to behave as expected.
 - Re-verify django-allauth login redirects and OAuth provider flows (ORCID) after upgrade.
 - Validate admin registrations, permissions, and list views for core models.
