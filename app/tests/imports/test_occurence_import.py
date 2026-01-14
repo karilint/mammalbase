@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
 from app.tdwg.models import Taxon, ChoiceValue
 from observations.models import Occurrence
-from imports.occurrence_import import OccurrenceImporter
+from app.imports.occurrence_import import OccurrenceImporter
 from io import StringIO
 import csv
 from middleware.current_user import _user

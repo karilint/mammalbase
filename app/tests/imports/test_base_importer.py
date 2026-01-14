@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.contrib.auth import get_user_model
-from imports.base_importer import BaseImporter
+from app.imports.base_importer import BaseImporter
 from middleware.current_user import _user
 
 User = get_user_model()
