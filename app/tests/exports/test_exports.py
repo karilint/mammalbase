@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from exports.models import Export
+from app.exports.models import ExportFile
 from species.models import Species
 from locations.models import Location
 from observations.models import Observation
@@ -42,7 +42,7 @@ class ExportZipFileTestCase(TestCase):
         )
 
         # Create test export
-        self.export = Export.objects.create(
+        self.export = ExportFile.objects.create(
             user=self.user,
             status='pending'
         )
@@ -75,7 +75,7 @@ class ExportZipFileTestCase(TestCase):
         self.export.status = 'completed'
         self.export.save()
         
-        updated_export = Export.objects.get(id=self.export.id)
+        updated_export = ExportFile.objects.get(id=self.export.id)
         self.assertEqual(updated_export.status, 'completed')
 
     def test_export_user_relationship(self):
@@ -92,7 +92,7 @@ class ExportZipFileTestCase(TestCase):
         self.export.file = 'exports/test_export.zip'
         self.export.save()
         
-        updated_export = Export.objects.get(id=self.export.id)
+        updated_export = ExportFile.objects.get(id=self.export.id)
         self.assertEqual(updated_export.file, 'exports/test_export.zip')
 
     @patch('exports.views.search_wdpa')
@@ -128,8 +128,8 @@ class ExportZipFileTestCase(TestCase):
         export_id = self.export.id
         self.export.delete()
         
-        with self.assertRaises(Export.DoesNotExist):
-            Export.objects.get(id=export_id)
+        with self.assertRaises(ExportFile.DoesNotExist):
+            ExportFile.objects.get(id=export_id)
 
     def test_export_string_representation(self):
         """Test export string representation"""
@@ -142,17 +142,17 @@ class ExportZipFileTestCase(TestCase):
         mock_search_wdpa.return_value = MagicMock()
         
         # Create multiple exports
-        export2 = Export.objects.create(
+        export2 = ExportFile.objects.create(
             user=self.user,
             status='completed'
         )
         
-        export3 = Export.objects.create(
+        export3 = ExportFile.objects.create(
             user=self.user,
             status='failed'
         )
         
-        exports = Export.objects.all().order_by('-created_at')
+        exports = ExportFile.objects.all().order_by('-created_at')
         self.assertEqual(exports[0], export3)
         self.assertEqual(exports[1], export2)
         self.assertEqual(exports[2], self.export)
@@ -175,22 +175,22 @@ class ExportFilterTestCase(TestCase):
         _user.value = self.user1
 
         # Create exports for different users
-        self.export1 = Export.objects.create(
+        self.export1 = ExportFile.objects.create(
             user=self.user1,
             status='pending'
         )
-        self.export2 = Export.objects.create(
+        self.export2 = ExportFile.objects.create(
             user=self.user1,
             status='completed'
         )
-        self.export3 = Export.objects.create(
+        self.export3 = ExportFile.objects.create(
             user=self.user2,
             status='pending'
         )
 
     def test_filter_by_user(self):
         """Test filtering exports by user"""
-        user1_exports = Export.objects.filter(user=self.user1)
+        user1_exports = ExportFile.objects.filter(user=self.user1)
         self.assertEqual(user1_exports.count(), 2)
         self.assertIn(self.export1, user1_exports)
         self.assertIn(self.export2, user1_exports)
@@ -198,14 +198,14 @@ class ExportFilterTestCase(TestCase):
 
     def test_filter_by_status(self):
         """Test filtering exports by status"""
-        pending_exports = Export.objects.filter(status='pending')
+        pending_exports = ExportFile.objects.filter(status='pending')
         self.assertEqual(pending_exports.count(), 2)
         self.assertIn(self.export1, pending_exports)
         self.assertNotIn(self.export2, pending_exports)
 
     def test_filter_by_user_and_status(self):
         """Test filtering exports by user and status"""
-        user1_pending = Export.objects.filter(user=self.user1, status='pending')
+        user1_pending = ExportFile.objects.filter(user=self.user1, status='pending')
         self.assertEqual(user1_pending.count(), 1)
         self.assertEqual(user1_pending.first(), self.export1)
 
@@ -221,7 +221,7 @@ class ExportAuditFieldsTestCase(TestCase):
         )
         _user.value = self.user
         
-        self.export = Export.objects.create(
+        self.export = ExportFile.objects.create(
             user=self.user,
             status='pending'
         )
