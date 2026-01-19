@@ -27,25 +27,19 @@ def download_ready_message(export_id):
     return f"""
 Dear MammalBase User,
 
-We hope this email finds you well. We are pleased to inform you that your
-requested data export from MammalBase is now ready for access. You can find
-the export file using the Ecological Traitdata Standard (ETS) format at the
-link provided at the end of this message.
+We hope this email finds you well. We are pleased to inform you that your requested data export from MammalBase is now ready for access. You can find
+the export file using the Ecological Traitdata Standard (ETS) format at the link provided at the end of this message.
 
-The ETS format allows for the integration of the dataset into your research
-workflow. To learn more about the ETS terminology, please visit:
+The ETS format allows for the integration of the dataset into your research workflow.
+To learn more about the ETS terminology, please visit:
 https://terminologies.gfbio.org/terms/ets/pages/
 
-At MammalBase, we remain dedicated to fostering research on mammalian traits
-and measurements, continually expanding our database with the latest findings
+At MammalBase, we remain dedicated to fostering research on mammalian traits and measurements, continually expanding our database with the latest findings
 to meet the needs of researchers like you.
 
-As a part of our ongoing efforts to enhance the quality and scope of our
-database, we welcome contributions from the research community. Should you or
-your colleagues possess additional original, published trait and measurement
-data on mammals, we would be grateful to include it. For further inquiries,
-kindly contact Dr Kari Lintulaakso at kari.lintulaakso@helsinki.fi at the
-Finnish Museum of Natural History, and he will be pleased to provide
+As a part of our ongoing efforts to enhance the quality and scope of our database, we welcome contributions from the research community. Should you or
+your colleagues possess additional original, published trait and measurement data on mammals, we would be grateful to include it. For further inquiries,
+kindly contact Dr Kari Lintulaakso at kari.lintulaakso@helsinki.fi at the Finnish Museum of Natural History, and he will be pleased to provide
 a preformatted import template file in ETS format.
 
 To cite the exported dataset, please include the following information:
@@ -56,11 +50,9 @@ Accessed {formatted_date} at https://mammalbase.net
 To access your requested data, kindly use the following link:
 https://{SITE_DOMAIN}/exports/get_file/{export_id}
 
-If you require any assistance or have inquiries about the data or our
-platform, please don't hesitate to contact our dedicated Team MammalBase.
+If you require any assistance or have inquiries about the data or our platform, please don't hesitate to contact our dedicated Team MammalBase.
 
-We value your participation in the MammalBase community and appreciate your
-support in making this resource a valuable asset to researchers worldwide.
+We value your participation in the MammalBase community and appreciate your support in making this resource a valuable asset to researchers worldwide.
 
 Best regards,
 

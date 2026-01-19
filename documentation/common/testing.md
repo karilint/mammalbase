@@ -10,6 +10,10 @@ To run all the existing unit tests, run:
 docker exec mammalbase_web_1 python manage.py test
 ```
 
+Use the Django test runner so the app registry is initialized and installed
+apps are discovered correctly. This avoids import issues when tests use app
+packages such as `mb`, `imports`, `tdwg`, and `exports`.
+
 Run a specific test file by adding the path to the file:
 
 ```
@@ -39,6 +43,11 @@ Tests should work now.
 ### Creating and/or modifying tests
 
 Test files are located in `/app/tests`.
+
+When adding or updating tests, import models and utilities from the installed
+app packages (for example `mb.models`, `imports.importers`, `exports.models`,
+and `tdwg.models`) rather than legacy or unscoped module paths. This keeps
+imports aligned with the current package layout and Django app registry.
 
 ### Test coverage
 
