@@ -16,3 +16,4 @@
 - Align BaseModel audit fields with AutoUserForeignKey for automatic user attribution.
 - Ensure export requests populate audit user fields on creation.
 - Add export permission and audit coverage in tests and update validation notes.
+- Document test import conventions and Django test runner guidance for current app packages.
