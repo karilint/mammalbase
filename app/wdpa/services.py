@@ -60,9 +60,14 @@ def search_wdpa(name):
         attr_info = _find_attr_json(detail_soup, ":attributes-info")
         original_name = "NA"
         if attr_info:
+            name_candidates = {}
             for item in attr_info[0].get("attributes", []):
-                if item.get("title") == "Original Name":
-                    original_name = item.get("value", "NA")
+                title = item.get("title")
+                if title in {"Original Name", "Name", "English Name"}:
+                    name_candidates[title] = item.get("value", "NA")
+            for title in ("Original Name", "Name", "English Name"):
+                if name_candidates.get(title):
+                    original_name = name_candidates[title]
                     break
         results.append({
             "wdpa_id": wdpa_id,
