@@ -2,5 +2,14 @@
 
 from .assets import RecodeAssetManager, RecodeAssetPaths
 from .corpus import CorpusAssetAdapter
+from .recode_tsv_reader import AnnotatedDocument, Entity, RecodeTsvReader, Relation
 
-__all__ = ['CorpusAssetAdapter', 'RecodeAssetManager', 'RecodeAssetPaths']
+__all__ = [
+    'AnnotatedDocument',
+    'CorpusAssetAdapter',
+    'Entity',
+    'RecodeAssetManager',
+    'RecodeAssetPaths',
+    'RecodeTsvReader',
+    'Relation',
+]

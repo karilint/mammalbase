@@ -140,3 +140,30 @@ Pipeline execution remains intentionally unimplemented in this phase.
 
 ### Persistence
 `SourceExtractionRun` stores extracted output in `extracted_text_package` and records status/log updates from the text extraction stage.
+
+## Phase 5: RECODE-style information extraction layer
+
+### Corpus reader
+`RecodeTsvReader` consumes `index.json` and loads referenced TSV annotations into dataclasses:
+
+- `Entity` (`entity_type`, `text`, span offsets, `doc_id`)
+- `Relation` (`head_entity_id`, `tail_entity_id`, `relation_type`, `doc_id`)
+- `AnnotatedDocument` (entities + relations + provenance such as annotator)
+
+The reader supports mixed TSV schemas by normalizing common column variants for entity/relation tables.
+
+### Extraction engine
+`ExtractionEngine` exposes pluggable backends:
+
+- `BaselineRuleExtractor`: regex-based extraction for mammal trait patterns (for example body mass, adult mass, length, litter size, zygomatic breadth, dietary class)
+- `LlmAssistedExtractor`: integration stub for future model-assisted extraction
+
+The stable intermediate output dataclass is `ExtractedAssertion` with:
+
+- `subject_taxon`
+- `trait_name`
+- `value`
+- `unit`
+- `context`
+- `confidence`
+- `evidence_spans` (offset ranges)

@@ -1,0 +1,4 @@
+entity_id	entity_type	text	start	end	doc_id
+E1	TAXON	Canis lupus	0	11	DOC100
+E2	TRAIT	body mass	20	29	DOC100
+E3	VALUE	12	30	32	DOC100
