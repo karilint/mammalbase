@@ -167,3 +167,22 @@ The stable intermediate output dataclass is `ExtractedAssertion` with:
 - `context`
 - `confidence`
 - `evidence_spans` (offset ranges)
+
+## Phase 6: ETS mapping from extracted assertions
+
+`EtsMapper` maps `ExtractedAssertion` objects into ETS import-compatible records.
+
+### Mapping behavior
+- Maps normalized `trait_name` values to MammalBase trait definition identifiers (`traitID`).
+- Normalizes numeric values from point estimates, ranges (`min-max`), and mean±sd (`x ± y`) into ETS measurement fields.
+- Avoids irrelevant units by applying trait-specific allowed-unit sets.
+- Produces provenance fields for curator traceability:
+  - `source_document_id`
+  - `source_extraction_run_id`
+  - `evidence_snippet`
+  - `evidence_page_number`
+  - `evidence_offsets`
+
+### Validation and curation support
+- Invalid numeric values are rejected from ETS record output.
+- Unmapped trait names are captured separately as `unmapped_traits` for curator review.
