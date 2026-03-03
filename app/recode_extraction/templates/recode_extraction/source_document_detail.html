@@ -1,0 +1,28 @@
+{% extends 'mb/base_generic.html' %}
+{% block title %}<title>{{ document.title }}</title>{% endblock %}
+{% block content %}
+<section class="w3-container w3-threequarter">
+  <header>
+    <h1>{{ document.title }}</h1>
+    <p><strong>Authors:</strong> {{ document.authors|default:"N/A" }}</p>
+    <p><strong>Year:</strong> {{ document.year|default:"N/A" }}</p>
+    <p><strong>DOI:</strong> {{ document.doi|default:"N/A" }}</p>
+    <p><strong>Uploader:</strong> {{ document.uploader|default:"N/A" }}</p>
+    <p><a href="{{ document.pdf_file.url }}" target="_blank" rel="noopener">Open uploaded PDF</a></p>
+  </header>
+
+  <form method="post" action="{% url 'recode_source_document_run' document.pk %}">
+    {% csrf_token %}
+    <button class="w3-button w3-theme" type="submit">Run RECODE Extraction</button>
+  </form>
+
+  <h2>Extraction Runs</h2>
+  <ul class="w3-ul w3-card-4">
+    {% for run in runs %}
+      <li>Run #{{ run.pk }} — {{ run.get_status_display }} — {{ run.created_at }}</li>
+    {% empty %}
+      <li>No extraction runs yet.</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

@@ -1,0 +1,127 @@
+# RECODE Integration Architecture (Scaffolding Phase)
+
+## Goal
+Integrate **RECODE: Relational Ecological COrpus for Data Extraction** as an internal pipeline for uploaded PDFs while reusing MammalBase ETS import conventions.
+
+## Pipeline Stages and Planned Code Locations
+
+1. **PDF upload ingestion**
+   - Planned integration point: existing upload/import request handling layer.
+   - Orchestration entrypoint: `recode_extraction.services.pipeline.ExtractionPipeline.run(context)`.
+
+2. **Text extraction from PDF**
+   - Planned location: `recode_extraction.adapters`.
+   - Adapter contract: `recode_extraction.adapters.corpus.CorpusAssetAdapter`.
+
+3. **Trait candidate extraction (RECODE corpus/model)**
+   - Planned location: `recode_extraction.services` with adapter support from `recode_extraction.adapters`.
+   - Adapter contract methods:
+     - `CorpusAssetAdapter.load_corpus()`
+     - `CorpusAssetAdapter.resolve_model_path()`
+
+4. **ETS mapping**
+   - Planned location: `recode_extraction.mappers.ets`.
+   - Mapper contract: `recode_extraction.mappers.ets.EtsMapper.map_candidates(extraction_payload)`.
+
+5. **Persistence**
+   - Planned location: `recode_extraction.services`.
+   - Reuse strategy: mapped ETS payload will be normalized through existing ETS import/validation conventions before writing `SourceMeasurementValue` and related source tables.
+
+6. **Quality control (QC)**
+   - Planned location: `recode_extraction.services`.
+   - Output envelope: `recode_extraction.services.pipeline.PipelineResult.qc_summary`.
+
+## Interface Signatures Introduced in This Phase
+
+### Service layer
+- `PipelineContext(upload_id: str, pdf_path: Path, actor_id: int | None = None, metadata: dict[str, Any] = {})`
+- `PipelineResult(upload_id: str, persisted_record_ids: list[int] = [], qc_summary: dict[str, Any] = {})`
+- `ExtractionPipeline.run(context: PipelineContext) -> PipelineResult`
+
+### Adapter layer
+- `CorpusAssetAdapter.load_corpus() -> Any`
+- `CorpusAssetAdapter.resolve_model_path() -> Path`
+
+### Mapper layer
+- `EtsMapper.map_candidates(extraction_payload: dict[str, Any]) -> list[dict[str, Any]]`
+
+## Existing MammalBase ETS Import Structures and Paths
+
+### ETS data structures currently used
+Current ETS-style imports persist into the source-model layer centered around:
+- Source measurement records
+- Source attributes
+- Source entities
+- Source references
+- Source units
+- Source statistics
+- Controlled vocabulary values (for ETS categorical fields such as sex/life stage)
+
+### Existing ETS import code path
+Current ETS import flow is:
+1. Import endpoint dispatches to ETS handler in the imports view layer.
+2. Request is processed by shared import wrapper.
+3. ETS validator applies field and format validation rules.
+4. ETS importer resolves/creates source reference data and persists source measurement values.
+
+### Validator/normalizer reuse plan
+RECODE persistence will reuse the ETS import path principles by:
+- emitting mapper output in ETS-shaped dictionaries,
+- validating required ETS fields with existing ETS validation semantics,
+- normalizing null-like values and vocabulary fields consistently with existing importer behavior,
+- persisting through the same source-model table family used by current ETS imports.
+
+## Scaffolding Added
+- New app: `recode_extraction`
+- New packages:
+  - `recode_extraction/services/`
+  - `recode_extraction/adapters/`
+  - `recode_extraction/mappers/`
+- New tests package: `tests/recode_extraction/`
+
+This phase intentionally includes architecture and interfaces only, without business logic.
+
+## Phase 2A: RECODE corpus acquisition and local asset management
+
+A management command is provided for reproducible local asset setup:
+
+- Command: `python manage.py recode_fetch_assets`
+- Default source: Zenodo record `15254437`, archive `recode.zip`
+- Default checksum verification: MD5 `6a371db866c1589d5711ac00797767ad`
+- Output layout under `var/recode_assets/`:
+  - `recode.zip`
+  - `unpacked/`
+  - `index.json`
+
+### Index contents (`var/recode_assets/index.json`)
+Each indexed TSV entry includes:
+
+- `doc_id`
+- `focus_taxon`
+- `taxon_group` (`araneae` or `insecta`)
+- `annotator` (null when file is under `all/`)
+- `tsv_path`
+- `metadata` (row from `recode/metadata.csv` when matched by document identifier)
+
+### Folder convention handling
+- Under `recode/araneae` and `recode/insecta`, the indexer supports:
+  - files under `all/` (no annotator)
+  - files nested under annotator directories (annotator inferred from first path segment)
+- TSV filename stems are interpreted as `<focus_taxon>_<doc_id>` for index fields.
+
+## Phase 3: PDF ingestion and source persistence
+
+A minimal source-ingestion flow is available in the `recode_extraction` app:
+
+- `SourceDocument` stores uploaded PDF and source metadata (title, authors, year, DOI, uploader, created timestamp).
+- `SourceExtractionRun` stores extraction run lifecycle metadata (status, timestamps, logs, model version, parameters) linked to a source document.
+
+### UI endpoints
+- List sources: `recode/sources/`
+- Upload source PDF: `recode/sources/upload/`
+- Source detail + run trigger: `recode/sources/<id>/`
+- Run trigger POST endpoint: `recode/sources/<id>/run/`
+
+### Current run behavior
+The “Run RECODE Extraction” button creates a queued `SourceExtractionRun` record through a placeholder service call.
+Pipeline execution remains intentionally unimplemented in this phase.

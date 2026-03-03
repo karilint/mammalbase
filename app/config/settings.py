@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     'tdwg.apps.TdwgConfig',
 
     'imports.apps.ImportsConfig',
+    'recode_extraction.apps.RecodeExtractionConfig',
     'itis',
     'exports.apps.ExportsConfig',
     'matchtools',
