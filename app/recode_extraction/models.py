@@ -41,6 +41,7 @@ class SourceExtractionRun(models.Model):
     logs = models.TextField(blank=True)
     model_version = models.CharField(max_length=50, blank=True)
     parameters = models.JSONField(default=dict, blank=True)
+    extracted_text_package = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

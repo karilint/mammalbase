@@ -125,3 +125,18 @@ A minimal source-ingestion flow is available in the `recode_extraction` app:
 ### Current run behavior
 The “Run RECODE Extraction” button creates a queued `SourceExtractionRun` record through a placeholder service call.
 Pipeline execution remains intentionally unimplemented in this phase.
+
+## Phase 4: PDF text extraction and canonical text package
+
+`PdfToTextService` provides canonical extraction output:
+
+- `pages`: list of page objects with `page_number` and extracted `text`
+- `full_text`: concatenated text from all pages
+- `extraction_warnings`: warnings collected during extraction
+
+### Backends
+- Default backend: `pypdf`.
+- Optional backend: `pdftotext` system command, automatically used when explicitly preferred and available, or as fallback if `pypdf` is unavailable.
+
+### Persistence
+`SourceExtractionRun` stores extracted output in `extracted_text_package` and records status/log updates from the text extraction stage.

@@ -1,4 +1,5 @@
 import tempfile
+from pathlib import Path
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -6,6 +7,9 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from recode_extraction.models import SourceDocument, SourceExtractionRun
+
+
+ASSETS_DIR = Path(__file__).resolve().parent / 'assets'
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
@@ -37,7 +41,7 @@ class SourceDocumentViewsTests(TestCase):
 
     def test_run_extraction_creates_queued_run(self):
         document = SourceDocument.objects.create(
-            pdf_file=SimpleUploadedFile('existing.pdf', b'%PDF-1.4\nexisting', content_type='application/pdf'),
+            pdf_file=SimpleUploadedFile('existing.pdf', (ASSETS_DIR / 'single_page.pdf').read_bytes(), content_type='application/pdf'),
             title='Existing Source',
             uploader=self.user,
         )
@@ -48,4 +52,5 @@ class SourceDocumentViewsTests(TestCase):
         self.assertEqual(SourceExtractionRun.objects.count(), 1)
         run = SourceExtractionRun.objects.get()
         self.assertEqual(run.source, document)
-        self.assertEqual(run.status, SourceExtractionRun.Status.QUEUED)
+        self.assertEqual(run.status, SourceExtractionRun.Status.COMPLETED)
+        self.assertIn('pages', run.extracted_text_package)

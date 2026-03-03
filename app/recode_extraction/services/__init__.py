@@ -1,5 +1,6 @@
 """Service interfaces for RECODE extraction orchestration."""
 
+from .pdf_text import PdfToTextService
 from .pipeline import (
     ExtractionPipeline,
     PipelineContext,
@@ -11,5 +12,6 @@ __all__ = [
     'ExtractionPipeline',
     'PipelineContext',
     'PipelineResult',
+    'PdfToTextService',
     'create_extraction_run',
 ]

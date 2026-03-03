@@ -1,3 +1,4 @@
+from .pdf_text import PdfToTextService
 from .pipeline import PipelineContext
 from ..models import SourceDocument, SourceExtractionRun
 
@@ -6,7 +7,7 @@ DEFAULT_MODEL_VERSION = 'recode-v1-placeholder'
 
 
 def create_extraction_run(source: SourceDocument, *, actor_id: int | None = None) -> SourceExtractionRun:
-    """Create a queued extraction run placeholder for a stored source document."""
+    """Create an extraction run and persist the canonical text package."""
     context = PipelineContext(
         upload_id=str(source.pk),
         pdf_path=source.pdf_file.path,
@@ -14,9 +15,9 @@ def create_extraction_run(source: SourceDocument, *, actor_id: int | None = None
         metadata={'source_document_id': source.pk},
     )
 
-    return SourceExtractionRun.objects.create(
+    run = SourceExtractionRun.objects.create(
         source=source,
-        status=SourceExtractionRun.Status.QUEUED,
+        status=SourceExtractionRun.Status.RUNNING,
         model_version=DEFAULT_MODEL_VERSION,
         parameters={
             'pipeline_context': {
@@ -26,5 +27,19 @@ def create_extraction_run(source: SourceDocument, *, actor_id: int | None = None
                 'metadata': context.metadata,
             }
         },
-        logs='Extraction queued. Pipeline execution not implemented yet.',
+        logs='Extraction run started.',
     )
+
+    service = PdfToTextService()
+    try:
+        package = service.extract(context.pdf_path)
+        run.extracted_text_package = package
+        warnings = package.get('extraction_warnings', [])
+        run.logs = f"Text extraction completed with {len(warnings)} warning(s)."
+        run.status = SourceExtractionRun.Status.COMPLETED
+    except Exception as exc:
+        run.logs = f'Text extraction failed: {exc}'
+        run.status = SourceExtractionRun.Status.FAILED
+
+    run.save(update_fields=['extracted_text_package', 'logs', 'status'])
+    return run
