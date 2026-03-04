@@ -3,6 +3,7 @@ from datetime import datetime
 from types import SimpleNamespace
 from typing import Any
 
+from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
@@ -15,7 +16,7 @@ from recode_extraction.models import (
     SourceDocument,
     SourceExtractionRun,
 )
-from recode_extraction.services.extraction import ExtractionEngine
+from recode_extraction.services.extraction import BaselineRuleExtractor, ExtractionEngine, LlmAssistedExtractor
 from recode_extraction.services.pdf_text import PdfToTextService
 from recode_extraction.services.pipeline import PipelineContext
 
@@ -69,7 +70,8 @@ class RecodePipelineRunner:
             run.extracted_text_package = package
 
             self._update_stage(run, 'information_extraction', 45, 'Extracting entities/assertions.')
-            assertions = ExtractionEngine().extract(package.get('full_text', ''))
+            extraction_engine = self._build_extraction_engine(extraction_backend)
+            assertions = extraction_engine.extract(package.get('full_text', ''))
             assertions = [item for item in assertions if item.confidence >= confidence_threshold]
             self._persist_extracted_entities_and_assertions(run, assertions)
 
@@ -125,6 +127,18 @@ class RecodePipelineRunner:
             )
 
         return run
+
+
+    def _build_extraction_engine(self, extraction_backend: str) -> ExtractionEngine:
+        if extraction_backend == 'baseline':
+            return ExtractionEngine(backend=BaselineRuleExtractor())
+
+        if extraction_backend == 'llm':
+            if not settings.RECODE_ENABLE_LLM_BACKEND:
+                raise ValueError('LLM extraction backend is disabled by RECODE_ENABLE_LLM_BACKEND=0.')
+            return ExtractionEngine(backend=LlmAssistedExtractor())
+
+        raise ValueError(f"Unsupported extraction backend '{extraction_backend}'. Use 'baseline' or 'llm'.")
 
     def _update_stage(self, run: SourceExtractionRun, stage: str, progress_percent: int, log_message: str):
         run.current_stage = stage

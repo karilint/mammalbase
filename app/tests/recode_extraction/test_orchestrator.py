@@ -49,3 +49,22 @@ class RecodePipelineRunnerTests(TestCase):
         self.assertEqual(run.current_stage, 'completed')
         self.assertEqual(run.progress_percent, 100)
         self.assertEqual(run.parameters['extraction_backend'], 'baseline')
+
+    @override_settings(RECODE_ENABLE_LLM_BACKEND=False)
+    @mock.patch('recode_extraction.services.orchestrator.PdfToTextService.extract')
+    def test_runner_fails_when_llm_backend_disabled(self, extract_mock):
+        extract_mock.return_value = {
+            'pages': [{'page_number': 1, 'text': 'Canis lupus body mass is 12 kg.'}],
+            'full_text': 'Canis lupus body mass is 12 kg.',
+            'extraction_warnings': [],
+            'backend': 'pypdf',
+        }
+
+        run = RecodePipelineRunner().run(
+            self.document.pk,
+            run_params={'actor_id': self.user.pk, 'dry_run': True, 'extraction_backend': 'llm'},
+        )
+
+        run.refresh_from_db()
+        self.assertEqual(run.status, SourceExtractionRun.Status.FAILED)
+        self.assertIn('LLM extraction backend is disabled', run.logs)

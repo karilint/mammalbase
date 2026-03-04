@@ -19,7 +19,7 @@ class Command(BaseCommand):
         parser.add_argument('--md5', default=DEFAULT_RECODE_MD5)
         parser.add_argument(
             '--assets-root',
-            default=str(Path(settings.BASE_DIR) / 'var' / 'recode_assets'),
+            default=str(settings.RECODE_ASSETS_DIR),
             help='Root directory for recode.zip, unpacked assets, and index.json',
         )
         parser.add_argument(

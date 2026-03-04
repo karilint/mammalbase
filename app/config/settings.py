@@ -41,6 +41,13 @@ MEDIA_ROOT = environ.get('MEDIA_ROOT', path.join(BASE_DIR, 'media'))
 
 
 
+# RECODE extraction hardening defaults
+RECODE_ASSETS_DIR = Path(environ.get('RECODE_ASSETS_DIR', str(BASE_DIR / 'var' / 'recode_assets')))
+RECODE_ENABLE_LLM_BACKEND = bool(int(environ.get('RECODE_ENABLE_LLM_BACKEND', 0)))
+RECODE_MAX_PDF_MB = int(environ.get('RECODE_MAX_PDF_MB', 25))
+RECODE_TIMEOUT_SECONDS = int(environ.get('RECODE_TIMEOUT_SECONDS', 120))
+
+
 """ Adresses and protocols """
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "http" if DEBUG else "https"
 

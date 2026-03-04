@@ -35,11 +35,18 @@ class AnnotatedDocument:
 
 
 class RecodeTsvReader:
+    _documents_cache: dict[tuple[str, int], list[AnnotatedDocument]] = {}
+
     def __init__(self, index_path: str | Path):
         self.index_path = Path(index_path)
         self.assets_root = self.index_path.parent
 
     def load_documents(self) -> list[AnnotatedDocument]:
+        cache_key = self._cache_key()
+        cached = self._documents_cache.get(cache_key)
+        if cached is not None:
+            return cached
+
         index_entries = json.loads(self.index_path.read_text(encoding='utf-8'))
         documents: list[AnnotatedDocument] = []
 
@@ -59,7 +66,13 @@ class RecodeTsvReader:
                 )
             )
 
+        self._documents_cache[cache_key] = documents
         return documents
+
+
+    def _cache_key(self) -> tuple[str, int]:
+        stat = self.index_path.stat()
+        return str(self.index_path.resolve()), stat.st_mtime_ns
 
     def _parse_tsv(self, tsv_path: Path, default_doc_id: str) -> tuple[list[Entity], list[Relation]]:
         entities: list[Entity] = []

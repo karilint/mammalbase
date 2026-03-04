@@ -6,7 +6,7 @@ from zipfile import ZipFile
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 
 from recode_extraction.adapters.assets import RecodeAssetManager, RecodeAssetPaths
 
@@ -103,3 +103,10 @@ class RecodeAssetsTests(SimpleTestCase):
         with TemporaryDirectory() as tmp_dir:
             with self.assertRaises(CommandError):
                 call_command('recode_fetch_assets', '--assets-root', tmp_dir, '--skip-download')
+
+    @override_settings(RECODE_ASSETS_DIR='/tmp/recode-assets-default-test')
+    def test_management_command_uses_recode_assets_dir_default(self):
+        command = __import__('recode_extraction.management.commands.recode_fetch_assets', fromlist=['Command']).Command()
+        parser = command.create_parser('manage.py', 'recode_fetch_assets')
+        options = parser.parse_args([])
+        self.assertEqual(options.assets_root, '/tmp/recode-assets-default-test')

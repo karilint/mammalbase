@@ -1,5 +1,6 @@
 import tempfile
 from pathlib import Path
+from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -55,3 +56,20 @@ class PdfToTextServiceTests(TestCase):
         self.assertIn('pages', run.extracted_text_package)
         self.assertEqual(run.extracted_text_package['pages'][0]['page_number'], 1)
         self.assertIn('Lone page', run.extracted_text_package['full_text'])
+
+    @override_settings(RECODE_TIMEOUT_SECONDS=30)
+    def test_extract_uses_cache_on_repeated_calls(self):
+        service = PdfToTextService()
+        with mock.patch.object(service, '_extract_with_pypdf') as extract_mock:
+            extract_mock.return_value = mock.Mock(to_dict=lambda: {
+                'pages': [{'page_number': 1, 'text': 'cached'}],
+                'full_text': 'cached',
+                'extraction_warnings': [],
+                'backend': 'pypdf',
+            })
+
+            first = service.extract(ASSETS_DIR / 'single_page.pdf')
+            second = service.extract(ASSETS_DIR / 'single_page.pdf')
+
+        self.assertEqual(first, second)
+        extract_mock.assert_called_once()

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from django.conf import settings
 from django.core.cache import cache
 
 
@@ -30,6 +31,11 @@ class PdfToTextService:
 
     def extract(self, pdf_path: str | Path) -> dict[str, Any]:
         path = Path(pdf_path)
+        cache_key = self._cache_key(path)
+        cached_payload = cache.get(cache_key)
+        if cached_payload is not None:
+            return cached_payload
+
         backend = self._select_backend()
 
         if backend == 'pdftotext':
@@ -38,8 +44,13 @@ class PdfToTextService:
             package = self._extract_with_pypdf(path)
 
         payload = package.to_dict()
-        cache.set(f'recode:pdf_text:{path}', payload, timeout=60 * 60)
+        cache_timeout = max(int(getattr(settings, 'RECODE_TIMEOUT_SECONDS', 120)), 1)
+        cache.set(cache_key, payload, timeout=cache_timeout)
         return payload
+
+    def _cache_key(self, path: Path) -> str:
+        stat = path.stat()
+        return f'recode:pdf_text:{path}:{stat.st_mtime_ns}:{stat.st_size}'
 
     def _select_backend(self) -> str:
         if self.prefer_system_tool and shutil.which('pdftotext'):
@@ -92,7 +103,8 @@ class PdfToTextService:
             '-',
         ]
 
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        timeout = max(int(getattr(settings, 'RECODE_TIMEOUT_SECONDS', 120)), 1)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
         if result.returncode != 0:
             raise RuntimeError(f'pdftotext failed: {result.stderr.strip()}')
 

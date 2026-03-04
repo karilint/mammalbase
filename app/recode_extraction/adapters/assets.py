@@ -21,6 +21,8 @@ class RecodeAssetPaths:
 
 
 class RecodeAssetManager:
+    _index_cache: dict[tuple[str, int], list[dict]] = {}
+
     def __init__(self, paths: RecodeAssetPaths):
         self.paths = paths
 
@@ -58,6 +60,10 @@ class RecodeAssetManager:
             zip_file.extractall(self.paths.unpacked_path)
 
     def build_index(self) -> list[dict]:
+        cached = self._get_cached_index()
+        if cached is not None:
+            return cached
+
         recode_root = self.paths.unpacked_path / 'recode'
         metadata_path = recode_root / 'metadata.csv'
         metadata_rows = self._read_metadata(metadata_path)
@@ -89,7 +95,23 @@ class RecodeAssetManager:
         with self.paths.index_path.open('w', encoding='utf-8') as index_file:
             json.dump(entries, index_file, indent=2, ensure_ascii=False)
 
+        self._store_cached_index(entries)
         return entries
+
+    def _get_cached_index(self) -> list[dict] | None:
+        if not self.paths.index_path.exists():
+            return None
+        key = self._index_cache_key(self.paths.index_path)
+        return self._index_cache.get(key)
+
+    def _store_cached_index(self, entries: list[dict]):
+        key = self._index_cache_key(self.paths.index_path)
+        self._index_cache[key] = entries
+
+    @staticmethod
+    def _index_cache_key(index_path: Path) -> tuple[str, int]:
+        stat = index_path.stat()
+        return str(index_path.resolve()), stat.st_mtime_ns
 
     @staticmethod
     def _parse_filename(stem: str) -> tuple[str, str]:

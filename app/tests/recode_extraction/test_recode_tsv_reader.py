@@ -1,4 +1,5 @@
 from pathlib import Path
+from unittest import mock
 
 from django.test import SimpleTestCase
 
@@ -30,3 +31,13 @@ class RecodeTsvReaderTests(SimpleTestCase):
         self.assertEqual(relation.relation_type, 'has_trait')
         self.assertEqual(relation.head_entity_id, 'E1')
         self.assertEqual(relation.tail_entity_id, 'E2')
+
+    def test_reader_uses_index_cache(self):
+        RecodeTsvReader._documents_cache.clear()
+        reader = RecodeTsvReader(FIXTURE_ROOT / 'index.json')
+
+        with mock.patch.object(reader, '_parse_tsv', wraps=reader._parse_tsv) as parse_mock:
+            reader.load_documents()
+            reader.load_documents()
+
+        self.assertEqual(parse_mock.call_count, 2)
