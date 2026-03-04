@@ -247,3 +247,19 @@ Per-assertion review supports:
 - Persist approved assertions to ETS
 
 Rejected assertions remain stored for traceability and are excluded from ETS persistence.
+
+## Phase 10: evaluation and regression tooling
+
+A management command `python manage.py recode_eval` is available to run fast evaluation on RECODE-style indexed subsets.
+
+### Supported RECODE conventions
+- Reads `index.json` generated from the RECODE structure with `recode/metadata.csv`, taxon partitions (`araneae`, `insecta`), and TSV files under annotator subfolders or `all/`.
+- Evaluates a subset of annotated docs and compares predictions against TSV-derived entities/relations.
+
+### Metrics output
+- Precision/recall/F1 by entity type
+- Precision/recall/F1 by relation type
+- Stable machine-readable JSON printed to console and optionally written to a JSON file via `--output-json`.
+
+### CI regression coverage
+`django.yml` now includes a dedicated RECODE regression test step to ensure corpus reader compatibility and metric execution remain operational.
