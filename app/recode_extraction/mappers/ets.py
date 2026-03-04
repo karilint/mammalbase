@@ -58,70 +58,91 @@ class EtsMapper:
         result = EtsMappingResult()
 
         for assertion in assertions:
-            trait_name_key = assertion.trait_name.strip().lower()
-            trait_id = self.TRAIT_ID_MAP.get(trait_name_key)
-            if not trait_id:
+            record, error = self.map_single_assertion_data(
+                subject_taxon=assertion.subject_taxon,
+                trait_name=assertion.trait_name,
+                value=assertion.value,
+                unit=assertion.unit,
+                context=assertion.context,
+                confidence=assertion.confidence,
+                evidence_offsets=[{'start': span.start, 'end': span.end} for span in assertion.evidence_spans],
+                source_document_id=source_document.pk,
+                extraction_run_id=extraction_run.pk,
+                default_reference=default_reference,
+                default_author=default_author,
+                default_taxon_rank=default_taxon_rank,
+                page_number=page_number,
+            )
+            if error:
                 result.unmapped_traits.append(
-                    UnmappedTrait(
-                        trait_name=assertion.trait_name,
-                        reason='unmapped trait_name',
-                        assertion=assertion,
-                    )
+                    UnmappedTrait(trait_name=assertion.trait_name, reason=error, assertion=assertion)
                 )
                 continue
-
-            normalized = self._normalize_value(assertion.value)
-            if not normalized['is_valid']:
-                result.unmapped_traits.append(
-                    UnmappedTrait(
-                        trait_name=assertion.trait_name,
-                        reason=f"invalid numeric value: {assertion.value}",
-                        assertion=assertion,
-                    )
-                )
-                continue
-
-            unit = assertion.unit.strip().lower() if assertion.unit else None
-            allowed_units = self.ALLOWED_UNITS_BY_TRAIT[trait_name_key]
-            if unit and allowed_units and unit not in allowed_units:
-                unit = None
-
-            record = {
-                # Existing ETS import path fields
-                'references': default_reference,
-                'verbatimScientificName': assertion.subject_taxon,
-                'taxonRank': default_taxon_rank,
-                'verbatimTraitName': assertion.trait_name,
-                'verbatimTraitUnit': unit or 'NA',
-                'individualCount': normalized['individual_count'],
-                'measurementValue_min': normalized['minimum'],
-                'measurementValue_max': normalized['maximum'],
-                'dispersion': normalized['dispersion'],
-                'statisticalMethod': normalized['statistical_method'],
-                'verbatimTraitValue': normalized['mean'],
-                'sex': 'nan',
-                'lifeStage': 'nan',
-                'measurementMethod': 'Automated RECODE extraction',
-                'measurementRemarks': f"confidence={assertion.confidence:.2f}",
-                'measurementAccuracy': '',
-                'measurementDeterminedBy': 'RECODE extraction engine',
-                'verbatimLocality': '',
-                'author': default_author,
-                'associatedReferences': default_reference,
-                # ETS-ish trait definition mapping
-                'traitID': trait_id,
-                # provenance mapping
-                'source_document_id': source_document.pk,
-                'source_extraction_run_id': extraction_run.pk,
-                'evidence_snippet': assertion.context,
-                'evidence_page_number': page_number,
-                'evidence_offsets': [
-                    {'start': span.start, 'end': span.end} for span in assertion.evidence_spans
-                ],
-            }
             result.records.append(record)
 
         return result
+
+    def map_single_assertion_data(
+        self,
+        *,
+        subject_taxon: str,
+        trait_name: str,
+        value: str,
+        unit: str | None,
+        context: str,
+        confidence: float,
+        evidence_offsets: list[dict[str, int]] | None,
+        source_document_id: int,
+        extraction_run_id: int,
+        default_reference: str,
+        default_author: str,
+        default_taxon_rank: str = 'species',
+        page_number: int | None = None,
+        mapped_trait_id_override: str | None = None,
+    ) -> tuple[dict[str, Any] | None, str | None]:
+        trait_name_key = trait_name.strip().lower()
+        trait_id = mapped_trait_id_override or self.TRAIT_ID_MAP.get(trait_name_key)
+        if not trait_id:
+            return None, 'unmapped trait_name'
+
+        normalized = self._normalize_value(value)
+        if not normalized['is_valid']:
+            return None, f'invalid numeric value: {value}'
+
+        normalized_unit = unit.strip().lower() if unit else None
+        allowed_units = self.ALLOWED_UNITS_BY_TRAIT.get(trait_name_key, set())
+        if normalized_unit and allowed_units and normalized_unit not in allowed_units:
+            normalized_unit = None
+
+        record = {
+            'references': default_reference,
+            'verbatimScientificName': subject_taxon,
+            'taxonRank': default_taxon_rank,
+            'verbatimTraitName': trait_name,
+            'verbatimTraitUnit': normalized_unit or 'NA',
+            'individualCount': normalized['individual_count'],
+            'measurementValue_min': normalized['minimum'],
+            'measurementValue_max': normalized['maximum'],
+            'dispersion': normalized['dispersion'],
+            'statisticalMethod': normalized['statistical_method'],
+            'verbatimTraitValue': normalized['mean'],
+            'sex': 'nan',
+            'lifeStage': 'nan',
+            'measurementMethod': 'Automated RECODE extraction',
+            'measurementRemarks': f"confidence={confidence:.2f}",
+            'measurementAccuracy': '',
+            'measurementDeterminedBy': 'RECODE extraction engine',
+            'verbatimLocality': '',
+            'author': default_author,
+            'associatedReferences': default_reference,
+            'traitID': trait_id,
+            'source_document_id': source_document_id,
+            'source_extraction_run_id': extraction_run_id,
+            'evidence_snippet': context,
+            'evidence_page_number': page_number,
+            'evidence_offsets': evidence_offsets or [],
+        }
+        return record, None
 
     def _normalize_value(self, value: str) -> dict[str, Any]:
         raw = (value or '').strip()

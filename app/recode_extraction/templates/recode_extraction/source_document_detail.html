@@ -30,7 +30,7 @@
   <ul class="w3-ul w3-card-4">
     {% for run in runs %}
       <li>
-        Run #{{ run.pk }} — {{ run.get_status_display }} — stage={{ run.current_stage|default:"n/a" }} — progress={{ run.progress_percent }}% — {{ run.created_at }}
+        <a href="{% url 'recode_extraction_run_detail' run.pk %}">Run #{{ run.pk }}</a> — {{ run.get_status_display }} — stage={{ run.current_stage|default:"n/a" }} — progress={{ run.progress_percent }}% — {{ run.created_at }}
       </li>
     {% empty %}
       <li>No extraction runs yet.</li>

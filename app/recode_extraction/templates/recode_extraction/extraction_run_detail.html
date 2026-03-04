@@ -1,0 +1,90 @@
+{% extends 'mb/base_generic.html' %}
+{% block title %}<title>Extraction Run {{ run.pk }}</title>{% endblock %}
+{% block content %}
+<section class="w3-container w3-threequarter">
+  <header>
+    <h1>Extraction Run #{{ run.pk }}</h1>
+    <p><strong>Status:</strong> {{ run.get_status_display }} | <strong>Stage:</strong> {{ run.current_stage }} | <strong>Progress:</strong> {{ run.progress_percent }}%</p>
+    <p><strong>Logs:</strong> {{ run.logs }}</p>
+  </header>
+
+  <div class="w3-panel w3-light-grey">
+    <h3>Summary</h3>
+    <p>Entities: {{ summary.entities }} | Assertions: {{ summary.assertions }} | Mapped: {{ summary.mapped }} | Unmapped: {{ summary.unmapped }}</p>
+  </div>
+
+  <form method="get" class="w3-container w3-card w3-padding">
+    <h3>Filters</h3>
+    <p><input class="w3-input w3-border" type="text" name="trait" placeholder="Trait" value="{{ filters.trait }}"></p>
+    <p><input class="w3-input w3-border" type="text" name="taxon" placeholder="Taxon" value="{{ filters.taxon }}"></p>
+    <p><input class="w3-input w3-border" type="number" name="page" placeholder="Page" value="{{ filters.page }}"></p>
+    <p><input class="w3-input w3-border" type="number" min="0" max="1" step="0.1" name="confidence_min" placeholder="Min confidence" value="{{ filters.confidence_min }}"></p>
+    <p>
+      <select class="w3-select w3-border" name="review_status">
+        <option value="">Any review status</option>
+        {% for value,label in review_status_choices %}
+          <option value="{{ value }}" {% if filters.review_status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </p>
+    <button class="w3-button w3-theme" type="submit">Apply filters</button>
+    <button class="w3-button w3-theme-l4" type="submit" name="export" value="csv">Export review CSV</button>
+  </form>
+
+  <div class="w3-panel">
+    <form method="post" class="w3-margin-right" style="display:inline-block;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="bulk_approve">
+      <input class="w3-input w3-border" type="number" min="0" max="1" step="0.1" name="threshold" value="0.7" style="width:120px;display:inline-block;">
+      <button class="w3-button w3-theme" type="submit">Approve all above threshold</button>
+    </form>
+    <form method="post" style="display:inline-block;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="persist_approved">
+      <button class="w3-button w3-green" type="submit">Persist approved to ETS</button>
+    </form>
+  </div>
+
+  <table class="w3-table w3-bordered w3-small">
+    <thead>
+      <tr>
+        <th>ID</th><th>Taxon</th><th>Trait</th><th>Value/Unit</th><th>Confidence</th><th>Page</th><th>Evidence</th><th>Review</th><th>Map traitID</th><th>Persisted</th><th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for assertion in assertions %}
+      <tr>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="update_assertion">
+          <input type="hidden" name="assertion_id" value="{{ assertion.pk }}">
+          <td>{{ assertion.pk }}</td>
+          <td>{{ assertion.subject_taxon }}</td>
+          <td>{{ assertion.trait_name }}</td>
+          <td>
+            <input class="w3-input w3-border" type="text" name="edited_value" value="{{ assertion.edited_value|default:assertion.value_raw }}">
+            <input class="w3-input w3-border" type="text" name="edited_unit" value="{{ assertion.edited_unit|default:assertion.unit }}">
+          </td>
+          <td>{{ assertion.confidence }}</td>
+          <td>{{ assertion.page_number }}</td>
+          <td>{{ assertion.context }}</td>
+          <td>
+            <select class="w3-select w3-border" name="review_status">
+              {% for value,label in review_status_choices %}
+                <option value="{{ value }}" {% if assertion.review_status == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+            <textarea class="w3-input w3-border" name="reviewer_note" rows="2" placeholder="review note">{{ assertion.reviewer_note }}</textarea>
+          </td>
+          <td><input class="w3-input w3-border" type="text" name="mapped_trait_id" value="{{ assertion.mapped_trait_id }}"></td>
+          <td>{{ assertion.ets_persisted }}</td>
+          <td><button class="w3-button w3-theme" type="submit">Save</button></td>
+        </form>
+      </tr>
+      {% empty %}
+      <tr><td colspan="11">No assertions match filters.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

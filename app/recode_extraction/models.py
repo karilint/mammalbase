@@ -77,7 +77,13 @@ class ExtractedEntity(models.Model):
         ordering = ['id']
 
 
+
 class ExtractedAssertionModel(models.Model):
+    class ReviewStatus(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        APPROVED = 'approved', 'Approved'
+        REJECTED = 'rejected', 'Rejected'
+
     extraction_run = models.ForeignKey(
         SourceExtractionRun,
         on_delete=models.CASCADE,
@@ -95,6 +101,12 @@ class ExtractedAssertionModel(models.Model):
     mapped_trait_id = models.CharField(max_length=100, blank=True)
     ets_payload = models.JSONField(default=dict, blank=True)
     ets_persisted = models.BooleanField(default=False)
+    review_status = models.CharField(max_length=20, choices=ReviewStatus.choices, default=ReviewStatus.PENDING)
+    edited_value = models.CharField(max_length=250, blank=True)
+    edited_unit = models.CharField(max_length=50, blank=True)
+    reviewer_note = models.TextField(blank=True)
+    reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='recode_reviewed_assertions')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
     unmapped_reason = models.CharField(max_length=250, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

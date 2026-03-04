@@ -226,3 +226,24 @@ Each run updates:
   - otherwise run synchronously via `create_extraction_run` wrapper
 
 This keeps a synchronous fallback while exposing a clean async execution interface.
+
+## Phase 9: curator QC review UI
+
+### Extraction run detail page
+A curator-facing run detail page is available at `recode/runs/<run_id>/` with:
+- summary counts (`entities`, `assertions`, `mapped`, `unmapped`)
+- filters by trait, taxon, confidence, page, and review status
+- CSV export of the filtered review table
+
+### Assertion review workflow
+Per-assertion review supports:
+- approve/reject/pending status
+- edit value and unit
+- add reviewer notes
+- map `trait_name` to an ETS `traitID` for previously unmapped rows
+
+### Bulk actions
+- Approve all pending assertions above a confidence threshold
+- Persist approved assertions to ETS
+
+Rejected assertions remain stored for traceability and are excluded from ETS persistence.
