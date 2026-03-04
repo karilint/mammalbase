@@ -1,6 +1,11 @@
 from django.contrib import admin
 
-from .models import SourceDocument, SourceExtractionRun
+from .models import (
+    ExtractedAssertionModel,
+    ExtractedEntity,
+    SourceDocument,
+    SourceExtractionRun,
+)
 
 
 @admin.register(SourceDocument)
@@ -13,3 +18,15 @@ class SourceDocumentAdmin(admin.ModelAdmin):
 class SourceExtractionRunAdmin(admin.ModelAdmin):
     list_display = ('id', 'source', 'status', 'model_version', 'created_at', 'started_at', 'finished_at')
     list_filter = ('status', 'model_version')
+
+
+@admin.register(ExtractedEntity)
+class ExtractedEntityAdmin(admin.ModelAdmin):
+    list_display = ('id', 'extraction_run', 'entity_type', 'text', 'page_number', 'confidence')
+    list_filter = ('entity_type',)
+
+
+@admin.register(ExtractedAssertionModel)
+class ExtractedAssertionModelAdmin(admin.ModelAdmin):
+    list_display = ('id', 'extraction_run', 'subject_taxon', 'trait_name', 'value_raw', 'ets_persisted')
+    list_filter = ('ets_persisted',)

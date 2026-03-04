@@ -42,6 +42,7 @@ class SourceExtractionRun(models.Model):
     model_version = models.CharField(max_length=50, blank=True)
     parameters = models.JSONField(default=dict, blank=True)
     extracted_text_package = models.JSONField(default=dict, blank=True)
+    unmapped_traits = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -49,3 +50,51 @@ class SourceExtractionRun(models.Model):
 
     def __str__(self):
         return f'{self.source_id}:{self.status}'
+
+
+class ExtractedEntity(models.Model):
+    class EntityType(models.TextChoices):
+        TAXON = 'taxon', 'Taxon'
+        TRAIT = 'trait', 'Trait'
+        VALUE = 'value', 'Value'
+
+    extraction_run = models.ForeignKey(
+        SourceExtractionRun,
+        on_delete=models.CASCADE,
+        related_name='entities',
+    )
+    entity_type = models.CharField(max_length=20, choices=EntityType.choices)
+    text = models.TextField()
+    start_offset = models.IntegerField(null=True, blank=True)
+    end_offset = models.IntegerField(null=True, blank=True)
+    page_number = models.PositiveIntegerField(null=True, blank=True)
+    confidence = models.FloatField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['id']
+
+
+class ExtractedAssertionModel(models.Model):
+    extraction_run = models.ForeignKey(
+        SourceExtractionRun,
+        on_delete=models.CASCADE,
+        related_name='assertions',
+    )
+    subject_taxon = models.CharField(max_length=250)
+    trait_name = models.CharField(max_length=250)
+    value_raw = models.CharField(max_length=250)
+    unit = models.CharField(max_length=50, blank=True)
+    context = models.TextField(blank=True)
+    confidence = models.FloatField(default=0)
+    evidence_start = models.IntegerField(null=True, blank=True)
+    evidence_end = models.IntegerField(null=True, blank=True)
+    page_number = models.PositiveIntegerField(null=True, blank=True)
+    mapped_trait_id = models.CharField(max_length=100, blank=True)
+    ets_payload = models.JSONField(default=dict, blank=True)
+    ets_persisted = models.BooleanField(default=False)
+    unmapped_reason = models.CharField(max_length=250, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['id']

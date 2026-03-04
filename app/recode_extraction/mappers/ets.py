@@ -3,14 +3,13 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from recode_extraction.models import SourceDocument, SourceExtractionRun
-from recode_extraction.services.extraction import ExtractedAssertion
 
 
 @dataclass(slots=True)
 class UnmappedTrait:
     trait_name: str
     reason: str
-    assertion: ExtractedAssertion
+    assertion: Any
 
 
 @dataclass(slots=True)
@@ -47,7 +46,7 @@ class EtsMapper:
 
     def map_assertions(
         self,
-        assertions: list[ExtractedAssertion],
+        assertions: list[Any],
         *,
         source_document: SourceDocument,
         extraction_run: SourceExtractionRun,

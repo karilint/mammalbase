@@ -14,6 +14,7 @@
   <form method="post" action="{% url 'recode_source_document_run' document.pk %}">
     {% csrf_token %}
     <button class="w3-button w3-theme" type="submit">Run RECODE Extraction</button>
+    <button class="w3-button w3-theme-l4" type="submit" name="dry_run" value="1">Run Dry-Run Extraction</button>
   </form>
 
   <h2>Extraction Runs</h2>

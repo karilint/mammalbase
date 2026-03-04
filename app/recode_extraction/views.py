@@ -46,6 +46,8 @@ def source_document_run_extraction(request, pk: int):
     if request.method != 'POST':
         return redirect('recode_source_document_detail', pk=document.pk)
 
-    run = create_extraction_run(document, actor_id=request.user.pk)
-    messages.success(request, f'Extraction run {run.pk} queued.')
+    dry_run = request.POST.get('dry_run') == '1'
+    run = create_extraction_run(document, actor_id=request.user.pk, dry_run=dry_run)
+    mode = 'dry run' if dry_run else 'full run'
+    messages.success(request, f'Extraction run {run.pk} completed ({mode}).')
     return redirect('recode_source_document_detail', pk=document.pk)

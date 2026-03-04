@@ -186,3 +186,18 @@ The stable intermediate output dataclass is `ExtractedAssertion` with:
 ### Validation and curation support
 - Invalid numeric values are rejected from ETS record output.
 - Unmapped trait names are captured separately as `unmapped_traits` for curator review.
+
+## Phase 7: persistence layer for entities, assertions, ETS records
+
+### Persistent extraction models
+- `ExtractedEntity`: persisted taxon/trait/value mentions linked to `SourceExtractionRun`
+- `ExtractedAssertionModel`: persisted extracted assertions linked to `SourceExtractionRun`, including ETS mapping payload and persistence flags
+
+### Pipeline persistence behavior
+- Pipeline always stores extracted entities and assertions.
+- ETS record persistence reuses existing MammalBase ETS import path by feeding mapped records into the existing importer.
+- Dry-run mode (`dry_run=True`) stores entities/assertions and mapping data but skips ETS table writes.
+
+### Transactional safety
+- ETS persistence executes in a single database transaction per run.
+- If ETS persistence fails, run status is set to `failed` and assertion-level ETS persisted flags remain false (no partial success state).
