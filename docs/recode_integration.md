@@ -1,5 +1,8 @@
 # RECODE Integration Architecture (Scaffolding Phase)
 
+## End-user and contributor guide
+For operational usage and extension workflows, see `docs/recode_user_guide.md`.
+
 ## Goal
 Integrate **RECODE: Relational Ecological COrpus for Data Extraction** as an internal pipeline for uploaded PDFs while reusing MammalBase ETS import conventions.
 
