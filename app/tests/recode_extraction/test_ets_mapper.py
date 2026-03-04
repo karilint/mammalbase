@@ -70,7 +70,8 @@ class EtsMapperTests(TestCase):
             self.assertEqual(record['source_document_id'], self.source_document.pk)
             self.assertEqual(record['source_extraction_run_id'], self.run.pk)
             self.assertEqual(record['evidence_page_number'], 2)
-            self.assertTrue(record['traitID'].startswith('MB:TRAIT:'))
+            self.assertIn('verbatimTraitName', record)
+            self.assertNotIn('traitID', record)
 
     def test_unmapped_and_invalid_numeric_are_reported(self):
         mapper = EtsMapper()
@@ -104,8 +105,7 @@ class EtsMapperTests(TestCase):
             page_number=1,
         )
 
-        self.assertEqual(len(mapping.records), 0)
-        self.assertEqual(len(mapping.unmapped_traits), 2)
+        self.assertEqual(len(mapping.records), 1)
+        self.assertEqual(len(mapping.unmapped_traits), 1)
         reasons = [item.reason for item in mapping.unmapped_traits]
-        self.assertTrue(any('unmapped trait_name' in item for item in reasons))
         self.assertTrue(any('invalid numeric value' in item for item in reasons))

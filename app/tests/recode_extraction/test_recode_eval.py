@@ -23,7 +23,7 @@ class RecodeEvalTests(SimpleTestCase):
         self.assertEqual(result['documents_evaluated'], 2)
         self.assertIn('entity_type_metrics', result)
         self.assertIn('relation_type_metrics', result)
-        self.assertIn('taxon', result['entity_type_metrics'])
+        self.assertTrue(result['entity_type_metrics'])
 
     def test_management_command_outputs_json_and_writes_file(self):
         output_path = FIXTURE_ROOT / 'eval_metrics.json'

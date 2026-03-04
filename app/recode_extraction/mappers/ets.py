@@ -16,19 +16,12 @@ class UnmappedTrait:
 class EtsMappingResult:
     records: list[dict[str, Any]] = field(default_factory=list)
     unmapped_traits: list[UnmappedTrait] = field(default_factory=list)
+    mapped_indices: list[tuple[int, dict[str, Any]]] = field(default_factory=list)
+    unmapped_indices: list[tuple[int, str]] = field(default_factory=list)
 
 
 class EtsMapper:
     """Map extracted assertions into MammalBase ETS import-like records."""
-
-    TRAIT_ID_MAP = {
-        'body mass': 'MB:TRAIT:BODY_MASS',
-        'adult mass': 'MB:TRAIT:ADULT_MASS',
-        'length': 'MB:TRAIT:LENGTH',
-        'litter size': 'MB:TRAIT:LITTER_SIZE',
-        'zygomatic breadth': 'MB:TRAIT:ZYGOMATIC_BREADTH',
-        'dietary class': 'MB:TRAIT:DIETARY_CLASS',
-    }
 
     ALLOWED_UNITS_BY_TRAIT = {
         'body mass': {'kg', 'g', 'mg'},
@@ -57,7 +50,7 @@ class EtsMapper:
     ) -> EtsMappingResult:
         result = EtsMappingResult()
 
-        for assertion in assertions:
+        for index, assertion in enumerate(assertions):
             record, error = self.map_single_assertion_data(
                 subject_taxon=assertion.subject_taxon,
                 trait_name=assertion.trait_name,
@@ -77,8 +70,10 @@ class EtsMapper:
                 result.unmapped_traits.append(
                     UnmappedTrait(trait_name=assertion.trait_name, reason=error, assertion=assertion)
                 )
+                result.unmapped_indices.append((index, error))
                 continue
             result.records.append(record)
+            result.mapped_indices.append((index, record))
 
         return result
 
@@ -101,10 +96,7 @@ class EtsMapper:
         mapped_trait_id_override: str | None = None,
     ) -> tuple[dict[str, Any] | None, str | None]:
         trait_name_key = trait_name.strip().lower()
-        trait_id = mapped_trait_id_override or self.TRAIT_ID_MAP.get(trait_name_key)
-        if not trait_id:
-            return None, 'unmapped trait_name'
-
+        mapped_trait_suggestion = mapped_trait_id_override or ''
         normalized = self._normalize_value(value)
         if not normalized['is_valid']:
             return None, f'invalid numeric value: {value}'
@@ -135,8 +127,8 @@ class EtsMapper:
             'verbatimLocality': '',
             'author': default_author,
             'associatedReferences': default_reference,
-            'traitID': trait_id,
             'source_document_id': source_document_id,
+            'mapped_trait_suggestion': mapped_trait_suggestion,
             'source_extraction_run_id': extraction_run_id,
             'evidence_snippet': context,
             'evidence_page_number': page_number,

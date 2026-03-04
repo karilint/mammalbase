@@ -95,7 +95,7 @@ class RecodePipelineRunner:
                 for item in mapping_result.unmapped_traits
             ]
 
-            self._attach_mapping_to_assertions(run, mapping_result.records, mapping_result.unmapped_traits)
+            self._attach_mapping_to_assertions(run, mapping_result)
 
             if not dry_run and mapping_result.records:
                 self._update_stage(run, 'ets_persistence', 90, 'Persisting ETS records.')
@@ -199,20 +199,18 @@ class RecodePipelineRunner:
         if assertion_rows:
             ExtractedAssertionModel.objects.bulk_create(assertion_rows)
 
-    def _attach_mapping_to_assertions(self, run: SourceExtractionRun, records, unmapped_traits):
+    def _attach_mapping_to_assertions(self, run: SourceExtractionRun, mapping_result):
         assertions = list(run.assertions.all())
-        for index, record in enumerate(records):
+        for index, record in mapping_result.mapped_indices:
             if index >= len(assertions):
-                break
-            assertions[index].mapped_trait_id = record.get('traitID', '')
+                continue
+            assertions[index].mapped_trait_id = record.get('mapped_trait_suggestion', '')
             assertions[index].ets_payload = record
 
-        start = len(records)
-        for offset, unmapped in enumerate(unmapped_traits):
-            idx = start + offset
-            if idx >= len(assertions):
-                break
-            assertions[idx].unmapped_reason = unmapped.reason
+        for index, reason in mapping_result.unmapped_indices:
+            if index >= len(assertions):
+                continue
+            assertions[index].unmapped_reason = reason
 
         if assertions:
             ExtractedAssertionModel.objects.bulk_update(

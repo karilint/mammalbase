@@ -57,18 +57,19 @@ class RecodeEvaluationService:
 
             self._accumulate_by_type(entity_metrics, gold_entity_items, predicted_entity_items)
 
+            entity_lookup = {entity.entity_id: entity for entity in doc.entities}
             gold_rel_items = {
                 (
                     relation.relation_type.lower(),
-                    relation.head_entity_id.strip().lower(),
-                    relation.tail_entity_id.strip().lower(),
+                    entity_lookup.get(relation.head_entity_id).text.strip().lower() if relation.head_entity_id in entity_lookup else relation.head_entity_id.strip().lower(),
+                    entity_lookup.get(relation.tail_entity_id).text.strip().lower() if relation.tail_entity_id in entity_lookup else relation.tail_entity_id.strip().lower(),
                 )
                 for relation in doc.relations
             }
-            predicted_rel_items = {
-                ('has_trait', assertion.subject_taxon.strip().lower(), assertion.trait_name.strip().lower())
-                for assertion in predicted_assertions
-            }
+            predicted_rel_items = set()
+            for assertion in predicted_assertions:
+                predicted_rel_items.add(('meas_trait', assertion.value.strip().lower(), assertion.trait_name.strip().lower()))
+                predicted_rel_items.add(('meas_species', assertion.value.strip().lower(), assertion.subject_taxon.strip().lower()))
             self._accumulate_relations(relation_metrics, gold_rel_items, predicted_rel_items)
 
         result = {

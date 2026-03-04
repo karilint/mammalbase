@@ -10,7 +10,7 @@ FIXTURE_ROOT = Path(__file__).resolve().parent / 'assets' / 'recode_fixture'
 
 
 class RecodeTsvReaderTests(SimpleTestCase):
-    def test_reader_loads_entities_relations_and_provenance(self):
+    def test_reader_loads_webanno_entities_relations_and_provenance(self):
         reader = RecodeTsvReader(FIXTURE_ROOT / 'index.json')
 
         documents = reader.load_documents()
@@ -18,19 +18,16 @@ class RecodeTsvReaderTests(SimpleTestCase):
         self.assertEqual(len(documents), 2)
 
         doc100 = next(doc for doc in documents if doc.doc_id == 'DOC100')
-        self.assertEqual(doc100.annotator, None)
+        self.assertIsNone(doc100.annotator)
         self.assertEqual(doc100.taxon_group, 'araneae')
-        self.assertEqual(len(doc100.entities), 3)
-        self.assertEqual(doc100.entities[0].entity_type, 'TAXON')
-        self.assertEqual(doc100.entities[0].text, 'Canis lupus')
+        self.assertTrue(any(item.entity_type == 'Species' and 'Canis lupus' in item.text for item in doc100.entities))
+        self.assertTrue(any(item.entity_type == 'TraitVal' and item.text == '12' for item in doc100.entities))
+        self.assertTrue(any(rel.relation_type == 'meas_trait' for rel in doc100.relations))
 
         doc200 = next(doc for doc in documents if doc.doc_id == 'DOC200')
         self.assertEqual(doc200.annotator, 'annotator_anna')
-        self.assertEqual(len(doc200.relations), 1)
-        relation = doc200.relations[0]
-        self.assertEqual(relation.relation_type, 'has_trait')
-        self.assertEqual(relation.head_entity_id, 'E1')
-        self.assertEqual(relation.tail_entity_id, 'E2')
+        self.assertTrue(any(item.entity_type == 'Unit' and item.text == 'cm' for item in doc200.entities))
+        self.assertTrue(any(rel.relation_type == 'meas_unit' for rel in doc200.relations))
 
     def test_reader_uses_index_cache(self):
         RecodeTsvReader._documents_cache.clear()

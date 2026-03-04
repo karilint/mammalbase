@@ -1,4 +1,8 @@
-entity_id	entity_type	text	start	end	doc_id
-E1	TAXON	Canis lupus	0	11	DOC100
-E2	TRAIT	body mass	20	29	DOC100
-E3	VALUE	12	30	32	DOC100
+#FORMAT=WebAnno TSV 3.3
+#T_SP=webanno.custom.RECODE|label
+#T_RL=webanno.custom.RECODE_REL|BT_webanno.custom.RECODE|relation|BT_webanno.custom.RECODE
+1-1	0-5	Canis	Species[1]	_	_
+1-2	6-11	lupus	Species[1]	_	_
+1-3	12-16	body	Trait[1]	_	_
+1-4	17-21	mass	Trait[1]	_	_
+1-5	22-24	12	TraitVal[1]	meas_trait|meas_species	1-3|1-1
