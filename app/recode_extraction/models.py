@@ -36,6 +36,8 @@ class SourceExtractionRun(models.Model):
         related_name='extraction_runs',
     )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.QUEUED)
+    current_stage = models.CharField(max_length=50, blank=True)
+    progress_percent = models.PositiveSmallIntegerField(default=0)
     started_at = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)
     logs = models.TextField(blank=True)

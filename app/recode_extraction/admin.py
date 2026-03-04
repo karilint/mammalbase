@@ -16,7 +16,7 @@ class SourceDocumentAdmin(admin.ModelAdmin):
 
 @admin.register(SourceExtractionRun)
 class SourceExtractionRunAdmin(admin.ModelAdmin):
-    list_display = ('id', 'source', 'status', 'model_version', 'created_at', 'started_at', 'finished_at')
+    list_display = ('id', 'source', 'status', 'current_stage', 'progress_percent', 'model_version', 'created_at', 'started_at', 'finished_at')
     list_filter = ('status', 'model_version')
 
 

@@ -8,6 +8,7 @@ from .extraction import (
     LlmAssistedExtractor,
 )
 from .pdf_text import PdfToTextService
+from .orchestrator import RecodePipelineRunner
 from .pipeline import (
     ExtractionPipeline,
     PipelineContext,
@@ -23,6 +24,7 @@ __all__ = [
     'ExtractionPipeline',
     'LlmAssistedExtractor',
     'PdfToTextService',
+    'RecodePipelineRunner',
     'PipelineContext',
     'PipelineResult',
     'create_extraction_run',

@@ -201,3 +201,28 @@ The stable intermediate output dataclass is `ExtractedAssertion` with:
 ### Transactional safety
 - ETS persistence executes in a single database transaction per run.
 - If ETS persistence fails, run status is set to `failed` and assertion-level ETS persisted flags remain false (no partial success state).
+
+## Phase 8: pipeline orchestration and background execution
+
+`RecodePipelineRunner.run(source_document_id, run_params)` now orchestrates the full flow:
+
+1. PDF text extraction
+2. information extraction
+3. ETS mapping
+4. ETS persistence (unless dry-run)
+
+### Status/progress tracking
+Each run updates:
+- `status`
+- `current_stage`
+- `progress_percent`
+- `logs`
+- `parameters` (backend, threshold, mapping version, dry-run, context)
+
+### Background execution
+- Celery task: `run_recode_pipeline(source_document_id, run_params)`
+- View behavior:
+  - if `RECODE_ASYNC=1`, queue background task
+  - otherwise run synchronously via `create_extraction_run` wrapper
+
+This keeps a synchronous fallback while exposing a clean async execution interface.

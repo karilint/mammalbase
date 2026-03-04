@@ -1,3 +1,5 @@
+import os
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -5,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from .forms import SourceDocumentUploadForm
 from .models import SourceDocument
 from .services import create_extraction_run
+from .tasks import run_recode_pipeline
 
 
 @login_required
@@ -47,7 +50,23 @@ def source_document_run_extraction(request, pk: int):
         return redirect('recode_source_document_detail', pk=document.pk)
 
     dry_run = request.POST.get('dry_run') == '1'
-    run = create_extraction_run(document, actor_id=request.user.pk, dry_run=dry_run)
-    mode = 'dry run' if dry_run else 'full run'
-    messages.success(request, f'Extraction run {run.pk} completed ({mode}).')
+    extraction_backend = request.POST.get('extraction_backend', 'baseline')
+    confidence_threshold = float(request.POST.get('confidence_threshold', '0') or '0')
+
+    run_params = {
+        'actor_id': request.user.pk,
+        'dry_run': dry_run,
+        'extraction_backend': extraction_backend,
+        'confidence_threshold': confidence_threshold,
+        'mapping_version': 'v1',
+    }
+
+    if os.environ.get('RECODE_ASYNC', '0') == '1':
+        run_recode_pipeline.delay(document.pk, run_params)
+        messages.success(request, 'RECODE extraction queued in background.')
+    else:
+        run = create_extraction_run(document, **run_params)
+        mode = 'dry run' if dry_run else 'full run'
+        messages.success(request, f'Extraction run {run.pk} completed ({mode}).')
+
     return redirect('recode_source_document_detail', pk=document.pk)

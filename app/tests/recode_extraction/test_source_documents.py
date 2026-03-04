@@ -1,4 +1,6 @@
+import os
 import tempfile
+from unittest import mock
 from pathlib import Path
 
 from django.contrib.auth import get_user_model
@@ -54,3 +56,21 @@ class SourceDocumentViewsTests(TestCase):
         self.assertEqual(run.source, document)
         self.assertEqual(run.status, SourceExtractionRun.Status.COMPLETED)
         self.assertIn('pages', run.extracted_text_package)
+
+    @mock.patch('recode_extraction.views.run_recode_pipeline.delay')
+    def test_run_extraction_async_queues_background_task(self, delay_mock):
+        os.environ['RECODE_ASYNC'] = '1'
+        try:
+            document = SourceDocument.objects.create(
+                pdf_file=SimpleUploadedFile('existing.pdf', (ASSETS_DIR / 'single_page.pdf').read_bytes(), content_type='application/pdf'),
+                title='Async Source',
+                uploader=self.user,
+            )
+            response = self.client.post(reverse('recode_source_document_run', kwargs={'pk': document.pk}), data={
+                'extraction_backend': 'baseline',
+                'confidence_threshold': '0.2',
+            })
+            self.assertEqual(response.status_code, 302)
+            delay_mock.assert_called_once()
+        finally:
+            os.environ.pop('RECODE_ASYNC', None)
