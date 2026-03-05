@@ -1,0 +1,9 @@
+#FORMAT=WebAnno TSV 3.3
+#T_SP=webanno.custom.NamedEntity|label
+#T_RL=webanno.custom.Relations|label|BT_webanno.custom.NamedEntity
+#Text=Homo sapiens body mass 5 kg
+1-1	1-1	0-4	Homo	Species[1]	_
+1-2	1-2	5-13	sapiens	Species[1]	_
+1-3	1-3	14-23	body mass	Trait	_
+1-4	1-4	24-25	5	TraitVal	meas_Species->1-1[1_1]|meas_Trait->1-3
+1-5	1-5	26-28	kg	Unit	meas_Unit->1-4

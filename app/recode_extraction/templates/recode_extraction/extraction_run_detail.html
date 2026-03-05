@@ -71,7 +71,7 @@
           <td>
             <select class="w3-select w3-border" name="review_status">
               {% for value,label in review_status_choices %}
-                <option value="{{ value }}" {% if assertion.review_status == value %}selected{% endif %}>{{ label }}</option>
+                <option value="{{ value }}" {% if assertion.status == value %}selected{% endif %}>{{ label }}</option>
               {% endfor %}
             </select>
             <textarea class="w3-input w3-border" name="reviewer_note" rows="2" placeholder="review note">{{ assertion.reviewer_note }}</textarea>

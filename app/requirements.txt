@@ -58,3 +58,6 @@ django-celery-results==2.4.0
 watchfiles==0.16.1
 importlib-metadata<5.0
 pypdf==5.4.0
+
+networkx==3.3
+nervaluate==0.2.0

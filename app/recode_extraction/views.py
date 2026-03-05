@@ -90,7 +90,7 @@ def extraction_run_detail(request, run_id: int):
             apply_assertion_review(
                 assertion,
                 reviewer=request.user,
-                review_status=request.POST.get('review_status', assertion.review_status),
+                review_status=request.POST.get('review_status', assertion.status),
                 edited_value=request.POST.get('edited_value', ''),
                 edited_unit=request.POST.get('edited_unit', ''),
                 mapped_trait_id=request.POST.get('mapped_trait_id', ''),
@@ -125,7 +125,7 @@ def extraction_run_detail(request, run_id: int):
     if confidence_min:
         assertions_qs = assertions_qs.filter(confidence__gte=float(confidence_min))
     if review_status_filter:
-        assertions_qs = assertions_qs.filter(review_status=review_status_filter)
+        assertions_qs = assertions_qs.filter(status=review_status_filter)
 
     if request.GET.get('export') == 'csv':
         csv_data = export_assertions_csv(run, queryset=assertions_qs)
@@ -144,7 +144,7 @@ def extraction_run_detail(request, run_id: int):
         'run': run,
         'assertions': assertions_qs.order_by('id'),
         'summary': summary,
-        'review_status_choices': ExtractedAssertionModel.ReviewStatus.choices,
+        'review_status_choices': ExtractedAssertionModel.Status.choices,
         'filters': {
             'trait': trait_filter or '',
             'taxon': taxon_filter or '',

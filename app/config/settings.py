@@ -348,3 +348,6 @@ LOGGING = {
         },
     },
 }
+
+RECODE_ENABLE_LEGACY_TRAIT_MAP = bool(int(environ.get('RECODE_ENABLE_LEGACY_TRAIT_MAP', 0)))
+RECODE_RELATION_CONFIG = {}
