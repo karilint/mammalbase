@@ -1,5 +1,6 @@
 import os
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -46,7 +47,7 @@ def source_document_detail(request, pk: int):
     return render(
         request,
         'recode_extraction/source_document_detail.html',
-        {'document': document, 'runs': runs},
+        {'document': document, 'runs': runs, 'openai_enabled': settings.RECODE_ENABLE_OPENAI_BACKEND},
     )
 
 
@@ -57,7 +58,8 @@ def source_document_run_extraction(request, pk: int):
         return redirect('recode_source_document_detail', pk=document.pk)
 
     dry_run = request.POST.get('dry_run') == '1'
-    extraction_backend = request.POST.get('extraction_backend', 'baseline')
+    default_backend = 'openai_two_pass' if settings.RECODE_ENABLE_OPENAI_BACKEND else 'baseline'
+    extraction_backend = request.POST.get('extraction_backend', default_backend)
     confidence_threshold = float(request.POST.get('confidence_threshold', '0') or '0')
 
     run_params = {
@@ -139,12 +141,14 @@ def extraction_run_detail(request, run_id: int):
         'mapped': run.assertions.filter(mapped_trait_id__gt='').count(),
         'unmapped': run.assertions.filter(mapped_trait_id='').count(),
     }
+    qc_summary = run.qc_summary or {}
 
     context = {
         'run': run,
         'assertions': assertions_qs.order_by('id'),
         'summary': summary,
         'review_status_choices': ExtractedAssertionModel.ReviewStatus.choices,
+        'qc_summary': qc_summary,
         'filters': {
             'trait': trait_filter or '',
             'taxon': taxon_filter or '',

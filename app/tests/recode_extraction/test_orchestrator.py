@@ -68,3 +68,36 @@ class RecodePipelineRunnerTests(TestCase):
         run.refresh_from_db()
         self.assertEqual(run.status, SourceExtractionRun.Status.FAILED)
         self.assertIn('LLM extraction backend is disabled', run.logs)
+
+
+    @override_settings(RECODE_ENABLE_OPENAI_BACKEND=True)
+    @mock.patch('recode_extraction.services.orchestrator.TraitVocabularyService.get_vocab')
+    @mock.patch('recode_extraction.services.orchestrator.OpenAITwoPassClient')
+    @mock.patch('recode_extraction.services.orchestrator.PdfToTextService.extract')
+    def test_runner_completes_with_openai_two_pass_backend(self, extract_mock, client_cls, vocab_mock):
+        extract_mock.return_value = {
+            'pages': [{'page_number': 1, 'text': 'Mus musculus BW 20.4'}],
+            'full_text': 'Mus musculus BW 20.4',
+            'extraction_warnings': [],
+            'backend': 'pypdf',
+        }
+        vocab_mock.return_value = mock.Mock(abbr_dict={'BW': {'trait_name': 'body weight', 'unit': 'g'}}, trait_names=['body weight'])
+        client = client_cls.return_value
+        client.extract_pass1.return_value = mock.Mock(measurement_tables=['PAGE 1: BW 20.4'], trait_sentences=[], trait_paragraphs=[])
+        client.extract_pass2.return_value = mock.Mock(
+            traitRecords=[mock.Mock(model_dump=lambda exclude_none=True: {
+                'verbatimScientificName': 'Mus musculus',
+                'taxonRank': 'species',
+                'verbatimTraitName': 'body weight',
+                'verbatimTraitUnit': 'g',
+                'verbatimTraitValue': '20.4',
+                'references': 'Ref',
+                'author': '0000-0000-0000-0000',
+                'measurementRemarks': 'page=1',
+            })],
+            model_dump=lambda: {'metadata': {}, 'traitRecords': [{'verbatimTraitName': 'body weight'}]},
+        )
+
+        run = RecodePipelineRunner().run(self.document.pk, run_params={'dry_run': True, 'extraction_backend': 'openai_two_pass'})
+        run.refresh_from_db()
+        self.assertEqual(run.status, SourceExtractionRun.Status.COMPLETED)

@@ -266,3 +266,39 @@ A management command `python manage.py recode_eval` is available to run fast eva
 
 ### CI regression coverage
 `django.yml` now includes a dedicated RECODE regression test step to ensure corpus reader compatibility and metric execution remain operational.
+
+## OpenAI Two-Pass Extraction (PASS1 evidence → PASS2 ETS)
+
+MammalBase now supports a production two-pass ChatGPT extraction pipeline aligned with the internal Two-Pass ETS+DwC spec.
+
+### Required settings/env vars
+- `RECODE_ENABLE_OPENAI_BACKEND` (default `False`)
+- `OPENAI_API_KEY`
+- `RECODE_OPENAI_MODEL_PASS1` / `RECODE_OPENAI_MODEL_PASS2`
+- `RECODE_OPENAI_TIMEOUT_SECONDS`
+- `RECODE_OPENAI_MAX_RETRIES`
+- `RECODE_OPENAI_MAX_PAGE_CHARS`
+
+### Vocabulary construction
+Trait vocabulary is built dynamically from MammalBase:
+- Abbreviation dictionary from `MasterAttribute.name` and `SourceAttribute.name`
+- Trait list from Taxon-scoped `MasterAttribute` and frequent `SourceAttribute`
+- A small bootstrap dictionary is used only if DB-derived abbreviations are sparse
+
+### Pipeline and stored artifacts
+1. `extracted_text_package` is always stored from `PdfToTextService`
+2. PASS1 evidence JSON is persisted to `pass1_evidence_package`
+3. PASS2 trait record JSON is persisted to `pass2_structured_package`
+4. Deterministic QC + normalization runs before import and stores `qc_summary`
+5. Candidate rows are stored in `ExtractedAssertionModel` with pending review
+6. Final source-table persistence happens only from approved assertions using ETS importer flow
+
+### Testing
+Run:
+- `python -m pytest app/tests/recode_extraction/test_openai_two_pass_pipeline.py`
+- `python -m pytest app/tests/recode_extraction/test_openai_qc_normalization.py`
+- `python -m pytest app/tests/recode_extraction/test_qc_review.py`
+
+References:
+- OpenAI Python SDK: https://github.com/openai/openai-python
+- Structured outputs guide: https://developers.openai.com/api/docs/guides/structured-outputs/
