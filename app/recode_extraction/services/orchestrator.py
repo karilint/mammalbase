@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from imports.importers.ets_importer import EtsImporter
 from imports.validation_lib.ets_validation import Ets_validation
-from recode_extraction.adapters.openai_client import OpenAITwoPassClient
+from recode_extraction.adapters.openai_client import OpenAITwoPassClient, TraitRecord
 from recode_extraction.mappers.ets import EtsMapper
 from recode_extraction.models import ExtractedAssertionModel, ExtractedEntity, SourceDocument, SourceExtractionRun
 from recode_extraction.services.extraction import BaselineRuleExtractor, ExtractionEngine, LlmAssistedExtractor
@@ -18,6 +18,7 @@ from recode_extraction.services.pass1_compaction import compact_pass1_evidence
 from recode_extraction.services.pdf_text import PdfToTextService
 from recode_extraction.services.pipeline import PipelineContext
 from recode_extraction.services.qc import normalize_and_validate_trait_records
+from recode_extraction.services.table_measurement_parser import extract_trait_records_from_measurement_tables
 from recode_extraction.services.trait_vocabulary import TraitVocabularyService
 
 DEFAULT_MODEL_VERSION = 'recode-v1-placeholder'
@@ -158,6 +159,35 @@ class RecodePipelineRunner:
             timeout_s=settings.RECODE_OPENAI_TIMEOUT_SECONDS,
             run_id=run.pk,
         )
+        fallback_records = extract_trait_records_from_measurement_tables(
+            compacted_evidence.get('measurement_tables', []),
+            vocab.abbr_dict,
+        )
+        if fallback_records:
+            existing = {
+                (
+                    rec.verbatimScientificName or '',
+                    rec.verbatimTraitName or '',
+                    rec.statisticalMethod or '',
+                    rec.verbatimTraitValue or '',
+                )
+                for rec in pass2.traitRecords
+            }
+            added = 0
+            for record in fallback_records:
+                key = (
+                    record.get('verbatimScientificName', ''),
+                    record.get('verbatimTraitName', ''),
+                    record.get('statisticalMethod', ''),
+                    record.get('verbatimTraitValue', ''),
+                )
+                if key in existing:
+                    continue
+                existing.add(key)
+                pass2.traitRecords.append(TraitRecord(**record))
+                added += 1
+            run.logs = f"{run.logs}\nPASS2 table_parser_added={added}"
+
         run.pass2_structured_package = pass2.model_dump()
         pass2_elapsed = round(time.monotonic() - t0, 3)
 

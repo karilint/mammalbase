@@ -42,7 +42,7 @@ def normalize_and_validate_trait_records(pass2, *, run, default_reference: str, 
             'measurementDeterminedBy': raw.get('measurementDeterminedBy') or 'OpenAI two-pass extraction',
             'verbatimLocality': raw.get('verbatimLocality') or '',
             'author': raw.get('author') or default_author_orcid,
-            'associatedReferences': raw.get('associatedReferences') or 'Original study',
+            'associatedReferences': _normalize_associated_reference(raw.get('associatedReferences')),
         }
         normalize_numeric_fields(record)
 
@@ -138,3 +138,14 @@ def _to_decimal(value: str):
         return Decimal(value)
     except (InvalidOperation, TypeError):
         return None
+
+
+def _normalize_associated_reference(value: str | None) -> str:
+    candidate = (value or '').strip()
+    if not candidate:
+        return ''
+    if re.search(r'([1-2][0-9]{3})', candidate):
+        return candidate
+    if candidate.lower() == 'original study':
+        return 'Original study'
+    return ''

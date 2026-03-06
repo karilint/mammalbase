@@ -18,7 +18,8 @@ Create separate records per species x trait x statistic (e.g., one for mean ± S
 Do not stop after a small subset; include every table abbreviation row that can be mapped to a trait.
 Use full scientific names when possible (expand abbreviations like M. p. pahari to Mus pahari pahari if context provides genus/species).
 For references, use article-level citation text (authors, year, title), not table/page labels.
-Use associatedReferences for trait-level supporting notes/source pointers (or Original study when none).
+Use associatedReferences for trait-level supporting notes/source pointers; use exact "Original study" only when values come from this paper, otherwise leave blank unless a cited external source includes a year.
+Do not output any coordinate fields or coordinate-like text; leave locality-related fields blank unless explicitly tied to the measurement.
 Range (69–95 mm) => min/max, statisticalMethod=range.
 Mean ± SD (20.45 ± 4.22) => dispersion, statisticalMethod=mean ± SD.
 Single value => use verbatimTraitValue; QC stage will equalize min/max.

@@ -51,3 +51,43 @@ class OpenAIQcNormalizationTests(TestCase):
     def test_scientific_name_expands_from_document_text(self):
         records, _ = self._run(self._fake_pass2('12', scientific_name='M. p. pahari'))
         self.assertEqual(records[0]['verbatimScientificName'], 'Mus pahari pahari')
+
+
+    def test_associated_references_blank_when_non_citable_text(self):
+        rec = SimpleNamespace(model_dump=lambda exclude_none=True: {
+            'verbatimScientificName': 'Mus musculus',
+            'taxonRank': 'species',
+            'verbatimTraitName': 'head-body length',
+            'verbatimTraitUnit': 'mm',
+            'verbatimTraitValue': '12',
+            'references': 'Doe, 2024. Example Title.',
+            'associatedReferences': 'Table note only',
+            'measurementRemarks': 'page=1',
+        })
+        records, _ = self._run(SimpleNamespace(traitRecords=[rec]))
+        self.assertEqual(records[0]['associatedReferences'], '')
+
+    def test_associated_references_keeps_original_study_or_year(self):
+        rec1 = SimpleNamespace(model_dump=lambda exclude_none=True: {
+            'verbatimScientificName': 'Mus musculus',
+            'taxonRank': 'species',
+            'verbatimTraitName': 'head-body length',
+            'verbatimTraitUnit': 'mm',
+            'verbatimTraitValue': '12',
+            'references': 'Doe, 2024. Example Title.',
+            'associatedReferences': 'Original study',
+            'measurementRemarks': 'page=1',
+        })
+        rec2 = SimpleNamespace(model_dump=lambda exclude_none=True: {
+            'verbatimScientificName': 'Mus musculus',
+            'taxonRank': 'species',
+            'verbatimTraitName': 'tail length',
+            'verbatimTraitUnit': 'mm',
+            'verbatimTraitValue': '20',
+            'references': 'Doe, 2024. Example Title.',
+            'associatedReferences': 'Smith et al., 2025',
+            'measurementRemarks': 'page=1',
+        })
+        records, _ = self._run(SimpleNamespace(traitRecords=[rec1, rec2]))
+        self.assertEqual(records[0]['associatedReferences'], 'Original study')
+        self.assertEqual(records[1]['associatedReferences'], 'Smith et al., 2025')
