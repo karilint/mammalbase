@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Any
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from recode_extraction.services.openai_two_pass_prompts import (
     PASS1_SYSTEM_PROMPT,
@@ -12,16 +12,19 @@ from recode_extraction.services.openai_two_pass_prompts import (
     build_pass1_user_prompt,
     build_pass2_user_prompt,
 )
-from recode_extraction.services.trait_vocabulary import TraitVocabulary
+if TYPE_CHECKING:
+    from recode_extraction.services.trait_vocabulary import TraitVocabulary
 
 
 class Pass1Evidence(BaseModel):
+    model_config = ConfigDict(extra='forbid')
     measurement_tables: list[str] = Field(default_factory=list)
     trait_sentences: list[str] = Field(default_factory=list)
     trait_paragraphs: list[str] = Field(default_factory=list)
 
 
 class TraitRecord(BaseModel):
+    model_config = ConfigDict(extra='forbid')
     references: str | None = None
     verbatimScientificName: str | None = None
     taxonRank: str | None = None
@@ -44,8 +47,13 @@ class TraitRecord(BaseModel):
     associatedReferences: str | None = None
 
 
+class Pass2Metadata(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
+
 class Pass2Output(BaseModel):
-    metadata: dict[str, Any] = Field(default_factory=dict)
+    model_config = ConfigDict(extra='forbid')
+    metadata: Pass2Metadata = Field(default_factory=Pass2Metadata)
     traitRecords: list[TraitRecord] = Field(default_factory=list)
 
 
@@ -55,7 +63,7 @@ class OpenAITwoPassClient:
         self.client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
         self.max_retries = max_retries
 
-    def extract_pass1(self, page_text: str, *, model: str, vocab: TraitVocabulary, timeout_s: int, page_number: int = 0, run_id: int | None = None) -> Pass1Evidence:
+    def extract_pass1(self, page_text: str, *, model: str, vocab: 'TraitVocabulary', timeout_s: int, page_number: int = 0, run_id: int | None = None) -> Pass1Evidence:
         prompt = build_pass1_user_prompt(page_text, vocab.abbr_dict, vocab.trait_names, page_number)
         response = self._parse_with_retry(
             model=model,
@@ -68,7 +76,7 @@ class OpenAITwoPassClient:
         )
         return response.output_parsed
 
-    def extract_pass2(self, evidence_json: dict, *, model: str, vocab: TraitVocabulary, timeout_s: int, run_id: int | None = None) -> Pass2Output:
+    def extract_pass2(self, evidence_json: dict, *, model: str, vocab: 'TraitVocabulary', timeout_s: int, run_id: int | None = None) -> Pass2Output:
         prompt = build_pass2_user_prompt(evidence_json, vocab.abbr_dict, vocab.trait_names)
         response = self._parse_with_retry(
             model=model,
