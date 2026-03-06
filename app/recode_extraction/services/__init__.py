@@ -1,4 +1,7 @@
-"""Service interfaces for RECODE extraction orchestration."""
+"""Service interfaces for RECODE extraction orchestration.
+
+Keep this module lightweight to avoid import cycles.
+"""
 
 from .extraction import (
     BaselineRuleExtractor,
@@ -8,13 +11,18 @@ from .extraction import (
     LlmAssistedExtractor,
 )
 from .pdf_text import PdfToTextService
-from .orchestrator import RecodePipelineRunner
 from .pipeline import (
     ExtractionPipeline,
     PipelineContext,
     PipelineResult,
 )
-from .runs import create_extraction_run
+
+
+def create_extraction_run(*args, **kwargs):
+    from .runs import create_extraction_run as _create_extraction_run
+
+    return _create_extraction_run(*args, **kwargs)
+
 
 __all__ = [
     'BaselineRuleExtractor',
@@ -24,7 +32,6 @@ __all__ = [
     'ExtractionPipeline',
     'LlmAssistedExtractor',
     'PdfToTextService',
-    'RecodePipelineRunner',
     'PipelineContext',
     'PipelineResult',
     'create_extraction_run',

@@ -19,3 +19,8 @@ class TestBaseImporter(TestCase):
         client = Client()
         client.force_login(self.test_author)
         _user.value = self.test_author
+
+
+    def test_get_or_create_source_location_returns_none_for_none(self):
+        result = self.importer.get_or_create_source_location(None, source_reference=None, author=self.test_author)
+        self.assertIsNone(result)

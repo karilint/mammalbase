@@ -258,7 +258,7 @@ class BaseImporter:
         """
         Return SourceLocation object for the given location or create a new one
         """
-        if location != location or location == 'nan' or location == "":
+        if location is None or location != location or location == 'nan' or location == "":
             return None
 
         try:

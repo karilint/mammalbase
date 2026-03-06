@@ -120,3 +120,48 @@ class QcReviewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['Content-Type'], 'text/csv')
         self.assertIn('subject_taxon,trait_name', response.content.decode('utf-8'))
+
+
+    @mock.patch('recode_extraction.services.orchestrator.PdfToTextService.extract')
+    @mock.patch('recode_extraction.services.review.EtsMapper.map_single_assertion_data')
+    @mock.patch('recode_extraction.services.review.EtsImporter.importRow')
+    def test_persist_approved_uses_prefilled_ets_payload(self, import_row_mock, map_single_mock, extract_mock):
+        extract_mock.return_value = {
+            'pages': [{'page_number': 1, 'text': 'Canis lupus body mass is 12 kg.'}],
+            'full_text': 'Canis lupus body mass is 12 kg.',
+            'extraction_warnings': [],
+            'backend': 'pypdf',
+        }
+        run = create_extraction_run(self.document, actor_id=self.user.pk, dry_run=True)
+        assertion = run.assertions.first()
+        assertion.review_status = ExtractedAssertionModel.ReviewStatus.APPROVED
+        assertion.ets_payload = {
+            'references': 'Ref',
+            'verbatimScientificName': assertion.subject_taxon,
+            'taxonRank': 'species',
+            'verbatimTraitName': assertion.trait_name,
+            'verbatimTraitUnit': assertion.unit or 'g',
+            'verbatimTraitValue': assertion.value_raw or '12',
+            'measurementValue_min': 12,
+            'measurementValue_max': 12,
+            'dispersion': 0,
+            'statisticalMethod': 'point estimate',
+            'individualCount': 0,
+            'sex': 'nan',
+            'lifeStage': 'nan',
+            'measurementMethod': 'OpenAI two-pass extraction',
+            'measurementRemarks': 'page=1',
+            'measurementAccuracy': '',
+            'measurementDeterminedBy': 'OpenAI two-pass extraction',
+            'verbatimLocality': '',
+            'author': '0000-0000-0000-0000',
+            'associatedReferences': 'Ref',
+        }
+        assertion.save(update_fields=['review_status', 'ets_payload'])
+
+        response = self.client.post(reverse('recode_extraction_run_detail', kwargs={'run_id': run.pk}), data={'action': 'persist_approved'})
+        self.assertEqual(response.status_code, 302)
+        assertion.refresh_from_db()
+        self.assertTrue(assertion.ets_persisted)
+        self.assertEqual(import_row_mock.call_count, 1)
+        map_single_mock.assert_not_called()

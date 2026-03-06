@@ -15,7 +15,10 @@
     {% csrf_token %}
     <label for="extraction_backend"><strong>Extraction backend</strong></label>
     <select id="extraction_backend" name="extraction_backend" class="w3-select w3-border w3-margin-bottom">
-      <option value="baseline" selected>baseline</option>
+      {% if openai_enabled %}
+      <option value="openai_two_pass" selected>OpenAI two-pass (PASS1 evidence + PASS2 ETS)</option>
+      {% endif %}
+      <option value="baseline" {% if not openai_enabled %}selected{% endif %}>baseline (legacy)</option>
       <option value="llm">llm (stub)</option>
     </select>
 
