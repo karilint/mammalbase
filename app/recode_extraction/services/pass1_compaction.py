@@ -23,7 +23,7 @@ TABLE_SIGNAL_PATTERNS = [
 ]
 
 SENTENCE_SIGNAL_PATTERNS = [
-    r'\b(body|tail|head|cranial|skull|length|width|height|weight|morpholog)\w*\b',
+    r'\b(body|tail|head|cranial|skull|length|width|height|weight|morpholog|trait|diagnostic|subspecies)\w*\b',
     r'\b\d+(?:\.\d+)?\s*(mm|cm|m|g|kg|mg)\b',
     r'\b\d+(?:\.\d+)?\s*[–-]\s*\d+(?:\.\d+)?\b',
 ]
@@ -32,8 +32,9 @@ SENTENCE_SIGNAL_PATTERNS = [
 def compact_pass1_evidence(
     evidence: dict,
     *,
-    max_items_per_bucket: int = 30,
-    max_chars_per_item: int = 1200,
+    max_items_per_bucket: int = 120,
+    max_chars_per_item: int = 2500,
+    max_table_chars_per_item: int = 12000,
 ) -> tuple[dict, dict]:
     compacted = {'measurement_tables': [], 'trait_sentences': [], 'trait_paragraphs': []}
     stats = {'removed': 0, 'kept': 0}
@@ -41,7 +42,8 @@ def compact_pass1_evidence(
     for bucket in compacted:
         items = evidence.get(bucket, []) or []
         for item in items:
-            normalized = _normalize_item(item, max_chars=max_chars_per_item)
+            item_max_chars = max_table_chars_per_item if bucket == 'measurement_tables' else max_chars_per_item
+            normalized = _normalize_item(item, max_chars=item_max_chars)
             if not normalized:
                 stats['removed'] += 1
                 continue

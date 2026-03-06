@@ -14,6 +14,9 @@ Input: PASS1 evidence JSON.
 Output ETS-compatible trait records with allowed fields only:
 references verbatimScientificName taxonRank verbatimTraitName verbatimTraitUnit individualCount measurementValue_min measurementValue_max dispersion statisticalMethod verbatimTraitValue sex lifeStage measurementMethod measurementRemarks measurementAccuracy measurementDeterminedBy verbatimLocality author associatedReferences
 Create one trait record per species per trait.
+Use full scientific names when possible (expand abbreviations like M. p. pahari to Mus pahari pahari if context provides genus/species).
+For references, use article-level citation text (authors, year, title), not table/page labels.
+Use associatedReferences for trait-level supporting notes/source pointers (or Original study when none).
 Range (69–95 mm) => min/max, statisticalMethod=range.
 Mean ± SD (20.45 ± 4.22) => dispersion, statisticalMethod=mean ± SD.
 Single value => use verbatimTraitValue; QC stage will equalize min/max.

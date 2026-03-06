@@ -32,7 +32,7 @@ class Pass1CompactionTests(unittest.TestCase):
             'trait_sentences': [],
             'trait_paragraphs': [],
         }
-        compacted, _ = compact_pass1_evidence(evidence, max_items_per_bucket=2, max_chars_per_item=40)
+        compacted, _ = compact_pass1_evidence(evidence, max_items_per_bucket=2, max_chars_per_item=40, max_table_chars_per_item=40)
         assert len(compacted['measurement_tables']) == 2
         assert all(len(item) <= 40 for item in compacted['measurement_tables'])
 

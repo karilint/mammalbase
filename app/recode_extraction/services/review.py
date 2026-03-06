@@ -111,4 +111,6 @@ def export_assertions_csv(run: SourceExtractionRun, queryset=None) -> str:
 
 def _build_default_reference(run: SourceExtractionRun) -> str:
     year = run.source.year or datetime.now().year
-    return f'{run.source.title} ({year}) automated extraction reference'
+    authors = (run.source.authors or 'Unknown').strip()
+    title = (run.source.title or 'Untitled').strip().rstrip('.')
+    return f'{authors}, {year}. {title}.'

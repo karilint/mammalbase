@@ -6,18 +6,25 @@ from decimal import Decimal, InvalidOperation
 
 from imports.validation_lib.ets_validation import Ets_validation
 
+YEAR_RE = re.compile(r'.*([1-2][0-9]{3})')
+SCI_NAME_RE = re.compile(r'\b([A-Z][a-z]+(?:\s+[a-z]{2,}){1,2})\b')
+
 
 def normalize_and_validate_trait_records(pass2, *, run, default_reference: str, default_author_orcid: str):
     validator = Ets_validation()
     normalized_records = []
     top_errors: dict[str, int] = {}
     dedupe = set()
+    full_text = ((run.extracted_text_package or {}).get('full_text') or '')
+    name_candidates = set(SCI_NAME_RE.findall(full_text))
 
     for trait_record in pass2.traitRecords:
         raw = trait_record.model_dump(exclude_none=True)
+        reference_value = _coalesce_reference(raw.get('references'), default_reference)
+        scientific_name = _expand_scientific_name(raw.get('verbatimScientificName') or 'Unknown taxon', name_candidates)
         record = {
-            'references': raw.get('references') or default_reference,
-            'verbatimScientificName': raw.get('verbatimScientificName') or 'Unknown taxon',
+            'references': reference_value,
+            'verbatimScientificName': scientific_name,
             'taxonRank': raw.get('taxonRank') or 'species',
             'verbatimTraitName': raw.get('verbatimTraitName') or '',
             'verbatimTraitUnit': raw.get('verbatimTraitUnit') or '',
@@ -35,7 +42,7 @@ def normalize_and_validate_trait_records(pass2, *, run, default_reference: str, 
             'measurementDeterminedBy': raw.get('measurementDeterminedBy') or 'OpenAI two-pass extraction',
             'verbatimLocality': raw.get('verbatimLocality') or '',
             'author': raw.get('author') or default_author_orcid,
-            'associatedReferences': raw.get('associatedReferences') or default_reference,
+            'associatedReferences': raw.get('associatedReferences') or 'Original study',
         }
         normalize_numeric_fields(record)
 
@@ -62,6 +69,35 @@ def normalize_and_validate_trait_records(pass2, *, run, default_reference: str, 
         'error_categories': top_errors,
     }
     return normalized_records, qc_summary
+
+
+def _coalesce_reference(reference_value: str | None, default_reference: str) -> str:
+    candidate = (reference_value or '').strip()
+    if candidate and YEAR_RE.match(candidate):
+        return candidate
+    return default_reference
+
+
+def _expand_scientific_name(name: str, candidates: set[str]) -> str:
+    cleaned = (name or '').strip()
+    if not cleaned:
+        return 'Unknown taxon'
+    if '.' not in cleaned:
+        return cleaned
+    tokens = cleaned.split()
+    if len(tokens) < 2:
+        return cleaned.replace('.', '')
+    initials = [t[0].lower() for t in tokens[:-1]]
+    epithet = tokens[-1].replace('.', '').lower()
+    for candidate in sorted(candidates, key=len, reverse=True):
+        cand_tokens = candidate.split()
+        if len(cand_tokens) < len(tokens):
+            continue
+        if cand_tokens[-1].lower() != epithet:
+            continue
+        if [t[0].lower() for t in cand_tokens[: len(initials)]] == initials:
+            return candidate
+    return cleaned.replace('.', '')
 
 
 def normalize_numeric_fields(record: dict):

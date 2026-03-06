@@ -119,8 +119,9 @@ class RecodePipelineRunner:
 
         compacted_evidence, compact_stats = compact_pass1_evidence(
             merged,
-            max_items_per_bucket=getattr(settings, 'RECODE_OPENAI_PASS1_MAX_ITEMS_PER_BUCKET', 30),
-            max_chars_per_item=getattr(settings, 'RECODE_OPENAI_PASS1_MAX_ITEM_CHARS', 1200),
+            max_items_per_bucket=getattr(settings, 'RECODE_OPENAI_PASS1_MAX_ITEMS_PER_BUCKET', 120),
+            max_chars_per_item=getattr(settings, 'RECODE_OPENAI_PASS1_MAX_ITEM_CHARS', 2500),
+            max_table_chars_per_item=getattr(settings, 'RECODE_OPENAI_PASS1_MAX_TABLE_ITEM_CHARS', 12000),
         )
         run.logs = f"{run.logs} PASS1 kept={compact_stats['kept']} removed={compact_stats['removed']}."
         run.pass1_evidence_package = compacted_evidence
@@ -245,7 +246,9 @@ class RecodePipelineRunner:
 
     def _build_default_reference(self, source: SourceDocument) -> str:
         year = source.year or datetime.now().year
-        return f'{source.title} ({year}) automated extraction reference'
+        authors = (source.authors or 'Unknown').strip()
+        title = (source.title or 'Untitled').strip().rstrip('.')
+        return f'{authors}, {year}. {title}.'
 
 
 def _extract_page_number(text: str):
