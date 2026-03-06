@@ -3,7 +3,7 @@ from datetime import datetime
 from io import StringIO
 from types import SimpleNamespace
 
-from django.db import transaction
+from django.db import connection, transaction
 from django.utils import timezone
 
 from imports.importers.ets_importer import EtsImporter
@@ -15,7 +15,16 @@ from recode_extraction.services.qc import normalize_numeric_fields
 DEFAULT_ORCID = '0000-0000-0000-0000'
 
 
+
+def _ensure_review_columns_exist():
+    table = ExtractedAssertionModel._meta.db_table
+    with connection.cursor() as cursor:
+        columns = {c.name for c in connection.introspection.get_table_description(cursor, table)}
+    if 'review_status' not in columns:
+        raise ValueError('Missing recode review columns (review_status). Please run database migrations for recode_extraction.')
+
 def apply_assertion_review(assertion: ExtractedAssertionModel, *, reviewer, review_status: str, edited_value: str = '', edited_unit: str = '', mapped_trait_id: str = '', reviewer_note: str = ''):
+    _ensure_review_columns_exist()
     assertion.review_status = review_status
     if edited_value:
         assertion.edited_value = edited_value
@@ -31,12 +40,14 @@ def apply_assertion_review(assertion: ExtractedAssertionModel, *, reviewer, revi
 
 
 def bulk_approve_above_threshold(run: SourceExtractionRun, *, reviewer, threshold: float):
+    _ensure_review_columns_exist()
     assertions = run.assertions.filter(confidence__gte=threshold, review_status=ExtractedAssertionModel.ReviewStatus.PENDING)
     now = timezone.now()
     assertions.update(review_status=ExtractedAssertionModel.ReviewStatus.APPROVED, reviewed_by=reviewer, reviewed_at=now)
 
 
 def persist_approved_assertions_to_ets(run: SourceExtractionRun):
+    _ensure_review_columns_exist()
     mapper = EtsMapper()
     validator = Ets_validation()
     importer = EtsImporter()
