@@ -26,3 +26,18 @@ class TableMeasurementParserTests(SimpleTestCase):
         records = extract_trait_records_from_measurement_tables([table], abbr_dict={})
         uniq = {(r['verbatimScientificName'], r['verbatimTraitName'], r['statisticalMethod'], r['verbatimTraitValue']) for r in records}
         self.assertEqual(len(records), len(uniq))
+
+    def test_handles_single_mean_without_sd(self):
+        table = (
+            "M. p. pahari (N = 33) M. p. jacksoniae (N = 22) M. p. gairdneri (N = 5) "
+            "GLS 23.42 ± 0.89 22.20 ± 1.16 21.48 21.14–24.77(20) 20.31–24.69(16) 21.48–21.48(1)"
+        )
+        records = extract_trait_records_from_measurement_tables([table], abbr_dict={})
+        mean_records = [
+            r for r in records
+            if r['verbatimScientificName'] == 'Mus pahari gairdneri'
+            and r['verbatimTraitName'] == 'Greatest Length of Skull'
+            and r['statisticalMethod'] in {'mean', 'mean ± SD'}
+        ]
+        self.assertTrue(mean_records)
+        self.assertEqual(mean_records[0]['verbatimTraitValue'], '21.48')

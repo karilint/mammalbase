@@ -30,6 +30,7 @@ DEFAULT_ABBR_MAP: dict[str, dict[str, str]] = {
 SPECIES_RE = re.compile(r'M\.\s*p\.\s*[A-Za-z\-]+')
 MEAN_SD_RE = re.compile(r'(-?\d+(?:\.\d+)?)\s*±\s*(-?\d+(?:\.\d+)?)')
 RANGE_WITH_N_RE = re.compile(r'(-?\d+(?:\.\d+)?)\s*[–-]\s*(-?\d+(?:\.\d+)?)\s*\((\d+)\)')
+MEAN_TOKEN_RE = re.compile(r'(-?\d+(?:\.\d+)?\s*±\s*-?\d+(?:\.\d+)?)|(-?\d+(?:\.\d+)?)')
 
 
 def extract_trait_records_from_measurement_tables(measurement_tables: list[str], abbr_dict: dict[str, dict]) -> list[dict]:
@@ -40,15 +41,17 @@ def extract_trait_records_from_measurement_tables(measurement_tables: list[str],
     for table_text in measurement_tables or []:
         species = _extract_species_list(table_text)
         for abbr, row_text in _split_rows(table_text, abbrs):
-            mean_sd = MEAN_SD_RE.findall(row_text)
+            mean_values = _extract_mean_values(row_text, expected_count=len(species))
             ranges = RANGE_WITH_N_RE.findall(row_text)
-            if not mean_sd and not ranges:
+            if not mean_values and not ranges:
                 continue
             trait_meta = merged_abbr.get(abbr, {'trait_name': abbr, 'unit': ''})
             for idx, sci_name in enumerate(species):
                 n_val = int(ranges[idx][2]) if idx < len(ranges) else None
-                if idx < len(mean_sd):
-                    mean, sd = mean_sd[idx]
+                if idx < len(mean_values):
+                    mean_data = mean_values[idx]
+                    mean = mean_data['mean']
+                    sd = mean_data.get('sd')
                     records.append(
                         {
                             'references': '',
@@ -59,9 +62,9 @@ def extract_trait_records_from_measurement_tables(measurement_tables: list[str],
                             'individualCount': n_val,
                             'measurementValue_min': None,
                             'measurementValue_max': None,
-                            'dispersion': float(sd),
-                            'statisticalMethod': 'mean ± SD',
-                            'verbatimTraitValue': f'{mean} ± {sd}',
+                            'dispersion': float(sd) if sd is not None else None,
+                            'statisticalMethod': 'mean ± SD' if sd is not None else 'mean',
+                            'verbatimTraitValue': f'{mean} ± {sd}' if sd is not None else str(mean),
                             'measurementRemarks': f'orig_abbr={abbr}',
                             'associatedReferences': 'Original study',
                         }
@@ -118,6 +121,26 @@ def _extract_species_list(table_text: str) -> list[str]:
             short_names.append(cleaned)
     expanded = [_expand_subspecies_name(name) for name in short_names]
     return expanded[:3]
+
+
+def _extract_mean_values(row_text: str, *, expected_count: int) -> list[dict[str, str | None]]:
+    if expected_count <= 0:
+        return []
+    first_range = RANGE_WITH_N_RE.search(row_text)
+    prefix = row_text[:first_range.start()] if first_range else row_text
+    values: list[dict[str, str | None]] = []
+    for match in MEAN_TOKEN_RE.finditer(prefix):
+        pair = match.group(1)
+        single = match.group(2)
+        if pair:
+            pair_match = MEAN_SD_RE.match(pair)
+            if pair_match:
+                values.append({'mean': pair_match.group(1), 'sd': pair_match.group(2)})
+        elif single is not None:
+            values.append({'mean': single, 'sd': None})
+        if len(values) >= expected_count:
+            break
+    return values
 
 
 def _expand_subspecies_name(short_name: str) -> str:
