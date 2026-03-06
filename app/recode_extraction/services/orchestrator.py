@@ -14,6 +14,7 @@ from recode_extraction.mappers.ets import EtsMapper
 from recode_extraction.models import ExtractedAssertionModel, ExtractedEntity, SourceDocument, SourceExtractionRun
 from recode_extraction.services.extraction import BaselineRuleExtractor, ExtractionEngine, LlmAssistedExtractor
 from recode_extraction.services.pdf_text import PdfToTextService
+from recode_extraction.services.pass1_compaction import compact_pass1_evidence
 from recode_extraction.services.pipeline import PipelineContext
 from recode_extraction.services.qc import normalize_and_validate_trait_records
 from recode_extraction.services.trait_vocabulary import TraitVocabularyService
@@ -116,11 +117,17 @@ class RecodePipelineRunner:
                         seen[key].add(prefixed)
                         merged[key].append(prefixed)
 
-        run.pass1_evidence_package = merged
+        compacted_evidence, compact_stats = compact_pass1_evidence(
+            merged,
+            max_items_per_bucket=getattr(settings, 'RECODE_OPENAI_PASS1_MAX_ITEMS_PER_BUCKET', 30),
+            max_chars_per_item=getattr(settings, 'RECODE_OPENAI_PASS1_MAX_ITEM_CHARS', 1200),
+        )
+        run.logs = f"{run.logs} PASS1 kept={compact_stats['kept']} removed={compact_stats['removed']}."
+        run.pass1_evidence_package = compacted_evidence
 
         self._update_stage(run, 'ets_mapping', 70, 'OpenAI PASS2 ETS structuring + QC.')
         pass2 = client.extract_pass2(
-            merged,
+            compacted_evidence,
             model=settings.RECODE_OPENAI_MODEL_PASS2,
             vocab=vocab,
             timeout_s=settings.RECODE_OPENAI_TIMEOUT_SECONDS,

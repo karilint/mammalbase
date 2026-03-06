@@ -28,7 +28,11 @@ class OpenAITwoPassPipelineTests(TestCase):
         vocab_mock.return_value = mock.Mock(abbr_dict={'BW': {'trait_name': 'body weight', 'unit': 'g'}}, trait_names=['body weight'])
 
         client = client_cls.return_value
-        client.extract_pass1.return_value = mock.Mock(measurement_tables=['PAGE 1:\nBW HB TL\n20.4 82.9 87.4'], trait_sentences=['PAGE 1: The species has a head-body length of 69–95 mm.'], trait_paragraphs=[])
+        client.extract_pass1.return_value = mock.Mock(
+            measurement_tables=['PAGE 1:\nBW HB TL\n20.4 82.9 87.4', 'PAGE 1: Principal component analysis PC1 PC2 eigenvalue'],
+            trait_sentences=['PAGE 1: The species has a head-body length of 69–95 mm.', 'PAGE 1: K2P genetic distance was 0.09.'],
+            trait_paragraphs=[],
+        )
         client.extract_pass2.return_value = mock.Mock(
             traitRecords=[mock.Mock(model_dump=lambda exclude_none=True: {
                 'verbatimScientificName': 'Mus musculus',
@@ -50,6 +54,8 @@ class OpenAITwoPassPipelineTests(TestCase):
         run.refresh_from_db()
         self.assertEqual(run.status, SourceExtractionRun.Status.COMPLETED)
         self.assertTrue(run.pass1_evidence_package['measurement_tables'])
+        self.assertFalse(any('principal component' in x.lower() for x in run.pass1_evidence_package['measurement_tables']))
+        self.assertFalse(any('k2p' in x.lower() for x in run.pass1_evidence_package['trait_sentences']))
         self.assertEqual(len(run.pass2_structured_package['traitRecords']), 1)
         self.assertEqual(ExtractedAssertionModel.objects.filter(extraction_run=run).count(), 1)
         assertion = ExtractedAssertionModel.objects.get(extraction_run=run)

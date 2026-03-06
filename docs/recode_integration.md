@@ -278,6 +278,8 @@ MammalBase now supports a production two-pass ChatGPT extraction pipeline aligne
 - `RECODE_OPENAI_TIMEOUT_SECONDS`
 - `RECODE_OPENAI_MAX_RETRIES`
 - `RECODE_OPENAI_MAX_PAGE_CHARS`
+- `RECODE_OPENAI_PASS1_MAX_ITEMS_PER_BUCKET` (default 30)
+- `RECODE_OPENAI_PASS1_MAX_ITEM_CHARS` (default 1200)
 
 ### Vocabulary construction
 Trait vocabulary is built dynamically from MammalBase:
@@ -292,6 +294,7 @@ Trait vocabulary is built dynamically from MammalBase:
 4. Deterministic QC + normalization runs before import and stores `qc_summary`
 5. Candidate rows are stored in `ExtractedAssertionModel` with pending review
 6. Final source-table persistence happens only from approved assertions using ETS importer flow
+- PASS1 evidence is compacted before PASS2: non-morphology analytical content (PCA/factor loadings/eigenvalues and genetic-distance/phylogenetic snippets like K2P/Cyt b/COI) is filtered out; per-bucket item count and item length are capped to reduce token usage and 429 TPM errors.
 
 ### Testing
 Run:
