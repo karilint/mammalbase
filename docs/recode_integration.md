@@ -301,11 +301,13 @@ Run:
 - `DJANGO_SETTINGS_MODULE=app.config.settings python -m pytest app/tests/recode_extraction/test_openai_two_pass_pipeline.py`
 - `DJANGO_SETTINGS_MODULE=app.config.settings python -m pytest app/tests/recode_extraction/test_openai_qc_normalization.py`
 - `DJANGO_SETTINGS_MODULE=app.config.settings python -m pytest app/tests/recode_extraction/test_openai_schema.py`
+- `DJANGO_SETTINGS_MODULE=app.config.settings python -m pytest app/tests/recode_extraction/test_openai_client_adapter.py`
 - `DJANGO_SETTINGS_MODULE=app.config.settings python -m pytest app/tests/recode_extraction/test_qc_review.py`
 
 Notes:
 - In restricted containers, `PytestCacheWarning` for `.pytest_cache` is non-functional noise and does not indicate test failures.
 - OpenAI API calls must be mocked in unit tests; do not run live external API calls in test suites.
+- Adapter-level mocking pattern is implemented in `app/tests/recode_extraction/conftest.py` (`mock_openai` fixture) and `test_openai_client_adapter.py`.
 
 References:
 - OpenAI Python SDK: https://github.com/openai/openai-python
