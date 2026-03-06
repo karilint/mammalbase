@@ -46,6 +46,15 @@ RECODE_ASSETS_DIR = Path(environ.get('RECODE_ASSETS_DIR', str(BASE_DIR / 'var' /
 RECODE_ENABLE_LLM_BACKEND = bool(int(environ.get('RECODE_ENABLE_LLM_BACKEND', 0)))
 RECODE_MAX_PDF_MB = int(environ.get('RECODE_MAX_PDF_MB', 25))
 RECODE_TIMEOUT_SECONDS = int(environ.get('RECODE_TIMEOUT_SECONDS', 120))
+RECODE_ENABLE_OPENAI_BACKEND = bool(int(environ.get('RECODE_ENABLE_OPENAI_BACKEND', 0)))
+RECODE_OPENAI_MODEL_PASS1 = environ.get('RECODE_OPENAI_MODEL_PASS1', 'gpt-4.1')
+RECODE_OPENAI_MODEL_PASS2 = environ.get('RECODE_OPENAI_MODEL_PASS2', 'gpt-4.1')
+RECODE_OPENAI_TIMEOUT_SECONDS = int(environ.get('RECODE_OPENAI_TIMEOUT_SECONDS', 120))
+RECODE_OPENAI_MAX_RETRIES = int(environ.get('RECODE_OPENAI_MAX_RETRIES', 5))
+RECODE_OPENAI_MAX_PAGE_CHARS = int(environ.get('RECODE_OPENAI_MAX_PAGE_CHARS', 12000))
+RECODE_OPENAI_PASS1_MAX_ITEMS_PER_BUCKET = int(environ.get('RECODE_OPENAI_PASS1_MAX_ITEMS_PER_BUCKET', 120))
+RECODE_OPENAI_PASS1_MAX_ITEM_CHARS = int(environ.get('RECODE_OPENAI_PASS1_MAX_ITEM_CHARS', 2500))
+RECODE_OPENAI_PASS1_MAX_TABLE_ITEM_CHARS = int(environ.get('RECODE_OPENAI_PASS1_MAX_TABLE_ITEM_CHARS', 12000))
 
 
 """ Adresses and protocols """
@@ -312,7 +321,6 @@ if DEBUG:
         'debug_toolbar.panels.templates.TemplatesPanel',
         'debug_toolbar.panels.cache.CachePanel',
         'debug_toolbar.panels.signals.SignalsPanel',
-        'debug_toolbar.panels.logging.LoggingPanel',
         'debug_toolbar.panels.redirects.RedirectsPanel',
     ]
 

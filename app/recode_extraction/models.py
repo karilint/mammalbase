@@ -45,6 +45,9 @@ class SourceExtractionRun(models.Model):
     parameters = models.JSONField(default=dict, blank=True)
     extracted_text_package = models.JSONField(default=dict, blank=True)
     unmapped_traits = models.JSONField(default=list, blank=True)
+    pass1_evidence_package = models.JSONField(default=dict, blank=True)
+    pass2_structured_package = models.JSONField(default=dict, blank=True)
+    qc_summary = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -107,7 +110,8 @@ class ExtractedAssertionModel(models.Model):
     reviewer_note = models.TextField(blank=True)
     reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='recode_reviewed_assertions')
     reviewed_at = models.DateTimeField(null=True, blank=True)
-    unmapped_reason = models.CharField(max_length=250, blank=True)
+    unmapped_reason = models.CharField(max_length=1000, blank=True)
+    qc_errors = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
