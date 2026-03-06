@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from imports.importers.ets_importer import EtsImporter
 from imports.validation_lib.ets_validation import Ets_validation
-from recode_extraction.adapters.openai_client import OpenAITwoPassClient, Pass1Evidence
+from recode_extraction.adapters.openai_client import OpenAITwoPassClient
 from recode_extraction.mappers.ets import EtsMapper
 from recode_extraction.models import ExtractedAssertionModel, ExtractedEntity, SourceDocument, SourceExtractionRun
 from recode_extraction.services.extraction import BaselineRuleExtractor, ExtractionEngine, LlmAssistedExtractor
@@ -104,10 +104,13 @@ class RecodePipelineRunner:
                 run.logs = f'{run.logs}\nPASS1 warning page={page_number}: {exc}'
                 continue
 
-            if not isinstance(evidence, Pass1Evidence):
-                continue
             for key in merged:
-                for snippet in getattr(evidence, key):
+                snippets = getattr(evidence, key, None)
+                if snippets is None and isinstance(evidence, dict):
+                    snippets = evidence.get(key)
+                if not snippets:
+                    continue
+                for snippet in snippets:
                     prefixed = snippet if snippet.startswith('PAGE ') else f'PAGE {page_number}: {snippet}'
                     if prefixed not in seen[key]:
                         seen[key].add(prefixed)
