@@ -46,9 +46,12 @@ class RecodePipelineRunnerTests(TestCase):
 
         run.refresh_from_db()
         self.assertEqual(run.status, SourceExtractionRun.Status.COMPLETED)
+        self.assertIn('Timing summary:', run.logs)
+        self.assertIn('legacy_pipeline_s=', run.logs)
         self.assertEqual(run.current_stage, 'completed')
         self.assertEqual(run.progress_percent, 100)
         self.assertEqual(run.parameters['extraction_backend'], 'baseline')
+        self.assertIn('total_s=', run.logs)
 
     @override_settings(RECODE_ENABLE_LLM_BACKEND=False)
     @mock.patch('recode_extraction.services.orchestrator.PdfToTextService.extract')
@@ -101,3 +104,6 @@ class RecodePipelineRunnerTests(TestCase):
         run = RecodePipelineRunner().run(self.document.pk, run_params={'dry_run': True, 'extraction_backend': 'openai_two_pass'})
         run.refresh_from_db()
         self.assertEqual(run.status, SourceExtractionRun.Status.COMPLETED)
+        self.assertIn('Timing summary:', run.logs)
+        self.assertIn('openai_two_pass_pipeline_s=', run.logs)
+        self.assertIn('total_s=', run.logs)
