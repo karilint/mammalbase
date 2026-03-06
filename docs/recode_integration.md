@@ -305,7 +305,7 @@ Run:
 
 Notes:
 - In restricted containers, `PytestCacheWarning` for `.pytest_cache` is non-functional noise and does not indicate test failures.
-- A `debug_toolbar` deprecation warning may appear from global settings and is unrelated to RECODE extraction behavior.
+- OpenAI API calls must be mocked in unit tests; do not run live external API calls in test suites.
 
 References:
 - OpenAI Python SDK: https://github.com/openai/openai-python
