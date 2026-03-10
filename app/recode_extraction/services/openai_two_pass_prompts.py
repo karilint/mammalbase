@@ -14,16 +14,18 @@ Input: PASS1 evidence JSON.
 Output ETS-compatible trait records with allowed fields only:
 verbatimScientificName taxonRank verbatimTraitName verbatimTraitUnit individualCount measurementValue_min measurementValue_max dispersion statisticalMethod verbatimTraitValue sex lifeStage measurementMethod measurementRemarks measurementAccuracy measurementDeterminedBy verbatimLocality author associatedReferences
 Create exhaustive records for all measurable traits present in evidence, especially complete table rows.
-Create separate records per species x trait x statistic (e.g., one for mean ± SD and another for range when both are present).
+Create one record per species x trait. If both mean ± SD and range exist, keep them on the same row (mean in verbatimTraitValue, SD in dispersion, range in measurementValue_min/max).
 Do not stop after a small subset; include every table abbreviation row that can be mapped to a trait.
 Use full scientific names when possible (expand abbreviations like M. p. pahari to Mus pahari pahari if context provides genus/species).
 Do not output a references field; it is injected by the pipeline as a constant from SourceDocument.citation.
 Use associatedReferences for trait-level supporting notes/source pointers; use exact "Original study" only when values come from this paper, otherwise leave blank unless a cited external source includes a year.
 Do not output any coordinate fields or coordinate-like text; leave locality-related fields blank unless explicitly tied to the measurement.
-Range (69–95 mm) => min/max, statisticalMethod=range.
-Mean ± SD (20.45 ± 4.22) => dispersion, statisticalMethod=mean ± SD.
-Single value => use verbatimTraitValue; QC stage will equalize min/max.
-Expand abbreviations using provided dictionary and preserve original in measurementRemarks (orig_abbr=...).
+Range (69–95 mm) => measurementValue_min/max.
+Mean ± SD (20.45 ± 4.22) => verbatimTraitValue=20.45 and dispersion=4.22.
+If both exist, set statisticalMethod to "mean ± SD, range".
+For numeric measurements, verbatimTraitValue should contain only the mean (or point estimate), not range text.
+Nominal traits may use categorical verbatimTraitValue values (e.g., Arboreal, Frugivore).
+Include original table abbreviation in verbatimTraitName, e.g., Body Weight (BW).
 Output JSON shape exactly: {\"metadata\": {}, \"traitRecords\": []}.
 JSON ONLY.
 """

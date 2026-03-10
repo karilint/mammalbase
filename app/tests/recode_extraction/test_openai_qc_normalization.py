@@ -105,3 +105,42 @@ class OpenAIQcNormalizationTests(TestCase):
         })
         records, _ = self._run(SimpleNamespace(traitRecords=[rec]))
         self.assertEqual(records[0]['references'], 'Author, 2024. Canonical Paper.')
+
+
+    def test_orig_abbr_moved_to_trait_name(self):
+        rec = SimpleNamespace(model_dump=lambda exclude_none=True: {
+            'verbatimScientificName': 'Mus musculus',
+            'taxonRank': 'species',
+            'verbatimTraitName': 'Body Weight',
+            'verbatimTraitUnit': 'g',
+            'verbatimTraitValue': '20.45',
+            'measurementValue_min': 13.4,
+            'measurementValue_max': 28.0,
+            'dispersion': 4.22,
+            'statisticalMethod': 'mean ± SD, range',
+            'references': 'Doe, 2024. Example Title.',
+            'measurementRemarks': 'orig_abbr=BW page=1',
+        })
+        records, _ = self._run(SimpleNamespace(traitRecords=[rec]))
+        self.assertEqual(records[0]['verbatimTraitName'], 'Body Weight (BW)')
+        self.assertNotIn('orig_abbr=', records[0]['measurementRemarks'])
+
+    def test_mean_and_range_stay_on_same_row(self):
+        rec = SimpleNamespace(model_dump=lambda exclude_none=True: {
+            'verbatimScientificName': 'Mus musculus',
+            'taxonRank': 'species',
+            'verbatimTraitName': 'Body Weight (BW)',
+            'verbatimTraitUnit': 'g',
+            'verbatimTraitValue': '20.45 ± 4.22',
+            'measurementValue_min': 13.4,
+            'measurementValue_max': 28.0,
+            'statisticalMethod': 'range',
+            'references': 'Doe, 2024. Example Title.',
+            'measurementRemarks': 'page=1',
+        })
+        records, _ = self._run(SimpleNamespace(traitRecords=[rec]))
+        self.assertEqual(records[0]['measurementValue_min'], 13.4)
+        self.assertEqual(records[0]['measurementValue_max'], 28.0)
+        self.assertEqual(records[0]['verbatimTraitValue'], '20.45')
+        self.assertIn('mean ± SD', records[0]['statisticalMethod'])
+        self.assertIn('range', records[0]['statisticalMethod'])

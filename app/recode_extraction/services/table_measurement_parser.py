@@ -46,48 +46,63 @@ def extract_trait_records_from_measurement_tables(measurement_tables: list[str],
             if not mean_values and not ranges:
                 continue
             trait_meta = merged_abbr.get(abbr, {'trait_name': abbr, 'unit': ''})
+            trait_name = _trait_name_with_abbr(trait_meta.get('trait_name') or abbr, abbr)
             for idx, sci_name in enumerate(species):
-                n_val = int(ranges[idx][2]) if idx < len(ranges) else None
-                if idx < len(mean_values):
-                    mean_data = mean_values[idx]
-                    mean = mean_data['mean']
+                mean_data = mean_values[idx] if idx < len(mean_values) else None
+                range_data = ranges[idx] if idx < len(ranges) else None
+                if not mean_data and not range_data:
+                    continue
+
+                method_parts = []
+                mean_value = ''
+                dispersion = None
+                value_min = None
+                value_max = None
+                n_val = None
+
+                if mean_data:
+                    mean_value = str(mean_data['mean'])
                     sd = mean_data.get('sd')
-                    records.append(
-                        {
-                            'verbatimScientificName': sci_name,
-                            'taxonRank': 'subspecies' if len(sci_name.split()) == 3 else 'species',
-                            'verbatimTraitName': trait_meta.get('trait_name') or abbr,
-                            'verbatimTraitUnit': trait_meta.get('unit') or '',
-                            'individualCount': n_val,
-                            'measurementValue_min': None,
-                            'measurementValue_max': None,
-                            'dispersion': float(sd) if sd is not None else None,
-                            'statisticalMethod': 'mean ± SD' if sd is not None else 'mean',
-                            'verbatimTraitValue': f'{mean} ± {sd}' if sd is not None else str(mean),
-                            'measurementRemarks': f'orig_abbr={abbr}',
-                            'associatedReferences': 'Original study',
-                        }
-                    )
-                if idx < len(ranges):
-                    min_v, max_v, n = ranges[idx]
-                    records.append(
-                        {
-                            'verbatimScientificName': sci_name,
-                            'taxonRank': 'subspecies' if len(sci_name.split()) == 3 else 'species',
-                            'verbatimTraitName': trait_meta.get('trait_name') or abbr,
-                            'verbatimTraitUnit': trait_meta.get('unit') or '',
-                            'individualCount': int(n),
-                            'measurementValue_min': float(min_v),
-                            'measurementValue_max': float(max_v),
-                            'dispersion': None,
-                            'statisticalMethod': 'range',
-                            'verbatimTraitValue': f'{min_v}–{max_v}',
-                            'measurementRemarks': f'orig_abbr={abbr}',
-                            'associatedReferences': 'Original study',
-                        }
-                    )
+                    if sd is not None:
+                        dispersion = float(sd)
+                        method_parts.append('mean ± SD')
+                    else:
+                        method_parts.append('mean')
+
+                if range_data:
+                    min_v, max_v, n = range_data
+                    value_min = float(min_v)
+                    value_max = float(max_v)
+                    n_val = int(n)
+                    method_parts.append('range')
+
+                records.append(
+                    {
+                        'verbatimScientificName': sci_name,
+                        'taxonRank': 'subspecies' if len(sci_name.split()) == 3 else 'species',
+                        'verbatimTraitName': trait_name,
+                        'verbatimTraitUnit': trait_meta.get('unit') or '',
+                        'individualCount': n_val,
+                        'measurementValue_min': value_min,
+                        'measurementValue_max': value_max,
+                        'dispersion': dispersion,
+                        'statisticalMethod': ', '.join(method_parts),
+                        'verbatimTraitValue': mean_value,
+                        'measurementRemarks': '',
+                        'associatedReferences': 'Original study',
+                    }
+                )
 
     return _dedupe_records(records)
+
+
+def _trait_name_with_abbr(trait_name: str, abbr: str) -> str:
+    trait_name = (trait_name or '').strip()
+    if not trait_name:
+        return abbr
+    if f'({abbr})' in trait_name:
+        return trait_name
+    return f'{trait_name} ({abbr})'
 
 
 def _split_rows(table_text: str, abbrs: list[str]) -> list[tuple[str, str]]:
@@ -157,6 +172,8 @@ def _dedupe_records(records: list[dict]) -> list[dict]:
             rec.get('verbatimTraitName', ''),
             rec.get('statisticalMethod', ''),
             rec.get('verbatimTraitValue', ''),
+            rec.get('measurementValue_min'),
+            rec.get('measurementValue_max'),
         )
         if key in seen:
             continue

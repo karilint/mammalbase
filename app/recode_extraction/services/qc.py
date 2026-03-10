@@ -25,7 +25,7 @@ def normalize_and_validate_trait_records(pass2, *, run, default_reference: str, 
             'references': reference_value,
             'verbatimScientificName': scientific_name,
             'taxonRank': raw.get('taxonRank') or 'species',
-            'verbatimTraitName': raw.get('verbatimTraitName') or '',
+            'verbatimTraitName': _ensure_trait_name_has_abbr(raw.get('verbatimTraitName') or '', raw.get('measurementRemarks') or ''),
             'verbatimTraitUnit': raw.get('verbatimTraitUnit') or '',
             'individualCount': raw.get('individualCount') or 0,
             'measurementValue_min': raw.get('measurementValue_min') or 0,
@@ -53,7 +53,7 @@ def normalize_and_validate_trait_records(pass2, *, run, default_reference: str, 
 
         page_match = re.search(r'page\s*=\s*(\d+)', record['measurementRemarks'], flags=re.IGNORECASE)
         page_token = f" page={page_match.group(1)}" if page_match else ''
-        snippet = (record.get('measurementRemarks') or '')[:300]
+        snippet = _strip_orig_abbr((record.get('measurementRemarks') or '')[:300])
         record['measurementRemarks'] = f"{snippet} candidate_key={key_hash} run_id={run.pk}{page_token}".strip()
 
         errors = validator.validate(record, validator.rules)
@@ -100,6 +100,11 @@ def normalize_numeric_fields(record: dict):
     raw = (record.get('verbatimTraitValue') or '').strip()
     if not raw:
         return
+
+    existing_min = record.get('measurementValue_min')
+    existing_max = record.get('measurementValue_max')
+    has_existing_range = existing_min not in (None, '', 0) or existing_max not in (None, '', 0)
+
     range_match = re.match(r'^\s*(-?\d+(?:\.\d+)?)\s*[\-–]\s*(-?\d+(?:\.\d+)?)', raw)
     if range_match:
         first = _to_decimal(range_match.group(1))
@@ -107,7 +112,7 @@ def normalize_numeric_fields(record: dict):
         if first is not None and second is not None:
             record['measurementValue_min'] = float(min(first, second))
             record['measurementValue_max'] = float(max(first, second))
-            record['statisticalMethod'] = 'range'
+            record['statisticalMethod'] = _merge_stat_methods(record.get('statisticalMethod'), 'range')
             return
 
     mean_sd = re.match(r'^\s*(-?\d+(?:\.\d+)?)\s*±\s*(-?\d+(?:\.\d+)?)\s*$', raw)
@@ -115,18 +120,22 @@ def normalize_numeric_fields(record: dict):
         mean = _to_decimal(mean_sd.group(1))
         sd = _to_decimal(mean_sd.group(2))
         if mean is not None and sd is not None:
-            record['measurementValue_min'] = float(mean)
-            record['measurementValue_max'] = float(mean)
+            if not has_existing_range:
+                record['measurementValue_min'] = float(mean)
+                record['measurementValue_max'] = float(mean)
             record['dispersion'] = float(sd)
-            record['statisticalMethod'] = 'mean ± SD'
+            record['verbatimTraitValue'] = str(mean)
+            record['statisticalMethod'] = _merge_stat_methods(record.get('statisticalMethod'), 'mean ± SD')
             return
 
     number = _to_decimal(raw)
     if number is not None:
         value = float(number)
-        record['measurementValue_min'] = value
-        record['measurementValue_max'] = value
-        record['statisticalMethod'] = record.get('statisticalMethod') or 'point estimate'
+        if not has_existing_range:
+            record['measurementValue_min'] = value
+            record['measurementValue_max'] = value
+        record['verbatimTraitValue'] = str(value).rstrip('0').rstrip('.') if '.' in str(value) else str(value)
+        record['statisticalMethod'] = _merge_stat_methods(record.get('statisticalMethod'), 'mean')
 
 
 def _to_decimal(value: str):
@@ -145,3 +154,29 @@ def _normalize_associated_reference(value: str | None) -> str:
     if candidate.lower() == 'original study':
         return 'Original study'
     return ''
+
+
+def _merge_stat_methods(existing: str | None, new_method: str) -> str:
+    parts = [p.strip() for p in (existing or '').split(',') if p.strip()]
+    if new_method not in parts:
+        parts.append(new_method)
+    return ', '.join(parts)
+
+
+def _ensure_trait_name_has_abbr(trait_name: str, measurement_remarks: str) -> str:
+    name = (trait_name or '').strip()
+    remarks = measurement_remarks or ''
+    match = re.search(r'orig_abbr\s*=\s*([A-Za-z0-9/\-]+)', remarks, flags=re.IGNORECASE)
+    if not match:
+        return name
+    abbr = match.group(1).strip()
+    if not name:
+        return abbr
+    if f'({abbr})' in name:
+        return name
+    return f'{name} ({abbr})'
+
+
+def _strip_orig_abbr(text: str) -> str:
+    cleaned = re.sub(r'\s*orig_abbr\s*=\s*[A-Za-z0-9/\-]+\s*', ' ', text or '', flags=re.IGNORECASE)
+    return re.sub(r'\s+', ' ', cleaned).strip()
