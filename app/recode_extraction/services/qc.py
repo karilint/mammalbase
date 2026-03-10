@@ -6,7 +6,6 @@ from decimal import Decimal, InvalidOperation
 
 from imports.validation_lib.ets_validation import Ets_validation
 
-YEAR_RE = re.compile(r'.*([1-2][0-9]{3})')
 SCI_NAME_RE = re.compile(r'\b([A-Z][a-z]+(?:\s+[a-z]{2,}){1,2})\b')
 
 
@@ -20,7 +19,7 @@ def normalize_and_validate_trait_records(pass2, *, run, default_reference: str, 
 
     for trait_record in pass2.traitRecords:
         raw = trait_record.model_dump(exclude_none=True)
-        reference_value = _coalesce_reference(raw.get('references'), default_reference)
+        reference_value = _coalesce_reference(default_reference)
         scientific_name = _expand_scientific_name(raw.get('verbatimScientificName') or 'Unknown taxon', name_candidates)
         record = {
             'references': reference_value,
@@ -71,11 +70,8 @@ def normalize_and_validate_trait_records(pass2, *, run, default_reference: str, 
     return normalized_records, qc_summary
 
 
-def _coalesce_reference(reference_value: str | None, default_reference: str) -> str:
-    candidate = (reference_value or '').strip()
-    if candidate and YEAR_RE.match(candidate):
-        return candidate
-    return default_reference
+def _coalesce_reference(default_reference: str) -> str:
+    return (default_reference or '').strip()
 
 
 def _expand_scientific_name(name: str, candidates: set[str]) -> str:

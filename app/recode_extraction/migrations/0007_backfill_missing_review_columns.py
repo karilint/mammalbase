@@ -1,4 +1,13 @@
-from django.db import migrations
+from django.db import migrations, models
+
+
+def backfill_source_document_citation(apps, schema_editor):
+    SourceDocument = apps.get_model('recode_extraction', 'SourceDocument')
+    for doc in SourceDocument.objects.all().iterator():
+        authors = (doc.authors or 'Unknown').strip()
+        title = (doc.title or 'Untitled').strip().rstrip('.')
+        citation = f'{authors}, {doc.year}. {title}.' if doc.year else f'{authors}. {title}.'
+        SourceDocument.objects.filter(pk=doc.pk).update(citation=citation)
 
 
 class Migration(migrations.Migration):
@@ -7,6 +16,12 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AddField(
+            model_name='sourcedocument',
+            name='citation',
+            field=models.CharField(blank=True, max_length=1000),
+        ),
+        migrations.RunPython(backfill_source_document_citation, migrations.RunPython.noop),
         migrations.RunSQL(
             sql="""
             ALTER TABLE recode_extraction_extractedassertionmodel

@@ -91,3 +91,17 @@ class OpenAIQcNormalizationTests(TestCase):
         records, _ = self._run(SimpleNamespace(traitRecords=[rec1, rec2]))
         self.assertEqual(records[0]['associatedReferences'], 'Original study')
         self.assertEqual(records[1]['associatedReferences'], 'Smith et al., 2025')
+
+
+    def test_references_always_use_default_source_citation(self):
+        rec = SimpleNamespace(model_dump=lambda exclude_none=True: {
+            'verbatimScientificName': 'Mus musculus',
+            'taxonRank': 'species',
+            'verbatimTraitName': 'head-body length',
+            'verbatimTraitUnit': 'mm',
+            'verbatimTraitValue': '12',
+            'references': 'Smith et al., 2025. Different paper.',
+            'measurementRemarks': 'page=1',
+        })
+        records, _ = self._run(SimpleNamespace(traitRecords=[rec]))
+        self.assertEqual(records[0]['references'], 'Author, 2024. Canonical Paper.')

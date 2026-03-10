@@ -25,7 +25,6 @@ class Pass1Evidence(BaseModel):
 
 class TraitRecord(BaseModel):
     model_config = ConfigDict(extra='forbid')
-    references: str | None = None
     verbatimScientificName: str | None = None
     taxonRank: str | None = None
     verbatimTraitName: str | None = None

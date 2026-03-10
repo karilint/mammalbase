@@ -7,6 +7,7 @@ class SourceDocument(models.Model):
     title = models.CharField(max_length=500)
     authors = models.CharField(max_length=500, blank=True)
     year = models.PositiveIntegerField(null=True, blank=True)
+    citation = models.CharField(max_length=1000, blank=True)
     doi = models.CharField(max_length=100, blank=True)
     uploader = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -18,6 +19,20 @@ class SourceDocument(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+
+    def build_citation(self) -> str:
+        year = self.year or ''
+        authors = (self.authors or 'Unknown').strip()
+        title = (self.title or 'Untitled').strip().rstrip('.')
+        if year:
+            return f'{authors}, {year}. {title}.'
+        return f'{authors}. {title}.'
+
+    def save(self, *args, **kwargs):
+        if not (self.citation or '').strip():
+            self.citation = self.build_citation()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title

@@ -1,5 +1,4 @@
 from dataclasses import asdict
-from datetime import datetime
 import time
 from types import SimpleNamespace
 from typing import Any
@@ -314,10 +313,7 @@ class RecodePipelineRunner:
             run.assertions.filter(mapped_trait_id__gt='').update(ets_persisted=True)
 
     def _build_default_reference(self, source: SourceDocument) -> str:
-        year = source.year or datetime.now().year
-        authors = (source.authors or 'Unknown').strip()
-        title = (source.title or 'Untitled').strip().rstrip('.')
-        return f'{authors}, {year}. {title}.'
+        return (source.citation or '').strip() or source.build_citation()
 
 
 def _extract_page_number(text: str):

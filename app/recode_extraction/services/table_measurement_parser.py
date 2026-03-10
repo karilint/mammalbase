@@ -54,7 +54,6 @@ def extract_trait_records_from_measurement_tables(measurement_tables: list[str],
                     sd = mean_data.get('sd')
                     records.append(
                         {
-                            'references': '',
                             'verbatimScientificName': sci_name,
                             'taxonRank': 'subspecies' if len(sci_name.split()) == 3 else 'species',
                             'verbatimTraitName': trait_meta.get('trait_name') or abbr,
@@ -73,7 +72,6 @@ def extract_trait_records_from_measurement_tables(measurement_tables: list[str],
                     min_v, max_v, n = ranges[idx]
                     records.append(
                         {
-                            'references': '',
                             'verbatimScientificName': sci_name,
                             'taxonRank': 'subspecies' if len(sci_name.split()) == 3 else 'species',
                             'verbatimTraitName': trait_meta.get('trait_name') or abbr,
