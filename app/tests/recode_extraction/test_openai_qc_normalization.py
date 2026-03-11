@@ -27,6 +27,9 @@ class OpenAIQcNormalizationTests(TestCase):
             default_author_orcid='0000-0000-0000-0000',
         )
 
+    def _pass2_with_metadata(self, records, citation='Meta, 2024. Meta Citation.', author='1111-2222-3333-4444'):
+        return SimpleNamespace(traitRecords=records, metadata=SimpleNamespace(citation=citation, author=author))
+
     def test_range_parsing(self):
         records, _ = self._run(self._fake_pass2('69–95'))
         self.assertEqual(records[0]['measurementValue_min'], 69.0)
@@ -51,6 +54,24 @@ class OpenAIQcNormalizationTests(TestCase):
     def test_scientific_name_expands_from_document_text(self):
         records, _ = self._run(self._fake_pass2('12', scientific_name='M. p. pahari'))
         self.assertEqual(records[0]['verbatimScientificName'], 'Mus pahari pahari')
+
+    def test_scientific_name_ocr_hyphen_is_removed(self):
+        records, _ = self._run(self._fake_pass2('12', scientific_name='Mus pahari gaird-neri'))
+        self.assertEqual(records[0]['verbatimScientificName'], 'Mus pahari gairdneri')
+        self.assertEqual(records[0]['taxonRank'], 'subspecies')
+
+    def test_metadata_citation_and_author_are_used(self):
+        rec = SimpleNamespace(model_dump=lambda exclude_none=True: {
+            'verbatimScientificName': 'Mus musculus',
+            'taxonRank': 'species',
+            'verbatimTraitName': 'head-body length',
+            'verbatimTraitUnit': 'mm',
+            'verbatimTraitValue': '12',
+            'measurementRemarks': 'page=1',
+        })
+        records, _ = self._run(self._pass2_with_metadata([rec]))
+        self.assertEqual(records[0]['references'], 'Meta, 2024. Meta Citation.')
+        self.assertEqual(records[0]['author'], '1111-2222-3333-4444')
 
 
     def test_associated_references_blank_when_non_citable_text(self):

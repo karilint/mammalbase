@@ -12,7 +12,9 @@ JSON ONLY.
 PASS2_SYSTEM_PROMPT = """You are a biodiversity trait data extraction system.
 Input: PASS1 evidence JSON.
 Output ETS-compatible trait records with allowed fields only:
-verbatimScientificName taxonRank verbatimTraitName verbatimTraitUnit individualCount measurementValue_min measurementValue_max dispersion statisticalMethod verbatimTraitValue sex lifeStage measurementMethod measurementRemarks measurementAccuracy measurementDeterminedBy verbatimLocality author associatedReferences
+verbatimScientificName taxonRank verbatimTraitName verbatimTraitUnit individualCount measurementValue_min measurementValue_max dispersion statisticalMethod verbatimTraitValue sex lifeStage measurementMethod measurementRemarks measurementAccuracy measurementDeterminedBy verbatimLocality associatedReferences
+Put document-level values only in metadata as keys citation and author.
+taxonRank must never be empty; use species or subspecies as appropriate.
 Create exhaustive records for all measurable traits present in evidence, especially complete table rows.
 Create one record per species x trait. If both mean ± SD and range exist, keep them on the same row (mean in verbatimTraitValue, SD in dispersion, range in measurementValue_min/max).
 Do not stop after a small subset; include every table abbreviation row that can be mapped to a trait.
@@ -26,7 +28,7 @@ If both exist, set statisticalMethod to "mean ± SD, range".
 For numeric measurements, verbatimTraitValue should contain only the mean (or point estimate), not range text.
 Nominal traits may use categorical verbatimTraitValue values (e.g., Arboreal, Frugivore).
 Include original table abbreviation in verbatimTraitName, e.g., Body Weight (BW).
-Output JSON shape exactly: {\"metadata\": {}, \"traitRecords\": []}.
+Output JSON shape exactly: {\"metadata\": {\"citation\": \"...\", \"author\": \"...\"}, \"traitRecords\": []}.
 JSON ONLY.
 """
 
@@ -39,10 +41,13 @@ def build_pass1_user_prompt(page_text: str, abbr_dict: dict, trait_names: list[s
     )
 
 
-def build_pass2_user_prompt(evidence_json: dict, abbr_dict: dict, trait_names: list[str]) -> str:
+def build_pass2_user_prompt(evidence_json: dict, abbr_dict: dict, trait_names: list[str], *, citation: str, author_orcid: str) -> str:
     return (
         f"Trait abbreviation dictionary: {abbr_dict}\n"
         f"Possible trait list: {trait_names[:200]}\n"
+        f"Use this exact metadata.citation value: {citation}\n"
+        f"Use this exact metadata.author value: {author_orcid}\n"
         f"PASS1 evidence JSON: {evidence_json}\n"
         "Extract all valid trait records from all evidence buckets. Do not cap output size to 24 records.\n"
+        "Fix OCR split hyphens inside scientific names (e.g., gaird-neri -> gairdneri).\n"
     )

@@ -17,14 +17,20 @@ def normalize_and_validate_trait_records(pass2, *, run, default_reference: str, 
     full_text = ((run.extracted_text_package or {}).get('full_text') or '')
     name_candidates = set(SCI_NAME_RE.findall(full_text))
 
+    metadata = getattr(pass2, 'metadata', None)
+    metadata_citation = _coalesce_reference(getattr(metadata, 'citation', None) or default_reference)
+    metadata_author = (getattr(metadata, 'author', None) or default_author_orcid or '').strip() or default_author_orcid
+
     for trait_record in pass2.traitRecords:
         raw = trait_record.model_dump(exclude_none=True)
-        reference_value = _coalesce_reference(default_reference)
+        reference_value = metadata_citation
         scientific_name = _expand_scientific_name(raw.get('verbatimScientificName') or 'Unknown taxon', name_candidates)
+        scientific_name = _normalize_scientific_name_text(scientific_name)
+        taxon_rank = (raw.get('taxonRank') or '').strip() or _infer_taxon_rank(scientific_name)
         record = {
             'references': reference_value,
             'verbatimScientificName': scientific_name,
-            'taxonRank': raw.get('taxonRank') or 'species',
+            'taxonRank': taxon_rank,
             'verbatimTraitName': _ensure_trait_name_has_abbr(raw.get('verbatimTraitName') or '', raw.get('measurementRemarks') or ''),
             'verbatimTraitUnit': raw.get('verbatimTraitUnit') or '',
             'individualCount': raw.get('individualCount') or 0,
@@ -40,7 +46,7 @@ def normalize_and_validate_trait_records(pass2, *, run, default_reference: str, 
             'measurementAccuracy': raw.get('measurementAccuracy') or '',
             'measurementDeterminedBy': raw.get('measurementDeterminedBy') or 'OpenAI two-pass extraction',
             'verbatimLocality': raw.get('verbatimLocality') or '',
-            'author': raw.get('author') or default_author_orcid,
+            'author': metadata_author,
             'associatedReferences': _normalize_associated_reference(raw.get('associatedReferences')),
         }
         normalize_numeric_fields(record)
@@ -75,7 +81,7 @@ def _coalesce_reference(default_reference: str) -> str:
 
 
 def _expand_scientific_name(name: str, candidates: set[str]) -> str:
-    cleaned = (name or '').strip()
+    cleaned = _normalize_scientific_name_text((name or '').strip())
     if not cleaned:
         return 'Unknown taxon'
     if '.' not in cleaned:
@@ -93,7 +99,22 @@ def _expand_scientific_name(name: str, candidates: set[str]) -> str:
             continue
         if [t[0].lower() for t in cand_tokens[: len(initials)]] == initials:
             return candidate
-    return cleaned.replace('.', '')
+    return _normalize_scientific_name_text(cleaned.replace('.', ''))
+
+
+def _normalize_scientific_name_text(name: str) -> str:
+    if not name:
+        return name
+    cleaned = name.replace('‐', '-').replace('‑', '-').replace('–', '-')
+    cleaned = re.sub(r'(?<=[A-Za-z])\-(?=[A-Za-z])', '', cleaned)
+    return re.sub(r'\s+', ' ', cleaned).strip()
+
+
+def _infer_taxon_rank(scientific_name: str) -> str:
+    tokens = [t for t in (scientific_name or '').split() if t]
+    if len(tokens) >= 3:
+        return 'subspecies'
+    return 'species'
 
 
 def normalize_numeric_fields(record: dict):

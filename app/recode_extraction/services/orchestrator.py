@@ -150,6 +150,8 @@ class RecodePipelineRunner:
         run.pass1_evidence_package = compacted_evidence
 
         self._update_stage(run, 'ets_mapping', 70, 'OpenAI PASS2 ETS structuring + QC.')
+        citation_value = self._build_default_reference(source)
+        author_orcid_value = self._resolve_author_orcid(source, run)
         t0 = time.monotonic()
         pass2 = client.extract_pass2(
             compacted_evidence,
@@ -157,7 +159,13 @@ class RecodePipelineRunner:
             vocab=vocab,
             timeout_s=settings.RECODE_OPENAI_TIMEOUT_SECONDS,
             run_id=run.pk,
+            citation=citation_value,
+            author_orcid=author_orcid_value,
         )
+        if not pass2.metadata.citation:
+            pass2.metadata.citation = citation_value
+        if not pass2.metadata.author:
+            pass2.metadata.author = author_orcid_value
         fallback_records = extract_trait_records_from_measurement_tables(
             compacted_evidence.get('measurement_tables', []),
             vocab.abbr_dict,
@@ -194,8 +202,8 @@ class RecodePipelineRunner:
         normalized_records, qc_summary = normalize_and_validate_trait_records(
             pass2,
             run=run,
-            default_reference=self._build_default_reference(source),
-            default_author_orcid=DEFAULT_ORCID,
+            default_reference=citation_value,
+            default_author_orcid=author_orcid_value,
         )
         run.qc_summary = qc_summary
         qc_elapsed = round(time.monotonic() - t0, 3)
@@ -314,6 +322,28 @@ class RecodePipelineRunner:
 
     def _build_default_reference(self, source: SourceDocument) -> str:
         return (source.citation or '').strip() or source.build_citation()
+
+    def _resolve_author_orcid(self, source: SourceDocument, run: SourceExtractionRun) -> str:
+        user = source.uploader
+        actor_id = ((run.parameters or {}).get('pipeline_context') or {}).get('actor_id')
+        if actor_id and user and user.pk != actor_id:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            user = User.objects.filter(pk=actor_id).first() or user
+
+        if not user:
+            return DEFAULT_ORCID
+
+        try:
+            from allauth.socialaccount.models import SocialAccount
+            account = SocialAccount.objects.filter(user=user).order_by('id').first()
+            extra_data = (account.extra_data or {}) if account else {}
+            path = ((extra_data.get('orcid-identifier') or {}).get('path') or '').strip().strip('/')
+            if path:
+                return path
+        except Exception:
+            pass
+        return DEFAULT_ORCID
 
 
 def _extract_page_number(text: str):

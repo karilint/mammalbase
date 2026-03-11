@@ -291,7 +291,9 @@ Trait vocabulary is built dynamically from MammalBase:
 ### Pipeline and stored artifacts
 1. `extracted_text_package` is always stored from `PdfToTextService`
 2. PASS1 evidence JSON is persisted to `pass1_evidence_package`
-3. PASS2 trait record JSON is persisted to `pass2_structured_package`
+3. PASS2 trait record JSON is persisted to `pass2_structured_package` and includes metadata keys:
+   - `metadata.citation` (from `SourceDocument.citation`)
+   - `metadata.author` (ORCID from uploader/actor social account `orcid-identifier.path`, fallback to default ORCID)
 4. Deterministic QC + normalization runs before import and stores `qc_summary`
 5. Candidate rows are stored in `ExtractedAssertionModel` with pending review
 6. Final source-table persistence happens only from approved assertions using ETS importer flow

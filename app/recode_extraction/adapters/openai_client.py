@@ -42,12 +42,13 @@ class TraitRecord(BaseModel):
     measurementAccuracy: str | None = None
     measurementDeterminedBy: str | None = None
     verbatimLocality: str | None = None
-    author: str | None = None
     associatedReferences: str | None = None
 
 
 class Pass2Metadata(BaseModel):
     model_config = ConfigDict(extra='forbid')
+    citation: str | None = None
+    author: str | None = None
 
 
 class Pass2Output(BaseModel):
@@ -75,8 +76,8 @@ class OpenAITwoPassClient:
         )
         return response.output_parsed
 
-    def extract_pass2(self, evidence_json: dict, *, model: str, vocab: 'TraitVocabulary', timeout_s: int, run_id: int | None = None) -> Pass2Output:
-        prompt = build_pass2_user_prompt(evidence_json, vocab.abbr_dict, vocab.trait_names)
+    def extract_pass2(self, evidence_json: dict, *, model: str, vocab: 'TraitVocabulary', timeout_s: int, run_id: int | None = None, citation: str = '', author_orcid: str = '') -> Pass2Output:
+        prompt = build_pass2_user_prompt(evidence_json, vocab.abbr_dict, vocab.trait_names, citation=citation, author_orcid=author_orcid)
         response = self._parse_with_retry(
             model=model,
             timeout_s=timeout_s,
