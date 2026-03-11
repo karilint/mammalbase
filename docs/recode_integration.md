@@ -274,7 +274,7 @@ MammalBase now supports a production two-pass ChatGPT extraction pipeline aligne
 ### Required settings/env vars
 - `RECODE_ENABLE_OPENAI_BACKEND` (default `False`)
 - `OPENAI_API_KEY`
-- `RECODE_OPENAI_MODEL_PASS1` / `RECODE_OPENAI_MODEL_PASS2`
+- `RECODE_OPENAI_MODEL_PASS1` / `RECODE_OPENAI_MODEL_PASS2` (defaults: `gpt-5-mini`)
 - `RECODE_OPENAI_TIMEOUT_SECONDS`
 - `RECODE_OPENAI_MAX_RETRIES`
 - `RECODE_OPENAI_MAX_PAGE_CHARS`
