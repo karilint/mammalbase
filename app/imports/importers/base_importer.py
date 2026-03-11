@@ -1,7 +1,6 @@
 import re
 import json
 from datetime import timedelta
-import logging
 import requests
 import pandas as pd
 from django.db import transaction
@@ -273,22 +272,7 @@ class BaseImporter:
         try:
             new_source_location.save()
         except Exception as error:
-            message = str(error).lower()
-            if (
-                "coord_text" in message
-                and (
-                    "doesn't have a default value" in message
-                    or "does not have a default value" in message
-                    or "cannot be null" in message
-                    or "field 'coord_text'" in message
-                )
-            ):
-                logging.warning(
-                    "Skipping SourceLocation save because DB requires legacy coord_text column: %s",
-                    error,
-                )
-                return None
-            raise
+            raise Exception(str(error)) from error
         return new_source_location
 
     def get_or_create_time_period(self, time_period: str, source_reference: SourceReference,
