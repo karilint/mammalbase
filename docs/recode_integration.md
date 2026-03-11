@@ -317,18 +317,20 @@ References:
 - OpenAI Python SDK: https://github.com/openai/openai-python
 - Structured outputs guide: https://developers.openai.com/api/docs/guides/structured-outputs/
 
-## Migration note: legacy `recode_extraction_extractedassertionmodel.coord_text` schema drift
+## Migration note: legacy `recode_extraction_extractedassertionmodel` `*_text` schema drift
 
-Some older MammalBase deployments may still contain a legacy `coord_text` column on
-`recode_extraction_extractedassertionmodel` that is `NOT NULL` without a default.
-The current `ExtractedAssertionModel` does not define this column, so assertion
+Some older MammalBase deployments may still contain legacy columns such as
+`coord_text`, `count_text`, or `sex_text` on
+`recode_extraction_extractedassertionmodel` that are `NOT NULL` without defaults.
+The current `ExtractedAssertionModel` does not define these columns, so assertion
 inserts in the RECODE pipeline can fail with:
 
 - `(1364, "Field 'coord_text' doesn't have a default value")`
 
-A compatibility migration
-(`recode_extraction.0008_fix_legacy_extractedassertion_coord_text`) drops the
-obsolete column when present. This is safe for RECODE ETS extraction because that flow
+A compatibility migration sequence
+(`recode_extraction.0008_fix_legacy_extractedassertion_coord_text` and
+`recode_extraction.0009_drop_legacy_extractedassertion_text_columns`) drops these
+obsolete columns when present. This is safe for RECODE ETS extraction because that flow
 does not persist coordinate fields on `ExtractedAssertionModel`.
 
 Run:
