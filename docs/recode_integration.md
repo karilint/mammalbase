@@ -320,7 +320,7 @@ References:
 ## Migration note: legacy `recode_extraction_extractedassertionmodel` `*_text` schema drift
 
 Some older MammalBase deployments may still contain legacy columns such as
-`coord_text`, `count_text`, `sex_text`, or `date_text` on
+`snippet`, `coord_text`, `count_text`, `sex_text`, or `date_text` on
 `recode_extraction_extractedassertionmodel` that are `NOT NULL` without defaults.
 The current `ExtractedAssertionModel` does not define these columns, so assertion
 inserts in the RECODE pipeline can fail with:
@@ -330,7 +330,8 @@ inserts in the RECODE pipeline can fail with:
 A compatibility migration sequence
 (`recode_extraction.0008_fix_legacy_extractedassertion_coord_text`,
 `recode_extraction.0009_drop_legacy_extractedassertion_text_columns`, and
-`recode_extraction.0010_drop_remaining_legacy_extractedassertion_text_columns`) drop these
+`recode_extraction.0010_drop_remaining_legacy_extractedassertion_text_columns`, and
+`recode_extraction.0011_drop_legacy_extractedassertion_snippet_and_unknown_columns`) drop these
 obsolete columns when present. This is safe for RECODE ETS extraction because that flow
 does not persist coordinate fields on `ExtractedAssertionModel`.
 
