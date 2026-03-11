@@ -314,3 +314,23 @@ Notes:
 References:
 - OpenAI Python SDK: https://github.com/openai/openai-python
 - Structured outputs guide: https://developers.openai.com/api/docs/guides/structured-outputs/
+
+## Migration note: legacy `mb_sourcelocation.coord_text` schema drift
+
+Some older MammalBase deployments may still contain a legacy `coord_text` column on
+`mb_sourcelocation` that is `NOT NULL` without a default. The current `SourceLocation`
+model does not define this column, so inserts that only set locality (`name`,
+`reference`, etc.) can fail with:
+
+- `(1364, "Field 'coord_text' doesn't have a default value")`
+
+A compatibility migration (`mb.0031_fix_legacy_sourcelocation_coord_text`) drops the
+obsolete column when present. This is safe for RECODE ETS extraction because that flow
+only writes `verbatimLocality` and does not persist coordinate fields.
+
+Run:
+
+- `python manage.py migrate mb`
+
+Then verify that creating `SourceLocation(name=..., reference=...)` succeeds without
+supplying any coordinate-related values.

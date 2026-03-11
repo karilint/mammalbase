@@ -32,3 +32,10 @@ class TestBaseImporter(TestCase):
         save_mock.side_effect = Exception("(1364, \"Field 'coord_text' doesn't have a default value\")")
         result = self.importer.get_or_create_source_location('Somewhere', source_reference=None, author=self.test_author)
         self.assertIsNone(result)
+
+
+    @mock.patch("imports.importers.base_importer.SourceLocation.save")
+    def test_get_or_create_source_location_handles_coord_text_cannot_be_null(self, save_mock):
+        save_mock.side_effect = Exception("(1048, \"Column 'coord_text' cannot be null\")")
+        result = self.importer.get_or_create_source_location('Somewhere', source_reference=None, author=self.test_author)
+        self.assertIsNone(result)

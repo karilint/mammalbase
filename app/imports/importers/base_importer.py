@@ -273,9 +273,18 @@ class BaseImporter:
         try:
             new_source_location.save()
         except Exception as error:
-            if "coord_text" in str(error) and "doesn't have a default value" in str(error):
+            message = str(error).lower()
+            if (
+                "coord_text" in message
+                and (
+                    "doesn't have a default value" in message
+                    or "does not have a default value" in message
+                    or "cannot be null" in message
+                    or "field 'coord_text'" in message
+                )
+            ):
                 logging.warning(
-                    "Skipping SourceLocation save because DB requires coord_text without default: %s",
+                    "Skipping SourceLocation save because DB requires legacy coord_text column: %s",
                     error,
                 )
                 return None
