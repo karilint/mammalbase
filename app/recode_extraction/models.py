@@ -7,7 +7,9 @@ class SourceDocument(models.Model):
     title = models.CharField(max_length=500)
     authors = models.CharField(max_length=500, blank=True)
     year = models.PositiveIntegerField(null=True, blank=True)
+    citation = models.CharField(max_length=1000, blank=True)
     doi = models.CharField(max_length=100, blank=True)
+    extracted_text_package = models.JSONField(default=dict, blank=True)
     uploader = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -18,6 +20,20 @@ class SourceDocument(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+
+    def build_citation(self) -> str:
+        year = self.year or ''
+        authors = (self.authors or 'Unknown').strip()
+        title = (self.title or 'Untitled').strip().rstrip('.')
+        if year:
+            return f'{authors}, {year}. {title}.'
+        return f'{authors}. {title}.'
+
+    def save(self, *args, **kwargs):
+        if not (self.citation or '').strip():
+            self.citation = self.build_citation()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
@@ -45,6 +61,9 @@ class SourceExtractionRun(models.Model):
     parameters = models.JSONField(default=dict, blank=True)
     extracted_text_package = models.JSONField(default=dict, blank=True)
     unmapped_traits = models.JSONField(default=list, blank=True)
+    pass1_evidence_package = models.JSONField(default=dict, blank=True)
+    pass2_structured_package = models.JSONField(default=dict, blank=True)
+    qc_summary = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -107,7 +126,8 @@ class ExtractedAssertionModel(models.Model):
     reviewer_note = models.TextField(blank=True)
     reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='recode_reviewed_assertions')
     reviewed_at = models.DateTimeField(null=True, blank=True)
-    unmapped_reason = models.CharField(max_length=250, blank=True)
+    unmapped_reason = models.CharField(max_length=1000, blank=True)
+    qc_errors = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

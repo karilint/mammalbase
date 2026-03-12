@@ -266,3 +266,104 @@ A management command `python manage.py recode_eval` is available to run fast eva
 
 ### CI regression coverage
 `django.yml` now includes a dedicated RECODE regression test step to ensure corpus reader compatibility and metric execution remain operational.
+
+## OpenAI Two-Pass Extraction (PASS1 evidence → PASS2 ETS)
+
+MammalBase now supports a production two-pass ChatGPT extraction pipeline aligned with the internal Two-Pass ETS+DwC spec.
+
+### Required settings/env vars
+- `RECODE_ENABLE_OPENAI_BACKEND` (default `False`)
+- `OPENAI_API_KEY`
+- `RECODE_OPENAI_MODEL_PASS1` / `RECODE_OPENAI_MODEL_PASS2` (defaults: `gpt-5-mini`)
+  - supported UI presets include `gpt-5.4`, `gpt-5.2`, `gpt-5-mini`, and `gpt-4.1`
+- `RECODE_OPENAI_TIMEOUT_SECONDS`
+- `RECODE_OPENAI_MAX_RETRIES`
+- `RECODE_OPENAI_MAX_PAGE_CHARS`
+- `RECODE_OPENAI_PASS1_MAX_ITEMS_PER_BUCKET` (default 120)
+- `RECODE_OPENAI_PASS1_MAX_ITEM_CHARS` (default 2500)
+- `RECODE_OPENAI_PASS1_MAX_TABLE_ITEM_CHARS` (default 12000)
+
+### Backend/model selection in source UI
+At `recode/sources/<id>/`, the extraction form now includes:
+- OpenAI preset backends:
+  - GPT-5.4 preset
+  - GPT-5.2 preset
+  - GPT-4.1 preset
+- OpenAI custom model dropdowns for PASS1 and PASS2
+- Claude two-pass placeholder backend (for future adapter integration)
+
+When OpenAI custom mode is selected, `pass1_model` and `pass2_model` are stored
+in run parameters and used by the orchestrator per run.
+
+### Claude placeholder settings
+- `RECODE_ENABLE_CLAUDE_BACKEND`
+- `RECODE_CLAUDE_MODEL_PASS1`
+- `RECODE_CLAUDE_MODEL_PASS2`
+- `RECODE_CLAUDE_TIMEOUT_SECONDS`
+
+Prompt placeholders for future Claude adapter integration live in:
+- `recode_extraction/services/claude_two_pass_prompts.py`
+
+Current behavior: selecting `claude_two_pass` raises a clear "not implemented"
+pipeline error until a Claude API adapter is added.
+
+### Vocabulary construction
+Trait vocabulary is built dynamically from MammalBase:
+- Abbreviation dictionary from `MasterAttribute.name` and `SourceAttribute.name`
+- Trait list from Taxon-scoped `MasterAttribute` and frequent `SourceAttribute`
+- A small bootstrap dictionary is used only if DB-derived abbreviations are sparse
+
+### Pipeline and stored artifacts
+1. `SourceDocument.extracted_text_package` is created once (on upload when possible, otherwise lazily on first run) and reused unless the PDF file signature changes.
+2. `SourceExtractionRun.extracted_text_package` stores a run-level copy for audit reproducibility.
+3. PASS1 evidence JSON is persisted to `pass1_evidence_package`
+4. PASS2 trait record JSON is persisted to `pass2_structured_package` and includes metadata keys:
+   - `metadata.citation` (from `SourceDocument.citation`)
+   - `metadata.author` (ORCID from uploader/actor social account `orcid-identifier.path`, fallback to default ORCID)
+5. Deterministic QC + normalization runs before import and stores `qc_summary`
+6. Candidate rows are stored in `ExtractedAssertionModel` with pending review
+7. Final source-table persistence happens only from approved assertions using ETS importer flow
+- PASS1 evidence is compacted before PASS2: non-morphology analytical content (PCA/factor loadings/eigenvalues and genetic-distance/phylogenetic snippets like K2P/Cyt b/COI) is filtered out; per-bucket item count and item length are capped to reduce token usage and 429 TPM errors.
+- QC enforces canonical article-level `references` (authors, year, title) when model output contains non-citation labels (e.g., `PAGE 5: Table 1`), while `associatedReferences` is kept for trait-level support (`Original study` fallback).
+
+### Testing
+Run:
+- `DJANGO_SETTINGS_MODULE=app.config.settings python -m pytest app/tests/recode_extraction/test_openai_two_pass_pipeline.py`
+- `DJANGO_SETTINGS_MODULE=app.config.settings python -m pytest app/tests/recode_extraction/test_openai_qc_normalization.py`
+- `DJANGO_SETTINGS_MODULE=app.config.settings python -m pytest app/tests/recode_extraction/test_openai_schema.py`
+- `DJANGO_SETTINGS_MODULE=app.config.settings python -m pytest app/tests/recode_extraction/test_openai_client_adapter.py`
+- `DJANGO_SETTINGS_MODULE=app.config.settings python -m pytest app/tests/recode_extraction/test_qc_review.py`
+
+Notes:
+- In restricted containers, `PytestCacheWarning` for `.pytest_cache` is non-functional noise and does not indicate test failures.
+- OpenAI API calls must be mocked in unit tests; do not run live external API calls in test suites.
+- Adapter-level mocking pattern is implemented in `app/tests/recode_extraction/conftest.py` (`mock_openai` fixture) and `test_openai_client_adapter.py`.
+
+References:
+- OpenAI Python SDK: https://github.com/openai/openai-python
+- Structured outputs guide: https://developers.openai.com/api/docs/guides/structured-outputs/
+
+## Migration note: legacy `recode_extraction_extractedassertionmodel` `*_text` schema drift
+
+Some older MammalBase deployments may still contain legacy columns such as
+`snippet`, `coord_text`, `count_text`, `sex_text`, or `date_text` on
+`recode_extraction_extractedassertionmodel` that are `NOT NULL` without defaults.
+The current `ExtractedAssertionModel` does not define these columns, so assertion
+inserts in the RECODE pipeline can fail with:
+
+- `(1364, "Field 'coord_text' doesn't have a default value")`
+
+A compatibility migration sequence
+(`recode_extraction.0008_fix_legacy_extractedassertion_coord_text`,
+`recode_extraction.0009_drop_legacy_extractedassertion_text_columns`, and
+`recode_extraction.0010_drop_remaining_legacy_extractedassertion_text_columns`, and
+`recode_extraction.0011_drop_legacy_extractedassertion_snippet_and_unknown_columns`) drop these
+obsolete columns when present. This is safe for RECODE ETS extraction because that flow
+does not persist coordinate fields on `ExtractedAssertionModel`.
+
+Run:
+
+- `python manage.py migrate recode_extraction`
+
+Then verify that creating extraction assertions succeeds and no longer errors on
+`coord_text`.

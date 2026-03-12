@@ -1,5 +1,6 @@
 import os
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -8,6 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from .forms import SourceDocumentUploadForm
 from .models import ExtractedAssertionModel, SourceDocument, SourceExtractionRun
 from .services import create_extraction_run
+from .services.pdf_text import PdfToTextService
 from .services.review import (
     apply_assertion_review,
     bulk_approve_above_threshold,
@@ -31,6 +33,15 @@ def source_document_upload(request):
             document = form.save(commit=False)
             document.uploader = request.user
             document.save()
+            try:
+                package = PdfToTextService().extract(document.pdf_file.path)
+                file_stat = os.stat(document.pdf_file.path)
+                package['_pdf_signature'] = f'{file_stat.st_size}:{file_stat.st_mtime_ns}'
+                document.extracted_text_package = package
+                document.save(update_fields=['extracted_text_package'])
+            except Exception:
+                # extraction can still be done lazily on first run
+                pass
             messages.success(request, 'PDF source uploaded successfully.')
             return redirect('recode_source_document_detail', pk=document.pk)
     else:
@@ -46,7 +57,15 @@ def source_document_detail(request, pk: int):
     return render(
         request,
         'recode_extraction/source_document_detail.html',
-        {'document': document, 'runs': runs},
+        {
+            'document': document,
+            'runs': runs,
+            'openai_enabled': settings.RECODE_ENABLE_OPENAI_BACKEND,
+            'claude_enabled': settings.RECODE_ENABLE_CLAUDE_BACKEND,
+            'openai_model_choices': getattr(settings, 'RECODE_OPENAI_MODEL_CHOICES', ()),
+            'default_openai_pass1_model': settings.RECODE_OPENAI_MODEL_PASS1,
+            'default_openai_pass2_model': settings.RECODE_OPENAI_MODEL_PASS2,
+        },
     )
 
 
@@ -57,8 +76,21 @@ def source_document_run_extraction(request, pk: int):
         return redirect('recode_source_document_detail', pk=document.pk)
 
     dry_run = request.POST.get('dry_run') == '1'
-    extraction_backend = request.POST.get('extraction_backend', 'baseline')
+    default_backend = 'openai_two_pass' if settings.RECODE_ENABLE_OPENAI_BACKEND else 'baseline'
+    extraction_backend = request.POST.get('extraction_backend', default_backend)
     confidence_threshold = float(request.POST.get('confidence_threshold', '0') or '0')
+
+    model_presets = {
+        'openai_two_pass_gpt_5_4': ('openai_two_pass', 'gpt-5.4', 'gpt-5.4'),
+        'openai_two_pass_gpt_5_2': ('openai_two_pass', 'gpt-5.2', 'gpt-5.2'),
+        'openai_two_pass_gpt_4_1': ('openai_two_pass', 'gpt-4.1', 'gpt-4.1'),
+    }
+    preset = model_presets.get(extraction_backend)
+    if preset:
+        extraction_backend, preset_pass1, preset_pass2 = preset
+    else:
+        preset_pass1 = request.POST.get('pass1_model') or None
+        preset_pass2 = request.POST.get('pass2_model') or None
 
     run_params = {
         'actor_id': request.user.pk,
@@ -66,6 +98,8 @@ def source_document_run_extraction(request, pk: int):
         'extraction_backend': extraction_backend,
         'confidence_threshold': confidence_threshold,
         'mapping_version': 'v1',
+        'pass1_model': preset_pass1,
+        'pass2_model': preset_pass2,
     }
 
     if os.environ.get('RECODE_ASYNC', '0') == '1':
@@ -139,12 +173,14 @@ def extraction_run_detail(request, run_id: int):
         'mapped': run.assertions.filter(mapped_trait_id__gt='').count(),
         'unmapped': run.assertions.filter(mapped_trait_id='').count(),
     }
+    qc_summary = run.qc_summary or {}
 
     context = {
         'run': run,
         'assertions': assertions_qs.order_by('id'),
         'summary': summary,
         'review_status_choices': ExtractedAssertionModel.ReviewStatus.choices,
+        'qc_summary': qc_summary,
         'filters': {
             'trait': trait_filter or '',
             'taxon': taxon_filter or '',

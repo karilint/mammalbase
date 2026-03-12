@@ -1,0 +1,203 @@
+from __future__ import annotations
+
+import hashlib
+import re
+from decimal import Decimal, InvalidOperation
+
+from imports.validation_lib.ets_validation import Ets_validation
+
+SCI_NAME_RE = re.compile(r'\b([A-Z][a-z]+(?:\s+[a-z]{2,}){1,2})\b')
+
+
+def normalize_and_validate_trait_records(pass2, *, run, default_reference: str, default_author_orcid: str):
+    validator = Ets_validation()
+    normalized_records = []
+    top_errors: dict[str, int] = {}
+    dedupe = set()
+    full_text = ((run.extracted_text_package or {}).get('full_text') or '')
+    name_candidates = set(SCI_NAME_RE.findall(full_text))
+
+    metadata = getattr(pass2, 'metadata', None)
+    metadata_citation = _coalesce_reference(getattr(metadata, 'citation', None) or default_reference)
+    metadata_author = (getattr(metadata, 'author', None) or default_author_orcid or '').strip() or default_author_orcid
+
+    for trait_record in pass2.traitRecords:
+        raw = trait_record.model_dump(exclude_none=True)
+        reference_value = metadata_citation
+        scientific_name = _expand_scientific_name(raw.get('verbatimScientificName') or 'Unknown taxon', name_candidates)
+        scientific_name = _normalize_scientific_name_text(scientific_name)
+        taxon_rank = (raw.get('taxonRank') or '').strip() or _infer_taxon_rank(scientific_name)
+        record = {
+            'references': reference_value,
+            'verbatimScientificName': scientific_name,
+            'taxonRank': taxon_rank,
+            'verbatimTraitName': _ensure_trait_name_has_abbr(raw.get('verbatimTraitName') or '', raw.get('measurementRemarks') or ''),
+            'verbatimTraitUnit': raw.get('verbatimTraitUnit') or '',
+            'individualCount': raw.get('individualCount') or 0,
+            'measurementValue_min': raw.get('measurementValue_min') or 0,
+            'measurementValue_max': raw.get('measurementValue_max') or 0,
+            'dispersion': raw.get('dispersion') or 0,
+            'statisticalMethod': raw.get('statisticalMethod') or '',
+            'verbatimTraitValue': raw.get('verbatimTraitValue') or '',
+            'sex': raw.get('sex') or 'nan',
+            'lifeStage': raw.get('lifeStage') or 'nan',
+            'measurementMethod': raw.get('measurementMethod') or 'OpenAI two-pass extraction',
+            'measurementRemarks': raw.get('measurementRemarks') or '',
+            'measurementAccuracy': raw.get('measurementAccuracy') or '',
+            'measurementDeterminedBy': raw.get('measurementDeterminedBy') or 'OpenAI two-pass extraction',
+            'verbatimLocality': raw.get('verbatimLocality') or '',
+            'author': metadata_author,
+            'associatedReferences': _normalize_associated_reference(raw.get('associatedReferences')),
+        }
+        normalize_numeric_fields(record)
+
+        key_input = f"{record['verbatimScientificName']}|{record['verbatimTraitName']}|{record['verbatimTraitValue']}|{record['verbatimTraitUnit']}"
+        key_hash = hashlib.md5(key_input.encode('utf-8')).hexdigest()[:12]
+        if key_hash in dedupe:
+            continue
+        dedupe.add(key_hash)
+
+        page_match = re.search(r'page\s*=\s*(\d+)', record['measurementRemarks'], flags=re.IGNORECASE)
+        page_token = f" page={page_match.group(1)}" if page_match else ''
+        snippet = _strip_orig_abbr((record.get('measurementRemarks') or '')[:300])
+        record['measurementRemarks'] = f"{snippet} candidate_key={key_hash} run_id={run.pk}{page_token}".strip()
+
+        errors = validator.validate(record, validator.rules)
+        record['_qc_errors'] = errors
+        for error in errors:
+            top_errors[error] = top_errors.get(error, 0) + 1
+        normalized_records.append(record)
+
+    qc_summary = {
+        'total_records': len(normalized_records),
+        'records_with_errors': sum(1 for r in normalized_records if r['_qc_errors']),
+        'error_categories': top_errors,
+    }
+    return normalized_records, qc_summary
+
+
+def _coalesce_reference(default_reference: str) -> str:
+    return (default_reference or '').strip()
+
+
+def _expand_scientific_name(name: str, candidates: set[str]) -> str:
+    cleaned = _normalize_scientific_name_text((name or '').strip())
+    if not cleaned:
+        return 'Unknown taxon'
+    if '.' not in cleaned:
+        return cleaned
+    tokens = cleaned.split()
+    if len(tokens) < 2:
+        return cleaned.replace('.', '')
+    initials = [t[0].lower() for t in tokens[:-1]]
+    epithet = tokens[-1].replace('.', '').lower()
+    for candidate in sorted(candidates, key=len, reverse=True):
+        cand_tokens = candidate.split()
+        if len(cand_tokens) < len(tokens):
+            continue
+        if cand_tokens[-1].lower() != epithet:
+            continue
+        if [t[0].lower() for t in cand_tokens[: len(initials)]] == initials:
+            return candidate
+    return _normalize_scientific_name_text(cleaned.replace('.', ''))
+
+
+def _normalize_scientific_name_text(name: str) -> str:
+    if not name:
+        return name
+    cleaned = name.replace('‐', '-').replace('‑', '-').replace('–', '-')
+    cleaned = re.sub(r'(?<=[A-Za-z])\-(?=[A-Za-z])', '', cleaned)
+    return re.sub(r'\s+', ' ', cleaned).strip()
+
+
+def _infer_taxon_rank(scientific_name: str) -> str:
+    tokens = [t for t in (scientific_name or '').split() if t]
+    if len(tokens) >= 3:
+        return 'subspecies'
+    return 'species'
+
+
+def normalize_numeric_fields(record: dict):
+    raw = (record.get('verbatimTraitValue') or '').strip()
+    if not raw:
+        return
+
+    existing_min = record.get('measurementValue_min')
+    existing_max = record.get('measurementValue_max')
+    has_existing_range = existing_min not in (None, '', 0) or existing_max not in (None, '', 0)
+
+    range_match = re.match(r'^\s*(-?\d+(?:\.\d+)?)\s*[\-–]\s*(-?\d+(?:\.\d+)?)', raw)
+    if range_match:
+        first = _to_decimal(range_match.group(1))
+        second = _to_decimal(range_match.group(2))
+        if first is not None and second is not None:
+            record['measurementValue_min'] = float(min(first, second))
+            record['measurementValue_max'] = float(max(first, second))
+            record['statisticalMethod'] = _merge_stat_methods(record.get('statisticalMethod'), 'range')
+            return
+
+    mean_sd = re.match(r'^\s*(-?\d+(?:\.\d+)?)\s*±\s*(-?\d+(?:\.\d+)?)\s*$', raw)
+    if mean_sd:
+        mean = _to_decimal(mean_sd.group(1))
+        sd = _to_decimal(mean_sd.group(2))
+        if mean is not None and sd is not None:
+            if not has_existing_range:
+                record['measurementValue_min'] = float(mean)
+                record['measurementValue_max'] = float(mean)
+            record['dispersion'] = float(sd)
+            record['verbatimTraitValue'] = str(mean)
+            record['statisticalMethod'] = _merge_stat_methods(record.get('statisticalMethod'), 'mean ± SD')
+            return
+
+    number = _to_decimal(raw)
+    if number is not None:
+        value = float(number)
+        if not has_existing_range:
+            record['measurementValue_min'] = value
+            record['measurementValue_max'] = value
+        record['verbatimTraitValue'] = str(value).rstrip('0').rstrip('.') if '.' in str(value) else str(value)
+        record['statisticalMethod'] = _merge_stat_methods(record.get('statisticalMethod'), 'mean')
+
+
+def _to_decimal(value: str):
+    try:
+        return Decimal(value)
+    except (InvalidOperation, TypeError):
+        return None
+
+
+def _normalize_associated_reference(value: str | None) -> str:
+    candidate = (value or '').strip()
+    if not candidate:
+        return ''
+    if re.search(r'([1-2][0-9]{3})', candidate):
+        return candidate
+    if candidate.lower() == 'original study':
+        return 'Original study'
+    return ''
+
+
+def _merge_stat_methods(existing: str | None, new_method: str) -> str:
+    parts = [p.strip() for p in (existing or '').split(',') if p.strip()]
+    if new_method not in parts:
+        parts.append(new_method)
+    return ', '.join(parts)
+
+
+def _ensure_trait_name_has_abbr(trait_name: str, measurement_remarks: str) -> str:
+    name = (trait_name or '').strip()
+    remarks = measurement_remarks or ''
+    match = re.search(r'orig_abbr\s*=\s*([A-Za-z0-9/\-]+)', remarks, flags=re.IGNORECASE)
+    if not match:
+        return name
+    abbr = match.group(1).strip()
+    if not name:
+        return abbr
+    if f'({abbr})' in name:
+        return name
+    return f'{name} ({abbr})'
+
+
+def _strip_orig_abbr(text: str) -> str:
+    cleaned = re.sub(r'\s*orig_abbr\s*=\s*[A-Za-z0-9/\-]+\s*', ' ', text or '', flags=re.IGNORECASE)
+    return re.sub(r'\s+', ' ', cleaned).strip()

@@ -15,8 +15,31 @@
     {% csrf_token %}
     <label for="extraction_backend"><strong>Extraction backend</strong></label>
     <select id="extraction_backend" name="extraction_backend" class="w3-select w3-border w3-margin-bottom">
-      <option value="baseline" selected>baseline</option>
+      {% if openai_enabled %}
+      <option value="openai_two_pass" selected>OpenAI two-pass (PASS1 evidence + PASS2 ETS, custom model selection below)</option>
+      <option value="openai_two_pass_gpt_5_4">OpenAI two-pass preset (GPT-5.4 for PASS1+PASS2)</option>
+      <option value="openai_two_pass_gpt_5_2">OpenAI two-pass preset (GPT-5.2 for PASS1+PASS2)</option>
+      <option value="openai_two_pass_gpt_4_1">OpenAI two-pass preset (GPT-4.1 for PASS1+PASS2)</option>
+      {% endif %}
+      {% if claude_enabled %}
+      <option value="claude_two_pass">Claude two-pass (placeholder integration)</option>
+      {% endif %}
+      <option value="baseline" {% if not openai_enabled %}selected{% endif %}>baseline (legacy)</option>
       <option value="llm">llm (stub)</option>
+    </select>
+
+    <label for="pass1_model"><strong>PASS1 model</strong></label>
+    <select id="pass1_model" name="pass1_model" class="w3-select w3-border w3-margin-bottom">
+      {% for model_name in openai_model_choices %}
+      <option value="{{ model_name }}" {% if model_name == default_openai_pass1_model %}selected{% endif %}>{{ model_name }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="pass2_model"><strong>PASS2 model</strong></label>
+    <select id="pass2_model" name="pass2_model" class="w3-select w3-border w3-margin-bottom">
+      {% for model_name in openai_model_choices %}
+      <option value="{{ model_name }}" {% if model_name == default_openai_pass2_model %}selected{% endif %}>{{ model_name }}</option>
+      {% endfor %}
     </select>
 
     <label for="confidence_threshold"><strong>Confidence threshold</strong></label>
