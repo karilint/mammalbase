@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from .forms import SourceDocumentUploadForm
 from .models import ExtractedAssertionModel, SourceDocument, SourceExtractionRun
 from .services import create_extraction_run
+from .services.pdf_text import PdfToTextService
 from .services.review import (
     apply_assertion_review,
     bulk_approve_above_threshold,
@@ -32,6 +33,15 @@ def source_document_upload(request):
             document = form.save(commit=False)
             document.uploader = request.user
             document.save()
+            try:
+                package = PdfToTextService().extract(document.pdf_file.path)
+                file_stat = os.stat(document.pdf_file.path)
+                package['_pdf_signature'] = f'{file_stat.st_size}:{file_stat.st_mtime_ns}'
+                document.extracted_text_package = package
+                document.save(update_fields=['extracted_text_package'])
+            except Exception:
+                # extraction can still be done lazily on first run
+                pass
             messages.success(request, 'PDF source uploaded successfully.')
             return redirect('recode_source_document_detail', pk=document.pk)
     else:

@@ -314,14 +314,15 @@ Trait vocabulary is built dynamically from MammalBase:
 - A small bootstrap dictionary is used only if DB-derived abbreviations are sparse
 
 ### Pipeline and stored artifacts
-1. `extracted_text_package` is always stored from `PdfToTextService`
-2. PASS1 evidence JSON is persisted to `pass1_evidence_package`
-3. PASS2 trait record JSON is persisted to `pass2_structured_package` and includes metadata keys:
+1. `SourceDocument.extracted_text_package` is created once (on upload when possible, otherwise lazily on first run) and reused unless the PDF file signature changes.
+2. `SourceExtractionRun.extracted_text_package` stores a run-level copy for audit reproducibility.
+3. PASS1 evidence JSON is persisted to `pass1_evidence_package`
+4. PASS2 trait record JSON is persisted to `pass2_structured_package` and includes metadata keys:
    - `metadata.citation` (from `SourceDocument.citation`)
    - `metadata.author` (ORCID from uploader/actor social account `orcid-identifier.path`, fallback to default ORCID)
-4. Deterministic QC + normalization runs before import and stores `qc_summary`
-5. Candidate rows are stored in `ExtractedAssertionModel` with pending review
-6. Final source-table persistence happens only from approved assertions using ETS importer flow
+5. Deterministic QC + normalization runs before import and stores `qc_summary`
+6. Candidate rows are stored in `ExtractedAssertionModel` with pending review
+7. Final source-table persistence happens only from approved assertions using ETS importer flow
 - PASS1 evidence is compacted before PASS2: non-morphology analytical content (PCA/factor loadings/eigenvalues and genetic-distance/phylogenetic snippets like K2P/Cyt b/COI) is filtered out; per-bucket item count and item length are capped to reduce token usage and 429 TPM errors.
 - QC enforces canonical article-level `references` (authors, year, title) when model output contains non-citation labels (e.g., `PAGE 5: Table 1`), while `associatedReferences` is kept for trait-level support (`Original study` fallback).
 

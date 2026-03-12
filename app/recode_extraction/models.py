@@ -9,6 +9,7 @@ class SourceDocument(models.Model):
     year = models.PositiveIntegerField(null=True, blank=True)
     citation = models.CharField(max_length=1000, blank=True)
     doi = models.CharField(max_length=100, blank=True)
+    extracted_text_package = models.JSONField(default=dict, blank=True)
     uploader = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

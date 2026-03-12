@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from pathlib import Path
 import time
 from types import SimpleNamespace
 from typing import Any
@@ -63,7 +64,7 @@ class RecodePipelineRunner:
         try:
             self._update_stage(run, 'pdf_text_extraction', 20, 'Extracting text from PDF.')
             t0 = time.monotonic()
-            package = PdfToTextService().extract(context.pdf_path)
+            package = self._get_or_create_source_text_package(source, context.pdf_path)
             perf['pdf_text_extraction_s'] = round(time.monotonic() - t0, 3)
             run.extracted_text_package = package
 
@@ -94,6 +95,22 @@ class RecodePipelineRunner:
             run.save()
 
         return run
+
+    def _get_or_create_source_text_package(self, source: SourceDocument, pdf_path: str) -> dict[str, Any]:
+        expected_signature = self._pdf_signature(pdf_path)
+        existing = source.extracted_text_package or {}
+        if existing and existing.get('_pdf_signature') == expected_signature:
+            return existing
+
+        package = PdfToTextService().extract(pdf_path)
+        package['_pdf_signature'] = expected_signature
+        source.extracted_text_package = package
+        source.save(update_fields=['extracted_text_package'])
+        return package
+
+    def _pdf_signature(self, pdf_path: str) -> str:
+        stat = Path(pdf_path).stat()
+        return f'{stat.st_size}:{stat.st_mtime_ns}'
 
     def _run_openai_two_pass(self, run: SourceExtractionRun, source: SourceDocument, package: dict, *, pass1_model: str, pass2_model: str):
         if not settings.RECODE_ENABLE_OPENAI_BACKEND:
