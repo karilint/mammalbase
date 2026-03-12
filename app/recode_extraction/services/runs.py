@@ -11,6 +11,8 @@ def create_extraction_run(
     extraction_backend: str = 'baseline',
     confidence_threshold: float = 0.0,
     mapping_version: str = 'v1',
+    pass1_model: str | None = None,
+    pass2_model: str | None = None,
 ) -> SourceExtractionRun:
     """Compatibility wrapper around the orchestrator."""
     return RecodePipelineRunner().run(
@@ -21,5 +23,7 @@ def create_extraction_run(
             'extraction_backend': extraction_backend,
             'confidence_threshold': confidence_threshold,
             'mapping_version': mapping_version,
+            'pass1_model': pass1_model,
+            'pass2_model': pass2_model,
         },
     )

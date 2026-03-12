@@ -275,12 +275,37 @@ MammalBase now supports a production two-pass ChatGPT extraction pipeline aligne
 - `RECODE_ENABLE_OPENAI_BACKEND` (default `False`)
 - `OPENAI_API_KEY`
 - `RECODE_OPENAI_MODEL_PASS1` / `RECODE_OPENAI_MODEL_PASS2` (defaults: `gpt-5-mini`)
+  - supported UI presets include `gpt-5.4`, `gpt-5.2`, `gpt-5-mini`, and `gpt-4.1`
 - `RECODE_OPENAI_TIMEOUT_SECONDS`
 - `RECODE_OPENAI_MAX_RETRIES`
 - `RECODE_OPENAI_MAX_PAGE_CHARS`
 - `RECODE_OPENAI_PASS1_MAX_ITEMS_PER_BUCKET` (default 120)
 - `RECODE_OPENAI_PASS1_MAX_ITEM_CHARS` (default 2500)
 - `RECODE_OPENAI_PASS1_MAX_TABLE_ITEM_CHARS` (default 12000)
+
+### Backend/model selection in source UI
+At `recode/sources/<id>/`, the extraction form now includes:
+- OpenAI preset backends:
+  - GPT-5.4 preset
+  - GPT-5.2 preset
+  - GPT-4.1 preset
+- OpenAI custom model dropdowns for PASS1 and PASS2
+- Claude two-pass placeholder backend (for future adapter integration)
+
+When OpenAI custom mode is selected, `pass1_model` and `pass2_model` are stored
+in run parameters and used by the orchestrator per run.
+
+### Claude placeholder settings
+- `RECODE_ENABLE_CLAUDE_BACKEND`
+- `RECODE_CLAUDE_MODEL_PASS1`
+- `RECODE_CLAUDE_MODEL_PASS2`
+- `RECODE_CLAUDE_TIMEOUT_SECONDS`
+
+Prompt placeholders for future Claude adapter integration live in:
+- `recode_extraction/services/claude_two_pass_prompts.py`
+
+Current behavior: selecting `claude_two_pass` raises a clear "not implemented"
+pipeline error until a Claude API adapter is added.
 
 ### Vocabulary construction
 Trait vocabulary is built dynamically from MammalBase:

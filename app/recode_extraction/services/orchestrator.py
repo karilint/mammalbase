@@ -34,6 +34,8 @@ class RecodePipelineRunner:
         extraction_backend = run_params.get('extraction_backend', 'baseline')
         confidence_threshold = float(run_params.get('confidence_threshold', 0.0))
         mapping_version = run_params.get('mapping_version', DEFAULT_MAPPING_VERSION)
+        pass1_model = run_params.get('pass1_model') or settings.RECODE_OPENAI_MODEL_PASS1
+        pass2_model = run_params.get('pass2_model') or settings.RECODE_OPENAI_MODEL_PASS2
 
         context = PipelineContext(upload_id=str(source.pk), pdf_path=source.pdf_file.path, actor_id=actor_id, metadata={'source_document_id': source.pk, 'dry_run': dry_run})
 
@@ -50,6 +52,8 @@ class RecodePipelineRunner:
                 'extraction_backend': extraction_backend,
                 'confidence_threshold': confidence_threshold,
                 'mapping_version': mapping_version,
+                'pass1_model': pass1_model,
+                'pass2_model': pass2_model,
             },
             logs='Run initialized.',
         )
@@ -65,8 +69,10 @@ class RecodePipelineRunner:
 
             t0 = time.monotonic()
             if extraction_backend == 'openai_two_pass':
-                self._run_openai_two_pass(run, source, package)
+                self._run_openai_two_pass(run, source, package, pass1_model=pass1_model, pass2_model=pass2_model)
                 perf['openai_two_pass_pipeline_s'] = round(time.monotonic() - t0, 3)
+            elif extraction_backend == 'claude_two_pass':
+                raise ValueError('Claude backend placeholder is configured in UI/settings but API adapter is not implemented yet.')
             else:
                 self._run_legacy_pipeline(run, source, package, extraction_backend, confidence_threshold, dry_run)
                 perf['legacy_pipeline_s'] = round(time.monotonic() - t0, 3)
@@ -89,7 +95,7 @@ class RecodePipelineRunner:
 
         return run
 
-    def _run_openai_two_pass(self, run: SourceExtractionRun, source: SourceDocument, package: dict):
+    def _run_openai_two_pass(self, run: SourceExtractionRun, source: SourceDocument, package: dict, *, pass1_model: str, pass2_model: str):
         if not settings.RECODE_ENABLE_OPENAI_BACKEND:
             raise ValueError('OpenAI extraction backend is disabled by RECODE_ENABLE_OPENAI_BACKEND=0.')
 
@@ -112,7 +118,7 @@ class RecodePipelineRunner:
                 pass1_page_calls += 1
                 evidence = client.extract_pass1(
                     page_text,
-                    model=settings.RECODE_OPENAI_MODEL_PASS1,
+                    model=pass1_model,
                     vocab=vocab,
                     timeout_s=settings.RECODE_OPENAI_TIMEOUT_SECONDS,
                     page_number=page_number,
@@ -155,7 +161,7 @@ class RecodePipelineRunner:
         t0 = time.monotonic()
         pass2 = client.extract_pass2(
             compacted_evidence,
-            model=settings.RECODE_OPENAI_MODEL_PASS2,
+            model=pass2_model,
             vocab=vocab,
             timeout_s=settings.RECODE_OPENAI_TIMEOUT_SECONDS,
             run_id=run.pk,

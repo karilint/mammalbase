@@ -47,7 +47,15 @@ def source_document_detail(request, pk: int):
     return render(
         request,
         'recode_extraction/source_document_detail.html',
-        {'document': document, 'runs': runs, 'openai_enabled': settings.RECODE_ENABLE_OPENAI_BACKEND},
+        {
+            'document': document,
+            'runs': runs,
+            'openai_enabled': settings.RECODE_ENABLE_OPENAI_BACKEND,
+            'claude_enabled': settings.RECODE_ENABLE_CLAUDE_BACKEND,
+            'openai_model_choices': getattr(settings, 'RECODE_OPENAI_MODEL_CHOICES', ()),
+            'default_openai_pass1_model': settings.RECODE_OPENAI_MODEL_PASS1,
+            'default_openai_pass2_model': settings.RECODE_OPENAI_MODEL_PASS2,
+        },
     )
 
 
@@ -62,12 +70,26 @@ def source_document_run_extraction(request, pk: int):
     extraction_backend = request.POST.get('extraction_backend', default_backend)
     confidence_threshold = float(request.POST.get('confidence_threshold', '0') or '0')
 
+    model_presets = {
+        'openai_two_pass_gpt_5_4': ('openai_two_pass', 'gpt-5.4', 'gpt-5.4'),
+        'openai_two_pass_gpt_5_2': ('openai_two_pass', 'gpt-5.2', 'gpt-5.2'),
+        'openai_two_pass_gpt_4_1': ('openai_two_pass', 'gpt-4.1', 'gpt-4.1'),
+    }
+    preset = model_presets.get(extraction_backend)
+    if preset:
+        extraction_backend, preset_pass1, preset_pass2 = preset
+    else:
+        preset_pass1 = request.POST.get('pass1_model') or None
+        preset_pass2 = request.POST.get('pass2_model') or None
+
     run_params = {
         'actor_id': request.user.pk,
         'dry_run': dry_run,
         'extraction_backend': extraction_backend,
         'confidence_threshold': confidence_threshold,
         'mapping_version': 'v1',
+        'pass1_model': preset_pass1,
+        'pass2_model': preset_pass2,
     }
 
     if os.environ.get('RECODE_ASYNC', '0') == '1':
