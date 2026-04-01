@@ -30,6 +30,7 @@ urlpatterns = [
     path('', include('urls.unsorted')),
     path('import/', include('urls.imports')),
     path('exports/', include('urls.exports')),
+    path('recode/', include('urls.recode_extraction')),
     path('matchtools/', include('urls.matchtools')),
     path('tgn/', include('tgn.urls')),
     path('wdpa/', include('wdpa.urls')),

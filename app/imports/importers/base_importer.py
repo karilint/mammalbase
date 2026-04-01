@@ -1,7 +1,6 @@
 import re
 import json
 from datetime import timedelta
-import logging
 import requests
 import pandas as pd
 from django.db import transaction
@@ -258,7 +257,7 @@ class BaseImporter:
         """
         Return SourceLocation object for the given location or create a new one
         """
-        if location != location or location == 'nan' or location == "":
+        if location is None or location != location or location == 'nan' or location == "":
             return None
 
         try:
@@ -270,7 +269,10 @@ class BaseImporter:
             return source_location[0]
         new_source_location = SourceLocation(
             name=location, reference=source_reference, created_by=author)
-        new_source_location.save()
+        try:
+            new_source_location.save()
+        except Exception as error:
+            raise Exception(str(error)) from error
         return new_source_location
 
     def get_or_create_time_period(self, time_period: str, source_reference: SourceReference,

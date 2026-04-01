@@ -1,0 +1,12 @@
+{% extends 'mb/base_generic.html' %}
+{% block title %}<title>Upload RECODE Source</title>{% endblock %}
+{% block content %}
+<section class="w3-container w3-threequarter">
+  <header><h1>Upload RECODE PDF Source</h1></header>
+  <form method="post" enctype="multipart/form-data" class="w3-container w3-card-4 w3-padding">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="w3-button w3-theme" type="submit">Upload</button>
+  </form>
+</section>
+{% endblock %}
