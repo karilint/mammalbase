@@ -1,3 +1,4 @@
+import ast
 import json
 
 from django.contrib import messages
@@ -231,8 +232,10 @@ def match_location(request):
     source_location_id = request.POST.get('sourceLocation')
     provider = request.POST.get('provider', 'geonames')
 
-    location_data = location_data.replace("'", '"')
-    location_data = json.loads(location_data)
+    try:
+        location_data = json.loads(location_data)
+    except json.JSONDecodeError:
+        location_data = ast.literal_eval(location_data)
 
     if provider == 'tgn':
         locations = add_tgn_location(location_data, source_location_id, user=request.user)
@@ -254,3 +257,4 @@ def match_location(request):
         'masterLocation': matched_location,
         'hierarchy_locations': hierarchy_locations
     })
+
