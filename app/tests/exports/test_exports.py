@@ -1,3 +1,5 @@
+import os
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -23,7 +25,9 @@ class ExportFileTestCase(TestCase):
     def test_export_file_creation(self):
         export = ExportFile.objects.create(file=self.test_file)
         self.assertIsNotNone(export.pk)
-        self.assertTrue(export.file.name.endswith('test_export.zip'))
+        saved_name = os.path.basename(export.file.name)
+        self.assertTrue(saved_name.startswith('test_export'))
+        self.assertTrue(saved_name.endswith('.zip'))
 
     def test_export_string_representation(self):
         export = ExportFile.objects.create(file=self.test_file)

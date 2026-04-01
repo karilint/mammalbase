@@ -47,6 +47,17 @@ jobs:
       run: |
         mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'test_user'@'%';" -u${{ env.DB_USER }} -p${{ env.DB_PASS }} -h 127.0.0.1 -P 3306
         mysql -e "ALTER TABLE test_test_db.socialaccount_socialapp DROP COLUMN IF EXISTS provider_id;" -u${{ env.DB_USER }} -p${{ env.DB_PASS }} -h 127.0.0.1 -P 3306 || true
+    - name: Run RECODE eval regression tests
+      env:
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        DB_NAME: test_db
+        DB_USER: test_user
+        DB_PASS: password
+        ITIS_CACHE: ./itis_cache
+      working-directory: ./app
+      run: |
+        python manage.py test tests.recode_extraction.test_recode_tsv_reader tests.recode_extraction.test_recode_eval -v 2
     - name: Run Tests
       env:
         DB_HOST: 127.0.0.1

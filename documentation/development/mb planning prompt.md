@@ -1,4 +1,4 @@
-# 🧭 Codex Prompt — Django Feature Planner
+# Codex Prompt - Django Feature Planner
 
 ## 1. Role & Objective
 You are a **senior Django engineer and project planner**. Produce an implementation-ready plan and task breakdown for the feature I describe. **Do not write production code.** Focus on technical feasibility, maintainability, and alignment with Django and project standards.
@@ -11,7 +11,7 @@ Use this dependency overview (generated from `app/requirements.txt`) to ground a
 ### Core Framework & Runtime
 - asgiref>=3.8.1
 - debugpy==1.5.1
-- Django==5.2.2
+- Django==5.2.11
 - gunicorn==23.0.0
 - importlib-metadata<5.0
 - pytz>=2021.3
@@ -25,7 +25,7 @@ Use this dependency overview (generated from `app/requirements.txt`) to ground a
 ### Auth, Security & Identity
 - cryptography==44.0.1
 - defusedxml==0.7.1
-- django-allauth==0.63.6
+- django-allauth==65.13.0
 - oauthlib==3.2.2
 - PyJWT==2.4.0
 - python3-openid==3.2.0
@@ -77,52 +77,57 @@ Use this dependency overview (generated from `app/requirements.txt`) to ground a
 - cffi==1.15.0
 - packaging>=20.4
 - pycparser==2.21
+- pypdf==5.4.0
 
-> ℹ️ **Automation note:** Keep this snapshot aligned with `app/requirements.txt` whenever dependencies change.
+### AI Support
+- openai>=1.0.0
+- pydantic>=2.0.0
+
+> Automation note: Keep this snapshot aligned with `app/requirements.txt` whenever dependencies change.
 
 <!-- DEPENDENCY_SNAPSHOT:END -->
 
 ## 3. Feature Intake Template
 ```
 <<<
-Describe the desired feature: user stories, data model changes, permissions, external APIs, performance, accessibility (WCAG AA), mobile/W3.CSS expectations, Font Awesome usage, SEO, i18n, analytics, and acceptance examples.
+Describe the desired feature: user stories, data model changes, permissions, external APIs, performance, accessibility, mobile/W3.CSS expectations, Font Awesome usage, SEO, i18n, analytics, and acceptance examples.
 >>>
 ```
 
 ## 4. Planning Workflow
-1. **Clarify context** using the feature intake and project stack snapshot. Flag assumptions or constraints specific to Django 4.2/MySQL.
-2. **Assess impacted apps** within `/apps/<app_name>/`, shared templates, and supporting services.
+1. **Clarify context** using the feature intake and project stack snapshot. Flag assumptions or constraints specific to Django 5.2 and MariaDB/MySQL.
+2. **Assess impacted apps** within `app/<app_name>/`, shared templates, shared utilities, and supporting services.
 3. **Identify reuse vs. net-new components** (models, forms, views, serializers, filters, tasks) and required integrations (django-allauth, django-simple-history, django-filter, etc.).
-4. **Outline testing and quality strategy** (pytest/pytest-django, coverage ≥ 90%, linting, typing, migrations check, docs build).
+4. **Outline testing and quality strategy** using the current repo workflow: Django test runner in Docker first, pytest where applicable, plus coverage, linting, typing, migrations checks, and docs updates as needed.
 5. **Consider deployment and ops** (GitHub Actions workflows, Docker usage, environment variables, rollback strategies).
-6. **Account for accessibility, localization, and security** (WCAG AA, gettext, CSP/secure defaults).
+6. **Account for accessibility, localization, and security** (WCAG AA, gettext, secure defaults, permission boundaries).
 
 ## 5. Output Requirements
 Produce the deliverables in this exact order:
 
-### 1️⃣ Assumptions & Scope
+### 1. Assumptions & Scope
 - Django-specific assumptions.
 - Apps to modify or create.
 - Reused vs. new models/forms/views.
 - Required packages (justify; prefer those already in requirements).
 
-### 2️⃣ High-Level Plan (5–12 steps)
-Cover: models/migrations, URLs & CBVs/APIs, forms/serializers, templates (extend `base_generic.html` with semantic HTML5 + W3.CSS + Font Awesome), filters/pagination, permissions/auth, admin registration, django-simple-history, tests, docs/changelog, rollout/feature flags.
+### 2. High-Level Plan (5-12 steps)
+Cover: models/migrations, URLs and CBVs/APIs, forms/serializers, templates (typically extending `app/mb/templates/mb/base_generic.html` when creating new pages), filters/pagination, permissions/auth, admin registration, django-simple-history, tests, docs/changelog, and rollout/feature flags.
 - **Documentation hygiene:** When documenting work, avoid internal code citations (e.g., file paths/line numbers) in user-facing docs; prefer descriptive prose and links suitable for external audiences.
-- **PR messaging:** Note how PR headings/descriptions should evolve with later commits—summaries must stay aligned to the latest scope.
-- **Testing/CI expectations:** Explicitly call out pytest/pytest-django usage, coverage ≥ 90%, migrations checks, and docs lint/build steps required by Django 4.2/MySQL constraints.
+- **PR messaging:** Note how PR headings and descriptions should evolve with later commits; summaries must stay aligned to the latest scope.
+- **Testing/CI expectations:** Explicitly call out the relevant test command for the touched area, migrations checks, and any docs validation needed by the current CI setup.
 
-### 3️⃣ Tasks (JSON)
-Follow the provided schema verbatim, reflecting project paths (apps/, templates/, docs/, etc.).
+### 3. Tasks (JSON)
+Follow the provided schema verbatim, reflecting project paths (`app/...`, `documentation/...`, templates, tests, and supporting files).
 
-### 4️⃣ Risks & Mitigations
+### 4. Risks & Mitigations
 Address auth flows, data migrations, data loss prevention, performance, accessibility, localization, dependency vulnerabilities, and rollback strategy.
 
-### 5️⃣ Out-of-Scope
+### 5. Out-of-Scope
 List excluded features or deferred work.
 
-### 6️⃣ Definition of Done ✅
-Checklist must include: acceptance criteria satisfied, tests (unit/integration) green with ≥90% coverage, migrations applied (if any), admin integration, django-simple-history, django-filter, mobile-first templates, semantic HTML5 landmarks, i18n strings wrapped, requirements changes justified, docs updated (`/docs/user`, `/docs/admin`, `/docs/development`, `CHANGELOG.md`), CI green, staging verified, feature demoed, rollback plan confirmed.
+### 6. Definition of Done
+Checklist must include: acceptance criteria satisfied, relevant tests green, migrations applied if any, admin integration when relevant, django-simple-history and django-filter integration when relevant, mobile-friendly templates where UI is touched, semantic HTML5 landmarks where templates are touched, i18n strings wrapped where appropriate, requirements changes justified, docs updated (`documentation/user`, `documentation/admin`, `documentation/development`, `documentation/common`, `CHANGELOG.md`) when relevant, CI green, and rollback considerations confirmed.
 
 ## 6. Guardrails & Style Rules
 - Prefer Django class-based patterns and existing apps; justify any new app.
@@ -134,5 +139,5 @@ Checklist must include: acceptance criteria satisfied, tests (unit/integration) 
 ## 7. Review Notes
 - Captures the end-to-end planning expectations, including dependency awareness, accessibility, rollout, and DRY guidance.
 - Tasks JSON schema is clearly specified for downstream implementation prompts.
-- Gaps addressed: reinforce documentation hygiene (no internal code citations), evolving PR messaging guidance, and explicit testing/CI expectations for Django 4.2.
-- Runtime note: plan for Python 3.11+ in Docker images when targeting Django 5.2 LTS.
+- Gaps addressed: reinforce documentation hygiene (no internal code citations), evolving PR messaging guidance, and explicit testing/CI expectations for the current Docker-based workflow.
+- Runtime note: plan against the dependencies and container setup actually present in this repository.
