@@ -54,7 +54,7 @@ def normalize_and_validate_trait_records(pass2, *, run, default_reference: str, 
         normalize_numeric_fields(record)
 
         key_input = f"{record['verbatimScientificName']}|{record['verbatimTraitName']}|{record['verbatimTraitValue']}|{record['verbatimTraitUnit']}"
-        key_hash = hashlib.md5(key_input.encode('utf-8')).hexdigest()[:12]
+        key_hash = hashlib.sha256(key_input.encode('utf-8')).hexdigest()[:12]
         if key_hash in dedupe:
             continue
         dedupe.add(key_hash)
