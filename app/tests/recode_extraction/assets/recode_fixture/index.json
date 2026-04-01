@@ -1,0 +1,18 @@
+[
+  {
+    "doc_id": "DOC100",
+    "focus_taxon": "spider",
+    "taxon_group": "araneae",
+    "annotator": null,
+    "tsv_path": "unpacked/recode/araneae/all/spider_DOC100.tsv",
+    "metadata": {"title": "Spider Study", "year": "2024"}
+  },
+  {
+    "doc_id": "DOC200",
+    "focus_taxon": "beetle",
+    "taxon_group": "insecta",
+    "annotator": "annotator_anna",
+    "tsv_path": "unpacked/recode/insecta/annotator_anna/beetle_DOC200.tsv",
+    "metadata": {"title": "Beetle Study", "year": "2021"}
+  }
+]
