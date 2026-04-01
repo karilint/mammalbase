@@ -18,15 +18,17 @@ def normalize_and_validate_trait_records(pass2, *, run, default_reference: str, 
     name_candidates = set(SCI_NAME_RE.findall(full_text))
 
     metadata = getattr(pass2, 'metadata', None)
-    metadata_citation = _coalesce_reference(getattr(metadata, 'citation', None) or default_reference)
-    metadata_author = (getattr(metadata, 'author', None) or default_author_orcid or '').strip() or default_author_orcid
+    metadata_citation = _coalesce_reference(_safe_text_attr(metadata, 'citation') or default_reference)
+    metadata_author = _safe_text_attr(metadata, 'author') or default_author_orcid
 
     for trait_record in pass2.traitRecords:
         raw = trait_record.model_dump(exclude_none=True)
         reference_value = metadata_citation
         scientific_name = _expand_scientific_name(raw.get('verbatimScientificName') or 'Unknown taxon', name_candidates)
         scientific_name = _normalize_scientific_name_text(scientific_name)
-        taxon_rank = (raw.get('taxonRank') or '').strip() or _infer_taxon_rank(scientific_name)
+        inferred_taxon_rank = _infer_taxon_rank(scientific_name)
+        raw_taxon_rank = (raw.get('taxonRank') or '').strip()
+        taxon_rank = inferred_taxon_rank if inferred_taxon_rank == 'subspecies' else (raw_taxon_rank or inferred_taxon_rank)
         record = {
             'references': reference_value,
             'verbatimScientificName': scientific_name,
@@ -201,3 +203,10 @@ def _ensure_trait_name_has_abbr(trait_name: str, measurement_remarks: str) -> st
 def _strip_orig_abbr(text: str) -> str:
     cleaned = re.sub(r'\s*orig_abbr\s*=\s*[A-Za-z0-9/\-]+\s*', ' ', text or '', flags=re.IGNORECASE)
     return re.sub(r'\s+', ' ', cleaned).strip()
+
+
+def _safe_text_attr(obj, attr_name: str) -> str:
+    if obj is None:
+        return ''
+    value = getattr(obj, attr_name, '')
+    return value.strip() if isinstance(value, str) else ''

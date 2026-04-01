@@ -158,6 +158,7 @@ class QcReviewTests(TestCase):
             'associatedReferences': 'Ref',
         }
         assertion.save(update_fields=['review_status', 'ets_payload'])
+        map_single_mock.reset_mock()
 
         response = self.client.post(reverse('recode_extraction_run_detail', kwargs={'run_id': run.pk}), data={'action': 'persist_approved'})
         self.assertEqual(response.status_code, 302)
@@ -165,3 +166,4 @@ class QcReviewTests(TestCase):
         self.assertTrue(assertion.ets_persisted)
         self.assertEqual(import_row_mock.call_count, 1)
         map_single_mock.assert_not_called()
+
