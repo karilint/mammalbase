@@ -185,10 +185,12 @@ class RecodePipelineRunner:
             citation=citation_value,
             author_orcid=author_orcid_value,
         )
-        if not pass2.metadata.citation:
-            pass2.metadata.citation = citation_value
-        if not pass2.metadata.author:
-            pass2.metadata.author = author_orcid_value
+        metadata = getattr(pass2, 'metadata', None)
+        if metadata is not None:
+            if not _safe_text_attr(metadata, 'citation'):
+                metadata.citation = citation_value
+            if not _safe_text_attr(metadata, 'author'):
+                metadata.author = author_orcid_value
         fallback_records = extract_trait_records_from_measurement_tables(
             compacted_evidence.get('measurement_tables', []),
             vocab.abbr_dict,
@@ -340,8 +342,11 @@ class RecodePipelineRunner:
                 errors = validator.validate(record, validator.rules)
                 if errors:
                     raise ValueError(f'ETS validation failed: {errors}')
-                importer.importRow(SimpleNamespace(**record))
+                self._persist_single_ets_record(importer, record)
             run.assertions.filter(mapped_trait_id__gt='').update(ets_persisted=True)
+
+    def _persist_single_ets_record(self, importer: EtsImporter, record: dict[str, Any]):
+        importer.importRow(SimpleNamespace(**record))
 
     def _build_default_reference(self, source: SourceDocument) -> str:
         return (source.citation or '').strip() or source.build_citation()
@@ -369,8 +374,16 @@ class RecodePipelineRunner:
         return DEFAULT_ORCID
 
 
+def _safe_text_attr(obj: Any, attr_name: str) -> str:
+    if obj is None:
+        return ''
+    value = getattr(obj, attr_name, '')
+    return value.strip() if isinstance(value, str) else ''
+
+
 def _extract_page_number(text: str):
     import re
 
     match = re.search(r'page\s*=\s*(\d+)', text or '', flags=re.IGNORECASE)
     return int(match.group(1)) if match else None
+

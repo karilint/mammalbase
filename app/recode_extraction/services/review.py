@@ -1,4 +1,5 @@
 import csv
+import re
 from io import StringIO
 from types import SimpleNamespace
 
@@ -9,7 +10,13 @@ from imports.importers.ets_importer import EtsImporter
 from imports.validation_lib.ets_validation import Ets_validation
 from recode_extraction.mappers.ets import EtsMapper
 from recode_extraction.models import ExtractedAssertionModel, SourceExtractionRun
-from recode_extraction.services.qc import normalize_numeric_fields
+from recode_extraction.services.qc import (
+    _coalesce_reference,
+    _infer_taxon_rank,
+    _normalize_associated_reference,
+    _normalize_scientific_name_text,
+    normalize_numeric_fields,
+)
 
 DEFAULT_ORCID = '0000-0000-0000-0000'
 
@@ -55,12 +62,20 @@ def persist_approved_assertions_to_ets(run: SourceExtractionRun):
 
     with transaction.atomic():
         for assertion in approved:
-            if assertion.ets_payload:
-                record = dict(assertion.ets_payload)
+            stored_payload = assertion.ets_payload or (
+                ExtractedAssertionModel.objects
+                .filter(pk=assertion.pk)
+                .values_list('ets_payload', flat=True)
+                .first()
+                or {}
+            )
+            if stored_payload:
+                record = dict(stored_payload)
                 if assertion.edited_value:
                     record['verbatimTraitValue'] = assertion.edited_value
                 if assertion.edited_unit:
                     record['verbatimTraitUnit'] = assertion.edited_unit
+                _normalize_prefilled_record(record, run)
                 normalize_numeric_fields(record)
             else:
                 value = assertion.edited_value or assertion.value_raw
@@ -110,3 +125,25 @@ def export_assertions_csv(run: SourceExtractionRun, queryset=None) -> str:
 
 def _build_default_reference(run: SourceExtractionRun) -> str:
     return (run.source.citation or '').strip() or run.source.build_citation()
+
+
+def _normalize_prefilled_record(record: dict, run: SourceExtractionRun):
+    default_reference = _build_default_reference(run)
+    scientific_name = _normalize_scientific_name_text(record.get('verbatimScientificName') or '')
+    record['verbatimScientificName'] = scientific_name
+    inferred_taxon_rank = _infer_taxon_rank(scientific_name)
+    raw_taxon_rank = (record.get('taxonRank') or '').strip()
+    record['taxonRank'] = inferred_taxon_rank if inferred_taxon_rank == 'subspecies' else (raw_taxon_rank or inferred_taxon_rank)
+
+    reference_value = _coalesce_reference(record.get('references') or default_reference)
+    if not re.search(r'([1-2][0-9]{3})', reference_value):
+        reference_value = default_reference
+    record['references'] = reference_value
+
+    author = (record.get('author') or DEFAULT_ORCID)
+    if not isinstance(author, str) or not author.strip():
+        author = DEFAULT_ORCID
+    record['author'] = author.strip()
+
+    record['associatedReferences'] = _normalize_associated_reference(record.get('associatedReferences'))
+
