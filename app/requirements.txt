@@ -57,7 +57,7 @@ celery-progress==0.1.2
 django-celery-results==2.4.0
 watchfiles==0.16.1
 importlib-metadata<5.0
-pypdf==5.4.0
+pypdf==6.10.2
 
 openai>=1.0.0
 pydantic>=2.0.0
