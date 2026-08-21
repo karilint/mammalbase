@@ -177,6 +177,10 @@ TEMPLATES = [
 # Missing columns (e.g., socialaccount_socialapp.provider_id) indicate skipped migrations.
 # https://django-allauth.readthedocs.io/en/latest/installation.html
 
+SOCIALACCOUNT_ONLY = True
+ACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+
 AUTHENTICATION_BACKENDS = [
      # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
